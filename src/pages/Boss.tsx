@@ -1,53 +1,34 @@
 import { useGameState } from '@/hooks/useGameState';
-import { BossCard } from '@/components/BossCard';
-import { QuestCard } from '@/components/QuestCard';
+import { BossBattleCard } from '@/components/BossBattleCard';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Skull } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Boss = () => {
-  const { gameState, completeQuest, resetBoss } = useGameState();
+  const { gameState, resetBoss } = useGameState();
   const boss = gameState.currentBoss;
-
-  const handleComplete = (questId: string) => {
-    completeQuest(questId);
-    
-    const updatedBoss = gameState.currentBoss;
-    if (updatedBoss && updatedBoss.currentHp <= 0) {
-      toast({
-        title: '🎉 انتصار!',
-        description: 'لقد هزمت الزعيم! أحسنت',
-      });
-    } else {
-      toast({
-        title: '⚔️ ضربة ناجحة!',
-        description: 'أضعفت الزعيم، استمر!',
-      });
-    }
-  };
 
   const handleNewBoss = () => {
     resetBoss();
     toast({
-      title: '🆕 زعيم جديد!',
+      title: 'زعيم جديد!',
       description: 'تحدٍ جديد في انتظارك',
     });
   };
 
-  const bossQuests = boss 
-    ? gameState.quests.filter(q => boss.requiredQuests.includes(q.id))
-    : [];
-
   return (
     <div className="min-h-screen pb-24">
-      <header className="border-b border-border bg-card/50 px-4 py-6">
-        <h1 className="text-2xl font-bold">معركة الزعيم</h1>
-        <p className="text-muted-foreground">حارب عاداتك السيئة وتغلب عليها</p>
+      <header className="relative px-4 py-6 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40">
+          <Skull className="w-5 h-5 text-destructive" />
+          <h1 className="text-xl font-bold text-destructive">معركة الزعيم</h1>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">حارب عاداتك السيئة وتغلب عليها</p>
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        {boss && <BossCard boss={boss} />}
+        {boss && <BossBattleCard boss={boss} />}
 
         {boss?.defeated && (
           <Button 
@@ -60,16 +41,24 @@ const Boss = () => {
           </Button>
         )}
 
-        {boss && !boss.defeated && (
-          <>
-            <h3 className="mb-4 mt-8 text-lg font-semibold">المهمات المطلوبة لهزيمة الزعيم</h3>
-            <div className="space-y-3">
-              {bossQuests.map(quest => (
-                <QuestCard key={quest.id} quest={quest} onComplete={handleComplete} />
-              ))}
-            </div>
-          </>
-        )}
+        {/* Boss Tips */}
+        <div className="mt-6 system-panel p-4">
+          <h3 className="font-bold mb-3 text-sm">نصائح للمعركة</h3>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              أكمل المهمات المطلوبة لإلحاق الضرر بالزعيم
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              كل مهمة تقلل من صحة الزعيم
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              اهزم الزعيم لتثبت قوتك وتغلبك على العادة السيئة
+            </li>
+          </ul>
+        </div>
       </main>
 
       <BottomNav />

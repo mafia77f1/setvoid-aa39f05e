@@ -6,35 +6,35 @@
 
 @layer base {
   :root {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 95%;
+    --background: 220 20% 6%;
+    --foreground: 200 20% 95%;
 
-    --card: 240 10% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 220 25% 10%;
+    --card-foreground: 200 20% 95%;
 
-    --popover: 240 10% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 200 20% 95%;
 
-    --primary: 270 70% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 270 70% 70%;
+    --primary: 200 100% 50%;
+    --primary-foreground: 220 20% 6%;
+    --primary-glow: 200 100% 60%;
 
-    --secondary: 150 60% 45%;
+    --secondary: 160 70% 45%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-glow: 150 60% 55%;
+    --secondary-glow: 160 70% 55%;
 
-    --muted: 240 10% 15%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 270 50% 25%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 200 60% 25%;
+    --accent-foreground: 200 20% 95%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 20%;
-    --input: 240 10% 15%;
-    --ring: 270 70% 60%;
+    --border: 200 50% 25%;
+    --input: 220 15% 15%;
+    --ring: 200 100% 50%;
 
     --radius: 0.75rem;
 
@@ -48,26 +48,35 @@
     --quran: 150 60% 45%;
     --quran-glow: 150 60% 55%;
 
+    /* System Colors */
+    --system-blue: 200 100% 50%;
+    --system-cyan: 180 100% 45%;
+    --system-glow: 200 100% 60%;
+
     /* Gradients */
     --gradient-strength: linear-gradient(135deg, hsl(0 70% 55%), hsl(30 80% 55%));
     --gradient-mind: linear-gradient(135deg, hsl(210 80% 55%), hsl(240 70% 60%));
     --gradient-spirit: linear-gradient(135deg, hsl(270 70% 60%), hsl(300 60% 55%));
     --gradient-quran: linear-gradient(135deg, hsl(150 60% 45%), hsl(170 70% 50%));
-    --gradient-dark: linear-gradient(180deg, hsl(240 10% 6%), hsl(240 10% 3%));
+    --gradient-system: linear-gradient(135deg, hsl(200 100% 50%), hsl(180 100% 45%));
+    --gradient-dark: linear-gradient(180deg, hsl(220 25% 8%), hsl(220 30% 4%));
+    --gradient-card: linear-gradient(135deg, hsl(220 25% 12% / 0.9), hsl(220 30% 8% / 0.9));
 
     /* Shadows */
-    --shadow-glow-primary: 0 0 30px hsl(270 70% 50% / 0.3);
-    --shadow-glow-secondary: 0 0 30px hsl(150 60% 45% / 0.3);
-    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.4);
+    --shadow-glow-primary: 0 0 30px hsl(200 100% 50% / 0.4);
+    --shadow-glow-secondary: 0 0 30px hsl(160 70% 45% / 0.3);
+    --shadow-glow-system: 0 0 40px hsl(200 100% 50% / 0.3), 0 0 80px hsl(200 100% 50% / 0.1);
+    --shadow-card: 0 4px 30px hsl(0 0% 0% / 0.5);
+    --shadow-inner: inset 0 1px 1px hsl(200 100% 80% / 0.1);
 
-    --sidebar-background: 240 10% 6%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 270 70% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 240 10% 15%;
-    --sidebar-ring: 270 70% 60%;
+    --sidebar-background: 220 25% 8%;
+    --sidebar-foreground: 200 20% 95%;
+    --sidebar-primary: 200 100% 50%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 200 20% 95%;
+    --sidebar-border: 200 50% 20%;
+    --sidebar-ring: 200 100% 50%;
   }
 }
 
@@ -88,6 +97,124 @@
 }
 
 @layer components {
+  /* System Panel Frame */
+  .system-panel {
+    @apply relative rounded-lg border border-primary/40 overflow-hidden;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-glow-system), var(--shadow-card);
+  }
+
+  .system-panel::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(135deg, hsl(200 100% 50% / 0.1) 0%, transparent 50%);
+  }
+
+  .system-panel::after {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-px;
+    background: linear-gradient(90deg, transparent, hsl(200 100% 60% / 0.6), transparent);
+  }
+
+  /* Profile Card */
+  .profile-card {
+    @apply relative rounded-2xl border-2 border-primary/50 overflow-hidden;
+    background: linear-gradient(180deg, hsl(220 30% 12% / 0.95), hsl(220 35% 6% / 0.95));
+    box-shadow: var(--shadow-glow-system), 0 20px 60px hsl(0 0% 0% / 0.5);
+  }
+
+  .profile-card::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: 
+      linear-gradient(135deg, hsl(200 100% 50% / 0.15) 0%, transparent 40%),
+      linear-gradient(to bottom, hsl(200 100% 50% / 0.05), transparent);
+  }
+
+  /* Status Header */
+  .status-header {
+    @apply relative py-3 px-6 text-center border-b border-primary/30;
+    background: linear-gradient(180deg, hsl(200 100% 50% / 0.2), transparent);
+  }
+
+  .status-header h2 {
+    @apply text-xl font-bold tracking-wider;
+    color: hsl(200 100% 70%);
+    text-shadow: 0 0 20px hsl(200 100% 50% / 0.5);
+  }
+
+  /* Stat Display */
+  .stat-display {
+    @apply flex items-center gap-2 text-sm;
+  }
+
+  .stat-value {
+    @apply font-bold text-lg;
+    color: hsl(200 100% 70%);
+    text-shadow: 0 0 10px hsl(200 100% 50% / 0.5);
+  }
+
+  .stat-bonus {
+    @apply text-xs px-1.5 py-0.5 rounded;
+    background: hsl(200 100% 50% / 0.2);
+    color: hsl(200 100% 70%);
+  }
+
+  /* Quest Card New */
+  .quest-card-new {
+    @apply relative flex items-center gap-4 rounded-xl p-4 transition-all duration-300 cursor-pointer;
+    background: linear-gradient(135deg, hsl(220 25% 12% / 0.8), hsl(220 30% 8% / 0.8));
+    border: 1px solid hsl(200 50% 30% / 0.3);
+  }
+
+  .quest-card-new:hover {
+    @apply scale-[1.02];
+    border-color: hsl(200 100% 50% / 0.5);
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  .quest-card-new.completed {
+    background: linear-gradient(135deg, hsl(160 50% 15% / 0.8), hsl(160 40% 10% / 0.8));
+    border-color: hsl(160 70% 45% / 0.5);
+  }
+
+  /* Boss Battle Card */
+  .boss-battle-card {
+    @apply relative rounded-2xl border-2 border-destructive/60 overflow-hidden;
+    background: linear-gradient(180deg, hsl(0 40% 12%), hsl(0 50% 6%));
+    box-shadow: 0 0 60px hsl(0 70% 40% / 0.3), 0 0 120px hsl(0 70% 40% / 0.1);
+  }
+
+  /* Ability Icon */
+  .ability-icon {
+    @apply flex items-center justify-center w-12 h-12 rounded-lg;
+    background: linear-gradient(135deg, hsl(200 100% 50% / 0.3), hsl(200 100% 40% / 0.1));
+    border: 1px solid hsl(200 100% 50% / 0.4);
+    box-shadow: 0 0 20px hsl(200 100% 50% / 0.2);
+  }
+
+  /* Stats Bar */
+  .stats-bar {
+    @apply relative h-4 rounded-full overflow-hidden;
+    background: hsl(220 30% 15%);
+    border: 1px solid hsl(200 50% 30% / 0.3);
+  }
+
+  .stats-bar-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    box-shadow: 0 0 10px currentColor;
+  }
+
+  /* Level Badge System */
+  .level-badge-system {
+    @apply inline-flex items-center justify-center px-4 py-1 rounded font-bold text-sm;
+    background: linear-gradient(135deg, hsl(200 100% 50% / 0.3), hsl(200 100% 40% / 0.1));
+    border: 1px solid hsl(200 100% 50% / 0.5);
+    color: hsl(200 100% 70%);
+    text-shadow: 0 0 10px hsl(200 100% 50% / 0.5);
+  }
+
+  /* Original classes kept for compatibility */
   .stat-card {
     @apply relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all duration-300;
     box-shadow: var(--shadow-card);
@@ -162,7 +289,7 @@
   }
 
   .nav-item {
-    @apply flex flex-col items-center gap-1 px-4 py-2 text-muted-foreground transition-colors duration-200;
+    @apply flex flex-col items-center gap-1 px-3 py-2 text-muted-foreground transition-colors duration-200;
   }
 
   .nav-item.active {
@@ -179,6 +306,44 @@
 
   .level-badge {
     @apply inline-flex items-center justify-center rounded-full bg-primary/20 px-3 py-1 text-sm font-bold text-primary;
+  }
+
+  /* Scan Line Animation */
+  .scan-line {
+    @apply absolute inset-0 pointer-events-none overflow-hidden;
+  }
+
+  .scan-line::after {
+    content: '';
+    @apply absolute w-full h-px;
+    background: linear-gradient(90deg, transparent, hsl(200 100% 50% / 0.3), transparent);
+    animation: scan 3s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  /* Corner Decorations */
+  .corner-decoration {
+    @apply absolute w-4 h-4 border-primary/60;
+  }
+
+  .corner-tl {
+    @apply top-2 left-2 border-t-2 border-l-2;
+  }
+
+  .corner-tr {
+    @apply top-2 right-2 border-t-2 border-r-2;
+  }
+
+  .corner-bl {
+    @apply bottom-2 left-2 border-b-2 border-l-2;
+  }
+
+  .corner-br {
+    @apply bottom-2 right-2 border-b-2 border-r-2;
   }
 }
 
@@ -233,5 +398,39 @@
 
   .animate-level-up {
     animation: level-up 0.6s ease-out;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes attack {
+    0% { transform: translateX(0) scale(1); }
+    50% { transform: translateX(-20px) scale(1.1); }
+    100% { transform: translateX(0) scale(1); }
+  }
+
+  .animate-attack {
+    animation: attack 0.3s ease-out;
+  }
+
+  @keyframes damage {
+    0%, 100% { transform: translateX(0); opacity: 1; }
+    25% { transform: translateX(-10px); opacity: 0.8; }
+    50% { transform: translateX(10px); opacity: 0.6; }
+    75% { transform: translateX(-5px); opacity: 0.8; }
+  }
+
+  .animate-damage {
+    animation: damage 0.5s ease-out;
   }
 }
