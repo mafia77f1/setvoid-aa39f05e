@@ -1,80 +1,128 @@
 import { useGameState } from '@/hooks/useGameState';
-import { CharacterAvatar } from '@/components/CharacterAvatar';
-import { StatCard } from '@/components/StatCard';
+import { ProfileCard } from '@/components/ProfileCard';
+import { QuestCardNew } from '@/components/QuestCardNew';
+import { AbilityCardMini } from '@/components/AbilityCardMini';
+import { AchievementMini } from '@/components/AchievementMini';
 import { BottomNav } from '@/components/BottomNav';
-import { Flame } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ChevronLeft, Target, Zap, Trophy } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const { gameState, getXpProgress } = useGameState();
-  const totalLevel = gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran;
+  const { gameState, getXpProgress, completeQuest } = useGameState();
 
-  const todayQuests = gameState.quests.filter(q => q.completed).length;
-  const totalQuests = gameState.quests.length;
+  const handleQuestComplete = (questId: string) => {
+    completeQuest(questId);
+    toast({
+      title: 'مهمة مكتملة!',
+      description: 'أحسنت! استمر في التقدم',
+    });
+  };
+
+  // Get some quests for preview
+  const incompleteQuests = gameState.quests.filter(q => !q.completed).slice(0, 4);
+  const unlockedAbilities = gameState.abilities.filter(a => a.unlocked).slice(0, 4);
+  const topAchievements = gameState.achievements.slice(0, 4);
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Header */}
-      <header className="relative overflow-hidden border-b border-border bg-card/50 px-4 py-8">
-        <div className="absolute -left-20 -top-20 h-60 w-60 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-secondary/10 blur-3xl" />
-        
-        <div className="relative">
-          <CharacterAvatar name={gameState.playerName} totalLevel={totalLevel} />
-          
-          {/* Streak indicator */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-sm">
-            <Flame className="h-5 w-5 text-orange-500" />
-            <span className="font-medium">{gameState.streakDays} أيام متتالية</span>
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Profile Card */}
+        <ProfileCard gameState={gameState} getXpProgress={getXpProgress} />
+
+        {/* Daily Quests Section */}
+        <section className="system-panel p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              <h3 className="font-bold">المهمات اليومية</h3>
+            </div>
+            <Link 
+              to="/quests" 
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+            >
+              عرض الكل
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
           </div>
 
-          {/* Today's progress */}
-          <div className="mt-4 rounded-xl bg-muted/50 p-3 text-center">
-            <p className="text-sm text-muted-foreground">
-              مهمات اليوم: <span className="font-bold text-foreground">{todayQuests}/{totalQuests}</span>
-            </p>
+          <div className="space-y-2">
+            {incompleteQuests.map(quest => (
+              <QuestCardNew 
+                key={quest.id} 
+                quest={quest} 
+                onComplete={handleQuestComplete} 
+              />
+            ))}
+            {incompleteQuests.length === 0 && (
+              <div className="text-center py-6 text-muted-foreground">
+                <p className="text-sm">أكملت جميع المهمات اليوم!</p>
+              </div>
+            )}
           </div>
-        </div>
-      </header>
+        </section>
 
-      {/* Stats Grid */}
-      <main className="container mx-auto px-4 py-6">
-        <h3 className="mb-4 text-lg font-semibold">مستوياتك</h3>
-        <div className="grid gap-4">
-          <StatCard
-            category="strength"
-            level={gameState.levels.strength}
-            xp={gameState.stats.strength}
-            xpProgress={getXpProgress(gameState.stats.strength)}
-          />
-          <StatCard
-            category="mind"
-            level={gameState.levels.mind}
-            xp={gameState.stats.mind}
-            xpProgress={getXpProgress(gameState.stats.mind)}
-          />
-          <StatCard
-            category="spirit"
-            level={gameState.levels.spirit}
-            xp={gameState.stats.spirit}
-            xpProgress={getXpProgress(gameState.stats.spirit)}
-          />
-          <StatCard
-            category="quran"
-            level={gameState.levels.quran}
-            xp={gameState.stats.quran}
-            xpProgress={getXpProgress(gameState.stats.quran)}
-          />
-        </div>
+        {/* Abilities Section */}
+        <section className="system-panel p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              <h3 className="font-bold">القدرات</h3>
+            </div>
+            <Link 
+              to="/abilities" 
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+            >
+              عرض الكل
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {unlockedAbilities.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {unlockedAbilities.map(ability => (
+                <AbilityCardMini key={ability.id} ability={ability} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 rounded-lg bg-muted/20 border border-muted/30">
+              <p className="text-sm text-muted-foreground">ارفع مستوياتك لتفتح قدرات جديدة</p>
+            </div>
+          )}
+        </section>
+
+        {/* Achievements Section */}
+        <section className="system-panel p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-secondary" />
+              <h3 className="font-bold">الإنجازات</h3>
+            </div>
+            <Link 
+              to="/achievements" 
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+            >
+              عرض الكل
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {topAchievements.map(achievement => (
+              <AchievementMini key={achievement.id} achievement={achievement} />
+            ))}
+          </div>
+        </section>
 
         {/* Motivational Message */}
         {gameState.totalQuestsCompleted > 0 && (
-          <div className="mt-6 rounded-xl border border-secondary/30 bg-secondary/10 p-4 text-center">
+          <div className="system-panel p-4 text-center border-secondary/30">
             <p className="text-sm font-medium text-secondary">
               {gameState.totalQuestsCompleted >= 50
-                ? '🎉 أنت بطل حقيقي! استمر في التقدم'
+                ? 'أنت بطل حقيقي! استمر في التقدم'
                 : gameState.totalQuestsCompleted >= 20
-                ? '💪 أداء ممتاز! لا تتوقف'
-                : '🌟 بداية رائعة! كل خطوة تهم'}
+                ? 'أداء ممتاز! لا تتوقف'
+                : 'بداية رائعة! كل خطوة تهم'}
             </p>
           </div>
         )}

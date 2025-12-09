@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Quests from "./pages/Quests";
 import Boss from "./pages/Boss";
+import Battle from "./pages/Battle";
 import Abilities from "./pages/Abilities";
 import Stats from "./pages/Stats";
 import Achievements from "./pages/Achievements";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/quests" element={<Quests />} />
           <Route path="/boss" element={<Boss />} />
+          <Route path="/battle" element={<Battle />} />
           <Route path="/abilities" element={<Abilities />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/achievements" element={<Achievements />} />
