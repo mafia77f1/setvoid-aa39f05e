@@ -1,9 +1,13 @@
-import { Dumbbell, Brain, Heart, BookOpen, Flame, User } from 'lucide-react';
+import { useState } from 'react';
+import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Edit, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
+import { cn } from '@/lib/utils';
+import { EditProfileModal } from './EditProfileModal';
 
 interface ProfileCardProps {
   gameState: GameState;
   getXpProgress: (xp: number) => number;
+  onUpdateProfile?: (name: string, title: string) => void;
 }
 
 const stats = [
@@ -13,109 +17,155 @@ const stats = [
   { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-quran' },
 ] as const;
 
-export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
-  const totalLevel = gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran;
+const getRankColor = (totalLevel: number) => {
+  if (totalLevel >= 50) return { border: 'border-foreground', bg: 'bg-foreground/10', glow: 'shadow-foreground/50', text: 'text-foreground' };
+  if (totalLevel >= 20) return { border: 'border-spirit', bg: 'bg-spirit/10', glow: 'shadow-spirit/50', text: 'text-spirit' };
+  if (totalLevel >= 10) return { border: 'border-mind', bg: 'bg-mind/10', glow: 'shadow-mind/50', text: 'text-mind' };
+  return { border: 'border-primary', bg: 'bg-primary/10', glow: 'shadow-primary/50', text: 'text-primary' };
+};
+
+export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
+  const [showEditModal, setShowEditModal] = useState(false);
+  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
+  const rankColor = getRankColor(totalLevel);
+  const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
+  const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
 
   return (
-    <div className="profile-card">
-      {/* Corner Decorations */}
-      <div className="corner-decoration corner-tl" />
-      <div className="corner-decoration corner-tr" />
-      <div className="corner-decoration corner-bl" />
-      <div className="corner-decoration corner-br" />
-      
-      {/* Scan Line Effect */}
-      <div className="scan-line" />
+    <>
+      <div className={cn("profile-card", rankColor.border, totalLevel >= 50 && "shadow-2xl")}>
+        {/* Corner Decorations */}
+        <div className="corner-decoration corner-tl" />
+        <div className="corner-decoration corner-tr" />
+        <div className="corner-decoration corner-bl" />
+        <div className="corner-decoration corner-br" />
+        
+        {/* Scan Line Effect */}
+        <div className="scan-line" />
 
-      {/* Status Header */}
-      <div className="status-header">
-        <h2>STATUS</h2>
-      </div>
-
-      <div className="p-6">
-        {/* Level and Name Section */}
-        <div className="flex items-start gap-6 mb-6">
-          {/* Level Display */}
-          <div className="text-center">
-            <div className="text-5xl font-bold text-primary glow-text">{totalLevel}</div>
-            <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
-          </div>
-
-          {/* Name and Title */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs text-primary/70">JOB:</span>
-              <span className="font-semibold">{gameState.playerName}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-primary/70">TITLE:</span>
-              <span className="text-sm text-primary">محارب التطوير الذاتي</span>
-            </div>
-          </div>
-
-          {/* Avatar */}
-          <div className="relative">
-            <div className="w-16 h-16 rounded-lg border-2 border-primary/50 bg-primary/10 flex items-center justify-center">
-              <User className="w-10 h-10 text-primary" />
-            </div>
-          </div>
+        {/* Status Header */}
+        <div className="status-header">
+          <h2>STATUS</h2>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-6" />
+        <div className="p-6">
+          {/* Level and Name Section */}
+          <div className="flex items-start gap-6 mb-4">
+            <div className="text-center">
+              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
+              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
+            </div>
 
-        {/* Quick Stats Row */}
-        <div className="flex items-center justify-around mb-6 py-3 rounded-lg bg-card/50 border border-primary/20">
-          <div className="text-center">
-            <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-            <div className="text-lg font-bold">{gameState.streakDays}</div>
-            <div className="text-[10px] text-muted-foreground">أيام متتالية</div>
-          </div>
-          <div className="w-px h-10 bg-primary/30" />
-          <div className="text-center">
-            <div className="text-lg font-bold">{todayQuests}/{totalQuests}</div>
-            <div className="text-[10px] text-muted-foreground">مهمات اليوم</div>
-          </div>
-          <div className="w-px h-10 bg-primary/30" />
-          <div className="text-center">
-            <div className="text-lg font-bold text-secondary">{gameState.totalQuestsCompleted}</div>
-            <div className="text-[10px] text-muted-foreground">مهمة مكتملة</div>
-          </div>
-        </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-primary/70">JOB:</span>
+                <span className="font-semibold">{totalLevel >= 100 ? gameState.playerJob : 'غير معروف'}</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-primary/70">NAME:</span>
+                <span className="font-semibold">{gameState.playerName}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-primary/70">TITLE:</span>
+                <span className="text-sm text-primary">{gameState.playerTitle}</span>
+              </div>
+            </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            const level = gameState.levels[stat.key];
-            const xp = gameState.stats[stat.key];
-            const progress = getXpProgress(xp);
+            <button 
+              onClick={() => setShowEditModal(true)}
+              className="p-2 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-all"
+            >
+              <Edit className="w-4 h-4 text-primary" />
+            </button>
+          </div>
 
-            return (
-              <div
-                key={stat.key}
-                className="flex items-center gap-3 p-3 rounded-lg bg-card/30 border border-primary/10"
-              >
-                <Icon className={`w-5 h-5 ${stat.color}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-bold ${stat.color}`}>{stat.label}</span>
-                    <span className="stat-value text-sm">{level}</span>
-                  </div>
-                  <div className="stats-bar h-2">
-                    <div 
-                      className={`stats-bar-fill ${stat.color.replace('text-', 'bg-')}`}
-                      style={{ width: `${progress}%` }}
-                    />
+          {/* HP and Energy Bars */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1">
+                  <Shield className="w-4 h-4 text-destructive" />
+                  <span className="text-xs">HP</span>
+                </div>
+                <span className="text-xs font-bold">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
+              </div>
+              <div className="stats-bar h-3">
+                <div className="stats-bar-fill bg-destructive" style={{ width: `${hpPercentage}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1">
+                  <Zap className="w-4 h-4 text-secondary" />
+                  <span className="text-xs">ENERGY</span>
+                </div>
+                <span className="text-xs font-bold">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
+              </div>
+              <div className="stats-bar h-3">
+                <div className="stats-bar-fill bg-secondary" style={{ width: `${energyPercentage}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-4" />
+
+          {/* Quick Stats Row */}
+          <div className="flex items-center justify-around mb-4 py-3 rounded-lg bg-card/50 border border-primary/20">
+            <div className="text-center">
+              <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+              <div className="text-lg font-bold">{gameState.streakDays}</div>
+              <div className="text-[10px] text-muted-foreground">أيام متتالية</div>
+            </div>
+            <div className="w-px h-10 bg-primary/30" />
+            <div className="text-center">
+              <div className="text-lg font-bold">{todayQuests}/{totalQuests}</div>
+              <div className="text-[10px] text-muted-foreground">مهمات اليوم</div>
+            </div>
+            <div className="w-px h-10 bg-primary/30" />
+            <div className="text-center">
+              <div className="text-lg font-bold text-secondary">{gameState.gold || 0}</div>
+              <div className="text-[10px] text-muted-foreground">ذهب</div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => {
+              const Icon = stat.icon;
+              const level = gameState.levels[stat.key];
+              const xp = gameState.stats[stat.key];
+              const progress = getXpProgress(xp);
+
+              return (
+                <div key={stat.key} className="flex items-center gap-3 p-3 rounded-lg bg-card/30 border border-primary/10">
+                  <Icon className={cn('w-5 h-5', stat.color)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn('text-sm font-bold', stat.color)}>{stat.label}</span>
+                      <span className="stat-value text-sm">{level}</span>
+                    </div>
+                    <div className="stats-bar h-2">
+                      <div className={cn('stats-bar-fill', stat.color.replace('text-', 'bg-'))} style={{ width: `${progress}%` }} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+
+      {onUpdateProfile && (
+        <EditProfileModal
+          show={showEditModal}
+          currentName={gameState.playerName}
+          currentTitle={gameState.playerTitle}
+          onSave={onUpdateProfile}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
+    </>
   );
 };
