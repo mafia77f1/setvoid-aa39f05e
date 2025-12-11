@@ -1,44 +1,122 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ProfileCard } from '@/components/ProfileCard';
-import { QuestModal } from '@/components/QuestModal';
+import { DailyQuestCard } from '@/components/DailyQuestCard';
+import { PrayerQuestModal } from '@/components/PrayerQuestModal';
+import { QuranRecitationModal } from '@/components/QuranRecitationModal';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Target, Zap, Trophy, Dumbbell, Brain, Heart, BookOpen, Check, Circle } from 'lucide-react';
-import { Quest } from '@/types/game';
+import { ChevronLeft, Zap, Trophy, BookOpen, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const categoryConfig = {
-  strength: { icon: Dumbbell, color: 'text-strength', borderColor: 'border-l-strength' },
-  mind: { icon: Brain, color: 'text-mind', borderColor: 'border-l-mind' },
-  spirit: { icon: Heart, color: 'text-spirit', borderColor: 'border-l-spirit' },
-  quran: { icon: BookOpen, color: 'text-quran', borderColor: 'border-l-quran' },
-};
-
-const difficultyColors = {
-  easy: 'border-foreground/30',
-  medium: 'border-mind/50',
-  hard: 'border-spirit/50',
-  legendary: 'border-foreground/80',
-};
+import { StatType } from '@/types/game';
 
 const Index = () => {
-  const { gameState, getXpProgress, completeQuest, updatePlayerInfo } = useGameState();
+  const { 
+    gameState, 
+    getXpProgress, 
+    completeQuest, 
+    updatePlayerInfo,
+    completePrayerQuest,
+    setSelectedReciter
+  } = useGameState();
   const { playQuestComplete } = useSoundEffects();
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+  const [activePrayerQuest, setActivePrayerQuest] = useState<string | null>(null);
+  const [showQuranModal, setShowQuranModal] = useState(false);
+  const [showNewQuestNotification, setShowNewQuestNotification] = useState(false);
 
-  const handleQuestComplete = (questId: string) => {
-    playQuestComplete();
-    completeQuest(questId);
+  // Get today's daily quest category (rotating daily)
+  const getDailyCategory = (): StatType => {
+    const dayOfWeek = new Date().getDay();
+    const categories: StatType[] = ['strength', 'mind', 'spirit', 'quran'];
+    return categories[dayOfWeek % 4];
   };
 
-  const incompleteQuests = gameState.quests.filter(q => !q.completed).slice(0, 4);
+  const todayCategory = getDailyCategory();
+  const dailyQuests = gameState.quests.filter(q => q.category === todayCategory && q.dailyReset);
+  const dailyTasks = dailyQuests.map(q => ({
+    id: q.id,
+    title: q.title,
+    completed: q.completed
+  }));
+
+  // Get XP reward for completing all tasks
+  const totalXpReward = dailyQuests.reduce((sum, q) => sum + q.xpReward, 0);
+
+  // Check for prayer time
+  useEffect(() => {
+    const checkPrayerTime = () => {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      // Find if any prayer is due
+      const duePrayer = gameState.prayerQuests.find(p => {
+        if (p.completed) return false;
+        const prayerHour = parseInt(p.time.split(':')[0]);
+        const currentHour = now.getHours();
+        return currentHour >= prayerHour && currentHour < prayerHour + 1;
+      });
+
+      if (duePrayer && !activePrayerQuest) {
+        setActivePrayerQuest(duePrayer.id);
+      }
+    };
+
+    checkPrayerTime();
+    const interval = setInterval(checkPrayerTime, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [gameState.prayerQuests, activePrayerQuest]);
+
+  // Show new quest notification
+  useEffect(() => {
+    const hasIncompleteQuests = dailyQuests.some(q => !q.completed);
+    if (hasIncompleteQuests) {
+      setShowNewQuestNotification(true);
+      const timer = setTimeout(() => setShowNewQuestNotification(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleTaskComplete = (taskId: string) => {
+    playQuestComplete();
+    completeQuest(taskId);
+  };
+
+  const handlePrayerComplete = (prayerId: string) => {
+    playQuestComplete();
+    completePrayerQuest(prayerId);
+  };
+
+  const currentPrayer = activePrayerQuest 
+    ? gameState.prayerQuests.find(p => p.id === activePrayerQuest) 
+    : null;
+
   const unlockedAbilities = gameState.abilities.filter(a => a.unlocked).slice(0, 4);
   const topAchievements = gameState.achievements.slice(0, 4);
+  const quranAbility = gameState.abilities.find(a => a.id === 'a7' && a.unlocked);
 
   return (
     <div className="min-h-screen pb-24">
+      {/* New Quest Notification */}
+      {showNewQuestNotification && (
+        <div className="fixed top-4 left-4 right-4 z-40 animate-slide-in-bottom">
+          <div className="notification-panel p-4 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-[hsl(200_100%_70%)]" />
+            <div className="flex-1">
+              <span className="text-sm font-bold text-[hsl(200_100%_70%)]">
+                [Daily Quest has arrived!]
+              </span>
+            </div>
+            <button 
+              onClick={() => setShowNewQuestNotification(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="container mx-auto px-4 py-6 space-y-6">
         <ProfileCard 
           gameState={gameState} 
@@ -46,58 +124,33 @@ const Index = () => {
           onUpdateProfile={updatePlayerInfo}
         />
 
-        {/* Daily Quests Section */}
-        <section className="system-panel p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
-              <h3 className="font-bold">المهمات اليومية</h3>
-            </div>
-            <Link to="/quests" className="flex items-center gap-1 text-xs text-primary hover:text-primary/80">
-              عرض الكل
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="space-y-2">
-            {incompleteQuests.map(quest => {
-              const config = categoryConfig[quest.category];
-              const Icon = config.icon;
-              return (
-                <div
-                  key={quest.id}
-                  onClick={() => setSelectedQuest(quest)}
-                  className={cn(
-                    'quest-card-new border-r-4 cursor-pointer',
-                    config.borderColor,
-                    difficultyColors[quest.difficulty]
-                  )}
-                >
-                  <div className={cn('ability-icon', `bg-${quest.category}/10`)}>
-                    <Icon className={cn('w-6 h-6', config.color)} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm mb-0.5 truncate">{quest.title}</h4>
-                    <p className="text-xs text-muted-foreground truncate">{quest.description}</p>
-                  </div>
-                  <div className="text-left">
-                    <div className={cn('text-sm font-bold', config.color)}>+{quest.xpReward}</div>
-                    <div className="text-[10px] text-muted-foreground">XP</div>
-                  </div>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-muted-foreground/50">
-                    <Circle className="h-4 w-4" />
-                  </div>
-                </div>
-              );
-            })}
-            {incompleteQuests.length === 0 && (
-              <div className="text-center py-6 text-muted-foreground">
-                <Check className="w-12 h-12 mx-auto mb-2 text-secondary" />
-                <p className="text-sm">أكملت جميع المهمات اليوم!</p>
-              </div>
-            )}
-          </div>
+        {/* Daily Quest Card - Solo Leveling Style */}
+        <section>
+          <DailyQuestCard
+            category={todayCategory}
+            tasks={dailyTasks}
+            difficulty={dailyQuests[0]?.difficulty || 'medium'}
+            xpReward={totalXpReward}
+            onTaskComplete={handleTaskComplete}
+          />
         </section>
+
+        {/* Quran Recitation Button */}
+        {quranAbility && (
+          <button
+            onClick={() => setShowQuranModal(true)}
+            className="w-full system-panel p-4 flex items-center gap-4 hover:scale-[1.01] transition-transform"
+          >
+            <div className="ability-icon bg-quran/20 border-quran/40">
+              <BookOpen className="w-6 h-6 text-quran" />
+            </div>
+            <div className="flex-1 text-right">
+              <h3 className="font-bold text-quran">تلاوة القرآن الكريم</h3>
+              <p className="text-xs text-muted-foreground">استمع للقرآن واكسب XP</p>
+            </div>
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
 
         {/* Abilities Section */}
         <section className="system-panel p-4">
@@ -114,21 +167,20 @@ const Index = () => {
 
           {unlockedAbilities.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
-              {unlockedAbilities.map(ability => {
-                const config = categoryConfig[ability.category];
-                const Icon = config.icon;
-                return (
-                  <div key={ability.id} className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/30">
-                    <div className="ability-icon w-8 h-8">
-                      <Icon className={cn('w-4 h-4', config.color)} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold truncate">{ability.name}</div>
-                      <div className="text-[10px] text-muted-foreground">Lv.{ability.level}</div>
-                    </div>
+              {unlockedAbilities.map(ability => (
+                <div 
+                  key={ability.id} 
+                  className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/30"
+                >
+                  <div className="ability-icon w-8 h-8">
+                    <Zap className="w-4 h-4 text-primary" />
                   </div>
-                );
-              })}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold truncate">{ability.name}</div>
+                    <div className="text-[10px] text-muted-foreground">Lv.{Math.floor(ability.level)}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-4 rounded-lg bg-muted/20 border border-muted/30">
@@ -156,7 +208,9 @@ const Index = () => {
                 key={achievement.id}
                 className={cn(
                   'flex items-center gap-2 p-2 rounded-lg border',
-                  achievement.unlocked ? 'bg-secondary/10 border-secondary/30' : 'bg-muted/10 border-muted/30 opacity-60'
+                  achievement.unlocked 
+                    ? 'bg-secondary/10 border-secondary/30' 
+                    : 'bg-muted/10 border-muted/30 opacity-60'
                 )}
               >
                 <span className="text-2xl">{achievement.icon}</span>
@@ -172,13 +226,22 @@ const Index = () => {
 
       <BottomNav />
 
-      {selectedQuest && (
-        <QuestModal
-          quest={selectedQuest}
-          onComplete={handleQuestComplete}
-          onClose={() => setSelectedQuest(null)}
+      {/* Prayer Quest Modal */}
+      {currentPrayer && (
+        <PrayerQuestModal
+          prayer={currentPrayer}
+          onComplete={handlePrayerComplete}
+          onClose={() => setActivePrayerQuest(null)}
         />
       )}
+
+      {/* Quran Recitation Modal */}
+      <QuranRecitationModal
+        isOpen={showQuranModal}
+        onClose={() => setShowQuranModal(false)}
+        selectedReciter={gameState.selectedReciter}
+        onReciterChange={setSelectedReciter}
+      />
     </div>
   );
 };
