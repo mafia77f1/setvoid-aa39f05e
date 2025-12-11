@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { cn } from '@/lib/utils';
+import { AlertCircle } from 'lucide-react';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ const Onboarding = () => {
   };
 
   const handleDecline = () => {
-    // Close/refresh the page
     window.close();
   };
 
@@ -28,106 +28,91 @@ const Onboarding = () => {
       setTimeout(() => {
         completeOnboarding(playerName.trim());
         navigate('/');
-      }, 2000);
+      }, 2500);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background Effects */}
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      {/* Background Effects - Blue glow like Solo Leveling */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[hsl(200_100%_50%/0.1)] rounded-full blur-[100px] animate-pulse-slow" />
       </div>
 
       {step === 'welcome' && (
-        <div className={cn(
-          "relative max-w-lg w-full mx-auto animate-scale-in",
-          "rounded-2xl border-2 border-primary/60 overflow-hidden",
-          "bg-gradient-to-b from-card/95 to-background/95"
-        )}>
-          {/* Top Glow Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-          
-          {/* Corner Decorations */}
-          <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-primary/60" />
-          <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-primary/60" />
-          <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-primary/60" />
-          <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-primary/60" />
+        <div className="notification-panel max-w-lg w-full mx-auto animate-modal-appear relative">
+          {/* Side Decorations */}
+          <div className="absolute top-12 -left-3 w-6 h-40 border-l-2 border-t-2 border-b-2 border-[hsl(200_100%_50%/0.5)] rounded-l-lg" />
+          <div className="absolute top-12 -right-3 w-6 h-40 border-r-2 border-t-2 border-b-2 border-[hsl(200_100%_50%/0.5)] rounded-r-lg" />
 
           <div className="p-8">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/20 border border-primary/40 mb-6">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-bold text-primary tracking-wider">NOTIFICATION</span>
+            {/* Header - Notification */}
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-3 px-6 py-2 rounded border border-[hsl(200_100%_50%/0.5)] bg-[hsl(200_100%_50%/0.1)]">
+                <AlertCircle className="w-5 h-5 text-[hsl(200_100%_70%)]" />
+                <span className="text-sm font-bold text-[hsl(200_100%_70%)] tracking-[0.2em]">NOTIFICATION</span>
               </div>
             </div>
 
             {/* Content */}
-            <div className="text-center space-y-4 mb-10">
+            <div className="text-center space-y-4 mb-12">
               <p className="text-lg text-foreground/80">
-                لقد حصلت على المؤهلات
+                You have acquired the qualifications
               </p>
               <p className="text-lg">
-                لتصبح <span className="text-primary font-bold glow-text">لاعب</span>. هل ستقبل؟
+                to be a <span className="text-[hsl(200_100%_70%)] font-bold" style={{ textShadow: '0 0 20px hsl(200 100% 60% / 0.5)' }}>Player</span>. Will you accept?
               </p>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4 justify-center">
+            {/* Buttons - Solo Leveling Style */}
+            <div className="flex gap-6 justify-center">
               <button
                 onClick={handleAccept}
                 className={cn(
-                  "px-8 py-3 rounded-lg font-bold text-lg transition-all",
-                  "bg-primary/20 border-2 border-primary/60 text-primary",
-                  "hover:bg-primary/30 hover:border-primary hover:shadow-lg hover:shadow-primary/20",
+                  "px-10 py-4 rounded font-bold text-lg transition-all",
+                  "bg-transparent border-2 border-[hsl(200_100%_50%/0.6)] text-[hsl(200_100%_70%)]",
+                  "hover:bg-[hsl(200_100%_50%/0.1)] hover:border-[hsl(200_100%_50%)] hover:shadow-[0_0_30px_hsl(200_100%_50%/0.3)]",
                   "active:scale-95"
                 )}
               >
-                نعم
+                Yes
               </button>
               <button
                 onClick={handleDecline}
                 className={cn(
-                  "px-8 py-3 rounded-lg font-bold text-lg transition-all",
-                  "bg-destructive/20 border-2 border-destructive/60 text-destructive",
-                  "hover:bg-destructive/30 hover:border-destructive hover:shadow-lg hover:shadow-destructive/20",
+                  "px-10 py-4 rounded font-bold text-lg transition-all",
+                  "bg-transparent border-2 border-[hsl(200_100%_50%/0.3)] text-[hsl(200_100%_50%/0.5)]",
+                  "hover:bg-[hsl(200_100%_50%/0.05)] hover:border-[hsl(200_100%_50%/0.4)]",
                   "active:scale-95"
                 )}
               >
-                لا
+                No
               </button>
             </div>
           </div>
-
-          {/* Bottom Glow Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
         </div>
       )}
 
       {step === 'name' && (
-        <div className={cn(
-          "relative max-w-lg w-full mx-auto animate-scale-in",
-          "rounded-2xl border-2 border-primary/60 overflow-hidden",
-          "bg-gradient-to-b from-card/95 to-background/95"
-        )}>
-          {/* Top Glow Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-          
-          {/* Corner Decorations */}
-          <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-primary/60" />
-          <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-primary/60" />
-          <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-primary/60" />
-          <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-primary/60" />
+        <div className="notification-panel max-w-lg w-full mx-auto animate-modal-appear relative">
+          {/* Side Decorations */}
+          <div className="absolute top-12 -left-3 w-6 h-48 border-l-2 border-t-2 border-b-2 border-[hsl(200_100%_50%/0.5)] rounded-l-lg" />
+          <div className="absolute top-12 -right-3 w-6 h-48 border-r-2 border-t-2 border-b-2 border-[hsl(200_100%_50%/0.5)] rounded-r-lg" />
 
           <div className="p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-primary/20 border border-primary/40 mb-6">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-bold text-primary tracking-wider">أدخل اسمك</span>
+              <div className="inline-flex items-center gap-3 px-6 py-2 rounded border border-[hsl(200_100%_50%/0.5)] bg-[hsl(200_100%_50%/0.1)]">
+                <AlertCircle className="w-5 h-5 text-[hsl(200_100%_70%)]" />
+                <span className="text-sm font-bold text-[hsl(200_100%_70%)] tracking-[0.2em]">ENTER YOUR NAME</span>
               </div>
+            </div>
+
+            {/* Prompt */}
+            <div className="text-center mb-6">
+              <p className="text-foreground/70">
+                Please enter your character name
+              </p>
             </div>
 
             {/* Input */}
@@ -138,13 +123,14 @@ const Onboarding = () => {
                 onChange={(e) => setPlayerName(e.target.value)}
                 placeholder="اسم اللاعب..."
                 className={cn(
-                  "w-full px-6 py-4 rounded-lg text-center text-xl font-bold",
-                  "bg-background/50 border-2 border-primary/40",
+                  "w-full px-6 py-4 rounded text-center text-xl font-bold",
+                  "bg-[hsl(210_50%_8%)] border-2 border-[hsl(200_100%_50%/0.4)]",
                   "text-foreground placeholder:text-muted-foreground/50",
-                  "focus:outline-none focus:border-primary focus:shadow-lg focus:shadow-primary/20",
+                  "focus:outline-none focus:border-[hsl(200_100%_50%/0.8)] focus:shadow-[0_0_20px_hsl(200_100%_50%/0.2)]",
                   "transition-all"
                 )}
                 autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && handleStart()}
               />
             </div>
 
@@ -154,33 +140,37 @@ const Onboarding = () => {
                 onClick={handleStart}
                 disabled={!playerName.trim()}
                 className={cn(
-                  "px-12 py-4 rounded-lg font-bold text-xl transition-all",
-                  "bg-primary/20 border-2 border-primary/60 text-primary",
-                  "hover:bg-primary/30 hover:border-primary hover:shadow-lg hover:shadow-primary/20",
+                  "px-16 py-4 rounded font-bold text-xl transition-all",
+                  "bg-transparent border-2 border-[hsl(200_100%_50%/0.6)] text-[hsl(200_100%_70%)]",
+                  "hover:bg-[hsl(200_100%_50%/0.1)] hover:border-[hsl(200_100%_50%)] hover:shadow-[0_0_30px_hsl(200_100%_50%/0.3)]",
                   "active:scale-95",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                  "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-[hsl(200_100%_50%/0.6)] disabled:hover:shadow-none"
                 )}
               >
-                ابدأ
+                Start
               </button>
             </div>
           </div>
-
-          {/* Bottom Glow Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
         </div>
       )}
 
       {step === 'loading' && (
-        <div className="text-center animate-scale-in">
-          <div className="relative w-32 h-32 mx-auto mb-8">
-            <div className="absolute inset-0 border-4 border-primary/30 rounded-full" />
-            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <div className="absolute inset-4 border-4 border-secondary/30 rounded-full" />
-            <div className="absolute inset-4 border-4 border-secondary border-b-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse' }} />
+        <div className="text-center animate-modal-appear">
+          <div className="relative w-40 h-40 mx-auto mb-8">
+            {/* Outer ring */}
+            <div className="absolute inset-0 border-4 border-[hsl(200_100%_50%/0.3)] rounded-full" />
+            <div className="absolute inset-0 border-4 border-[hsl(200_100%_60%)] border-t-transparent rounded-full animate-spin" />
+            {/* Inner ring */}
+            <div className="absolute inset-6 border-4 border-[hsl(200_100%_50%/0.2)] rounded-full" />
+            <div className="absolute inset-6 border-4 border-[hsl(200_100%_50%)] border-b-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
+            {/* Glow */}
+            <div className="absolute inset-0 bg-[hsl(200_100%_50%/0.1)] rounded-full blur-xl animate-pulse" />
           </div>
-          <p className="text-xl font-bold text-primary glow-text animate-pulse">
-            جاري إنشاء شخصيتك...
+          <p 
+            className="text-2xl font-bold animate-pulse"
+            style={{ color: 'hsl(200 100% 70%)', textShadow: '0 0 30px hsl(200 100% 60% / 0.8)' }}
+          >
+            Creating Character...
           </p>
         </div>
       )}
