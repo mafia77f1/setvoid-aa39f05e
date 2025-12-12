@@ -4,10 +4,9 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ProfileCard } from '@/components/ProfileCard';
 import { DailyQuestCard } from '@/components/DailyQuestCard';
 import { PrayerQuestModal } from '@/components/PrayerQuestModal';
-import { QuranRecitationModal } from '@/components/QuranRecitationModal';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Zap, Trophy, BookOpen, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Zap, Trophy, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatType } from '@/types/game';
 
@@ -18,11 +17,10 @@ const Index = () => {
     completeQuest, 
     updatePlayerInfo,
     completePrayerQuest,
-    setSelectedReciter
+    useAbility
   } = useGameState();
-  const { playQuestComplete } = useSoundEffects();
+  const { playQuestComplete, playUseAbility } = useSoundEffects();
   const [activePrayerQuest, setActivePrayerQuest] = useState<string | null>(null);
-  const [showQuranModal, setShowQuranModal] = useState(false);
   const [showNewQuestNotification, setShowNewQuestNotification] = useState(false);
 
   // Get today's daily quest category (rotating daily)
@@ -34,11 +32,6 @@ const Index = () => {
 
   const todayCategory = getDailyCategory();
   const dailyQuests = gameState.quests.filter(q => q.category === todayCategory && q.dailyReset);
-  const dailyTasks = dailyQuests.map(q => ({
-    id: q.id,
-    title: q.title,
-    completed: q.completed
-  }));
 
   // Get XP reward for completing all tasks
   const totalXpReward = dailyQuests.reduce((sum, q) => sum + q.xpReward, 0);
@@ -47,7 +40,6 @@ const Index = () => {
   useEffect(() => {
     const checkPrayerTime = () => {
       const now = new Date();
-      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
       
       // Find if any prayer is due
       const duePrayer = gameState.prayerQuests.find(p => {
@@ -87,13 +79,17 @@ const Index = () => {
     completePrayerQuest(prayerId);
   };
 
+  const handleUseAbility = (abilityId: string) => {
+    playUseAbility();
+    useAbility(abilityId);
+  };
+
   const currentPrayer = activePrayerQuest 
     ? gameState.prayerQuests.find(p => p.id === activePrayerQuest) 
     : null;
 
-  const unlockedAbilities = gameState.abilities.filter(a => a.unlocked).slice(0, 4);
+  const unlockedAbilities = gameState.abilities.filter(a => a.unlocked && a.id !== 'a7').slice(0, 4);
   const topAchievements = gameState.achievements.slice(0, 4);
-  const quranAbility = gameState.abilities.find(a => a.id === 'a7' && a.unlocked);
 
   return (
     <div className="min-h-screen pb-24">
@@ -128,29 +124,11 @@ const Index = () => {
         <section>
           <DailyQuestCard
             category={todayCategory}
-            tasks={dailyTasks}
-            difficulty={dailyQuests[0]?.difficulty || 'medium'}
+            quests={dailyQuests}
             xpReward={totalXpReward}
             onTaskComplete={handleTaskComplete}
           />
         </section>
-
-        {/* Quran Recitation Button */}
-        {quranAbility && (
-          <button
-            onClick={() => setShowQuranModal(true)}
-            className="w-full system-panel p-4 flex items-center gap-4 hover:scale-[1.01] transition-transform"
-          >
-            <div className="ability-icon bg-quran/20 border-quran/40">
-              <BookOpen className="w-6 h-6 text-quran" />
-            </div>
-            <div className="flex-1 text-right">
-              <h3 className="font-bold text-quran">تلاوة القرآن الكريم</h3>
-              <p className="text-xs text-muted-foreground">استمع للقرآن واكسب XP</p>
-            </div>
-            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-          </button>
-        )}
 
         {/* Abilities Section */}
         <section className="system-panel p-4">
@@ -168,18 +146,23 @@ const Index = () => {
           {unlockedAbilities.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
               {unlockedAbilities.map(ability => (
-                <div 
-                  key={ability.id} 
-                  className="flex items-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/30"
+                <button 
+                  key={ability.id}
+                  onClick={() => handleUseAbility(ability.id)}
+                  className={cn(
+                    "flex items-center gap-2 p-3 rounded-lg transition-all",
+                    "bg-primary/10 border border-primary/30",
+                    "hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98]"
+                  )}
                 >
-                  <div className="ability-icon w-8 h-8">
-                    <Zap className="w-4 h-4 text-primary" />
+                  <div className="ability-icon w-10 h-10">
+                    <Zap className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-right">
                     <div className="text-xs font-semibold truncate">{ability.name}</div>
-                    <div className="text-[10px] text-muted-foreground">Lv.{Math.floor(ability.level)}</div>
+                    <div className="text-[10px] text-primary truncate">{ability.effect}</div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -234,14 +217,6 @@ const Index = () => {
           onClose={() => setActivePrayerQuest(null)}
         />
       )}
-
-      {/* Quran Recitation Modal */}
-      <QuranRecitationModal
-        isOpen={showQuranModal}
-        onClose={() => setShowQuranModal(false)}
-        selectedReciter={gameState.selectedReciter}
-        onReciterChange={setSelectedReciter}
-      />
     </div>
   );
 };
