@@ -1,315 +1,343 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Skull, Swords, Shield, Zap, ArrowRight, Trophy, Dumbbell, Brain, Heart, BookOpen, Flame, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { 
+  Skull, 
+  Swords, 
+  Shield,
+  Heart,
+  Zap,
+  Dumbbell,
+  Brain,
+  BookOpen,
+  ArrowRight,
+  Flame,
+  Sparkles
+} from 'lucide-react';
+import { StatType } from '@/types/game';
 
 const Battle = () => {
   const navigate = useNavigate();
-  const { gameState, completeQuest, resetBoss, useAbility } = useGameState();
-  const { playAttack, playVictory } = useSoundEffects();
-  const [attacking, setAttacking] = useState(false);
+  const { gameState, completeQuest, useAbility, resetBoss } = useGameState();
+  const { playAttack, playVictory, playUseAbility, playBossDamage } = useSoundEffects();
+  const [isAttacking, setIsAttacking] = useState(false);
   const [bossHit, setBossHit] = useState(false);
   const [abilityEffect, setAbilityEffect] = useState<string | null>(null);
-  
+  const [showVictory, setShowVictory] = useState(false);
+
   const boss = gameState.currentBoss;
-  const bossQuests = boss 
-    ? gameState.quests.filter(q => boss.requiredQuests.includes(q.id))
-    : [];
-  const completedBossQuests = bossQuests.filter(q => q.completed).length;
-  const hpPercentage = boss ? (boss.currentHp / boss.maxHp) * 100 : 0;
+
+  useEffect(() => {
+    if (boss && boss.defeated && !showVictory) {
+      setShowVictory(true);
+      playVictory();
+    }
+  }, [boss?.defeated, showVictory, playVictory]);
+
+  if (!boss) {
+    navigate('/boss');
+    return null;
+  }
+
+  const hpPercentage = (boss.currentHp / boss.maxHp) * 100;
   const playerHpPercentage = (gameState.hp / gameState.maxHp) * 100;
   const playerEnergyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
+  const bossLevel = Math.floor(boss.maxHp / 50) + 1;
 
-  const abilities = gameState.abilities.filter(a => a.unlocked);
-
-  const categoryIcons = {
-    strength: Dumbbell,
-    mind: Brain,
-    spirit: Heart,
-    quran: BookOpen,
+  const categoryIcons: Record<StatType, React.ReactNode> = {
+    strength: <Dumbbell className="w-5 h-5" />,
+    mind: <Brain className="w-5 h-5" />,
+    spirit: <Heart className="w-5 h-5" />,
+    quran: <BookOpen className="w-5 h-5" />,
   };
 
   const handleQuestComplete = (questId: string) => {
+    setIsAttacking(true);
     playAttack();
-    setAttacking(true);
+    
     setTimeout(() => {
-      setAttacking(false);
       setBossHit(true);
-      
+      playBossDamage();
       completeQuest(questId);
       
       setTimeout(() => {
+        setIsAttacking(false);
         setBossHit(false);
-        
-        // Check if boss is defeated
-        if (boss && boss.currentHp <= Math.floor(boss.maxHp / bossQuests.length)) {
-          playVictory();
-          toast({
-            title: 'انتصار مجيد!',
-            description: 'لقد هزمت الزعيم وتغلبت على العادة السيئة!',
-          });
-        } else {
-          toast({
-            title: 'ضربة ناجحة!',
-            description: 'لقد أضعفت الزعيم، استمر في القتال!',
-          });
-        }
+        toast({
+          title: "ضربة ناجحة!",
+          description: "تم توجيه ضرر للزعيم",
+        });
       }, 500);
-    }, 400);
+    }, 300);
   };
 
-  const handleUseAbility = (abilityId: string, abilityName: string) => {
+  const handleUseAbility = (abilityId: string) => {
+    const ability = gameState.abilities.find(a => a.id === abilityId);
+    if (!ability) return;
+    
+    setAbilityEffect(ability.name);
+    playUseAbility();
     useAbility(abilityId);
-    setAbilityEffect(abilityName);
-    setTimeout(() => setAbilityEffect(null), 2000);
-    toast({
-      title: 'قدرة مفعلة!',
-      description: `تم استخدام ${abilityName}`,
-    });
+    
+    setTimeout(() => {
+      setAbilityEffect(null);
+      toast({
+        title: `تم تفعيل ${ability.name}!`,
+        description: ability.effect,
+      });
+    }, 1500);
   };
 
   const handleNewBoss = () => {
     resetBoss();
-    toast({
-      title: 'تحدي جديد!',
-      description: 'زعيم جديد في انتظارك',
-    });
+    setShowVictory(false);
+    navigate('/boss');
   };
 
-  if (!boss) {
-    return (
-      <div className="min-h-screen flex items-center justify-center dungeon-bg">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">لا يوجد زعيم حالي</p>
-          <Button onClick={() => navigate('/boss')}>العودة</Button>
-        </div>
-      </div>
-    );
-  }
+  const availableQuests = gameState.quests.filter(q => !q.completed && q.dailyReset);
+  const unlockedAbilities = gameState.abilities.filter(a => a.unlocked);
 
   return (
     <div className="min-h-screen dungeon-bg relative overflow-hidden">
+      {/* Cave/Dungeon atmosphere */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+        
+        {/* Fog effects */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-primary/10 to-transparent" />
+        
+        {/* Floating particles */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-primary/40 rounded-full animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${3 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+        
+        {/* Red danger glow for boss */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-destructive/20 rounded-full blur-3xl animate-pulse" />
+      </div>
+
       {/* Ability Effect Overlay */}
       {abilityEffect && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
-          <div className="text-4xl font-bold text-primary animate-level-up glow-text">
-            {abilityEffect}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fade-in">
+          <div className="text-center animate-ability-activate">
+            <Zap className="w-24 h-24 mx-auto text-primary mb-4" />
+            <h2 className="text-3xl font-bold text-primary glow-text">{abilityEffect}</h2>
           </div>
-          <div className="absolute inset-0 bg-primary/10 animate-pulse" />
         </div>
       )}
 
-      {/* Dungeon Atmosphere Effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 to-transparent" />
-        {/* Floating particles */}
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-primary/50 animate-float" />
-        <div className="absolute top-1/3 right-1/3 w-1 h-1 rounded-full bg-destructive/50 animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 rounded-full bg-primary/30 animate-float" style={{ animationDelay: '0.5s' }} />
-      </div>
+      <main className="container mx-auto px-4 py-4 relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <button 
+            onClick={() => navigate('/boss')}
+            className="flex items-center gap-2 text-primary hover:text-primary/80"
+          >
+            <ArrowRight className="w-5 h-5" />
+            <span>خروج</span>
+          </button>
+          <div className="px-4 py-1 rounded bg-destructive/20 border border-destructive/50">
+            <span className="text-sm font-bold text-destructive">المغارة LV.{bossLevel}</span>
+          </div>
+        </div>
 
-      {/* Battle Header */}
-      <header className="relative px-4 py-4 border-b border-destructive/30 bg-black/40 backdrop-blur-sm z-10">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/boss')}
-          className="absolute right-4 top-4"
+        {/* Boss Section */}
+        <div className={cn(
+          "relative p-4 rounded-2xl mb-4",
+          "bg-gradient-to-b from-black/60 to-destructive/10",
+          "border-2 border-destructive/40",
+          bossHit && "animate-damage"
+        )}
+          style={{
+            boxShadow: '0 0 60px hsl(0 70% 40% / 0.3), inset 0 0 40px hsl(0 0% 0% / 0.5)'
+          }}
         >
-          <ArrowRight className="w-5 h-5" />
-        </Button>
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-destructive/20 border border-destructive/40 animate-border-glow">
-            <Swords className="w-4 h-4 text-destructive" />
-            <span className="text-xs font-bold text-destructive tracking-wider">BATTLE IN PROGRESS</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6 space-y-4 relative z-10">
-        {/* Boss HP Bar - Top */}
-        <div className="bg-black/60 rounded-lg p-3 border border-destructive/30">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Skull className="w-5 h-5 text-destructive" />
-              <span className="font-bold text-destructive">{boss.customName || boss.name}</span>
+          {/* Boss HP Bar */}
+          <div className="mb-4">
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-destructive font-bold flex items-center gap-1">
+                <Skull className="w-4 h-4" />
+                {boss.customName || boss.name}
+              </span>
+              <span className="text-muted-foreground">{boss.currentHp}/{boss.maxHp}</span>
             </div>
-            <span className="text-sm text-destructive">{boss.currentHp}/{boss.maxHp}</span>
-          </div>
-          <div className="h-4 rounded-full bg-black/60 border border-destructive/40 overflow-hidden">
-            <div 
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                "bg-gradient-to-r from-destructive to-orange-500",
-                bossHit && "animate-shake"
-              )}
-              style={{ width: `${hpPercentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Boss Visual Area */}
-        <div className="relative h-[200px] flex items-center justify-center">
-          {/* Boss Glow */}
-          {!boss.defeated && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 rounded-full bg-destructive/20 blur-3xl animate-glow-pulse" />
+            <div className="h-5 rounded-full overflow-hidden bg-black/60 border border-destructive/40">
+              <div 
+                className="h-full hp-bar transition-all duration-500"
+                style={{ 
+                  width: `${hpPercentage}%`,
+                  boxShadow: '0 0 15px hsl(0 70% 50% / 0.5)'
+                }}
+              />
             </div>
-          )}
+          </div>
 
-          {/* Boss Figure */}
-          <div className={cn(
-            "relative w-40 h-40 rounded-full border-4 flex items-center justify-center transition-all z-10",
-            boss.defeated 
-              ? "border-secondary/50 bg-secondary/10" 
-              : "border-destructive/60 bg-gradient-to-b from-destructive/30 to-black/50",
-            bossHit && "animate-damage"
-          )}>
-            {boss.defeated ? (
-              <Trophy className="w-20 h-20 text-secondary" />
-            ) : (
-              <>
-                <Skull className={cn("w-20 h-20 text-destructive", attacking && "animate-shake")} />
-                {/* Flames around boss */}
-                <Flame className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 text-orange-500/70 animate-float" />
-              </>
+          {/* Boss Visual */}
+          <div className="flex justify-center py-8">
+            <div className={cn(
+              "relative w-40 h-40 rounded-full flex items-center justify-center",
+              "bg-gradient-to-br from-destructive/30 to-black/60",
+              "border-4 border-destructive/50",
+              !boss.defeated && "animate-pulse-slow"
             )}
+              style={{
+                boxShadow: '0 0 80px hsl(0 70% 40% / 0.5), inset 0 0 50px hsl(0 70% 30% / 0.4)'
+              }}
+            >
+              {boss.defeated ? (
+                <Shield className="w-20 h-20 text-muted-foreground" />
+              ) : (
+                <>
+                  <Skull className={cn(
+                    "w-20 h-20 text-destructive",
+                    isAttacking && "animate-shake"
+                  )} />
+                  <Flame className="absolute -top-4 left-2 w-8 h-8 text-orange-500 animate-float" />
+                  <Flame className="absolute -top-6 right-4 w-6 h-6 text-red-500 animate-float" style={{ animationDelay: '0.5s' }} />
+                  <Sparkles className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 text-yellow-500 animate-pulse" />
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Victory State */}
-        {boss.defeated && (
-          <div className="notification-panel p-6 text-center border-secondary/50">
-            <Shield className="w-16 h-16 text-secondary mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-secondary mb-2">تم القضاء على الزعيم!</h3>
-            <p className="text-muted-foreground mb-4">لقد أثبت قوتك وتغلبت على ضعفك</p>
-            <Button onClick={handleNewBoss} className="gap-2 bg-primary hover:bg-primary/80">
-              <Swords className="w-4 h-4" />
+        {showVictory && (
+          <div className="system-panel p-6 mb-4 text-center animate-modal-appear">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-500/20 border-2 border-green-500/60 flex items-center justify-center">
+              <Swords className="w-10 h-10 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-green-400 mb-2">النصر!</h2>
+            <p className="text-muted-foreground mb-4">لقد هزمت {boss.customName || boss.name}</p>
+            <Button onClick={handleNewBoss} className="w-full bg-primary hover:bg-primary/80">
               تحدي زعيم جديد
             </Button>
           </div>
         )}
 
-        {/* Battle Actions */}
-        {!boss.defeated && (
-          <>
-            {/* Player Stats */}
-            <div className="bg-black/60 rounded-lg p-3 border border-primary/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-primary">{gameState.playerName}</span>
-                <span className="text-xs text-muted-foreground">Lv.{gameState.totalLevel}</span>
+        {/* Player Stats */}
+        <div className="system-panel p-4 mb-4">
+          <div className="grid grid-cols-2 gap-4">
+            {/* HP */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Heart className="w-4 h-4 text-red-500" />
+                <span className="text-xs">HP</span>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-destructive w-8">HP</span>
-                  <div className="flex-1 h-3 rounded-full bg-black/60 border border-destructive/30 overflow-hidden">
-                    <div className="h-full rounded-full hp-bar transition-all" style={{ width: `${playerHpPercentage}%` }} />
-                  </div>
-                  <span className="text-xs text-destructive w-12 text-left">{gameState.hp}/{gameState.maxHp}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[hsl(200_100%_60%)] w-8">MP</span>
-                  <div className="flex-1 h-3 rounded-full bg-black/60 border border-[hsl(200_100%_50%/0.3)] overflow-hidden">
-                    <div className="h-full rounded-full energy-bar transition-all" style={{ width: `${playerEnergyPercentage}%` }} />
-                  </div>
-                  <span className="text-xs text-[hsl(200_100%_60%)] w-12 text-left">{gameState.energy}/{gameState.maxEnergy}</span>
-                </div>
+              <div className="h-3 rounded-full overflow-hidden bg-black/50 border border-red-500/30">
+                <div 
+                  className="h-full hp-bar"
+                  style={{ width: `${playerHpPercentage}%` }}
+                />
               </div>
             </div>
-
-            {/* Available Abilities */}
-            {abilities.length > 0 && (
-              <div className="system-panel p-3">
-                <h3 className="text-xs font-bold mb-2 text-primary flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  القدرات
-                </h3>
-                <div className="grid grid-cols-4 gap-2">
-                  {abilities.slice(0, 4).map(ability => {
-                    const Icon = categoryIcons[ability.category];
-                    const canUse = !ability.lastUsed || 
-                      (new Date().getTime() - new Date(ability.lastUsed).getTime()) / (1000 * 60 * 60 * 24) >= ability.cooldownDays;
-                    
-                    return (
-                      <button 
-                        key={ability.id}
-                        onClick={() => canUse && handleUseAbility(ability.id, ability.name)}
-                        disabled={!canUse}
-                        className={cn(
-                          "ability-icon w-full aspect-square transition-all",
-                          canUse 
-                            ? "hover:scale-110 cursor-pointer" 
-                            : "opacity-40 cursor-not-allowed"
-                        )}
-                      >
-                        <Icon className="w-5 h-5 text-primary" />
-                      </button>
-                    );
-                  })}
-                </div>
+            
+            {/* Energy */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-blue-400" />
+                <span className="text-xs">MP</span>
               </div>
-            )}
-
-            {/* Quest Actions - Attack Buttons */}
-            <div className="system-panel p-3">
-              <h3 className="text-xs font-bold mb-3 text-destructive flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                هجمات متاحة
-              </h3>
-              
-              <div className="space-y-2">
-                {bossQuests.map(quest => {
-                  const Icon = categoryIcons[quest.category];
-                  const damage = Math.floor(boss.maxHp / bossQuests.length);
-                  
-                  return (
-                    <button
-                      key={quest.id}
-                      onClick={() => !quest.completed && handleQuestComplete(quest.id)}
-                      disabled={quest.completed}
-                      className={cn(
-                        "w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-right",
-                        quest.completed
-                          ? "border-secondary/30 bg-secondary/10 opacity-60"
-                          : "border-destructive/40 bg-destructive/10 hover:bg-destructive/20 hover:border-destructive/60 hover:scale-[1.01]"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center",
-                        quest.completed ? "bg-secondary/20" : "bg-destructive/20"
-                      )}>
-                        {quest.completed ? (
-                          <Shield className="w-5 h-5 text-secondary" />
-                        ) : (
-                          <Icon className="w-5 h-5 text-destructive" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className={cn(
-                          "font-semibold text-sm",
-                          quest.completed && "line-through text-muted-foreground"
-                        )}>
-                          {quest.title}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{quest.description}</div>
-                      </div>
-                      {!quest.completed && (
-                        <div className="text-left">
-                          <div className="text-sm font-bold text-destructive">-{damage} HP</div>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="h-3 rounded-full overflow-hidden bg-black/50 border border-blue-500/30">
+                <div 
+                  className="h-full energy-bar"
+                  style={{ width: `${playerEnergyPercentage}%` }}
+                />
               </div>
             </div>
-          </>
+          </div>
+        </div>
+
+        {/* Abilities */}
+        {unlockedAbilities.length > 0 && (
+          <div className="system-panel p-4 mb-4">
+            <h3 className="font-bold mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              القدرات
+            </h3>
+            <div className="grid grid-cols-4 gap-2">
+              {unlockedAbilities.slice(0, 4).map(ability => (
+                <button
+                  key={ability.id}
+                  onClick={() => handleUseAbility(ability.id)}
+                  disabled={boss.defeated}
+                  className={cn(
+                    "p-3 rounded-lg text-center transition-all",
+                    "bg-primary/10 border border-primary/30",
+                    "hover:bg-primary/20 hover:scale-105",
+                    "active:scale-95",
+                    boss.defeated && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Zap className="w-6 h-6 mx-auto text-primary mb-1" />
+                  <span className="text-[10px] block truncate">{ability.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
+
+        {/* Attack Quests */}
+        <div className="system-panel p-4">
+          <h3 className="font-bold mb-3 flex items-center gap-2">
+            <Swords className="w-5 h-5 text-destructive" />
+            هجمات المهام
+          </h3>
+          
+          {availableQuests.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {availableQuests.slice(0, 6).map(quest => (
+                <button
+                  key={quest.id}
+                  onClick={() => handleQuestComplete(quest.id)}
+                  disabled={boss.defeated || isAttacking}
+                  className={cn(
+                    "p-3 rounded-xl text-right transition-all relative overflow-hidden",
+                    "bg-gradient-to-br from-card/80 to-card/40",
+                    "border border-primary/30",
+                    "hover:border-primary/60 hover:scale-[1.02]",
+                    "active:scale-[0.98]",
+                    isAttacking && "animate-attack",
+                    boss.defeated && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center",
+                      quest.category === 'strength' && "bg-red-500/20 text-red-400",
+                      quest.category === 'mind' && "bg-blue-500/20 text-blue-400",
+                      quest.category === 'spirit' && "bg-purple-500/20 text-purple-400",
+                      quest.category === 'quran' && "bg-green-500/20 text-green-400"
+                    )}>
+                      {categoryIcons[quest.category]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold truncate">{quest.title}</div>
+                      <div className="text-[10px] text-primary">+{quest.xpReward} ضرر</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>لا توجد مهمات متاحة حالياً</p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
