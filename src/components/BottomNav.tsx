@@ -1,35 +1,76 @@
 import { useLocation, Link } from 'react-router-dom';
-import { User, Swords, Target, BarChart3, Flag } from 'lucide-react';
+import { User, Swords, Target, BarChart3, Flag, Scroll, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const navItems = [
-  { path: '/', icon: User, label: 'الشخصية' },
-  { path: '/quests', icon: Target, label: 'المهمات' },
-  { path: '/boss', icon: Swords, label: 'الزعيم' },
-  { path: '/stats', icon: BarChart3, label: 'الإحصائيات' },
-  { path: '/grand-quest', icon: Flag, label: 'الهدف' },
+  { path: '/', icon: User, label: 'الشخصية', description: 'ملفك الشخصي' },
+  { path: '/quests', icon: Scroll, label: 'المهمات', description: 'المهمات اليومية' },
+  { path: '/boss', icon: Swords, label: 'الزعيم', description: 'قتال الزعيم' },
+  { path: '/stats', icon: BarChart3, label: 'القوى', description: 'إحصائياتك' },
+  { path: '/grand-quest', icon: Target, label: 'الهدف', description: 'أهدافك الكبرى' },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/30 bg-card/95 backdrop-blur-lg">
-      <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const Icon = item.icon;
-          
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${isActive ? 'active' : ''}`}
-            >
-              <Icon className={`h-5 w-5 transition-all ${isActive ? 'scale-110 drop-shadow-[0_0_8px_hsl(200,100%,50%)]' : ''}`} />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
+    <nav className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ top: '-20px' }} />
+      
+      <div className="relative border-t border-primary/20 bg-card/90 backdrop-blur-xl">
+        {/* Top glow line */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        
+        <div className="flex items-center justify-around px-2 py-2">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "relative flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all duration-300",
+                  isActive 
+                    ? "text-primary" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {/* Active background glow */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20" />
+                )}
+                
+                {/* Icon container */}
+                <div className={cn(
+                  "relative z-10 transition-all duration-300",
+                  isActive && "animate-float"
+                )}>
+                  <Icon 
+                    className={cn(
+                      "h-5 w-5 transition-all duration-300",
+                      isActive && "drop-shadow-[0_0_10px_hsl(200,100%,60%)]"
+                    )} 
+                  />
+                  
+                  {/* Active indicator dot */}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-pulse" />
+                  )}
+                </div>
+                
+                <span className={cn(
+                  "relative z-10 text-[10px] font-medium transition-all",
+                  isActive && "font-bold"
+                )}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
