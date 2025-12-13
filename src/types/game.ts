@@ -39,6 +39,19 @@ export interface Boss {
   defeated: boolean;
   weekStartDate: string;
   customName?: string;
+  level?: number;
+  attackPower?: number;
+}
+
+export interface ShadowSoldier {
+  id: string;
+  name: string;
+  arabicName: string;
+  type: StatType;
+  level: number;
+  power: number;
+  unlocked: boolean;
+  cost: number; // Shadow points cost
 }
 
 export interface Ability {
@@ -96,6 +109,15 @@ export interface InventoryItem {
   icon: string;
 }
 
+export interface Equipment {
+  id: string;
+  name: string;
+  slot: 'head' | 'chest' | 'weapon' | 'legs';
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  stats: Partial<PlayerStats>;
+  bossId?: string; // Dropped from which boss
+}
+
 export interface PrayerQuest {
   id: string;
   name: string;
@@ -118,6 +140,7 @@ export interface GameState {
   energy: number;
   maxEnergy: number;
   gold: number;
+  shadowPoints: number;
   
   // Stats & Levels
   stats: PlayerStats;
@@ -132,6 +155,8 @@ export interface GameState {
   grandQuest: GrandQuest | null;
   inventory: InventoryItem[];
   prayerQuests: PrayerQuest[];
+  shadowSoldiers: ShadowSoldier[];
+  equipment: Equipment[];
   
   // Progress
   dailyStats: DailyStats[];

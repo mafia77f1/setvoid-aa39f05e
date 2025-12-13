@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, QuestDifficulty } from '@/types/game';
+import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment } from '@/types/game';
 
 const XP_PER_LEVEL = 100;
 
@@ -39,14 +39,14 @@ const getInitialQuests = (): Quest[] => [
 ];
 
 const getInitialAbilities = (): Ability[] => [
-  { id: 'a1', name: 'قدرة الانضباط', description: 'تزيد تركيزك على المهام', requiredLevel: 3, category: 'mind', unlocked: false, level: 0, cooldownDays: 7, effect: 'مضاعفة XP للمهمة القادمة' },
-  { id: 'a2', name: 'قدرة التركيز', description: 'تقلل التشتت الذهني', requiredLevel: 5, category: 'mind', unlocked: false, level: 0, cooldownDays: 7, effect: 'إكمال مهمة تلقائياً' },
-  { id: 'a3', name: 'قدرة التغلب', description: 'تساعدك على هزيمة الزعماء', requiredLevel: 4, category: 'strength', unlocked: false, level: 0, cooldownDays: 7, effect: 'ضرر مضاعف للزعيم' },
-  { id: 'a4', name: 'قدرة ضبط النفس', description: 'تزيد مقاومتك للإغراءات', requiredLevel: 6, category: 'spirit', unlocked: false, level: 0, cooldownDays: 7, effect: 'حماية من خسارة HP' },
-  { id: 'a5', name: 'قدرة الحفظ', description: 'تسهل حفظ القرآن', requiredLevel: 5, category: 'quran', unlocked: false, level: 0, cooldownDays: 7, effect: 'مضاعفة XP القرآن' },
-  { id: 'a6', name: 'قدرة الصبر', description: 'تزيد من تحملك', requiredLevel: 7, category: 'spirit', unlocked: false, level: 0, cooldownDays: 7, effect: 'تمديد وقت المهمات' },
-  { id: 'a7', name: 'تلاوة القرآن', description: 'استمع للقرآن الكريم', requiredLevel: 2, category: 'quran', unlocked: false, level: 0, cooldownDays: 0, effect: 'استماع للقرآن' },
-  { id: 'a8', name: 'قدرة القوة', description: 'تزيد قوتك الجسدية', requiredLevel: 8, category: 'strength', unlocked: false, level: 0, cooldownDays: 7, effect: 'استعادة 50% طاقة' },
+  { id: 'a1', name: 'قدرة الانضباط', description: 'تزيد تركيزك على المهام', requiredLevel: 3, category: 'mind', unlocked: false, level: 1, cooldownDays: 7, effect: 'مضاعفة XP للمهمة القادمة' },
+  { id: 'a2', name: 'قدرة التركيز', description: 'تقلل التشتت الذهني', requiredLevel: 5, category: 'mind', unlocked: false, level: 1, cooldownDays: 7, effect: 'إكمال مهمة تلقائياً' },
+  { id: 'a3', name: 'قدرة التغلب', description: 'تساعدك على هزيمة الزعماء', requiredLevel: 4, category: 'strength', unlocked: false, level: 1, cooldownDays: 7, effect: 'ضرر مضاعف للزعيم' },
+  { id: 'a4', name: 'قدرة ضبط النفس', description: 'تزيد مقاومتك للإغراءات', requiredLevel: 6, category: 'spirit', unlocked: false, level: 1, cooldownDays: 7, effect: 'حماية من خسارة HP' },
+  { id: 'a5', name: 'قدرة الحفظ', description: 'تسهل حفظ القرآن', requiredLevel: 5, category: 'quran', unlocked: false, level: 1, cooldownDays: 7, effect: 'مضاعفة XP القرآن' },
+  { id: 'a6', name: 'قدرة الصبر', description: 'تزيد من تحملك', requiredLevel: 7, category: 'spirit', unlocked: false, level: 1, cooldownDays: 7, effect: 'تمديد وقت المهمات' },
+  { id: 'a7', name: 'كشف الخفي', description: 'تكشف HP الزعيم', requiredLevel: 2, category: 'quran', unlocked: false, level: 1, cooldownDays: 0, effect: 'كشف HP الزعيم' },
+  { id: 'a8', name: 'قدرة القوة', description: 'تزيد قوتك الجسدية', requiredLevel: 8, category: 'strength', unlocked: false, level: 1, cooldownDays: 7, effect: 'استعادة 50% طاقة' },
 ];
 
 const getInitialAchievements = (): Achievement[] => [
@@ -64,12 +64,14 @@ const getInitialAchievements = (): Achievement[] => [
 const getInitialBoss = (): Boss => ({
   id: 'boss1',
   name: 'زعيم الكسل',
-  description: 'عادة التكاسل عن الواجبات والمهام',
+  description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف لمدة 3 ساعات ويمنعك من القيام بمهامك!',
   maxHp: 100,
   currentHp: 100,
   requiredQuests: ['s2', 's3', 'm1', 'sp1'],
   defeated: false,
   weekStartDate: new Date().toISOString().split('T')[0],
+  level: 1,
+  attackPower: 10,
 });
 
 const getInitialInventory = (): InventoryItem[] => [
@@ -86,6 +88,12 @@ const getInitialPrayerQuests = (): PrayerQuest[] => [
   { id: 'isha', name: 'Isha', arabicName: 'صلاة العشاء', time: '19:30', completed: false, xpReward: 45 },
 ];
 
+const getInitialShadowSoldiers = (): ShadowSoldier[] => [
+  { id: 'deris', name: 'Deris', arabicName: 'ديريس', type: 'mind', level: 1, power: 50, unlocked: false, cost: 10 },
+  { id: 'balfo', name: 'Balfo', arabicName: 'بالفو', type: 'strength', level: 1, power: 60, unlocked: false, cost: 15 },
+  { id: 'qaboos', name: 'Qaboos', arabicName: 'قابوس', type: 'spirit', level: 1, power: 55, unlocked: false, cost: 12 },
+];
+
 const getDefaultState = (): GameState => ({
   playerName: 'المحارب',
   playerTitle: 'محارب التطوير الذاتي',
@@ -97,6 +105,7 @@ const getDefaultState = (): GameState => ({
   energy: 100,
   maxEnergy: 100,
   gold: 0,
+  shadowPoints: 0,
   
   stats: { strength: 0, mind: 0, spirit: 0, quran: 0 },
   levels: { strength: 1, mind: 1, spirit: 1, quran: 1 },
@@ -109,6 +118,8 @@ const getDefaultState = (): GameState => ({
   grandQuest: null,
   inventory: getInitialInventory(),
   prayerQuests: getInitialPrayerQuests(),
+  shadowSoldiers: getInitialShadowSoldiers(),
+  equipment: [],
   
   dailyStats: [],
   totalQuestsCompleted: 0,
@@ -127,7 +138,6 @@ export const useGameState = () => {
     const saved = localStorage.getItem('levelUpLife');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure all new fields exist
       const defaultState = getDefaultState();
       const mergedState = { ...defaultState, ...parsed };
       
@@ -150,7 +160,6 @@ export const useGameState = () => {
           mergedState.streakDays += 1;
         } else if (diffDays > 1) {
           mergedState.streakDays = 0;
-          // Apply punishment for missing days
           mergedState.hp = Math.max(0, mergedState.hp - (diffDays * 10));
         }
         
@@ -204,25 +213,29 @@ export const useGameState = () => {
 
       // Check for level up
       if (newLevels[quest.category] > oldLevel) {
-        setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category });
+        setTimeout(() => {
+          setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category });
+        }, 100);
       }
 
       const newQuests = prev.quests.map(q =>
         q.id === questId ? { ...q, completed: true } : q
       );
 
-      // Update boss HP if quest is required
+      // Update boss HP if quest is required - damage based on player level
       let newBoss = prev.currentBoss;
       if (newBoss && newBoss.requiredQuests.includes(questId)) {
-        const damage = Math.floor(newBoss.maxHp / newBoss.requiredQuests.length);
+        const baseDamage = Math.floor(newBoss.maxHp / newBoss.requiredQuests.length);
+        const levelBonus = Math.floor(newTotalLevel * 0.5);
+        const totalDamage = baseDamage + levelBonus;
         newBoss = {
           ...newBoss,
-          currentHp: Math.max(0, newBoss.currentHp - damage),
-          defeated: newBoss.currentHp - damage <= 0,
+          currentHp: Math.max(0, newBoss.currentHp - totalDamage),
+          defeated: newBoss.currentHp - totalDamage <= 0,
         };
       }
 
-      // Update abilities based on total level
+      // Update abilities based on category level
       const newAbilities = prev.abilities.map(ability => {
         const categoryLevel = newLevels[ability.category];
         if (!ability.unlocked && categoryLevel >= ability.requiredLevel) {
@@ -274,10 +287,13 @@ export const useGameState = () => {
         });
       }
 
-      // Gain gold
+      // Gain gold and shadow points
       const goldGain = quest.difficulty === 'legendary' ? 50 : 
                        quest.difficulty === 'hard' ? 30 : 
                        quest.difficulty === 'medium' ? 15 : 10;
+      const shadowGain = quest.difficulty === 'legendary' ? 5 : 
+                         quest.difficulty === 'hard' ? 3 : 
+                         quest.difficulty === 'medium' ? 2 : 1;
 
       return {
         ...prev,
@@ -291,6 +307,7 @@ export const useGameState = () => {
         dailyStats: newDailyStats.slice(-30),
         totalQuestsCompleted: prev.totalQuestsCompleted + 1,
         gold: prev.gold + goldGain,
+        shadowPoints: (prev.shadowPoints || 0) + shadowGain,
         energy: Math.max(0, prev.energy - 5),
       };
     });
@@ -312,7 +329,9 @@ export const useGameState = () => {
       newLevels.spirit = calculateLevel(newStats.spirit);
 
       if (newLevels.spirit > oldLevel) {
-        setLevelUpInfo({ show: true, newLevel: newLevels.spirit, category: 'spirit' });
+        setTimeout(() => {
+          setLevelUpInfo({ show: true, newLevel: newLevels.spirit, category: 'spirit' });
+        }, 100);
       }
 
       return {
@@ -374,11 +393,11 @@ export const useGameState = () => {
 
   const resetBoss = useCallback(() => {
     const bosses: Boss[] = [
-      { id: 'boss1', name: 'زعيم الكسل', description: 'عادة التكاسل', maxHp: 100, currentHp: 100, requiredQuests: ['s2', 's3', 'm1', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0] },
-      { id: 'boss2', name: 'زعيم السهر', description: 'عادة السهر المتأخر', maxHp: 120, currentHp: 120, requiredQuests: ['s4', 'm3', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0] },
-      { id: 'boss3', name: 'زعيم التسويف', description: 'عادة تأجيل المهام', maxHp: 150, currentHp: 150, requiredQuests: ['m1', 'm2', 'm4', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0] },
-      { id: 'boss4', name: 'زعيم الإدمان الرقمي', description: 'الإفراط في استخدام الهاتف', maxHp: 180, currentHp: 180, requiredQuests: ['m3', 'm7', 'sp4', 'sp7'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0] },
-      { id: 'boss5', name: 'زعيم الغفلة', description: 'البعد عن ذكر الله', maxHp: 200, currentHp: 200, requiredQuests: ['sp1', 'sp2', 'q1', 'q4'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0] },
+      { id: 'boss1', name: 'زعيم الكسل', description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف!', maxHp: 100, currentHp: 100, requiredQuests: ['s2', 's3', 'm1', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 1, attackPower: 10 },
+      { id: 'boss2', name: 'زعيم السهر', description: 'يجبرك على السهر حتى الفجر بلا سبب!', maxHp: 120, currentHp: 120, requiredQuests: ['s4', 'm3', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 2, attackPower: 15 },
+      { id: 'boss3', name: 'زعيم التسويف', description: 'هل حقاً تظن أنك ستنهي هذا؟ لديك 10 دقائق لتضييعها!', maxHp: 150, currentHp: 150, requiredQuests: ['m1', 'm2', 'm4', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 3, attackPower: 20 },
+      { id: 'boss4', name: 'زعيم الإدمان الرقمي', description: 'شاشتك هي سجنك الحقيقي!', maxHp: 180, currentHp: 180, requiredQuests: ['m3', 'm7', 'sp4', 'sp7'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 4, attackPower: 25 },
+      { id: 'boss5', name: 'زعيم الغفلة', description: 'ينسيك ذكر الله ويشغلك بالدنيا!', maxHp: 200, currentHp: 200, requiredQuests: ['sp1', 'sp2', 'q1', 'q4'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 5, attackPower: 30 },
     ];
     
     const randomBoss = bosses[Math.floor(Math.random() * bosses.length)];
@@ -434,6 +453,24 @@ export const useGameState = () => {
     });
   }, []);
 
+  const summonShadowSoldier = useCallback((soldierId: string) => {
+    setGameState(prev => {
+      const soldier = prev.shadowSoldiers?.find(s => s.id === soldierId);
+      if (!soldier || soldier.unlocked) return prev;
+      if ((prev.shadowPoints || 0) < soldier.cost) return prev;
+
+      const newSoldiers = prev.shadowSoldiers.map(s =>
+        s.id === soldierId ? { ...s, unlocked: true } : s
+      );
+
+      return {
+        ...prev,
+        shadowSoldiers: newSoldiers,
+        shadowPoints: (prev.shadowPoints || 0) - soldier.cost,
+      };
+    });
+  }, []);
+
   const purchaseItem = useCallback((itemId: string) => {
     setGameState(prev => {
       const item = prev.inventory.find(i => i.id === itemId);
@@ -463,7 +500,6 @@ export const useGameState = () => {
       } else if (item.type === 'energy') {
         updates.energy = Math.min(prev.maxEnergy, prev.energy + (prev.maxEnergy * item.effect / 100));
       } else if (item.type === 'xp') {
-        // Add XP evenly across all stats
         const xpPerStat = Math.floor(item.effect / 4);
         updates.stats = {
           strength: prev.stats.strength + xpPerStat,
@@ -537,6 +573,7 @@ export const useGameState = () => {
     setPlayerJob,
     completeOnboarding,
     useAbility,
+    summonShadowSoldier,
     purchaseItem,
     useItem,
     takeDamage,
