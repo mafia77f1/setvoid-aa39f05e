@@ -108,6 +108,8 @@ const Index = () => {
       {/* System Notifications */}
       {showNewQuestNotification && (
         <SystemNotification 
+          show={showNewQuestNotification}
+          title="مهمة يومية جديدة"
           message="Daily Quest has arrived!"
           type="info"
           onClose={() => setShowNewQuestNotification(false)}
@@ -116,9 +118,10 @@ const Index = () => {
       
       {systemMessage && (
         <SystemNotification 
+          show={!!systemMessage}
+          title="تم بنجاح"
           message={systemMessage}
           type="success"
-          duration={3000}
           onClose={() => setSystemMessage(null)}
         />
       )}
