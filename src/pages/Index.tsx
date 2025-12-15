@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ProfileCard } from '@/components/ProfileCard';
-import { DailyQuestCard } from '@/components/DailyQuestCard';
+import { SoloLevelingQuestCard } from '@/components/SoloLevelingQuestCard';
 import { PrayerQuestModal } from '@/components/PrayerQuestModal';
 import { SystemNotification } from '@/components/SystemNotification';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Zap, Trophy, Skull, Sparkles } from 'lucide-react';
+import { ChevronLeft, Zap, Trophy, Skull, Sparkles, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatType } from '@/types/game';
 
@@ -28,15 +28,8 @@ const Index = () => {
   const [showNewQuestNotification, setShowNewQuestNotification] = useState(false);
   const [systemMessage, setSystemMessage] = useState<string | null>(null);
 
-  // Get today's daily quest category (rotating daily)
-  const getDailyCategory = (): StatType => {
-    const dayOfWeek = new Date().getDay();
-    const categories: StatType[] = ['strength', 'mind', 'spirit', 'quran'];
-    return categories[dayOfWeek % 4];
-  };
-
-  const todayCategory = getDailyCategory();
-  const dailyQuests = gameState.quests.filter(q => q.category === todayCategory && q.dailyReset);
+  // Get all daily quests
+  const dailyQuests = gameState.quests.filter(q => q.dailyReset);
 
   // Get XP reward for completing all tasks
   const totalXpReward = dailyQuests.reduce((sum, q) => sum + q.xpReward, 0);
@@ -78,6 +71,11 @@ const Index = () => {
     completeQuest(taskId);
     setSystemMessage('تم إكمال المهمة بنجاح! الزعيم تلقى ضرراً.');
     setTimeout(() => setSystemMessage(null), 3000);
+  };
+
+  const handleStartQuest = (questId: string) => {
+    // Mark quest as started with timestamp
+    console.log('Quest started:', questId);
   };
 
   const handlePrayerComplete = (prayerId: string) => {
@@ -135,13 +133,31 @@ const Index = () => {
 
         {/* Daily Quest Card */}
         <section>
-          <DailyQuestCard
-            category={todayCategory}
+          <SoloLevelingQuestCard
             quests={dailyQuests}
-            xpReward={totalXpReward}
             onTaskComplete={handleTaskComplete}
+            onStartQuest={handleStartQuest}
           />
         </section>
+
+        {/* Market Link */}
+        <Link 
+          to="/market"
+          className="block system-panel p-4 border-yellow-500/30 hover:border-yellow-500/50 transition-all hover:scale-[1.02] animate-fade-in"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-yellow-400">السوق</h3>
+                <p className="text-xs text-muted-foreground">اشتري المعدات والأدوات</p>
+              </div>
+            </div>
+            <ChevronLeft className="w-5 h-5 text-yellow-400" />
+          </div>
+        </Link>
 
         {/* Abilities Section */}
         <section className="system-panel p-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>

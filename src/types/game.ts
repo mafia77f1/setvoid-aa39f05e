@@ -1,4 +1,4 @@
-export type StatType = 'strength' | 'mind' | 'spirit' | 'quran';
+export type StatType = 'strength' | 'mind' | 'spirit' | 'vitality' | 'quran';
 export type QuestDifficulty = 'easy' | 'medium' | 'hard' | 'legendary';
 export type PlayerRank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 
@@ -6,6 +6,7 @@ export interface PlayerStats {
   strength: number;
   mind: number;
   spirit: number;
+  vitality: number;
   quran: number;
 }
 
@@ -13,6 +14,7 @@ export interface PlayerLevels {
   strength: number;
   mind: number;
   spirit: number;
+  vitality: number;
   quran: number;
 }
 
@@ -27,6 +29,10 @@ export interface Quest {
   difficulty: QuestDifficulty;
   timeLimit?: number; // in minutes
   condition?: string;
+  sets?: number; // For exercise quests - number of sets
+  repsPerSet?: number; // Reps per set
+  startedAt?: string; // When quest was started
+  timerDuration?: number; // Timer duration in seconds
 }
 
 export interface Boss {
@@ -41,6 +47,16 @@ export interface Boss {
   customName?: string;
   level?: number;
   attackPower?: number;
+  dungeonLevel?: number; // 0-2, higher = more shadow points
+  loot?: BossLoot[];
+}
+
+export interface BossLoot {
+  id: string;
+  name: string;
+  type: 'gold' | 'shadowPoints' | 'equipment' | 'xp';
+  amount: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
 export interface ShadowSoldier {
@@ -94,6 +110,7 @@ export interface DailyStats {
   strength: number;
   mind: number;
   spirit: number;
+  vitality: number;
   quran: number;
   questsCompleted: number;
 }
@@ -102,7 +119,7 @@ export interface InventoryItem {
   id: string;
   name: string;
   description: string;
-  type: 'health' | 'xp' | 'energy';
+  type: 'health' | 'xp' | 'energy' | 'revive';
   effect: number;
   price: number;
   quantity: number;
@@ -125,6 +142,15 @@ export interface PrayerQuest {
   time: string;
   completed: boolean;
   xpReward: number;
+}
+
+export interface PunishmentState {
+  active: boolean;
+  endTime: string | null;
+  monstersDefeated: number;
+  currentWave: number;
+  playerHpInPenalty: number;
+  maxHpInPenalty: number;
 }
 
 export interface GameState {
@@ -167,8 +193,12 @@ export interface GameState {
   // Punishment System
   punishmentEndTime: string | null;
   missedQuestsCount: number;
+  punishment: PunishmentState;
   
   // Settings
   selectedReciter: string;
   soundEnabled: boolean;
+  
+  // Boss damage tracking
+  lastBossAttackTime: string | null;
 }

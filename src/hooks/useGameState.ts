@@ -107,9 +107,9 @@ const getDefaultState = (): GameState => ({
   gold: 0,
   shadowPoints: 0,
   
-  stats: { strength: 0, mind: 0, spirit: 0, quran: 0 },
-  levels: { strength: 1, mind: 1, spirit: 1, quran: 1 },
-  totalLevel: 4,
+  stats: { strength: 0, mind: 0, spirit: 0, quran: 0, vitality: 0 },
+  levels: { strength: 1, mind: 1, spirit: 1, quran: 1, vitality: 1 },
+  totalLevel: 5,
   
   quests: getInitialQuests(),
   currentBoss: getInitialBoss(),
@@ -128,9 +128,18 @@ const getDefaultState = (): GameState => ({
   
   punishmentEndTime: null,
   missedQuestsCount: 0,
+  punishment: {
+    active: false,
+    endTime: null,
+    monstersDefeated: 0,
+    currentWave: 1,
+    playerHpInPenalty: 100,
+    maxHpInPenalty: 100,
+  },
   
   selectedReciter: 'محمد اللحيدان',
   soundEnabled: true,
+  lastBossAttackTime: null,
 });
 
 export const useGameState = () => {
@@ -186,7 +195,7 @@ export const useGameState = () => {
   };
 
   const getTotalLevel = (levels: typeof gameState.levels): number => {
-    return levels.strength + levels.mind + levels.spirit + levels.quran;
+    return levels.strength + levels.mind + levels.spirit + levels.quran + levels.vitality;
   };
 
   const getRank = (totalLevel: number): string => {
@@ -283,6 +292,7 @@ export const useGameState = () => {
           mind: quest.category === 'mind' ? quest.xpReward : 0,
           spirit: quest.category === 'spirit' ? quest.xpReward : 0,
           quran: quest.category === 'quran' ? quest.xpReward : 0,
+          vitality: quest.category === 'vitality' ? quest.xpReward : 0,
           questsCompleted: 1,
         });
       }
@@ -506,6 +516,7 @@ export const useGameState = () => {
           mind: prev.stats.mind + xpPerStat,
           spirit: prev.stats.spirit + xpPerStat,
           quran: prev.stats.quran + xpPerStat,
+          vitality: prev.stats.vitality + xpPerStat,
         };
       }
 
