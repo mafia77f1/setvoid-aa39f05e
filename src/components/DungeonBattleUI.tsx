@@ -70,6 +70,7 @@ export const DungeonBattleUI = ({
     mind: <Brain className="w-5 h-5" />,
     spirit: <Heart className="w-5 h-5" />,
     quran: <BookOpen className="w-5 h-5" />,
+    vitality: <Zap className="w-5 h-5" />,
   };
 
   // Boss taunts

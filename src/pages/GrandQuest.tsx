@@ -14,6 +14,7 @@ const categoryLabels: Record<StatType, string> = {
   mind: 'عقلي (التعلم)',
   spirit: 'روحي (العبادات)',
   quran: 'قرآني (الحفظ والقراءة)',
+  vitality: 'الرشاقة (اللياقة)',
 };
 
 const suggestedTasks: Record<StatType, string[]> = {
@@ -21,6 +22,7 @@ const suggestedTasks: Record<StatType, string[]> = {
   mind: ['قراءة 30 صفحة', 'تعلم مهارة جديدة', 'ترك السوشيال ميديا', 'تدوين الأفكار'],
   spirit: ['صلاة الفجر في وقتها', 'أذكار الصباح والمساء', 'صدقة يومية', 'استغفار 100 مرة'],
   quran: ['قراءة جزء يومياً', 'حفظ 5 آيات', 'مراجعة المحفوظ', 'تدبر صفحة'],
+  vitality: ['جري 20 دقيقة', 'تمارين إطالة', 'تمارين سرعة', 'قفز الحبل'],
 };
 
 const GrandQuest = () => {
