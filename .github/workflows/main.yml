@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies (Frontend & Capacitor core)
         run: npm ci
 
-      # 🔴 الخطوة الجديدة والمهمة لتصحيح الخطأ 
+      # 1. تم إصلاح الخطأ الأول هنا
       - name: Install Capacitor Android Dependency
         run: npm install @capacitor/android
 
@@ -37,28 +37,31 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # 🟢 تحسين: استخدام الأداة لتثبيت التراخيص بدلاً من الطريقة اليدوية الطويلة
+      # تم إزالة خطوة قبول التراخيص اليدوية الطويلة والاعتماد على الأكشن
       - name: Setup Android SDK and Accept Licenses
         uses: android-actions/setup-android@v3
         with:
-          # نضعها true لتجنب الكود اليدوي الطويل
           accept-android-sdk-licenses: true 
 
       - name: Install Capacitor CLI (Global)
         run: npm install -g @capacitor/cli
 
-      # 🟢 تحسين: نستخدم --skip-install لسرعة الإضافة (بما أننا ثبتناها في الأعلى)
-      - name: Add Android platform (now depends installed)
+      - name: Add Android platform
         run: npx cap add android --skip-install
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      # 2. تم إصلاح الخطأ الجديد هنا
+      - name: Fix Android SDK path for Gradle
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
       - name: Build Debug APK
         working-directory: android
+        # استخدام خيار --no-daemon مهم في بيئات CI
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
