@@ -21,12 +21,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies (Frontend & Capacitor core)
+      - name: Install dependencies
         run: npm ci
-
-      # 1. تم إصلاح الخطأ الأول هنا
-      - name: Install Capacitor Android Dependency
-        run: npm install @capacitor/android
 
       - name: Build web app
         run: npm run build
@@ -37,31 +33,37 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # تم إزالة خطوة قبول التراخيص اليدوية الطويلة والاعتماد على الأكشن
-      - name: Setup Android SDK and Accept Licenses
+      - name: Accept Android SDK licenses manually
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
+          echo -e "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a" > $ANDROID_SDK_ROOT/licenses/google-gdk-license
+          echo -e "\nd975f751698a77b662f1254ddbeed3901e976f5a" > $ANDROID_SDK_ROOT/licenses/intel-android-extra-license
+          echo -e "\n601085b94cd77f0b54ff86406957099ebe79c4d6" > $ANDROID_SDK_ROOT/licenses/android-googletv-license
+          echo -e "\ne9acab5b5fbb560a72cfaecce8a5c9b5e6b3e7a4" > $ANDROID_SDK_ROOT/licenses/mips-android-sysimage-license
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-googlexr-license
+
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-android-sdk-licenses: true 
+          accept-android-sdk-licenses: false
 
-      - name: Install Capacitor CLI (Global)
+      - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
       - name: Add Android platform
-        run: npx cap add android --skip-install
+        run: npx cap add android || true
 
       - name: Sync Capacitor
         run: npx cap sync android
-
-      # 2. تم إصلاح الخطأ الجديد هنا
-      - name: Fix Android SDK path for Gradle
-        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
       - name: Build Debug APK
         working-directory: android
-        # استخدام خيار --no-daemon مهم في بيئات CI
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
