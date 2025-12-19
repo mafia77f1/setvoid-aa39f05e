@@ -19,7 +19,8 @@ import {
   Ghost,
   Sparkles,
   Zap,
-  Target
+  Target,
+  Clock
 } from 'lucide-react';
 
 const Stats = () => {
