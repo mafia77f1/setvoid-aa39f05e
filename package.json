@@ -1,17 +1,28 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "sedark",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "vite build --config client/vite.config.ts",
+    "build:android": "npm run build && npx cap sync android && npx cap open android",
     "start": "NODE_ENV=production node dist/index.js",
     "lint": "eslint .",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "cap:init": "npx cap init SEDARK com.sedark.app --web-dir=dist",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npx cap sync",
+    "cap:sync:android": "npx cap sync android",
+    "cap:open:android": "npx cap open android",
+    "cap:build": "npm run build && npm run cap:sync"
   },
   "dependencies": {
+    "@capacitor/android": "^5.7.0",
+    "@capacitor/cli": "^5.7.0",
+    "@capacitor/core": "^5.7.0",
+    "@capacitor/splash-screen": "^5.0.7",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
