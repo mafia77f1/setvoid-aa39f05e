@@ -2,7 +2,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Coins, ShoppingBag, Package } from 'lucide-react';
+import { Coins, ShoppingBag, Package, Sparkles, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +35,10 @@ const Market = () => {
     });
   };
 
+  const handleGoldRecharge = () => {
+    window.open('https://r-shadows.github.io/Highest/', '_blank');
+  };
+
   return (
     <div className="min-h-screen pb-24">
       <header className="relative px-4 py-6">
@@ -51,6 +55,78 @@ const Market = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Gold Recharge Section */}
+        <section className="relative overflow-hidden rounded-2xl p-6 border-2"
+          style={{
+            background: 'linear-gradient(135deg, hsl(45 100% 8%) 0%, hsl(45 80% 5%) 50%, hsl(45 90% 3%) 100%)',
+            borderColor: 'hsl(45 100% 50%)'
+          }}
+        >
+          {/* Animated Background Effects */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-0 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-0 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+
+          <div className="relative z-10 text-center space-y-4">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-500/20 border-2 border-yellow-500/50 mb-2">
+              <Coins className="w-10 h-10 text-yellow-500 animate-bounce" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-yellow-500 flex items-center justify-center gap-2">
+              <Sparkles className="w-6 h-6" />
+              شحن الذهب
+              <Sparkles className="w-6 h-6" />
+            </h2>
+
+            {/* Description */}
+            <p className="text-sm text-yellow-200/80 max-w-sm mx-auto">
+              احصل على المزيد من الذهب لشراء العناصر القوية وتطوير شخصيتك!
+            </p>
+
+            {/* Recharge Button */}
+            <button
+              onClick={handleGoldRecharge}
+              className={cn(
+                "relative group w-full max-w-xs mx-auto py-4 px-6 rounded-xl font-bold text-lg",
+                "bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600",
+                "border-2 border-yellow-400",
+                "text-black",
+                "hover:from-yellow-500 hover:via-yellow-400 hover:to-yellow-500",
+                "active:scale-95",
+                "transition-all duration-300",
+                "flex items-center justify-center gap-3",
+                "overflow-hidden"
+              )}
+            >
+              {/* Shine Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              
+              <Coins className="w-6 h-6 animate-spin" style={{ animationDuration: '3s' }} />
+              <span className="relative z-10">اشحن الآن</span>
+              <ExternalLink className="w-5 h-5" />
+            </button>
+
+            {/* Features */}
+            <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-yellow-500/30">
+              <div className="text-center">
+                <div className="text-2xl mb-1">⚡</div>
+                <p className="text-xs text-yellow-200/70">سريع وآمن</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-1">💎</div>
+                <p className="text-xs text-yellow-200/70">أفضل الأسعار</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-1">🎁</div>
+                <p className="text-xs text-yellow-200/70">مكافآت إضافية</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Items for Sale */}
         <section className="system-panel p-4">
           <h3 className="font-bold mb-4 text-primary">العناصر المتاحة</h3>
