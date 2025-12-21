@@ -19,8 +19,7 @@ import {
   Ghost,
   Sparkles,
   Zap,
-  Target,
-  Clock
+  Target
 } from 'lucide-react';
 
 const Stats = () => {
@@ -304,38 +303,186 @@ const Stats = () => {
         )}
 
         {activeTab === 'equipment' && (
-          <div className="animate-fade-in flex items-center justify-center min-h-[400px]">
+          <div className="animate-fade-in">
             <div 
-              className="text-center p-8 rounded-2xl border-2"
+              className="relative rounded-2xl overflow-hidden p-6"
               style={{
                 background: 'linear-gradient(180deg, hsl(210 50% 6%), hsl(210 60% 3%))',
                 border: `2px solid ${levelConfig.color}`,
                 boxShadow: `0 0 50px ${levelConfig.glow}`
               }}
             >
-              <Clock className="w-16 h-16 mx-auto mb-4 opacity-50" style={{ color: levelConfig.color }} />
-              <h3 className="text-2xl font-bold mb-2" style={{ color: levelConfig.color }}>قريباً</h3>
-              <p className="text-muted-foreground mb-2">ميزة المعدات قيد التطوير</p>
-              <p className="text-xs text-muted-foreground">سيتم إضافتها في التحديث القادم</p>
+              {/* Corner decorations */}
+              <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2" style={{ borderColor: levelConfig.color }} />
+              <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2" style={{ borderColor: levelConfig.color }} />
+              <div className="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2" style={{ borderColor: levelConfig.color }} />
+              <div className="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2" style={{ borderColor: levelConfig.color }} />
+
+              {/* Character Silhouette */}
+              <div className="relative h-[400px] flex items-center justify-center">
+                {/* Character body SVG */}
+                <svg 
+                  viewBox="0 0 100 200" 
+                  className="h-full w-auto animate-float"
+                  style={{ 
+                    filter: `drop-shadow(0 0 20px ${levelConfig.glow})`,
+                    maxWidth: '150px'
+                  }}
+                >
+                  {/* Head */}
+                  <circle cx="50" cy="25" r="18" fill={levelConfig.bodyColor} opacity="0.9" />
+                  
+                  {/* Body */}
+                  <path 
+                    d="M35 45 L30 100 L35 100 L40 80 L50 85 L60 80 L65 100 L70 100 L65 45 Z" 
+                    fill={levelConfig.bodyColor} 
+                    opacity="0.85"
+                  />
+                  
+                  {/* Left arm */}
+                  <path 
+                    d="M30 50 L15 90 L20 92 L35 55 Z" 
+                    fill={levelConfig.bodyColor} 
+                    opacity="0.8"
+                  />
+                  
+                  {/* Right arm */}
+                  <path 
+                    d="M70 50 L85 90 L80 92 L65 55 Z" 
+                    fill={levelConfig.bodyColor} 
+                    opacity="0.8"
+                  />
+                  
+                  {/* Left leg */}
+                  <path 
+                    d="M35 100 L30 170 L40 170 L45 100 Z" 
+                    fill={levelConfig.bodyColor} 
+                    opacity="0.85"
+                  />
+                  
+                  {/* Right leg */}
+                  <path 
+                    d="M55 100 L60 170 L70 170 L65 100 Z" 
+                    fill={levelConfig.bodyColor} 
+                    opacity="0.85"
+                  />
+                  
+                  {/* Aura glow */}
+                  <ellipse 
+                    cx="50" 
+                    cy="100" 
+                    rx="45" 
+                    ry="90" 
+                    fill="none" 
+                    stroke={levelConfig.color} 
+                    strokeWidth="1" 
+                    opacity="0.3"
+                    className="animate-pulse"
+                  />
+                </svg>
+
+                {/* Equipment Slots */}
+                {equipmentSlots.map((slot, index) => (
+                  <div 
+                    key={slot.id}
+                    className="absolute flex items-center gap-2"
+                    style={{ 
+                      top: `${slot.y}%`,
+                      [index % 2 === 0 ? 'left' : 'right']: '10px'
+                    }}
+                  >
+                    {/* Connection line */}
+                    <div 
+                      className={cn("w-12 h-px", index % 2 === 0 ? "order-2" : "order-1")}
+                      style={{
+                        background: `linear-gradient(${index % 2 === 0 ? '90deg' : '270deg'}, ${levelConfig.color}, transparent)`
+                      }}
+                    />
+                    
+                    {/* Slot button */}
+                    <button
+                      onClick={() => setSelectedSlot(slot.id)}
+                      className={cn(
+                        "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300",
+                        "border-2 bg-black/60 backdrop-blur-sm hover:scale-110",
+                        index % 2 === 0 ? "order-1" : "order-2"
+                      )}
+                      style={{
+                        borderColor: slot.equipped ? levelConfig.color : 'hsl(0 0% 30%)',
+                        boxShadow: slot.equipped ? `0 0 20px ${levelConfig.glow}` : 'none'
+                      }}
+                    >
+                      {slot.equipped ? (
+                        <span style={{ color: levelConfig.color }}>{slot.icon}</span>
+                      ) : (
+                        <Plus className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Level indicator */}
+              <div className="text-center mt-4">
+                <div 
+                  className="inline-block px-6 py-2 rounded-lg font-bold"
+                  style={{
+                    backgroundColor: `${levelConfig.color}20`,
+                    border: `2px solid ${levelConfig.color}`,
+                    color: levelConfig.color,
+                    boxShadow: `0 0 25px ${levelConfig.glow}`
+                  }}
+                >
+                  LV. {totalLevel} - {levelConfig.tier}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  اهزم الزعماء للحصول على معدات
+                </p>
+              </div>
             </div>
+
+            {/* Equipment Modal */}
+            {selectedSlot && (
+              <div 
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                onClick={() => setSelectedSlot(null)}
+              >
+                <div 
+                  className="p-6 rounded-xl border-2 max-w-sm w-full animate-scale-in"
+                  style={{
+                    background: 'linear-gradient(180deg, hsl(210 50% 8%), hsl(210 60% 4%))',
+                    borderColor: levelConfig.color,
+                    boxShadow: `0 0 40px ${levelConfig.glow}`
+                  }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <h3 className="font-bold text-lg mb-4 text-center" style={{ color: levelConfig.color }}>
+                    {equipmentSlots.find(s => s.id === selectedSlot)?.nameAr}
+                  </h3>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>لا توجد معدات متاحة</p>
+                    <p className="text-xs mt-2">اهزم الزعماء من المستوى 3+ للحصول على معدات</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedSlot(null)}
+                    className="w-full mt-4 py-2 rounded-lg border border-primary/50 text-primary hover:bg-primary/10"
+                  >
+                    إغلاق
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'shadows' && (
-          <div className="animate-fade-in flex items-center justify-center min-h-[400px]">
-            <div 
-              className="text-center p-8 rounded-2xl border-2"
-              style={{
-                background: 'linear-gradient(180deg, hsl(210 50% 6%), hsl(210 60% 3%))',
-                border: `2px solid ${levelConfig.color}`,
-                boxShadow: `0 0 50px ${levelConfig.glow}`
-              }}
-            >
-              <Clock className="w-16 h-16 mx-auto mb-4 opacity-50" style={{ color: levelConfig.color }} />
-              <h3 className="text-2xl font-bold mb-2" style={{ color: levelConfig.color }}>قريباً</h3>
-              <p className="text-muted-foreground mb-2">نظام الجنود الظلليين قيد التطوير</p>
-              <p className="text-xs text-muted-foreground">سيتم تفعيلها في التحديث القادم</p>
-            </div>
+          <div className="animate-fade-in">
+            <ShadowSoldiersPanel 
+              soldiers={gameState.shadowSoldiers || []}
+              shadowPoints={gameState.shadowPoints || 0}
+              onSummon={summonShadowSoldier}
+            />
           </div>
         )}
       </main>

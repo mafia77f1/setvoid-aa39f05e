@@ -167,16 +167,19 @@ export const ShadowSoldiersPanel = ({
                   {/* Cost / Summon button */}
                   {!soldier.unlocked && (
                     <Button
-  onClick={() => toast({
-    title: "ميزة قادمة قريبًا!",
-    description: "ميزة استدعاء الجنود غير مفعلة في النسخة الأولى"
-  })}
-  size="sm"
-  className="mt-2 bg-primary/20 border border-primary/50 text-primary hover:bg-primary/30"
->
-  <Sparkles className="w-4 h-4 ml-1" />
-  استدعاء
-</Button>
+                      onClick={() => handleSummon(soldier)}
+                      disabled={!canSummon || isSummoning}
+                      size="sm"
+                      className={cn(
+                        "mt-2",
+                        canSummon 
+                          ? "bg-primary/20 border border-primary/50 text-primary hover:bg-primary/30"
+                          : "opacity-50"
+                      )}
+                    >
+                      <Sparkles className="w-4 h-4 ml-1" />
+                      استدعاء ({soldier.cost} نقطة)
+                    </Button>
                   )}
                 </div>
               </div>
