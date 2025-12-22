@@ -23,6 +23,7 @@ import {
 
 const Stats = () => {
   const { gameState, getXpProgress } = useGameState();
+  // تم حذف shadows من التابات
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
@@ -55,7 +56,7 @@ const Stats = () => {
       color: 'hsl(270 70% 60%)'
     },
     { 
-      // تم التغيير من quran إلى agility واستبدال الاسم بالرشاقة
+      // تم التغيير إلى الرشاقة
       category: 'agility' as const, 
       level: gameState.levels.agility || 0, 
       xp: gameState.stats.agility || 0, 
@@ -108,13 +109,13 @@ const Stats = () => {
     strength: Math.min(gameState.stats.strength, 100),
     mind: Math.min(gameState.stats.mind, 100),
     spirit: Math.min(gameState.stats.spirit, 100),
-    agility: Math.min(gameState.stats.agility || 0, 100), // تم تغيير المفتاح هنا إلى agility
+    agility: Math.min(gameState.stats.agility || 0, 100),
   };
 
   return (
     <div className="min-h-screen pb-24">
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Tabs */}
+        {/* Tabs - تم حذف الظلال */}
         <div className="flex gap-1 p-1 rounded-xl bg-card/50 border border-primary/20">
           <button
             onClick={() => setActiveTab('stats')}
@@ -148,7 +149,7 @@ const Stats = () => {
 
         {activeTab === 'stats' && (
           <div className="space-y-6 animate-fade-in">
-            {/* Level Header */}
+            {/* Level Header (نفس الشكل) */}
             <div 
               className="p-4 rounded-2xl border-2"
               style={{ 
@@ -179,7 +180,7 @@ const Stats = () => {
               </div>
             </div>
 
-            {/* Radar Chart */}
+            {/* Radar Chart (نفس الشكل) */}
             <div 
               className="p-4 rounded-2xl border"
               style={{ 
@@ -194,7 +195,7 @@ const Stats = () => {
               <RadarChart stats={radarStats} size={280} />
             </div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid (تعديل القرآن إلى رشاقة فقط) */}
             <div className="grid gap-4">
               {stats.map((stat, index) => (
                 <div 
@@ -243,7 +244,7 @@ const Stats = () => {
               ))}
             </div>
 
-            {/* Resources */}
+            {/* Resources - إضافة زر الشحن */}
             <div 
               className="p-4 rounded-xl border grid grid-cols-2 gap-4"
               style={{ 
@@ -252,7 +253,7 @@ const Stats = () => {
               }}
             >
               <div className="text-center relative group">
-                <div className="text-2xl mb-1">🪙</div>
+                <div className="text-2xl mb-1">coin</div>
                 <div className="text-lg font-bold text-yellow-500">{gameState.gold}</div>
                 <div className="text-xs text-muted-foreground mb-2">ذهب</div>
                 <button className="text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-2 py-0.5 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold">
@@ -272,6 +273,7 @@ const Stats = () => {
 
         {activeTab === 'equipment' && (
           <div className="animate-fade-in relative">
+            {/* قريباً Overlay */}
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] rounded-2xl">
               <Lock className="w-10 h-10 text-primary mb-2 opacity-80" />
               <span className="text-2xl font-black text-primary tracking-tighter italic">COMING SOON</span>
@@ -285,6 +287,7 @@ const Stats = () => {
                 border: `2px solid ${levelConfig.color}`,
               }}
             >
+              {/* نفس رسمة الشخصية والمربعات لكنها مغلقة */}
               <div className="relative h-[400px] flex items-center justify-center">
                  <CircleUser className="w-32 h-32 text-muted-foreground opacity-20" />
                  {equipmentSlots.map((slot, index) => (
