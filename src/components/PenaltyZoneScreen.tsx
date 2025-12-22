@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Skull, X, Swords, Heart, Zap, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Clock, Skull, X, Swords, Shield, Heart, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Monster {
   id: string;
   name: string;
-  type: 'worm' | 'spider' | 'centipede';
-  x: number; // موقع الوحش الأفقي
-  y: number; // موقع الوحش الرأسي
   hp: number;
+  maxHp: number;
   damage: number;
   isAttacking: boolean;
 }
@@ -39,55 +38,57 @@ export const PenaltyZoneScreen = ({
   const [monsters, setMonsters] = useState<Monster[]>([]);
   const [isPlayerDead, setIsPlayerDead] = useState(false);
   const [showDeathScreen, setShowDeathScreen] = useState(false);
-  const [isTakingDamage, setIsTakingDamage] = useState(false);
+  const [attackAnimation, setAttackAnimation] = useState(false);
+  const [damageNumber, setDamageNumber] = useState<{ value: number; id: number } | null>(null);
 
-  // توليد الوحوش حول اللاعب (توزيع دائري كأنهم محاوطينك في الصحراء)
+  // Generate monsters for current wave
   const generateMonsters = useCallback((waveNum: number) => {
-    const count = Math.min(waveNum + 3, 8);
-    const types: ('worm' | 'spider' | 'centipede')[] = ['worm', 'spider', 'centipede'];
+    const count = Math.min(waveNum + 1, 5);
+    const baseDamage = 5 + waveNum * 2;
+    const baseHp = 30 + waveNum * 10;
     
-    return Array.from({ length: count }, (_, i) => {
-      const angle = (i / count) * Math.PI * 2;
-      const radius = 35; // البعد عن المركز
-      return {
-        id: `m-${waveNum}-${i}`,
-        name: 'وحش الصحراء',
-        type: types[Math.floor(Math.random() * types.length)],
-        x: 50 + Math.cos(angle) * radius,
-        y: 55 + Math.sin(angle) * radius,
-        hp: 50 + waveNum * 10,
-        damage: 5 + waveNum * 2,
-        isAttacking: false,
-      };
-    });
+    return Array.from({ length: count }, (_, i) => ({
+      id: `monster-${waveNum}-${i}`,
+      name: waveNum >= 8 ? 'وحش الظلام' : waveNum >= 5 ? 'شبح العقاب' : 'ظل الفشل',
+      hp: baseHp + Math.random() * 20,
+      maxHp: baseHp + 20,
+      damage: baseDamage + Math.floor(Math.random() * 5),
+      isAttacking: false,
+    }));
   }, []);
 
+  // Initialize monsters
   useEffect(() => {
     setMonsters(generateMonsters(wave));
   }, [wave, generateMonsters]);
 
-  // عداد الوقت
+  // Timer countdown
   useEffect(() => {
     const calculateRemaining = () => {
       const end = new Date(endTime).getTime();
       const now = Date.now();
-      return Math.max(0, Math.floor((end - now) / 1000));
+      const remaining = Math.max(0, Math.floor((end - now) / 1000));
+      return remaining;
     };
+
+    setTimeRemaining(calculateRemaining());
 
     const timer = setInterval(() => {
       const remaining = calculateRemaining();
       setTimeRemaining(remaining);
+      
       if (remaining <= 0) {
         clearInterval(timer);
         onTimeComplete();
       }
     }, 1000);
+
     return () => clearInterval(timer);
   }, [endTime, onTimeComplete]);
 
-  // هجوم الوحوش التلقائي
+  // Monster attacks player periodically
   useEffect(() => {
-    if (playerHp <= 0) {
+    if (isPlayerDead || playerHp <= 0) {
       setIsPlayerDead(true);
       setShowDeathScreen(true);
       return;
@@ -95,177 +96,270 @@ export const PenaltyZoneScreen = ({
 
     const attackInterval = setInterval(() => {
       if (monsters.length > 0 && !isPlayerDead) {
-        const targetIdx = Math.floor(Math.random() * monsters.length);
+        const attackingMonster = monsters[Math.floor(Math.random() * monsters.length)];
         
-        setMonsters(prev => prev.map((m, i) => i === targetIdx ? { ...m, isAttacking: true } : m));
-        setIsTakingDamage(true);
+        setMonsters(prev => prev.map(m => 
+          m.id === attackingMonster.id ? { ...m, isAttacking: true } : m
+        ));
+        
+        setAttackAnimation(true);
         
         setTimeout(() => {
-          onPlayerDamage(monsters[targetIdx].damage);
-          setMonsters(prev => prev.map(m => ({ ...m, isAttacking: false })));
-          setIsTakingDamage(false);
-        }, 600);
+          const damage = attackingMonster.damage;
+          onPlayerDamage(damage);
+          setDamageNumber({ value: damage, id: Date.now() });
+          
+          setMonsters(prev => prev.map(m => 
+            m.id === attackingMonster.id ? { ...m, isAttacking: false } : m
+          ));
+          setAttackAnimation(false);
+          
+          setTimeout(() => setDamageNumber(null), 1000);
+        }, 500);
       }
-    }, 2500);
+    }, 3000 + Math.random() * 2000);
 
     return () => clearInterval(attackInterval);
-  }, [monsters, isPlayerDead, playerHp, onPlayerDamage]);
+  }, [monsters, isPlayerDead, onPlayerDamage, playerHp]);
 
-  const formatTime = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  // Progress waves over time
+  useEffect(() => {
+    const waveInterval = setInterval(() => {
+      if (!isPlayerDead && wave < 10) {
+        setWave(prev => prev + 1);
+      }
+    }, 30000); // New wave every 30 seconds
+
+    return () => clearInterval(waveInterval);
+  }, [isPlayerDead, wave]);
+
+  const hours = Math.floor(timeRemaining / 3600);
+  const minutes = Math.floor((timeRemaining % 3600) / 60);
+  const seconds = timeRemaining % 60;
+
+  const handleRevive = () => {
+    if (shadowPoints >= 50) {
+      onRevive();
+      setIsPlayerDead(false);
+      setShowDeathScreen(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#1a0f05] overflow-hidden font-sans">
-      {/* خلفية الصحراء (تأثير الرمل والحرارة) */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/pollen.png')] opacity-30 animate-pulse" />
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-900/20 via-transparent to-orange-950/40" />
+    <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden">
+      {/* Animated dark background */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at center, hsl(0 60% 8%) 0%, hsl(0 80% 3%) 100%),
+            repeating-linear-gradient(0deg, transparent 0px, hsl(0 100% 50% / 0.03) 1px, transparent 2px),
+            repeating-linear-gradient(90deg, transparent 0px, hsl(0 100% 50% / 0.03) 1px, transparent 2px)
+          `
+        }}
+      />
+      
+      {/* Pulsing red overlay */}
+      <div className={cn(
+        "absolute inset-0 bg-red-900/20",
+        attackAnimation && "animate-pulse"
+      )} />
+      
+      {/* Warning stripes */}
+      <div className="absolute top-0 left-0 right-0 h-12 overflow-hidden">
+        <div 
+          className="h-full w-[200%]"
+          style={{
+            background: 'repeating-linear-gradient(90deg, hsl(0 70% 40% / 0.8) 0px, hsl(0 70% 40% / 0.8) 30px, hsl(0 70% 20% / 0.8) 30px, hsl(0 70% 20% / 0.8) 60px)',
+            animation: 'slideStripes 2s linear infinite'
+          }}
+        />
       </div>
-
-      {/* الرادار التحذيري في الخلفية */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] border-[1px] border-orange-500/10 rounded-full animate-ping pointer-events-none" />
+      
+      <div className="absolute bottom-0 left-0 right-0 h-12 overflow-hidden">
+        <div 
+          className="h-full w-[200%]"
+          style={{
+            background: 'repeating-linear-gradient(90deg, hsl(0 70% 40% / 0.8) 0px, hsl(0 70% 40% / 0.8) 30px, hsl(0 70% 20% / 0.8) 30px, hsl(0 70% 20% / 0.8) 60px)',
+            animation: 'slideStripes 2s linear infinite reverse'
+          }}
+        />
+      </div>
 
       {/* Header */}
-      <div className="relative z-20 p-4 flex items-center justify-between border-b border-orange-500/20 bg-black/40 backdrop-blur-md">
+      <div className="relative z-10 p-4 flex items-center justify-between border-b border-red-500/30">
         <div className="flex items-center gap-3">
-          <AlertCircle className="w-6 h-6 text-orange-500 animate-bounce" />
+          <div className="w-10 h-10 rounded-lg bg-red-500/20 border border-red-500/50 flex items-center justify-center animate-pulse">
+            <Skull className="w-6 h-6 text-red-400" />
+          </div>
           <div>
-            <h1 className="text-xl font-black text-orange-500 italic tracking-tighter">PENALTY QUEST</h1>
-            <p className="text-[10px] text-orange-200/50 uppercase font-bold">بقاء على قيد الحياة: الموجة {wave}</p>
+            <h1 className="text-lg font-bold text-red-400 tracking-wider">PENALTY ZONE</h1>
+            <p className="text-xs text-red-300/60">منطقة العقاب - موجة {wave}</p>
           </div>
         </div>
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-2 text-orange-400 font-mono font-bold">
-            <Clock className="w-4 h-4" />
-            {formatTime(timeRemaining)}
-          </div>
-        </div>
-      </div>
-
-      {/* ساحة المعركة */}
-      <div className="relative flex-1 flex items-center justify-center">
         
-        {/* اللاعب في المنتصف (أنت) */}
-        <div className={cn(
-          "relative z-30 transition-transform duration-300",
-          isTakingDamage && "animate-shake scale-110"
-        )}>
-           <div className="w-20 h-20 rounded-full bg-blue-500/20 border-2 border-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.5)] flex items-center justify-center relative">
-             <div className="absolute -inset-4 border border-blue-400/20 rounded-full animate-spin-slow" />
-             <span className="text-3xl">👤</span>
-             
-             {/* شريط حياة اللاعب فوق رأسه */}
-             <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-24">
-                <div className="h-1.5 w-full bg-black/60 rounded-full border border-white/10 overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300"
-                    style={{ width: `${(playerHp/maxPlayerHp)*100}%` }}
-                  />
-                </div>
-                <p className="text-[9px] text-center text-white mt-1 font-bold">HP {Math.floor(playerHp)}</p>
-             </div>
-           </div>
-        </div>
-
-        {/* الوحوش المحيطة باللاعب */}
-        {monsters.map((monster) => (
-          <div
-            key={monster.id}
-            className={cn(
-              "absolute z-20 transition-all duration-700 flex flex-col items-center",
-              monster.isAttacking ? "scale-125 z-40" : "opacity-80"
-            )}
-            style={{ 
-              left: `${monster.x}%`, 
-              top: `${monster.y}%`,
-              transform: monster.isAttacking ? 'translate(-50%, -50%) scale(1.5)' : 'translate(-50%, -50%)'
-            }}
+        {onExit && (
+          <button 
+            onClick={onExit}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
           >
-            <div className={cn(
-              "text-5xl filter drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]",
-              monster.isAttacking && "animate-attack-leap"
-            )}>
-              {monster.type === 'worm' ? '🐛' : monster.type === 'spider' ? '🕷️' : '🦂'}
-            </div>
-            {monster.isAttacking && (
-               <Swords className="w-6 h-6 text-red-500 absolute -top-6 animate-pulse" />
-            )}
-          </div>
-        ))}
-
-        {/* تأثير الرمال المتحركة في الأرضية */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#2a1b0c] to-transparent pointer-events-none" />
+            <X className="w-5 h-5 text-red-300" />
+          </button>
+        )}
       </div>
 
-      {/* تحذير النظام السفلي */}
-      <div className="relative z-20 p-6 bg-gradient-to-t from-black to-transparent">
-        <div className="max-w-md mx-auto p-4 rounded-xl border border-orange-500/30 bg-orange-950/20 backdrop-blur-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <Skull className="w-5 h-5 text-red-500" />
-            <p className="text-sm font-bold text-orange-100">تحذير من النظام</p>
+      {/* Timer */}
+      <div className="relative z-10 p-4">
+        <div 
+          className="rounded-xl border-2 border-red-500/40 p-4 text-center"
+          style={{
+            background: 'linear-gradient(180deg, hsl(0 50% 8%), hsl(0 60% 4%))',
+            boxShadow: '0 0 40px hsl(0 70% 40% / 0.3), inset 0 0 30px hsl(0 0% 0% / 0.5)'
+          }}
+        >
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Clock className="w-5 h-5 text-red-400 animate-pulse" />
+            <span className="text-sm text-red-300">الوقت المتبقي</span>
           </div>
-          <p className="text-xs text-orange-200/60 leading-relaxed">
-            لقد فشلت في إكمال المهمة اليومية. ستبقى في منطقة العقاب لمدة 4 ساعات. 
-            إذا انخفضت صحتك إلى الصفر، ستواجه عواقب وخيمة.
+          <div 
+            className="text-4xl font-bold font-mono text-red-400"
+            style={{ textShadow: '0 0 40px hsl(0 70% 50% / 0.6)' }}
+          >
+            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+          </div>
+        </div>
+      </div>
+
+      {/* Player HP */}
+      <div className="relative z-10 px-4">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-black/50 border border-red-500/20">
+          <Heart className="w-6 h-6 text-red-500" />
+          <div className="flex-1">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-red-300">صحتك</span>
+              <span className="text-red-400 font-bold">{Math.max(0, Math.floor(playerHp))}/{maxPlayerHp}</span>
+            </div>
+            <div className="h-3 rounded-full bg-black/50 overflow-hidden border border-red-500/30">
+              <div 
+                className="h-full rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${Math.max(0, (playerHp / maxPlayerHp) * 100)}%`,
+                  background: playerHp < 30 
+                    ? 'linear-gradient(90deg, hsl(0 80% 50%), hsl(0 80% 40%))'
+                    : 'linear-gradient(90deg, hsl(0 70% 50%), hsl(0 70% 40%))'
+                }}
+              />
+            </div>
+          </div>
+          {damageNumber && (
+            <div 
+              key={damageNumber.id}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 text-2xl font-bold text-red-500 animate-fade-out"
+              style={{ textShadow: '0 0 10px hsl(0 100% 50%)' }}
+            >
+              -{damageNumber.value}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Monsters Area */}
+      <div className="relative z-10 flex-1 p-4 overflow-hidden">
+        <div className="grid grid-cols-3 gap-3 max-h-full">
+          {monsters.map((monster, index) => (
+            <div
+              key={monster.id}
+              className={cn(
+                "relative p-3 rounded-xl border transition-all",
+                monster.isAttacking 
+                  ? "bg-red-600/30 border-red-500 scale-110" 
+                  : "bg-red-900/20 border-red-500/30",
+                "animate-fade-in"
+              )}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="text-3xl text-center mb-2">
+                {wave >= 8 ? '👹' : wave >= 5 ? '👻' : '💀'}
+              </div>
+              <p className="text-[10px] text-red-300 text-center truncate">{monster.name}</p>
+              {monster.isAttacking && (
+                <div className="absolute -top-2 -right-2">
+                  <Swords className="w-5 h-5 text-red-500 animate-bounce" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Warning text */}
+      <div className="relative z-10 p-4">
+        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+          <p className="text-xs text-red-300">
+            ⚠️ الوحوش تهاجم تلقائياً - لا يمكنك الهروب!
+          </p>
+          <p className="text-[10px] text-red-400/60 mt-1">
+            البقاء على قيد الحياة حتى نهاية العقوبة هو هدفك الوحيد
           </p>
         </div>
       </div>
 
-      {/* شاشة الموت */}
+      {/* Death Screen */}
       {showDeathScreen && (
-        <div className="absolute inset-0 z-[100] bg-black/95 flex items-center justify-center p-6 backdrop-blur-xl">
-          <div className="w-full max-w-sm text-center">
-            <h2 className="text-6xl font-black text-red-600 mb-2 italic tracking-tighter">DEFEAT</h2>
-            <div className="h-1 w-full bg-red-600/30 mb-8" />
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md">
+          <div className="max-w-sm w-full mx-4 p-8 rounded-2xl bg-gradient-to-b from-red-950 to-black border-2 border-red-500/50 text-center">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-red-500/20 border-2 border-red-500/50 flex items-center justify-center">
+              <Skull className="w-14 h-14 text-red-500" />
+            </div>
+            <h2 className="text-3xl font-bold text-red-500 mb-2">YOU DIED</h2>
+            <p className="text-red-300/70 mb-6">لقد سقطت في منطقة العقاب...</p>
             
-            <p className="text-gray-400 mb-8 leading-relaxed">
-              لقد استنفدت كل قوتك في الصحراء... <br/> النظام سيطبق العقوبة القصوى الآن.
-            </p>
+            <div className="p-4 rounded-xl bg-black/50 border border-red-500/30 mb-6">
+              <p className="text-sm text-red-300 mb-2">العقوبة:</p>
+              <ul className="text-xs text-red-400/80 space-y-1 text-right">
+                <li>• خسارة 20% من إجمالي XP</li>
+                <li>• خسارة 50% من الذهب</li>
+                <li>• تراجع مستوى واحد</li>
+              </ul>
+            </div>
 
-            <div className="space-y-4">
-              {shadowPoints >= 50 ? (
-                <button
-                  onClick={onRevive}
-                  className="w-full py-4 bg-blue-600 text-white font-black rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <Zap className="w-5 h-5" /> إحياء (50 نقطة ظل)
-                </button>
-              ) : (
+            {shadowPoints >= 50 ? (
+              <button
+                onClick={handleRevive}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 border border-purple-400/50 text-white font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2"
+              >
+                <Zap className="w-5 h-5" />
+                إحياء بـ 50 نقطة ظل
+              </button>
+            ) : (
+              <div className="text-center">
+                <p className="text-sm text-gray-400 mb-4">
+                  تحتاج 50 نقطة ظل للإحياء (لديك {shadowPoints})
+                </p>
                 <button
                   onClick={onExit}
-                  className="w-full py-4 bg-red-900/40 border border-red-500 text-red-500 font-black rounded-lg hover:bg-red-500 hover:text-white transition-all"
+                  className="w-full py-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 font-bold hover:bg-red-500/30 transition-all"
                 >
-                  قبول الفشل
+                  قبول العقوبة
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       <style>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        @keyframes slideStripes {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
         }
-        @keyframes shake {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(-5px, 5px); }
-          50% { transform: translate(5px, -5px); }
-          75% { transform: translate(-5px, -5px); }
+        @keyframes fade-out {
+          from { opacity: 1; transform: translateY(0); }
+          to { opacity: 0; transform: translateY(-30px); }
         }
-        @keyframes attack-leap {
-          0% { transform: scale(1) translateY(0); }
-          50% { transform: scale(1.5) translateY(-20px); filter: brightness(2); }
-          100% { transform: scale(1) translateY(0); }
+        .animate-fade-out {
+          animation: fade-out 1s ease-out forwards;
         }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-        .animate-shake { animation: shake 0.2s ease-in-out infinite; }
-        .animate-attack-leap { animation: attack-leap 0.6s ease-in-out forwards; }
       `}</style>
     </div>
   );
