@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
 
 interface PenaltyZoneScreenProps {
-  endTime: string; // مثال: "2025-12-22T23:59:59"
+  endTime: string; 
   onTimeComplete: () => void;
 }
 
 export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreenProps) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // تحديث عداد الوقت
   useEffect(() => {
     const calculateTime = () => {
       const end = new Date(endTime).getTime();
@@ -43,74 +41,57 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* 1. وصف البيئة: الكهف السينمائي الفارغ */}
+      {/* 1. بيئة الكهف (خلفية سينمائية) */}
       <div className="absolute inset-0">
-        {/* تأثير الصخور والظلام */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(40,0,0,0.2)_0%,black_100%)] z-10" />
+        {/* تدرج الكهف المظلم */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(50,0,0,0.15)_0%,black_100%)] z-10" />
         
-        {/* نسيج صخري خلفي خفيف جداً */}
+        {/* نسيج الصخور (Texture) */}
         <div 
-          className="absolute inset-0 opacity-20 mix-blend-overlay bg-cover bg-center z-0"
-          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/dark-matter.png')" }}
+          className="absolute inset-0 opacity-15 mix-blend-overlay bg-cover bg-center z-0"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/asfalt-dark.png')" }}
         />
 
-        {/* ضباب أحمر متحرك في قاع الكهف */}
-        <div className="absolute bottom-[-10%] left-0 w-full h-[50vh] bg-red-900/10 blur-[120px] rounded-[100%] animate-pulse z-20" />
+        {/* توهج أحمر في الأسفل لعمق الكهف */}
+        <div className="absolute bottom-[-20%] left-0 w-full h-[60vh] bg-red-950/20 blur-[150px] rounded-full z-20" />
       </div>
 
-      {/* 2. العداد الرقمي العلوي (Solo Leveling Style) */}
-      <div className="relative z-50 flex flex-col items-center pt-20">
-        {/* تسمية المهمة */}
-        <div className="mb-4 text-red-600 font-black tracking-[0.6em] text-[10px] uppercase drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
-          Penalty Quest: Survive
-        </div>
-
-        {/* أرقام الوقت */}
-        <div className="flex items-center gap-6 bg-black/60 backdrop-blur-xl px-10 py-6 border border-red-900/20 rounded-xl shadow-2xl">
-          <div className="flex flex-col items-center">
-            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
-              {t.h}
+      {/* 2. العداد المصغر في الأعلى (Compact Header) */}
+      <div className="relative z-50 flex flex-col items-center pt-8 w-full">
+        {/* إطار العداد الصغير */}
+        <div className="bg-black/60 backdrop-blur-md border border-red-900/30 px-6 py-2 rounded-lg flex flex-col items-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+          <div className="text-red-500 font-black tracking-[0.4em] text-[8px] uppercase mb-1">
+            PENALTY TIME
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-3xl font-mono font-bold text-white tracking-tighter tabular-nums">
+              {t.h}:{t.m}:{t.sec}
             </span>
-            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">HOUR</span>
           </div>
 
-          <span className="text-5xl font-mono text-red-700 animate-pulse pb-6">:</span>
-
-          <div className="flex flex-col items-center">
-            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
-              {t.m}
-            </span>
-            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">MIN</span>
-          </div>
-
-          <span className="text-5xl font-mono text-red-700 animate-pulse pb-6">:</span>
-
-          <div className="flex flex-col items-center">
-            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
-              {t.sec}
-            </span>
-            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">SEC</span>
+          {/* خط تقدم نحيف جداً تحت الأرقام */}
+          <div className="w-full h-[1px] bg-red-900/30 mt-1 overflow-hidden">
+            <div className="h-full bg-red-600 animate-pulse" style={{ width: '100%' }} />
           </div>
         </div>
-
-        {/* شريط التقدم النحيف */}
-        <div className="mt-6 w-72 h-0.5 bg-white/5 rounded-full overflow-hidden">
-          <div className="h-full bg-red-600 animate-pulse" style={{ width: '100%' }} />
+        
+        {/* رسالة "ابق على قيد الحياة" تحت العداد مباشرة بخط صغير جداً */}
+        <div className="mt-2 text-white/30 text-[9px] font-bold tracking-widest uppercase">
+          Survive until the end
         </div>
       </div>
 
-      {/* 3. إضافات جوية: غبار يتطاير (اختياري) */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-30">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-slow-scroll" />
-      </div>
+      {/* تأثير الغبار المتطاير في الكهف */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
 
       <style>{`
-        @keyframes slow-scroll {
+        @keyframes cave-dust {
           from { background-position: 0 0; }
-          to { background-position: 500px 500px; }
+          to { background-position: 1000px 1000px; }
         }
-        .animate-slow-scroll {
-          animation: slow-scroll 60s linear infinite;
+        .animate-cave-dust {
+          animation: cave-dust 120s linear infinite;
         }
       `}</style>
 
