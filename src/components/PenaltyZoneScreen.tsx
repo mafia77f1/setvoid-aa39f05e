@@ -1,124 +1,80 @@
 import { useState, useEffect } from 'react';
 
-/**
- * PenaltyZoneScreen - نسخة الصحراء المنبسطة الكاملة
- * @param endTime - الوقت الذي ينتهي عنده العداد (مثلاً بعد 4 ساعات)
- * @param onTimeComplete - وظيفة تُنفذ عند انتهاء الوقت
- */
-export const PenaltyZoneScreen = ({ 
-  endTime = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), 
-  onTimeComplete 
-}: { 
-  endTime?: string, 
-  onTimeComplete?: () => void 
-}) => {
+export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string, onTimeComplete: () => void }) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // تحديث عداد الوقت كل ثانية
   useEffect(() => {
-    const calculateTime = () => {
-      const end = new Date(endTime).getTime();
-      const now = Date.now();
-      const remaining = Math.max(0, Math.floor((end - now) / 1000));
+    const timer = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((new Date(endTime).getTime() - Date.now()) / 1000));
       setTimeRemaining(remaining);
-      
-      if (remaining <= 0 && onTimeComplete) {
-        onTimeComplete();
-      }
-    };
-
-    calculateTime();
-    const timer = setInterval(calculateTime, 1000);
+      if (remaining <= 0 && onTimeComplete) onTimeComplete();
+    }, 1000);
     return () => clearInterval(timer);
   }, [endTime, onTimeComplete]);
 
-  // تنسيق الوقت إلى ساعات:دقائق:ثواني
-  const formatTime = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    return {
-      hours: String(h).padStart(2, '0'),
-      minutes: String(m).padStart(2, '0'),
-      seconds: String(sec).padStart(2, '0')
-    };
-  };
-
-  const t = formatTime(timeRemaining);
+  const h = Math.floor(timeRemaining / 3600);
+  const m = Math.floor((timeRemaining % 3600) / 60);
+  const s = timeRemaining % 60;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
+    <div className="fixed inset-0 z-[100] bg-[#1a0a00] overflow-hidden font-sans">
       
-      {/* 1. بيئة الصحراء المنبسطة بالكامل (الشاشة كاملة) */}
+      {/* 1. بيئة صحراء سولو ليفلينج (Penalty Zone) */}
       <div className="absolute inset-0 z-0">
         
-        {/* لون الرمل الأساسي الجبار */}
-        <div className="absolute inset-0 bg-[#bc6c25]" />
+        {/* السماء: سماء برتقالية باهتة ومغبرة مثل مشهد العقاب */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#4d2600] via-[#261300] to-[#bc6c25]" />
 
-        {/* تدرج العمق والأفق (يسحب العين من الأسفل للأعلى نحو الظلام) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#4a2c0f]/80 to-transparent z-10" />
-
-        {/* نسيج الرمل (Texture) الممتد لإعطاء واقعية للملمس */}
-        <div 
-          className="absolute inset-0 opacity-25 mix-blend-overlay z-20"
-          style={{ 
-            backgroundImage: "url('https://www.transparenttextures.com/patterns/sandpaper.png')",
-            backgroundSize: '150px 150px'
-          }}
-        />
-
-        {/* تأثير الرياح والغبار الرملي الزاحف على الأرضية */}
-        <div className="absolute inset-0 z-30 opacity-20 pointer-events-none">
-          <div className="absolute inset-0 animate-sand-drift bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        </div>
-
-        {/* إضاءة مركزية خفيفة جداً تعطي بعداً للمكان */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,190,118,0.15)_0%,transparent_70%)] z-25" />
-      </div>
-
-      {/* 2. العداد الرقمي المصغر (Solo Leveling Style) في الأعلى */}
-      <div className="relative z-50 flex flex-col items-center pt-16 w-full">
-        <div className="bg-black/80 backdrop-blur-xl border border-[#dda15e]/30 px-10 py-4 rounded-sm shadow-[0_0_40px_rgba(0,0,0,0.7)]">
-          {/* نص المهمة */}
-          <div className="text-[#dda15e] font-black tracking-[0.6em] text-[9px] uppercase mb-2 text-center font-mono opacity-90 animate-pulse">
-            PENALTY MISSION: SURVIVE
-          </div>
+        {/* الأرضية المنبسطة تماماً (Infinite Desert Floor) */}
+        <div className="absolute bottom-0 left-0 w-full h-[50vh] bg-[#bc6c25] z-10">
+          {/* تأثير التلاشي في الأفق (السراب) */}
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-transparent via-[#bc6c25]/50 to-[#bc6c25] -translate-y-full" />
           
-          {/* أرقام الوقت */}
-          <div className="flex items-center gap-2">
-            <span className="text-5xl font-mono font-black text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              {t.hours}:{t.minutes}:{t.seconds}
-            </span>
-          </div>
-
-          {/* شريط تقدم نحيف جداً */}
-          <div className="w-full h-[1px] bg-[#dda15e]/20 mt-3 overflow-hidden">
-            <div className="h-full bg-[#dda15e] animate-shimmer" style={{ width: '100%', backgroundSize: '200% 100%' }} />
-          </div>
+          {/* نسيج الرمل الخشن */}
+          <div className="absolute inset-0 opacity-40 mix-blend-soft-light bg-[url('https://www.transparenttextures.com/patterns/sandpaper.png')]" />
+          
+          {/* ظلال خفيفة على الأرض تعطي إيحاء بالمساحة الشاسعة */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,0,0,0.4)_0%,transparent_80%)]" />
         </div>
 
-        {/* نص تحذيري خافت تحت العداد */}
-        <div className="mt-4 text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">
-          Time Remaining in Desert Domain
+        {/* تأثير الرياح والعاصفة الرملية الخفيفة (مثل سولو ليفلينج) */}
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <div className="absolute inset-0 opacity-20 animate-sand-storm bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
         </div>
       </div>
 
-      {/* أنيميشن الرياح والشريط */}
+      {/* 2. العداد العلوي (نفس ستايل النظام في الانمي) */}
+      <div className="relative z-50 flex flex-col items-center pt-16 w-full">
+        {/* علامة التحذير */}
+        <div className="mb-2 text-red-500 font-black tracking-[0.5em] text-xs animate-pulse">
+          [ WARNING: PENALTY QUEST ]
+        </div>
+
+        <div className="bg-black/60 backdrop-blur-md border-2 border-red-600/50 px-10 py-4 rounded-none shadow-[0_0_30px_rgba(220,38,38,0.2)] relative">
+          {/* زوايا الديكور التقنية */}
+          <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-red-600" />
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-red-600" />
+          
+          <div className="text-white/60 text-[9px] font-bold tracking-[0.3em] uppercase mb-1">Time Remaining</div>
+          <div className="text-5xl font-mono font-black text-white tracking-widest tabular-nums">
+            {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+          </div>
+        </div>
+
+        <div className="mt-4 text-white/30 text-[10px] tracking-[0.2em] font-medium">
+          GOAL: SURVIVE UNTIL THE TIME EXPIRES
+        </div>
+      </div>
+
+      {/* أنيميشن العاصفة الرملية */}
       <style>{`
-        @keyframes sand-drift {
-          from { background-position: 0 0; }
-          to { background-position: 1200px 600px; }
+        @keyframes sand-storm {
+          0% { background-position: 0 0; opacity: 0.1; }
+          50% { opacity: 0.25; }
+          100% { background-position: 1500px 200px; opacity: 0.1; }
         }
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        .animate-sand-drift { 
-          animation: sand-drift 100s linear infinite; 
-        }
-        .animate-shimmer {
-          animation: shimmer 4s linear infinite;
-          background-image: linear-gradient(90deg, transparent, rgba(221,161,94,0.5), transparent);
+        .animate-sand-storm { 
+          animation: sand-storm 10s linear infinite; 
         }
       `}</style>
 
