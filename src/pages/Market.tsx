@@ -133,11 +133,15 @@ const Market = () => {
           </div>
         </section>
 
-        {/* Info */}
-        <div className="system-panel p-4 text-center">
+        {/* Info & Additional Button */}
+        <div className="system-panel p-4 space-y-4 text-center">
           <p className="text-sm text-muted-foreground">
             أكمل المهمات اليومية لكسب الذهب وشراء العناصر المفيدة!
           </p>
+          {/* الزر المضاف */}
+          <Button variant="outline" className="w-full py-6 text-lg font-bold">
+            زر
+          </Button>
         </div>
       </main>
 
