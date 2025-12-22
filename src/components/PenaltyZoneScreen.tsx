@@ -19,88 +19,72 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* 1. بيئة صحراء العقاب الفخمة (Penalty Realm) */}
+      {/* 1. خلفية الصحراء الحقيقية (Realistic Background) */}
       <div className="absolute inset-0 z-0">
+        {/* صورة صحراء واقعية ممتدة للأفق */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: "url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=2076&auto=format&fit=crop')",
+            filter: 'brightness(0.6) contrast(1.2) saturate(1.2)' // تعديل سينمائي للصحراء
+          }}
+        />
         
-        {/* السماء: سماء حمراء غامقة توحي بالخطر */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0000] via-[#3d1a00] to-[#8b4513]" />
-
-        {/* الأرضية: رمال برتقالية محروقة ممتدة للأبد */}
-        <div className="absolute bottom-0 left-0 w-full h-[55vh] z-10 overflow-hidden">
-          {/* لون الرمل الأساسي مع تدرج للعمق */}
-          <div className="absolute inset-0 bg-[#bc6c25] shadow-[inset_0_20px_100px_rgba(0,0,0,0.8)]" />
-          
-          {/* خط الأفق المشع (السراب القوي) */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-red-600 shadow-[0_0_40px_10px_rgba(220,38,38,0.5)] z-20" />
-          
-          {/* نسيج رملي خشن وقوي جداً */}
-          <div className="absolute inset-0 opacity-40 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]" />
+        {/* طبقة تظليل علوية وسفلية لتركيز النظر على العداد */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/40 z-10" />
+        
+        {/* تأثير العاصفة الرملية فوق الصورة الحقيقية */}
+        <div className="absolute inset-0 z-20 pointer-events-none opacity-20">
+          <div className="absolute inset-0 animate-sand-storm bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
         </div>
-
-        {/* عاصفة رملية كثيفة (Heavy Sandstorm) */}
-        <div className="absolute inset-0 z-20 pointer-events-none">
-          <div className="absolute inset-0 opacity-30 animate-heavy-storm bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
-          <div className="absolute inset-0 opacity-20 animate-sand-fast bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        </div>
-
-        {/* ظلال جانبية تعطي إحساس بالرهبة */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.7)_100%)] z-25" />
       </div>
 
-      {/* 2. واجهة النظام (Solo Leveling System Interface) */}
-      <div className="relative z-50 flex flex-col items-center pt-20 w-full">
+      {/* 2. واجهة العداد (Style: Solo Leveling System) */}
+      <div className="relative z-50 flex flex-col items-center justify-start pt-20 w-full h-full">
         
-        {/* وميض التحذير العلوي */}
-        <div className="mb-4 px-4 py-1 border border-red-600 bg-red-600/10 text-red-500 font-black tracking-[1em] text-[10px] animate-pulse uppercase">
-          Penalty Quest: Survival
+        {/* إشعار النظام المومض */}
+        <div className="mb-6 px-6 py-1.5 border-2 border-red-600 bg-red-600/20 text-red-500 font-black tracking-[0.8em] text-[10px] animate-pulse uppercase shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+          [ Penalty Quest: Survive ]
         </div>
 
+        {/* العداد الرقمي الفخم */}
         <div className="relative group">
-          {/* خلفية العداد التقنية */}
-          <div className="bg-black/90 backdrop-blur-2xl border-x-2 border-red-600 px-12 py-6 shadow-[0_0_50px_rgba(255,0,0,0.2)]">
+          <div className="bg-black/85 backdrop-blur-xl border-x-4 border-red-600 px-14 py-8 shadow-[0_0_60px_rgba(0,0,0,1)]">
             
-            <div className="text-white/40 text-[8px] font-bold tracking-[0.5em] uppercase mb-2 text-center">Remaining Time</div>
+            <div className="text-white/40 text-[9px] font-bold tracking-[0.4em] uppercase mb-3 text-center">Remaining Time</div>
             
-            <div className="flex items-baseline gap-1">
-               <span className="text-6xl font-mono font-black text-white tracking-widest drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+            <div className="flex items-center justify-center gap-1">
+               <span className="text-7xl font-mono font-black text-white tracking-[0.1em] drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
               </span>
             </div>
 
-            {/* شريط التحميل "مشحون" بالطاقة */}
-            <div className="w-full h-[2px] bg-red-900/30 mt-4 relative overflow-hidden">
-               <div className="absolute inset-0 bg-red-600 animate-progress-glow" style={{ width: '100%' }} />
+            {/* شريط الطاقة السفلي للعداد */}
+            <div className="w-full h-1 bg-red-900/30 mt-6 relative overflow-hidden">
+               <div className="absolute inset-0 bg-red-600 shadow-[0_0_10px_red]" style={{ width: '100%' }} />
             </div>
           </div>
 
-          {/* ديكورات الزوايا */}
-          <div className="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-red-600" />
-          <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-red-600" />
+          {/* ديكورات زوايا سولو ليفلينج */}
+          <div className="absolute -top-3 -left-3 w-8 h-8 border-t-4 border-l-4 border-red-600" />
+          <div className="absolute -bottom-3 -right-3 w-8 h-8 border-b-4 border-r-4 border-red-600" />
         </div>
 
-        <div className="mt-6 flex flex-col items-center gap-1">
-           <div className="text-white/20 text-[9px] tracking-[0.4em] font-bold uppercase">Status: In Danger</div>
-           <div className="h-[20px] w-[1px] bg-gradient-to-b from-red-600 to-transparent" />
+        {/* معلومات المهمة */}
+        <div className="mt-8 text-center space-y-2">
+           <div className="text-white font-bold tracking-[0.2em] text-xs uppercase bg-black/40 px-4 py-1">Goal: Run 10km or Survive</div>
+           <div className="text-red-500/80 text-[10px] tracking-[0.3em] font-black uppercase animate-bounce">Warning: If failed, heart stops.</div>
         </div>
       </div>
 
-      {/* الأنيميشن القوي */}
       <style>{`
-        @keyframes heavy-storm {
-          from { background-position: 0 0; transform: scale(1); }
-          to { background-position: 1000px 500px; transform: scale(1.1); }
+        @keyframes sand-storm {
+          from { background-position: 0 0; }
+          to { background-position: 2000px 1000px; }
         }
-        @keyframes sand-fast {
-          from { background-position: 500px 0; }
-          to { background-position: 0 1000px; }
+        .animate-sand-storm { 
+          animation: sand-storm 60s linear infinite; 
         }
-        @keyframes progress-glow {
-          0%, 100% { opacity: 0.6; box-shadow: 0 0 10px red; }
-          50% { opacity: 1; box-shadow: 0 0 20px red; }
-        }
-        .animate-heavy-storm { animation: heavy-storm 20s linear infinite; }
-        .animate-sand-fast { animation: sand-fast 8s linear infinite; }
-        .animate-progress-glow { animation: progress-glow 2s ease-in-out infinite; }
       `}</style>
 
     </div>
