@@ -41,26 +41,22 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* 1. بيئة الكهف (خلفية سينمائية) */}
-      <div className="absolute inset-0">
-        {/* تدرج الكهف المظلم */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(50,0,0,0.15)_0%,black_100%)] z-10" />
+      {/* 1. بيئة الكهف (الخلفية) */}
+      <div className="absolute inset-0 z-0">
+        {/* تدرج الكهف العلوي */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(80,0,0,0.12)_0%,black_100%)] z-10" />
         
-        {/* نسيج الصخور (Texture) */}
+        {/* نسيج الكهف (Texture) */}
         <div 
-          className="absolute inset-0 opacity-15 mix-blend-overlay bg-cover bg-center z-0"
+          className="absolute inset-0 opacity-10 mix-blend-overlay bg-cover bg-center"
           style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/asfalt-dark.png')" }}
         />
-
-        {/* توهج أحمر في الأسفل لعمق الكهف */}
-        <div className="absolute bottom-[-20%] left-0 w-full h-[60vh] bg-red-950/20 blur-[150px] rounded-full z-20" />
       </div>
 
-      {/* 2. العداد المصغر في الأعلى (Compact Header) */}
-      <div className="relative z-50 flex flex-col items-center pt-8 w-full">
-        {/* إطار العداد الصغير */}
-        <div className="bg-black/60 backdrop-blur-md border border-red-900/30 px-6 py-2 rounded-lg flex flex-col items-center shadow-[0_0_20px_rgba(0,0,0,0.8)]">
-          <div className="text-red-500 font-black tracking-[0.4em] text-[8px] uppercase mb-1">
+      {/* 2. العداد المصغر في الأعلى */}
+      <div className="relative z-50 flex flex-col items-center pt-10 w-full">
+        <div className="bg-black/80 backdrop-blur-md border border-red-900/40 px-6 py-2 rounded-lg flex flex-col items-center shadow-2xl">
+          <div className="text-red-600 font-black tracking-[0.4em] text-[8px] uppercase mb-1">
             PENALTY TIME
           </div>
           
@@ -69,29 +65,33 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
               {t.h}:{t.m}:{t.sec}
             </span>
           </div>
-
-          {/* خط تقدم نحيف جداً تحت الأرقام */}
-          <div className="w-full h-[1px] bg-red-900/30 mt-1 overflow-hidden">
-            <div className="h-full bg-red-600 animate-pulse" style={{ width: '100%' }} />
-          </div>
-        </div>
-        
-        {/* رسالة "ابق على قيد الحياة" تحت العداد مباشرة بخط صغير جداً */}
-        <div className="mt-2 text-white/30 text-[9px] font-bold tracking-widest uppercase">
-          Survive until the end
         </div>
       </div>
 
-      {/* تأثير الغبار المتطاير في الكهف */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
+      {/* 3. الأرضية السوداء (التي طلبتها) */}
+      <div className="absolute bottom-0 left-0 right-0 z-40">
+        {/* خط الأفق/الأرضية المدبب قليلاً */}
+        <div className="h-1 w-full bg-gradient-to-r from-transparent via-red-900/20 to-transparent shadow-[0_-10px_20px_rgba(127,29,29,0.1)]" />
+        
+        {/* الجزء السفلي الأسود بالكامل */}
+        <div className="h-[25vh] w-full bg-black border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,1)] flex items-center justify-center">
+            {/* نص اختياري خافت جداً يعطي طابع تقني */}
+            <div className="text-white/5 text-[10px] tracking-[1em] uppercase font-bold">
+                Shadow Abyss Floor
+            </div>
+        </div>
+      </div>
+
+      {/* تأثير الغبار المتطاير فوق الكهف وتحت العداد */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
 
       <style>{`
         @keyframes cave-dust {
           from { background-position: 0 0; }
-          to { background-position: 1000px 1000px; }
+          to { background-position: 800px 800px; }
         }
         .animate-cave-dust {
-          animation: cave-dust 120s linear infinite;
+          animation: cave-dust 150s linear infinite;
         }
       `}</style>
 
