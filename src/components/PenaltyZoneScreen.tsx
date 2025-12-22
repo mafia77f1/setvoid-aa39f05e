@@ -19,60 +19,50 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* مشهد الصحراء اللامتناهي */}
-      <div className="absolute inset-0 z-0 bg-[#050000]">
+      {/* مشهد الصحراء المنبسطة */}
+      <div className="absolute inset-0 z-0">
         
-        {/* 1. التل البعيد جداً (The Distant Dune) */}
-        <div 
-          className="absolute bottom-[40%] left-[-10%] w-[120%] h-[15%] bg-[#1a0f00] z-10 opacity-60"
-          style={{ clipPath: 'ellipse(60% 100% at 70% 100%)' }}
-        />
+        {/* السماء الليلية - تدرج عميق جداً */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0500] via-black to-black z-0" />
 
-        {/* 2. التل المتوسط (The Middle Dune) */}
+        {/* التل الأولي المنبسط (The Flat Dune) */}
         <div 
-          className="absolute bottom-[20%] left-[-20%] w-[140%] h-[30%] bg-[#402208] z-20 shadow-[0_-20px_50px_rgba(0,0,0,0.7)]"
-          style={{ clipPath: 'ellipse(70% 100% at 30% 100%)' }}
-        />
-
-        {/* 3. التل الأولي القريب (The Foreground - مكان وقوفك) */}
-        <div 
-          className="absolute bottom-0 left-[-5%] w-[110%] h-[38%] z-30 shadow-[0_-15px_60px_rgba(0,0,0,0.9)]"
+          className="absolute bottom-0 left-0 w-full h-[30vh] z-30 shadow-[0_-20px_80px_rgba(0,0,0,0.9)]"
           style={{ 
-            clipPath: 'ellipse(80% 100% at 50% 100%)',
-            background: 'linear-gradient(to top, #8b4513 0%, #c27a3f 100%)'
+            background: 'linear-gradient(to top, #5d3211 0%, #c27a3f 100%)',
+            clipPath: 'ellipse(150% 100% at 50% 100%)' // منحنى خفيف جداً لتبدو منبسطة
           }}
         >
-          {/* نسيج الرمل للتل القريب لزيادة الواقعية */}
+          {/* نسيج الرمل الناعم */}
           <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/sandpaper.png')]" />
+          
+          {/* وهج خفيف على حافة التل */}
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#ffd4a3]/20 to-transparent" />
         </div>
 
-        {/* تأثيرات الجو: تدرج السماء للأسود الفاحم */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent z-0 opacity-80" />
-        
-        {/* غبار رملي خفيف يتحرك بالخلفية */}
-        <div className="absolute inset-0 pointer-events-none z-40 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-sand-drift" />
+        {/* أفق الصحراء المفتوح (تدرج لوني يعطي إيحاء بالمدى البعيد) */}
+        <div className="absolute bottom-[30vh] left-0 w-full h-[10vh] bg-gradient-to-t from-black to-transparent opacity-50 z-10" />
+
+        {/* تأثير غبار خفيف جداً في الأفق */}
+        <div className="absolute inset-0 pointer-events-none z-20 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-sand-float" />
       </div>
 
-      {/* العداد المصغر بالأعلى */}
+      {/* العداد المصغر في الأعلى */}
       <div className="relative z-50 flex flex-col items-center pt-12 w-full">
-        <div className="bg-black/80 backdrop-blur-xl border border-[#c27a3f]/40 px-8 py-3 rounded-sm shadow-2xl">
-          <div className="text-[#c27a3f] font-black tracking-[0.5em] text-[9px] uppercase mb-1 text-center font-mono">DESERT PENALTY</div>
-          <div className="text-4xl font-mono font-bold text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+        <div className="bg-black/60 backdrop-blur-md border border-[#c27a3f]/20 px-8 py-3 rounded-sm shadow-2xl">
+          <div className="text-[#c27a3f] font-black tracking-[0.6em] text-[8px] uppercase mb-1 text-center font-mono opacity-80">DESERT ZONE</div>
+          <div className="text-4xl font-mono font-bold text-white tracking-tighter tabular-nums drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
             {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
-          </div>
-          {/* شريط تحميل صغير جداً تحت الوقت لزيادة التفاصيل */}
-          <div className="w-full h-[1px] bg-[#c27a3f]/20 mt-2 overflow-hidden">
-             <div className="h-full bg-[#c27a3f] animate-pulse" style={{ width: '100%' }} />
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes sand-drift {
+        @keyframes sand-float {
           from { background-position: 0 0; }
           to { background-position: 1000px 500px; }
         }
-        .animate-sand-drift { animation: sand-drift 140s linear infinite; }
+        .animate-sand-float { animation: sand-float 200s linear infinite; }
       `}</style>
 
     </div>
