@@ -1,94 +1,103 @@
 import { useState, useEffect } from 'react';
 
-export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string, onTimeComplete: () => void }) => {
+interface PenaltyZoneScreenProps {
+  endTime: string; 
+  onTimeComplete: () => void;
+}
+
+export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreenProps) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((new Date(endTime).getTime() - Date.now()) / 1000));
+    const calculateTime = () => {
+      const end = new Date(endTime).getTime();
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((end - now) / 1000));
       setTimeRemaining(remaining);
-      if (remaining <= 0 && onTimeComplete) onTimeComplete();
-    }, 1000);
+      
+      if (remaining <= 0 && onTimeComplete) {
+        onTimeComplete();
+      }
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
   }, [endTime, onTimeComplete]);
 
-  const h = Math.floor(timeRemaining / 3600);
-  const m = Math.floor((timeRemaining % 3600) / 60);
-  const s = timeRemaining % 60;
+  const formatTime = (s: number) => {
+    const hours = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = s % 60;
+    return {
+      h: String(hours).padStart(2, '0'),
+      m: String(minutes).padStart(2, '0'),
+      sec: String(seconds).padStart(2, '0')
+    };
+  };
+
+  const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#0a0000] overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 z-[100] bg-[#000000] overflow-hidden font-sans">
       
-      {/* الخلفية: وهج أحمر عميق */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#410000] via-[#1a0000] to-black opacity-60" />
-
-      {/* الشياطين (الظلال الجانبية) */}
-      <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
-        {/* الشيطان الأيمن */}
-        <div className="absolute -right-20 bottom-0 w-[500px] h-[600px] opacity-40 mix-blend-screen animate-pulse">
-            <img src="https://path-to-your-demon-silhouette.png" className="w-full h-full object-contain filter grayscale invert brightness-50 sepia-[1] hue-rotate-[-50deg]" alt="" />
-        </div>
-        {/* الشيطان الأيسر */}
-        <div className="absolute -left-20 bottom-0 w-[500px] h-[600px] opacity-40 mix-blend-screen animate-pulse delay-700">
-             <img src="https://path-to-your-demon-silhouette.png" className="w-full h-full object-contain scale-x-[-1] filter grayscale invert brightness-50 sepia-[1] hue-rotate-[-50deg]" alt="" />
-        </div>
-      </div>
-
-      {/* العداد العلوي */}
-      <div className="relative z-50 flex flex-col items-center pt-12 w-full">
-        <span className="text-white/60 text-[10px] tracking-[0.3em] font-bold mb-1">REMAINING TIME</span>
-        <div className="text-5xl font-mono font-bold text-white drop-shadow-[0_0_15px_rgba(255,0,0,0.5)]">
-          {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
-        </div>
+      {/* 1. بيئة الكهف (الخلفية العلوية) */}
+      <div className="absolute inset-0 z-0 h-[75vh]">
+        {/* تدرج أحمر خافت جداً للكهف */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(60,0,0,0.1)_0%,#000000_100%)] z-10" />
         
-        {/* شريط التقدم (LV) */}
-        <div className="mt-4 flex items-center gap-3">
-            <span className="text-white/80 font-bold text-xs bg-red-900/40 px-2 py-0.5 rounded border border-red-500/30">LV.</span>
-            <div className="w-48 h-2 bg-black/50 rounded-full border border-white/10 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-red-800 to-red-500 w-3/4 shadow-[0_0_10px_red]" />
-            </div>
-            <button className="text-white/50 text-xl font-light">+</button>
+        {/* نسيج صخري مظلم جداً */}
+        <div 
+          className="absolute inset-0 opacity-[0.05] mix-blend-overlay bg-cover bg-center"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/dark-matter.png')" }}
+        />
+      </div>
+
+      {/* 2. العداد المصغر في الأعلى */}
+      <div className="relative z-50 flex flex-col items-center pt-8 w-full">
+        <div className="bg-black/90 backdrop-blur-xl border border-red-900/50 px-5 py-1.5 rounded-md flex flex-col items-center shadow-[0_0_15px_rgba(255,0,0,0.05)]">
+          <div className="text-red-700 font-black tracking-[0.5em] text-[7px] uppercase mb-0.5 opacity-80">
+            PENALTY COUNTDOWN
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <span className="text-2xl font-mono font-bold text-white tracking-tighter tabular-nums drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+              {t.h}:{t.m}:{t.sec}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* الشخصية المركزية والفقاعة */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-40 mt-32">
-        {/* فقاعة الكلام */}
-        <div className="relative mb-6 bg-black/60 border border-red-500/40 px-6 py-2 rounded-xl backdrop-blur-sm shadow-[0_0_20px_rgba(255,0,0,0.2)]">
-            <p className="text-white text-lg font-arabic font-medium" dir="rtl">
-                النملي حصل على الكلب
-            </p>
-            {/* سهم الفقاعة */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-black/60 border-r border-b border-red-500/40 rotate-45" />
-        </div>
+      {/* 3. الأرضية السوداء الفاحمة والمشعة */}
+      <div className="absolute bottom-0 left-0 right-0 z-40 h-[30vh] bg-[#000000]">
+        
+        {/* خط الأفق المشع (التوهج الأحمر) */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-600 shadow-[0_0_25px_5px_rgba(220,38,38,0.6),0_0_10px_2px_rgba(220,38,38,0.8)] z-50" />
+        
+        {/* تأثير إضاءة منعكسة على حافة الأرضية */}
+        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-red-900/20 to-transparent pointer-events-none" />
 
-        {/* أيقونة الشخصية (Stick Figure) */}
-        <div className="w-24 h-40 flex flex-col items-center">
-            <div className="w-12 h-12 border-4 border-white rounded-full mb-1 shadow-[0_0_15px_white]" /> {/* الرأس */}
-            <div className="w-1 h-16 bg-white shadow-[0_0_10px_white]" /> {/* الجسم */}
-            <div className="flex gap-10 -mt-14"> {/* الأذرع */}
-                <div className="w-1 h-12 bg-white rotate-[20deg] origin-top shadow-[0_0_10px_white]" />
-                <div className="w-1 h-12 bg-white -rotate-[20deg] origin-top shadow-[0_0_10px_white]" />
-            </div>
-            <div className="flex gap-6 mt-2"> {/* الأرجل */}
-                <div className="w-1 h-16 bg-white rotate-[5deg] shadow-[0_0_10px_white]" />
-                <div className="w-1 h-16 bg-white -rotate-[5deg] shadow-[0_0_10px_white]" />
-            </div>
+        {/* محتوى الأرضية (سواد فاحم) */}
+        <div className="w-full h-full flex flex-col items-center justify-center border-t border-red-900/10">
+            {/* نبض خفيف للسواد لإعطائه حياة */}
+            <div className="w-full h-full bg-[#000000] animate-pulse-slow opacity-90" />
         </div>
       </div>
 
-      {/* تأثيرات جزيئات الرماد المتطاير */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <div className="absolute inset-0 animate-ember-flow opacity-30 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-      </div>
+      {/* تأثير غبار الكهف المظلم */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
 
       <style>{`
-        @keyframes ember-flow {
+        @keyframes cave-dust {
           from { background-position: 0 0; }
-          to { background-position: -500px -1000px; }
+          to { background-position: 1000px 1000px; }
         }
-        .animate-ember-flow { animation: ember-flow 20s linear infinite; }
-        .font-arabic { font-family: 'Noto Sans Arabic', sans-serif; }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.95; }
+          50% { opacity: 1; }
+        }
+        .animate-cave-dust { animation: cave-dust 180s linear infinite; }
+        .animate-pulse-slow { animation: pulse-slow 5s ease-in-out infinite; }
       `}</style>
 
     </div>
