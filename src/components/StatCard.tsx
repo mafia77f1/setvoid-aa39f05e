@@ -25,8 +25,8 @@ const statConfig = {
     icon: Heart,
     colorClass: 'text-spirit',
   },
-  Agility: {
-    label: 'قوة الرشاقة',
+  quran: {
+    label: 'تقدم القرآن',
     icon: BookOpen,
     colorClass: 'text-quran',
   },
