@@ -1,68 +1,125 @@
 import { useState, useEffect } from 'react';
 
-export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string, onTimeComplete: () => void }) => {
+/**
+ * PenaltyZoneScreen - نسخة الصحراء المنبسطة الكاملة
+ * @param endTime - الوقت الذي ينتهي عنده العداد (مثلاً بعد 4 ساعات)
+ * @param onTimeComplete - وظيفة تُنفذ عند انتهاء الوقت
+ */
+export const PenaltyZoneScreen = ({ 
+  endTime = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), 
+  onTimeComplete 
+}: { 
+  endTime?: string, 
+  onTimeComplete?: () => void 
+}) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
+  // تحديث عداد الوقت كل ثانية
   useEffect(() => {
-    const timer = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((new Date(endTime).getTime() - Date.now()) / 1000));
+    const calculateTime = () => {
+      const end = new Date(endTime).getTime();
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((end - now) / 1000));
       setTimeRemaining(remaining);
-      if (remaining <= 0) onTimeComplete();
-    }, 1000);
+      
+      if (remaining <= 0 && onTimeComplete) {
+        onTimeComplete();
+      }
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
   }, [endTime, onTimeComplete]);
 
-  const h = Math.floor(timeRemaining / 3600);
-  const m = Math.floor((timeRemaining % 3600) / 60);
-  const s = timeRemaining % 60;
+  // تنسيق الوقت إلى ساعات:دقائق:ثواني
+  const formatTime = (s: number) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return {
+      hours: String(h).padStart(2, '0'),
+      minutes: String(m).padStart(2, '0'),
+      seconds: String(sec).padStart(2, '0')
+    };
+  };
+
+  const t = formatTime(timeRemaining);
 
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* مشهد الصحراء المنبسطة */}
+      {/* 1. بيئة الصحراء المنبسطة بالكامل (الشاشة كاملة) */}
       <div className="absolute inset-0 z-0">
         
-        {/* السماء الليلية - تدرج عميق جداً */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0500] via-black to-black z-0" />
+        {/* لون الرمل الأساسي الجبار */}
+        <div className="absolute inset-0 bg-[#bc6c25]" />
 
-        {/* التل الأولي المنبسط (The Flat Dune) */}
+        {/* تدرج العمق والأفق (يسحب العين من الأسفل للأعلى نحو الظلام) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#4a2c0f]/80 to-transparent z-10" />
+
+        {/* نسيج الرمل (Texture) الممتد لإعطاء واقعية للملمس */}
         <div 
-          className="absolute bottom-0 left-0 w-full h-[30vh] z-30 shadow-[0_-20px_80px_rgba(0,0,0,0.9)]"
+          className="absolute inset-0 opacity-25 mix-blend-overlay z-20"
           style={{ 
-            background: 'linear-gradient(to top, #5d3211 0%, #c27a3f 100%)',
-            clipPath: 'ellipse(150% 100% at 50% 100%)' // منحنى خفيف جداً لتبدو منبسطة
+            backgroundImage: "url('https://www.transparenttextures.com/patterns/sandpaper.png')",
+            backgroundSize: '150px 150px'
           }}
-        >
-          {/* نسيج الرمل الناعم */}
-          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/sandpaper.png')]" />
-          
-          {/* وهج خفيف على حافة التل */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#ffd4a3]/20 to-transparent" />
+        />
+
+        {/* تأثير الرياح والغبار الرملي الزاحف على الأرضية */}
+        <div className="absolute inset-0 z-30 opacity-20 pointer-events-none">
+          <div className="absolute inset-0 animate-sand-drift bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
         </div>
 
-        {/* أفق الصحراء المفتوح (تدرج لوني يعطي إيحاء بالمدى البعيد) */}
-        <div className="absolute bottom-[30vh] left-0 w-full h-[10vh] bg-gradient-to-t from-black to-transparent opacity-50 z-10" />
-
-        {/* تأثير غبار خفيف جداً في الأفق */}
-        <div className="absolute inset-0 pointer-events-none z-20 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-sand-float" />
+        {/* إضاءة مركزية خفيفة جداً تعطي بعداً للمكان */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(255,190,118,0.15)_0%,transparent_70%)] z-25" />
       </div>
 
-      {/* العداد المصغر في الأعلى */}
-      <div className="relative z-50 flex flex-col items-center pt-12 w-full">
-        <div className="bg-black/60 backdrop-blur-md border border-[#c27a3f]/20 px-8 py-3 rounded-sm shadow-2xl">
-          <div className="text-[#c27a3f] font-black tracking-[0.6em] text-[8px] uppercase mb-1 text-center font-mono opacity-80">DESERT ZONE</div>
-          <div className="text-4xl font-mono font-bold text-white tracking-tighter tabular-nums drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-            {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+      {/* 2. العداد الرقمي المصغر (Solo Leveling Style) في الأعلى */}
+      <div className="relative z-50 flex flex-col items-center pt-16 w-full">
+        <div className="bg-black/80 backdrop-blur-xl border border-[#dda15e]/30 px-10 py-4 rounded-sm shadow-[0_0_40px_rgba(0,0,0,0.7)]">
+          {/* نص المهمة */}
+          <div className="text-[#dda15e] font-black tracking-[0.6em] text-[9px] uppercase mb-2 text-center font-mono opacity-90 animate-pulse">
+            PENALTY MISSION: SURVIVE
+          </div>
+          
+          {/* أرقام الوقت */}
+          <div className="flex items-center gap-2">
+            <span className="text-5xl font-mono font-black text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              {t.hours}:{t.minutes}:{t.seconds}
+            </span>
+          </div>
+
+          {/* شريط تقدم نحيف جداً */}
+          <div className="w-full h-[1px] bg-[#dda15e]/20 mt-3 overflow-hidden">
+            <div className="h-full bg-[#dda15e] animate-shimmer" style={{ width: '100%', backgroundSize: '200% 100%' }} />
           </div>
         </div>
+
+        {/* نص تحذيري خافت تحت العداد */}
+        <div className="mt-4 text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">
+          Time Remaining in Desert Domain
+        </div>
       </div>
 
+      {/* أنيميشن الرياح والشريط */}
       <style>{`
-        @keyframes sand-float {
+        @keyframes sand-drift {
           from { background-position: 0 0; }
-          to { background-position: 1000px 500px; }
+          to { background-position: 1200px 600px; }
         }
-        .animate-sand-float { animation: sand-float 200s linear infinite; }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .animate-sand-drift { 
+          animation: sand-drift 100s linear infinite; 
+        }
+        .animate-shimmer {
+          animation: shimmer 4s linear infinite;
+          background-image: linear-gradient(90deg, transparent, rgba(221,161,94,0.5), transparent);
+        }
       `}</style>
 
     </div>
