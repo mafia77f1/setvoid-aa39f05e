@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const DesertPenaltyQuest = ({ endTime, onTimeComplete }: { endTime: string, onTimeComplete: () => void }) => {
+export const SoloLevelingPenaltyScreen = ({ endTime, onTimeComplete }) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
   useEffect(() => {
@@ -17,95 +17,78 @@ export const DesertPenaltyQuest = ({ endTime, onTimeComplete }: { endTime: strin
   const s = timeRemaining % 60;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans" style={{ perspective: '1200px' }}>
+    <div className="fixed inset-0 z-[100] bg-[#0a0000] overflow-hidden font-sans select-none">
       
-      {/* 1. السماء - شريط علوي صغير وداكن جداً ليعطي هيبة */}
-      <div className="absolute top-0 left-0 w-full h-[15vh] bg-gradient-to-b from-black via-[#0a0a0a] to-[#bc6c25] z-0" />
-
-      {/* 2. مجسم الصحراء 3D الواسع (الرمل المتحرك للأمام) */}
-      <div className="absolute inset-0 z-10 flex justify-center">
-        <div 
-          className="absolute bottom-[-30%] w-[400%] h-[110vh] origin-top"
-          style={{ 
-            transform: 'rotateX(80deg)',
-            // مزيج ألوان ليعطي عمق الكثبان الرملية
-            background: `
-              radial-gradient(circle at 50% 0%, transparent 10%, rgba(0,0,0,0.7) 100%),
-              #bc6c25
-            `,
-          }}
-        >
-          {/* نسيج الرمل المتحرك (السرعة تعطي إحساس المشي) */}
-          <div 
-            className="absolute inset-0 opacity-40 animate-ground-advance"
-            style={{ 
-              backgroundImage: `url('https://www.transparenttextures.com/patterns/sandpaper.png')`,
-              backgroundSize: '200px 200px'
-            }}
-          />
-          
-          {/* خطوط الطول لزيادة تأثير الـ 3D والسرعة */}
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_48%,rgba(0,0,0,0.05)_50%,transparent_52%)] bg-[length:5%_100%]" />
-        </div>
-      </div>
-
-      {/* 3. الشخصية (منظور الشخص الثالث - تنظر للأمام نحو الأفق) */}
-      <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center">
-        {/* ظل الشخصية على الرمل */}
-        <div className="w-20 h-5 bg-black/60 blur-xl rounded-full mb-[-15px] scale-x-150" />
+      {/* 1. الخلفية السينمائية (تدرج أحمر وأسود مثل الصور) */}
+      <div className="absolute inset-0 z-0">
+        {/* توهج أحمر علوي (مثل الشمس الحمراء في الصورة) */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-red-600/20 blur-[120px] rounded-full" />
         
-        {/* جسم الشخصية - مصمم ليكون غامض (Silhouette) */}
-        <div className="animate-character-move">
-          <svg width="110" height="200" viewBox="0 0 100 200">
-            {/* الرأس */}
-            <circle cx="50" cy="35" r="13" fill="#000" />
-            {/* رداء طويل عريض الكتفين */}
-            <path d="M15 60 Q50 40 85 60 L95 190 L5 190 Z" fill="#0d0d0d" />
-            {/* تفاصيل بسيطة للرداء */}
-            <path d="M50 60 L50 190" stroke="#1a1a1a" strokeWidth="2" opacity="0.4" />
-          </svg>
-        </div>
-
-        {/* لافتة النظام فوق الشخصية */}
-        <div className="mt-4 bg-black/60 border border-red-900/50 px-3 py-1 backdrop-blur-sm">
-           <span className="text-[9px] text-red-600 font-black tracking-[0.3em] uppercase">Status: Exhausted</span>
-        </div>
+        {/* تأثير الضباب والدخان السفل */}
+        <div className="absolute bottom-0 left-0 w-full h-[60vh] bg-gradient-to-t from-black via-red-950/20 to-transparent z-10" />
+        
+        {/* نسيج الأرضية المظلمة */}
+        <div className="absolute inset-0 opacity-40 mix-blend-soft-light bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
       </div>
 
-      {/* 4. العداد (UI النظام - سولو ليفلينج ستايل) */}
-      <div className="relative z-50 flex flex-col items-center pt-10">
-        <div className="bg-black/90 border-t-2 border-red-600 px-12 py-4 shadow-[0_20px_50px_rgba(0,0,0,1)]">
-          <div className="text-[10px] text-red-600 font-bold tracking-[0.6em] uppercase mb-1 text-center">Penalty Quest</div>
-          <div className="text-5xl font-mono font-black text-white tracking-[0.1em] tabular-nums">
-            {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+      {/* 2. نظام العداد (System HUD) - مستوحى من واجهة سولو ليفلينج */}
+      <div className="relative z-50 flex flex-col items-center justify-start pt-16 px-6">
+        
+        {/* إطار العداد العلوي */}
+        <div className="relative group">
+          {/* خطوط التصميم الجانبية (UI Borders) */}
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 h-[80%] w-[2px] bg-red-600 shadow-[0_0_10px_#dc2626]" />
+          <div className="absolute -right-4 top-1/2 -translate-y-1/2 h-[80%] w-[2px] bg-red-600 shadow-[0_0_10px_#dc2626]" />
+          
+          <div className="flex flex-col items-center">
+             <span className="text-[10px] text-red-500 font-bold tracking-[0.3em] uppercase mb-1 animate-pulse">
+               System Penalty Mode
+             </span>
+             
+             {/* الوقت الرقمي المتوهج */}
+             <div className="text-6xl font-mono font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+               {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+             </div>
+             
+             <div className="mt-2 h-[1px] w-48 bg-gradient-to-r from-transparent via-red-600 to-transparent" />
+             <p className="mt-2 text-[9px] text-gray-400 font-medium tracking-widest uppercase">
+               Goal: Survival in the Endless Desert
+             </p>
           </div>
         </div>
       </div>
 
-      {/* 5. تأثيرات الجو (عاصفة رملية وتعتيم سينمائي) */}
+      {/* 3. عناصر الجرافيك الوسطى (Silhouette) */}
+      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+        {/* ظل خفيف لشخصية (Optional) أو وحش خلفي كما في الصورة الأولى */}
+        <div className="w-full h-full opacity-30 mix-blend-overlay bg-center bg-no-repeat bg-contain" 
+             style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/asfalt-dark.png')` }} />
+      </div>
+
+      {/* 4. تأثير العاصفة والشرارات (Particles) */}
       <div className="absolute inset-0 z-30 pointer-events-none">
-        {/* غبار متطاير */}
-        <div className="absolute inset-0 opacity-20 animate-sand-storm bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        {/* تعتيم الأطراف لتركيز النظر للداخل */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.8)_100%)]" />
+        <div className="absolute inset-0 animate-ember bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
+      </div>
+
+      {/* 5. بار الحالة السفلي (Level/Exp) */}
+      <div className="absolute bottom-10 left-0 w-full px-10 z-50">
+        <div className="flex justify-between items-end mb-1">
+          <span className="text-red-500 font-bold text-xs italic">LV. 001</span>
+          <span className="text-white/40 text-[8px]">HP 100% / MP 100%</span>
+        </div>
+        <div className="h-[3px] w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
+          <div className="h-full bg-red-600 shadow-[0_0_8px_#dc2626] w-[75%] animate-pulse" />
+        </div>
       </div>
 
       <style>{`
-        @keyframes ground-advance {
-          from { background-position: 0 0; }
-          to { background-position: 0 1200px; }
+        @keyframes ember {
+          0% { background-position: 0% 0%; }
+          100% { background-position: 100% 100%; }
         }
-        @keyframes character-move {
-          0%, 100% { transform: translateY(0) scaleX(1); }
-          50% { transform: translateY(-8px) scaleX(1.03); }
+        .animate-ember {
+          animation: ember 40s linear infinite;
         }
-        @keyframes sand-storm {
-          from { background-position: 0 0; }
-          to { background-position: 800px 400px; }
-        }
-        .animate-ground-advance { animation: ground-advance 10s linear infinite; }
-        .animate-character-move { animation: character-move 0.7s ease-in-out infinite; }
-        .animate-sand-storm { animation: sand-storm 15s linear infinite; }
       `}</style>
 
     </div>
