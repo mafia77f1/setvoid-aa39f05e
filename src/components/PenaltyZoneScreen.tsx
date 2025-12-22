@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface PenaltyZoneScreenProps {
-  endTime: string; // تأكد من تمرير تاريخ ينتهي بعد 4 ساعات
+  endTime: string; // مثال: "2025-12-22T23:59:59"
   onTimeComplete: () => void;
 }
 
 export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreenProps) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // تحديث عداد الوقت (4 ساعات)
+  // تحديث عداد الوقت
   useEffect(() => {
     const calculateTime = () => {
       const end = new Date(endTime).getTime();
@@ -17,7 +17,9 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
       const remaining = Math.max(0, Math.floor((end - now) / 1000));
       setTimeRemaining(remaining);
       
-      if (remaining <= 0) onTimeComplete();
+      if (remaining <= 0 && onTimeComplete) {
+        onTimeComplete();
+      }
     };
 
     calculateTime();
@@ -26,87 +28,89 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   }, [endTime, onTimeComplete]);
 
   const formatTime = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
+    const hours = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = s % 60;
     return {
-      hours: String(h).padStart(2, '0'),
-      minutes: String(m).padStart(2, '0'),
-      seconds: String(sec).padStart(2, '0')
+      h: String(hours).padStart(2, '0'),
+      m: String(minutes).padStart(2, '0'),
+      sec: String(seconds).padStart(2, '0')
     };
   };
 
-  const time = formatTime(timeRemaining);
+  const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* 1. الخلفية: كهف مظلم وسينمائي (فارغ تماماً) */}
-      <div className="absolute inset-0 z-0">
-        {/* تأثير الضباب الأحمر المظلم */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(60,0,0,0.2)_0%,black_90%)]" />
+      {/* 1. وصف البيئة: الكهف السينمائي الفارغ */}
+      <div className="absolute inset-0">
+        {/* تأثير الصخور والظلام */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(40,0,0,0.2)_0%,black_100%)] z-10" />
         
-        {/* نسيج الكهف الصخري (بدون شخصيات) */}
+        {/* نسيج صخري خلفي خفيف جداً */}
         <div 
-          className="absolute inset-0 opacity-30 mix-blend-overlay bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1505506819647-681a49710524?q=80')" }}
+          className="absolute inset-0 opacity-20 mix-blend-overlay bg-cover bg-center z-0"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/dark-matter.png')" }}
         />
 
-        {/* ظلال خفيفة جداً في الزوايا لإعطاء عمق المكان */}
-        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent opacity-80" />
+        {/* ضباب أحمر متحرك في قاع الكهف */}
+        <div className="absolute bottom-[-10%] left-0 w-full h-[50vh] bg-red-900/10 blur-[120px] rounded-[100%] animate-pulse z-20" />
       </div>
 
-      {/* 2. عداد الوقت (Solo Leveling Style) */}
-      <div className="relative z-10 flex flex-col items-center">
-        {/* نص علوي صغير */}
-        <div className="mb-2 tracking-[0.5em] text-[10px] text-red-500/80 font-bold uppercase animate-pulse">
-          Penalty Mission Timer
+      {/* 2. العداد الرقمي العلوي (Solo Leveling Style) */}
+      <div className="relative z-50 flex flex-col items-center pt-20">
+        {/* تسمية المهمة */}
+        <div className="mb-4 text-red-600 font-black tracking-[0.6em] text-[10px] uppercase drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
+          Penalty Quest: Survive
         </div>
 
-        {/* الأرقام الكبيرة */}
-        <div className="flex items-center gap-4 bg-black/40 backdrop-blur-xl p-8 rounded-2xl border border-red-900/20 shadow-[0_0_50px_rgba(150,0,0,0.1)]">
+        {/* أرقام الوقت */}
+        <div className="flex items-center gap-6 bg-black/60 backdrop-blur-xl px-10 py-6 border border-red-900/20 rounded-xl shadow-2xl">
           <div className="flex flex-col items-center">
-            <span className="text-6xl md:text-8xl font-mono font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              {time.hours}
+            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
+              {t.h}
             </span>
-            <span className="text-[10px] text-gray-500 font-bold mt-2">HOUR</span>
-          </div>
-          
-          <span className="text-4xl md:text-6xl font-mono font-bold text-red-600 pb-6">:</span>
-
-          <div className="flex flex-col items-center">
-            <span className="text-6xl md:text-8xl font-mono font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              {time.minutes}
-            </span>
-            <span className="text-[10px] text-gray-500 font-bold mt-2">MIN</span>
+            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">HOUR</span>
           </div>
 
-          <span className="text-4xl md:text-6xl font-mono font-bold text-red-600 pb-6">:</span>
+          <span className="text-5xl font-mono text-red-700 animate-pulse pb-6">:</span>
 
           <div className="flex flex-col items-center">
-            <span className="text-6xl md:text-8xl font-mono font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              {time.seconds}
+            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
+              {t.m}
             </span>
-            <span className="text-[10px] text-gray-500 font-bold mt-2">SEC</span>
+            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">MIN</span>
+          </div>
+
+          <span className="text-5xl font-mono text-red-700 animate-pulse pb-6">:</span>
+
+          <div className="flex flex-col items-center">
+            <span className="text-7xl md:text-8xl font-mono font-black text-white leading-none tracking-tighter">
+              {t.sec}
+            </span>
+            <span className="text-[9px] text-gray-500 font-bold mt-2 tracking-widest">SEC</span>
           </div>
         </div>
 
-        {/* شريط التحميل السفلي */}
-        <div className="mt-8 w-64 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5">
-          <div 
-            className="h-full bg-gradient-to-r from-red-900 via-red-600 to-red-900 animate-shimmer" 
-            style={{ width: '100%', backgroundSize: '200% 100%' }} 
-          />
+        {/* شريط التقدم النحيف */}
+        <div className="mt-6 w-72 h-0.5 bg-white/5 rounded-full overflow-hidden">
+          <div className="h-full bg-red-600 animate-pulse" style={{ width: '100%' }} />
         </div>
+      </div>
+
+      {/* 3. إضافات جوية: غبار يتطاير (اختياري) */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-30">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-slow-scroll" />
       </div>
 
       <style>{`
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+        @keyframes slow-scroll {
+          from { background-position: 0 0; }
+          to { background-position: 500px 500px; }
         }
-        .animate-shimmer {
-          animation: shimmer 3s linear infinite;
+        .animate-slow-scroll {
+          animation: slow-scroll 60s linear infinite;
         }
       `}</style>
 
