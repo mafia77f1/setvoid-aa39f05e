@@ -41,60 +41,37 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-[#000000] overflow-hidden font-sans">
       
-      {/* 1. الأنياب العلوية (تتدلى من سقف الشاشة) */}
-      <div className="absolute top-0 left-0 right-0 z-[60] flex items-start justify-around pointer-events-none">
-        {[...Array(8)].map((_, i) => (
-          <div 
-            key={`top-${i}`}
-            className="bg-black border-x border-red-900/20"
-            style={{
-              width: `${10 + Math.random() * 15}%`,
-              height: `${15 + Math.random() * 20}vh`,
-              clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-              filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.8))'
-            }}
-          />
-        ))}
-      </div>
+      {/* 1. خلفية الكهف والضوء */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(100,0,0,0.2)_0%,#000000_100%)] z-0" />
 
-      {/* 2. بيئة الكهف والعداد */}
-      <div className="absolute inset-0 z-0 h-full">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(80,0,0,0.15)_0%,#000000_100%)] z-10" />
-        
-        <div className="relative z-50 flex flex-col items-center pt-24 w-full">
-            <div className="bg-black/80 backdrop-blur-md border border-red-900/40 px-6 py-2 rounded-sm flex flex-col items-center">
-              <div className="text-red-600 font-black tracking-[0.4em] text-[8px] uppercase mb-1">
-                RESTRICTED AREA
-              </div>
-              <div className="text-3xl font-mono font-bold text-white tabular-nums tracking-wider">
-                {t.h}:{t.m}:{t.sec}
-              </div>
-            </div>
+      {/* 2. إطار الأنياب (Cave Mouth Frame) */}
+      {/* سقف الكهف */}
+      <div className="absolute top-0 left-0 right-0 z-[60] h-20 bg-black flex" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 60%, 95% 100%, 90% 50%, 85% 90%, 80% 40%, 75% 100%, 70% 60%, 65% 95%, 60% 45%, 55% 100%, 50% 55%, 45% 90%, 40% 40%, 35% 95%, 30% 50%, 25% 100%, 20% 60%, 15% 85%, 10% 40%, 5% 95%, 0% 60%)' }} />
+      
+      {/* أرضية الكهف */}
+      <div className="absolute bottom-0 left-0 right-0 z-[60] h-24 bg-black flex" style={{ clipPath: 'polygon(0 100%, 100% 100%, 100% 40%, 95% 0%, 90% 50%, 85% 10%, 80% 60%, 75% 0%, 70% 40%, 65% 5%, 60% 55%, 55% 0%, 50% 45%, 45% 10%, 40% 60%, 35% 5%, 30% 50%, 25% 0%, 20% 40%, 15% 15%, 10% 60%, 5% 5%, 0% 40%)' }} />
+
+      {/* الجوانب (اختياري لزيادة العمق) */}
+      <div className="absolute top-0 bottom-0 left-0 w-8 bg-black z-[60]" style={{ clipPath: 'polygon(0 0, 100% 5%, 40% 10%, 100% 15%, 50% 20%, 100% 25%, 30% 30%, 100% 35%, 60% 40%, 100% 45%, 20% 50%, 100% 55%, 70% 60%, 100% 65%, 40% 70%, 100% 75%, 60% 80%, 100% 85%, 20% 90%, 100% 95%, 0 100%)' }} />
+      <div className="absolute top-0 bottom-0 right-0 w-8 bg-black z-[60]" style={{ clipPath: 'polygon(100% 0, 0 5%, 60% 10%, 0 15%, 50% 20%, 0 25%, 70% 30%, 0 35%, 40% 40%, 0 45%, 80% 50%, 0 55%, 30% 60%, 0 65%, 60% 70%, 0 75%, 40% 80%, 0 85%, 80% 90%, 0 95%, 100% 100%)' }} />
+
+      {/* 3. العداد في المنتصف */}
+      <div className="relative z-50 flex flex-col items-center justify-center h-full">
+        <div className="bg-black/40 backdrop-blur-md border border-red-900/30 p-8 rounded-full shadow-[0_0_50px_rgba(255,0,0,0.1)]">
+          <div className="text-red-600 font-black tracking-[0.6em] text-[10px] uppercase mb-2 text-center">
+            SYSTEM LOCKED
+          </div>
+          <div className="text-5xl font-mono font-bold text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+            {t.h}:{t.m}:{t.sec}
+          </div>
         </div>
       </div>
 
-      {/* 3. الأرضية والخط الأحمر */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[25vh] bg-[#000000]">
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8)] z-50" />
-        
-        {/* 4. الأنياب السفلية (تخرج من أسفل الشاشة) */}
-        <div className="absolute bottom-0 left-0 right-0 z-[60] flex items-end justify-around pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div 
-              key={`bot-${i}`}
-              className="bg-black border-x border-red-900/30 shadow-[0_-10px_20px_rgba(255,0,0,0.05)]"
-              style={{
-                width: `${12 + Math.random() * 18}%`,
-                height: `${20 + Math.random() * 25}vh`,
-                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-              }}
-            />
-          ))}
-        </div>
-      </div>
+      {/* 4. الخط الأحمر السفلي (خلف الأنياب) */}
+      <div className="absolute bottom-[80px] left-0 right-0 h-[2px] bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)] z-40" />
 
-      {/* تأثيرات الغبار */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.04] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
+      {/* تأثيرات الغبار العائمة */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-cave-dust" />
 
       <style>{`
         @keyframes cave-dust {
