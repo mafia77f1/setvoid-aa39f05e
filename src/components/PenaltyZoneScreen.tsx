@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Skull, X, Heart, Zap } from 'lucide-react';
+import { Clock, Skull, Heart } from 'lucide-react';
 
 interface PenaltyZoneScreenProps {
   endTime: string;
@@ -20,7 +20,7 @@ export const PenaltyZoneScreen = ({
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isDead, setIsDead] = useState(false);
 
-  // تحديث الوقت
+  // تحديث عداد الوقت
   useEffect(() => {
     const timer = setInterval(() => {
       const end = new Date(endTime).getTime();
@@ -32,11 +32,11 @@ export const PenaltyZoneScreen = ({
     return () => clearInterval(timer);
   }, [endTime, onTimeComplete]);
 
-  // نظام الضرر التلقائي
+  // نظام تلقي الضرر (تلقائي كل 4 ثوانٍ)
   useEffect(() => {
     if (playerHp <= 0) { setIsDead(true); return; }
     const interval = setInterval(() => {
-      onPlayerDamage(Math.floor(Math.random() * 5) + 2);
+      onPlayerDamage(Math.floor(Math.random() * 8) + 5);
     }, 4000);
     return () => clearInterval(interval);
   }, [playerHp, onPlayerDamage]);
@@ -49,133 +49,112 @@ export const PenaltyZoneScreen = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-[#050000] overflow-hidden flex flex-col">
       
-      {/* الخلفية السينمائية (الكهف والوحوش) كما في الصورة */}
+      {/* 1. الخلفية: وحوش ظلال محيطة */}
       <div className="absolute inset-0 z-0">
-        {/* طبقة الكهف الضبابية الحمراء */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(100,0,0,0.2)_0%,black_80%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(50,0,0,0.3)_0%,black_90%)]" />
         
-        {/* صورة الوحوش والكهف (تم محاكاة الشكل بالـ CSS للسرعة) */}
-        <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1505506819647-681a49710524?q=80&w=2000')] bg-cover bg-center mix-blend-overlay" />
-
-        {/* الوحوش الظلية الجانبية */}
-        <div className="absolute inset-0 flex justify-between items-center px-4 pointer-events-none">
-          <MonsterShadow side="left" />
-          <MonsterShadow side="center" isBig />
-          <MonsterShadow side="right" />
+        {/* توزيع الوحوش كظلال ثابتة في الخلفية */}
+        <div className="absolute inset-0 flex items-center justify-around pointer-events-none opacity-30">
+          <div className="w-40 h-[70vh] bg-black blur-2xl rounded-full translate-y-20 -translate-x-10" />
+          <div className="w-60 h-[90vh] bg-black blur-3xl rounded-full translate-y-10" />
+          <div className="w-40 h-[70vh] bg-black blur-2xl rounded-full translate-y-20 translate-x-10" />
         </div>
       </div>
 
-      {/* العداد العلوي (على شكل الواجهة في الصورة) */}
-      <div className="relative z-20 flex flex-col items-center mt-10">
-        <div className="bg-black/40 backdrop-blur-sm border border-white/10 px-6 py-2 rounded-full">
-          <span className="text-3xl font-mono font-bold text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+      {/* 2. الوقت في الأعلى */}
+      <div className="relative z-20 flex flex-col items-center mt-12">
+        <div className="bg-black/60 backdrop-blur-md border border-red-900/30 px-8 py-3 rounded-md">
+          <div className="flex items-center gap-2 mb-1 justify-center">
+            <Clock className="w-4 h-4 text-red-500" />
+            <span className="text-[10px] text-red-500 font-bold tracking-widest">TIME REMAINING</span>
+          </div>
+          <span className="text-4xl font-mono font-bold text-white tracking-tighter">
             {formatTime(timeRemaining)}
           </span>
         </div>
-        {/* شريط التقدم الصغير تحت الوقت */}
-        <div className="w-48 h-1 bg-white/20 mt-2 rounded-full overflow-hidden">
-          <div className="h-full bg-red-600 animate-pulse" style={{ width: '65%' }} />
-        </div>
       </div>
 
-      {/* اللاعب (Stickman المتوهج) في المنتصف تماماً */}
+      {/* 3. منطقة اللاعب المركزية */}
       <div className="relative z-10 flex-1 flex items-center justify-center">
-        <div className="relative">
-          {/* توهج تحت اللاعب */}
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-12 h-4 bg-white/20 blur-xl rounded-full" />
+        <div className="relative flex flex-col items-center">
           
-          {/* الشخصية (Stickman) كما في الصورة */}
-          <div className="relative animate-bounce-slow">
-             <StickmanFigure />
-          </div>
-
-          {/* فقاعة الكلام (اختياري كما في الصورة) */}
-          <div className="absolute -top-16 -right-20 bg-black/80 border border-white/20 p-2 rounded-lg text-[10px] text-white whitespace-nowrap">
-            الظلم حتم على الكل...
-          </div>
-        </div>
-      </div>
-
-      {/* شريط الصحة السفلي (HP) */}
-      <div className="relative z-20 p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
-        <div className="max-w-md mx-auto">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-red-600 fill-red-600" />
-              <span className="text-white font-bold tracking-tighter text-xl">HP</span>
+          {/* شريط الصحة (HP) فوق رأس اللاعب مباشرة كما طلبت */}
+          <div className="mb-6 w-32 flex flex-col items-center animate-pulse">
+            <div className="flex justify-between w-full text-[10px] font-bold text-white mb-1 px-1">
+              <span>HP</span>
+              <span className={cn(playerHp < 30 ? "text-red-500" : "text-green-500")}>
+                {playerHp}%
+              </span>
             </div>
-            <span className="text-white font-mono text-xl">{playerHp} / {maxPlayerHp}</span>
+            <div className="w-full h-1.5 bg-black border border-white/10 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-red-600 transition-all duration-1000"
+                style={{ width: `${(playerHp / maxPlayerHp) * 100}%` }}
+              />
+            </div>
           </div>
-          <div className="h-3 w-full bg-white/10 rounded-sm border border-white/5 overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-red-800 to-red-500 transition-all duration-500"
-              style={{ width: `${(playerHp / maxPlayerHp) * 100}%` }}
-            />
+
+          {/* مجسم اللاعب: ثابت، بسيط وقوي (Shadow Warrior) */}
+          <div className="relative">
+            {/* توهج هالة القوة خلف اللاعب */}
+            <div className="absolute inset-0 bg-red-600/10 blur-3xl rounded-full scale-150" />
+            
+            {/* تصميم Stickman محسن ليكون أكثر قوة */}
+            <div className="relative scale-125">
+               <StrongStickman />
+            </div>
+          </div>
+
+          {/* نص تحذيري صغير تحت اللاعب */}
+          <div className="mt-12 bg-red-950/20 border border-red-500/20 px-4 py-1 rounded text-[10px] text-red-400 font-bold tracking-tight">
+            SURVIVAL MODE ACTIVE
           </div>
         </div>
       </div>
 
-      {/* شاشة الموت */}
+      {/* 4. شاشة الموت */}
       {isDead && (
-        <div className="absolute inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 animate-in fade-in duration-700">
-          <Skull className="w-20 h-20 text-red-600 mb-6 animate-pulse" />
-          <h2 className="text-5xl font-black text-red-600 italic tracking-tighter mb-4">لقد هُزمت</h2>
-          <div className="flex flex-col gap-4 w-full max-w-xs">
+        <div className="absolute inset-0 z-50 bg-black/98 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+          <Skull className="w-16 h-16 text-red-600 mb-4" />
+          <h2 className="text-4xl font-black text-red-600 italic mb-2">MISSION FAILED</h2>
+          <p className="text-gray-500 text-sm mb-8 max-w-[250px]">لقد استنفدت كامل صحتك. منطقة العقاب لا ترحم الضعفاء.</p>
+          
+          <div className="flex flex-col gap-3 w-full max-w-xs px-10">
             {shadowPoints >= 50 ? (
-              <button onClick={onRevive} className="py-4 bg-white text-black font-bold rounded-lg active:scale-95 transition-transform">
-                إحياء بـ 50 نقطة ظل
+              <button onClick={onRevive} className="py-4 bg-white text-black font-black rounded-sm hover:bg-gray-200 transition-colors uppercase text-xs tracking-widest">
+                Revive (50 SP)
               </button>
             ) : (
-              <button onClick={onExit} className="py-4 bg-red-950 text-red-500 border border-red-500 font-bold rounded-lg">
-                قبول العقوبة والخروج
+              <button onClick={onExit} className="py-4 border border-red-600 text-red-600 font-black rounded-sm hover:bg-red-600/10 transition-colors uppercase text-xs tracking-widest">
+                Accept Death
               </button>
             )}
           </div>
         </div>
       )}
 
-      <style>{`
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
-      `}</style>
     </div>
   );
 };
 
-// مكون الوحوش الظلية
-const MonsterShadow = ({ side, isBig = false }: { side: string, isBig?: boolean }) => (
-  <div className={cn(
-    "relative flex flex-col items-center transition-opacity duration-1000",
-    isBig ? "w-64 scale-150 opacity-80" : "w-32 opacity-40",
-    side === "center" ? "mt-20" : "mt-40"
-  )}>
-    {/* جسم الوحش (مجرد ظل أسود بعيون متوهجة) */}
-    <div className="w-full h-80 bg-black rounded-t-full relative" style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)' }}>
-      <div className="absolute top-10 left-1/4 w-3 h-2 bg-red-600 blur-[2px] rounded-full animate-pulse" />
-      <div className="absolute top-10 right-1/4 w-3 h-2 bg-red-600 blur-[2px] rounded-full animate-pulse" />
-    </div>
-  </div>
-);
-
-// مكون الـ Stickman الأبيض المتوهج
-const StickmanFigure = () => (
+// مجسم لاعب محسن (قوي وبسيط)
+const StrongStickman = () => (
   <div className="flex flex-col items-center">
-    {/* الرأس */}
-    <div className="w-6 h-6 bg-white rounded-full shadow-[0_0_15px_#fff]" />
-    {/* الجسم */}
-    <div className="w-1 h-12 bg-white shadow-[0_0_10px_#fff]" />
-    {/* اليدين */}
-    <div className="absolute top-7 w-12 h-1 bg-white shadow-[0_0_10px_#fff] -rotate-12" />
-    {/* القدمين */}
-    <div className="flex gap-4 -mt-1">
-      <div className="w-1 h-10 bg-white shadow-[0_0_10px_#fff] rotate-12" />
-      <div className="w-1 h-10 bg-white shadow-[0_0_10px_#fff] -rotate-12" />
+    {/* الرأس - متوهج قليلاً */}
+    <div className="w-5 h-5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)] mb-0.5" />
+    {/* الجذع - عريض ليعطي مظهر القوة */}
+    <div className="w-1.5 h-10 bg-white shadow-[0_0_10px_white]" />
+    {/* الذراعين - بوضعية قوية */}
+    <div className="absolute top-6 flex justify-between w-14">
+        <div className="w-1.5 h-8 bg-white shadow-[0_0_10px_white] rotate-[35deg] origin-top rounded-full" />
+        <div className="w-1.5 h-8 bg-white shadow-[0_0_10px_white] -rotate-[35deg] origin-top rounded-full" />
+    </div>
+    {/* الساقين - وضعية ثبات */}
+    <div className="flex gap-4 -mt-0.5">
+      <div className="w-1.5 h-12 bg-white shadow-[0_0_10px_white] rotate-[15deg] origin-top rounded-full" />
+      <div className="w-1.5 h-12 bg-white shadow-[0_0_10px_white] -rotate-[15deg] origin-top rounded-full" />
     </div>
   </div>
 );
-
