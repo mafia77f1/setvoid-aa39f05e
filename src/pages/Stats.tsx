@@ -14,7 +14,6 @@ import {
   Plus,
   CircleUser,
   Footprints,
-  Sparkles,
   Zap,
   Target,
   Lock
@@ -24,7 +23,6 @@ const Stats = () => {
   const { gameState, getXpProgress } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
-  // الحد الأقصى للمستوى لاكتمال الرادار
   const MAX_LEVEL = 100;
 
   const stats = [
@@ -66,7 +64,6 @@ const Stats = () => {
     },
   ];
 
-  // تعديل منطق الرادار ليعتمد على Level / MAX_LEVEL
   const radarStats = {
     strength: Math.min((gameState.levels.strength / MAX_LEVEL) * 100, 100),
     mind: Math.min((gameState.levels.mind / MAX_LEVEL) * 100, 100),
@@ -243,27 +240,20 @@ const Stats = () => {
               ))}
             </div>
 
-            {/* Resources */}
+            {/* Resources - تم حذف نقاط الظل وأيقونة الذهب */}
             <div 
-              className="p-4 rounded-xl border grid grid-cols-2 gap-4"
+              className="p-4 rounded-xl border flex flex-col items-center justify-center"
               style={{ 
                 background: 'linear-gradient(135deg, hsl(45 50% 8%), hsl(45 60% 4%))',
                 borderColor: 'hsl(45 100% 50% / 0.3)'
               }}
             >
-              <div className="text-center relative group">
-                <div className="text-sm text-muted-foreground mb-1">الذهب</div>
-                <div className="text-xl font-bold text-yellow-500 mb-2">{gameState.gold}</div>
-                <button className="text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-3 py-1 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold">
-                  شحن +
+              <div className="text-center w-full">
+                <div className="text-sm text-muted-foreground mb-1 uppercase tracking-widest">الرصيد الذهبي</div>
+                <div className="text-3xl font-bold text-yellow-500 mb-3">{gameState.gold}</div>
+                <button className="w-full max-w-[200px] text-xs bg-yellow-500/10 text-yellow-500 border border-yellow-500/40 py-2 rounded-lg hover:bg-yellow-500 hover:text-black transition-all font-black uppercase tracking-tighter">
+                  شحن رصيد +
                 </button>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-1">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <div className="text-xl font-bold text-primary">{gameState.shadowPoints || 0}</div>
-                <div className="text-xs text-muted-foreground">نقاط الظل</div>
               </div>
             </div>
           </div>
