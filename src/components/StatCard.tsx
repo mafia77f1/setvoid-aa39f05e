@@ -26,7 +26,7 @@ const statConfig = {
     colorClass: 'text-spirit',
   },
   quran: {
-    label: 'تقدم القرآن',
+    label: 'قوة الرشاقة',
     icon: BookOpen,
     colorClass: 'text-quran',
   },
