@@ -21,58 +21,58 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans">
       
-      {/* 1. السماء (الخلفية البعيدة) */}
-      <div className={`absolute inset-0 z-0 transition-colors duration-[3000ms] ${
-        isDay 
-        ? 'bg-gradient-to-b from-[#004a7c] via-[#00a8cc] to-[#bc6c25]' 
-        : 'bg-gradient-to-b from-black via-[#0f0a05] to-[#4d2600]'
+      {/* الطبقة 1: السماء (الخلفية العلوية) */}
+      <div className={`absolute top-0 left-0 w-full h-[25vh] z-0 ${
+        isDay ? 'bg-gradient-to-b from-[#004a7c] to-[#00a8cc]' : 'bg-black'
       }`} />
 
-      {/* 2. الأرض الواسعة جداً (Infinite 3D Floor) */}
+      {/* الطبقة 2: صورة الصحراء الكاملة (ثابتة - تعطي عمق للمكان) */}
       <div 
-        className="absolute bottom-[-100px] left-[-100%] w-[300%] h-[75vh] z-10"
+        className="absolute top-[15vh] left-0 w-full h-[85vh] z-10 bg-cover bg-center"
         style={{ 
-          perspective: '1000px',
-          transformStyle: 'preserve-3d'
+          backgroundImage: "url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=2076&auto=format&fit=crop')",
+          filter: 'brightness(0.7) contrast(1.2)'
         }}
       >
+        {/* تظليل لدمج الصورة مع السماء */}
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/50" />
+      </div>
+
+      {/* الطبقة 3: الرمل المتحرك (أسفل الشاشة - كأنك تمشي عليه فعلاً) */}
+      <div className="absolute bottom-0 left-0 w-full h-[40vh] z-20 overflow-hidden">
+        {/* تأثير الـ 3D للرمل القريب */}
         <div 
-          className="absolute inset-0 origin-top"
+          className="absolute inset-0 origin-bottom"
           style={{ 
-            transform: 'rotateX(75deg)',
-            background: 'linear-gradient(to bottom, #4d2600 0%, #bc6c25 30%, #d4a373 100%)',
-            boxShadow: 'inset 0 100px 100px rgba(0,0,0,0.8)' // تظليل للأفق
+            transform: 'rotateX(60deg)',
+            background: 'linear-gradient(to bottom, transparent, #bc6c25 40%, #8b4513 100%)'
           }}
         >
-          {/* نسيج الرمل المتحرك */}
+          {/* نسيج الرمل المتحرك بسرعة */}
           <div 
-            className="absolute inset-0 opacity-40 animate-ground-move"
+            className="absolute inset-0 opacity-60 animate-ground-fast"
             style={{ 
               backgroundImage: `url('https://www.transparenttextures.com/patterns/sandpaper.png')`,
-              backgroundSize: '200px 200px'
+              backgroundSize: '150px 150px'
             }}
           />
-          
-          {/* خطوط المنظور لزيادة إحساس المساحة */}
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_49%,rgba(0,0,0,0.05)_50%,transparent_51%)] bg-[length:5%_100%]" />
         </div>
+        {/* ظل قوي لدمج الرمل المتحرك مع صورة الصحراء الثابتة */}
+        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-transparent to-[#bc6c25]" />
       </div>
 
-      {/* 3. ضباب الأفق (لإخفاء حافة الأرض) */}
-      <div className="absolute top-[25vh] left-0 w-full h-[15vh] bg-gradient-to-b from-transparent via-[#4d2600]/80 to-transparent z-20 pointer-events-none" />
-
-      {/* 4. تأثيرات العاصفة والغبار القوي */}
+      {/* الطبقة 4: تأثير الغبار والعاصفة (POV) */}
       <div className="absolute inset-0 z-30 pointer-events-none opacity-20">
-        <div className="absolute inset-0 animate-dust-storm bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
+        <div className="absolute inset-0 animate-sand-drift bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)]" />
       </div>
 
-      {/* 5. العداد العلوي (System UI) */}
+      {/* العداد التقني (System UI) */}
       <div className="relative z-50 flex flex-col items-center pt-10 w-full">
-        <div className="bg-black/80 backdrop-blur-md border border-red-600/30 px-6 py-2 shadow-[0_0_30px_rgba(0,0,0,1)]">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="bg-black/80 backdrop-blur-xl border-x-2 border-red-600 px-8 py-3 shadow-[0_0_40px_rgba(0,0,0,1)]">
+          <div className="flex items-center gap-2 mb-1 justify-center">
              <div className="w-1.5 h-1.5 bg-red-600 animate-ping rounded-full" />
-             <span className="text-white/40 font-bold tracking-[0.4em] text-[8px] uppercase font-mono">Penalty Quest Time</span>
+             <span className="text-white/40 font-bold tracking-[0.4em] text-[8px] uppercase">Penalty Realm</span>
           </div>
           <div className="text-4xl font-mono font-black text-white tracking-widest tabular-nums">
             {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
@@ -81,17 +81,16 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: { endTime: string
       </div>
 
       <style>{`
-        @keyframes ground-move {
+        @keyframes ground-fast {
           from { background-position: 0 0; }
-          to { background-position: 0 1000px; }
+          to { background-position: 0 800px; }
         }
-        @keyframes dust-storm {
-          0% { transform: scale(1) translate(0, 0); }
-          50% { transform: scale(1.1) translate(-30px, 15px); }
-          100% { transform: scale(1) translate(0, 0); }
+        @keyframes sand-drift {
+          from { background-position: 0 0; }
+          to { background-position: 1000px 500px; }
         }
-        .animate-ground-move { animation: ground-move 10s linear infinite; }
-        .animate-dust-storm { animation: dust-storm 8s ease-in-out infinite; }
+        .animate-ground-fast { animation: ground-fast 5s linear infinite; }
+        .animate-sand-drift { animation: sand-drift 30s linear infinite; }
       `}</style>
 
     </div>
