@@ -17,14 +17,15 @@ import {
   Sparkles,
   Zap,
   Target,
-  Lock,
-  Coins
+  Lock
 } from 'lucide-react';
 
 const Stats = () => {
   const { gameState, getXpProgress } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  // الحد الأقصى للمستوى لاكتمال الرادار
+  const MAX_LEVEL = 100;
 
   const stats = [
     { 
@@ -65,36 +66,41 @@ const Stats = () => {
     },
   ];
 
+  // تعديل منطق الرادار ليعتمد على Level / MAX_LEVEL
+  const radarStats = {
+    strength: Math.min((gameState.levels.strength / MAX_LEVEL) * 100, 100),
+    mind: Math.min((gameState.levels.mind / MAX_LEVEL) * 100, 100),
+    spirit: Math.min((gameState.levels.spirit / MAX_LEVEL) * 100, 100),
+    agility: Math.min(((gameState.levels.agility || 0) / MAX_LEVEL) * 100, 100),
+  };
+
   const totalLevel = gameState.totalLevel;
   
   const getLevelConfig = () => {
     if (totalLevel >= 40) return { 
       color: 'hsl(270 100% 60%)', 
       glow: 'hsl(270 100% 60% / 0.6)',
-      tier: 'بنفسجي',
-      bodyColor: '#9b59b6'
+      tier: 'بنفسجي'
     };
     if (totalLevel >= 20) return { 
       color: 'hsl(200 100% 60%)', 
       glow: 'hsl(200 100% 60% / 0.6)',
-      tier: 'أزرق',
-      bodyColor: '#3498db'
+      tier: 'أزرق'
     };
     return { 
       color: 'hsl(200 100% 70%)', 
       glow: 'hsl(200 100% 70% / 0.4)',
-      tier: 'أبيض',
-      bodyColor: '#ecf0f1'
+      tier: 'أبيض'
     };
   };
 
   const levelConfig = getLevelConfig();
 
   const equipmentSlots = [
-    { id: 'head', nameAr: 'الرأس', icon: <CircleUser className="w-5 h-5" />, equipped: null, y: 15 },
-    { id: 'chest', nameAr: 'الصدر', icon: <Shield className="w-5 h-5" />, equipped: null, y: 40 },
-    { id: 'weapon', nameAr: 'السلاح', icon: <Sword className="w-5 h-5" />, equipped: null, y: 55 },
-    { id: 'legs', nameAr: 'الأرجل', icon: <Footprints className="w-5 h-5" />, equipped: null, y: 80 },
+    { id: 'head', y: 15 },
+    { id: 'chest', y: 40 },
+    { id: 'weapon', y: 55 },
+    { id: 'legs', y: 80 },
   ];
 
   const getStatLevelColor = (level: number) => {
@@ -103,17 +109,10 @@ const Stats = () => {
     return 'hsl(200 80% 70%)';
   };
 
-  // تعديل منطق الرادار ليعتمد على المستوى 100 للاكتمال الكامل
-  const radarStats = {
-    strength: Math.min((gameState.levels.strength / 100) * 100, 100),
-    mind: Math.min((gameState.levels.mind / 100) * 100, 100),
-    spirit: Math.min((gameState.levels.spirit / 100) * 100, 100),
-    agility: Math.min(((gameState.levels.agility || 0) / 100) * 100, 100),
-  };
-
   return (
     <div className="min-h-screen pb-24">
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Tabs */}
         <div className="flex gap-1 p-1 rounded-xl bg-card/50 border border-primary/20">
           <button
             onClick={() => setActiveTab('stats')}
@@ -147,6 +146,7 @@ const Stats = () => {
 
         {activeTab === 'stats' && (
           <div className="space-y-6 animate-fade-in">
+            {/* Level Header */}
             <div 
               className="p-4 rounded-2xl border-2"
               style={{ 
@@ -177,6 +177,7 @@ const Stats = () => {
               </div>
             </div>
 
+            {/* Radar Chart */}
             <div 
               className="p-4 rounded-2xl border"
               style={{ 
@@ -188,11 +189,12 @@ const Stats = () => {
                 <Target className="w-5 h-5 text-primary" />
                 <h3 className="font-bold">تحليل القوى</h3>
               </div>
-              <RadarChart stats={radarStats} size={280} />
-              {/* ملاحظة صغيرة اختيارية لتوضيح أن الاكتمال عند 100 */}
-              <p className="text-[10px] text-center text-muted-foreground mt-2 opacity-50">يكتمل المخطط عند الوصول لمستوى 100</p>
+              <div className="flex justify-center">
+                <RadarChart stats={radarStats} size={280} />
+              </div>
             </div>
 
+            {/* Stats Grid */}
             <div className="grid gap-4">
               {stats.map((stat, index) => (
                 <div 
@@ -241,6 +243,7 @@ const Stats = () => {
               ))}
             </div>
 
+            {/* Resources */}
             <div 
               className="p-4 rounded-xl border grid grid-cols-2 gap-4"
               style={{ 
@@ -249,10 +252,9 @@ const Stats = () => {
               }}
             >
               <div className="text-center relative group">
-                <div className="text-2xl mb-1">🪙</div>
-                <div className="text-lg font-bold text-yellow-500">{gameState.gold}</div>
-                <div className="text-xs text-muted-foreground mb-2">ذهب</div>
-                <button className="text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-2 py-0.5 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold">
+                <div className="text-sm text-muted-foreground mb-1">الذهب</div>
+                <div className="text-xl font-bold text-yellow-500 mb-2">{gameState.gold}</div>
+                <button className="text-[10px] bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-3 py-1 rounded hover:bg-yellow-500 hover:text-black transition-all font-bold">
                   شحن +
                 </button>
               </div>
@@ -260,7 +262,7 @@ const Stats = () => {
                 <div className="flex justify-center mb-1">
                   <Sparkles className="w-6 h-6 text-primary" />
                 </div>
-                <div className="text-lg font-bold text-primary">{gameState.shadowPoints || 0}</div>
+                <div className="text-xl font-bold text-primary">{gameState.shadowPoints || 0}</div>
                 <div className="text-xs text-muted-foreground">نقاط الظل</div>
               </div>
             </div>
