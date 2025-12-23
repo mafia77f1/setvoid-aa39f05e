@@ -65,7 +65,7 @@ const Quests = () => {
               className="flex flex-col gap-1 py-3 data-[state=active]:bg-quran/20 data-[state=active]:text-quran"
             >
               <BookOpen className="h-4 w-4" />
-              <span className="text-[10px]">الرشاقة</span>
+              <span className="text-[10px]">القرآن</span>
             </TabsTrigger>
           </TabsList>
 
