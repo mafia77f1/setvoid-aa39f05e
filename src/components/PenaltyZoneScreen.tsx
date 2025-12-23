@@ -39,65 +39,49 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col" style={{ perspective: '800px' }}>
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* 1. الجزء العلوي - بنفسجي غامق جداً (السماء/الكهف) */}
-      <div className="relative h-[55vh] w-full bg-gradient-to-b from-[#120621] via-[#08020d] to-black flex flex-col items-center">
-        {/* توهج بنفسجي بعيد */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(139,92,246,0.1)_0%,transparent_60%)]" />
+      {/* 1. الجزء العلوي: سماء بنفسجية محمرة (Solo Leveling Sky) */}
+      <div className="relative h-[65vh] w-full overflow-hidden">
+        {/* التدرج اللوني للسماء */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2e0b3d] via-[#4a0a1c] to-black" />
+        
+        {/* توهج مركزي يعطي عمق للسماء */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
-        {/* العداد العلوي - تصميم System UI مصغر */}
-        <div className="relative z-50 mt-10 text-center">
-          <p className="text-red-600 font-black tracking-[0.6em] text-[8px] uppercase opacity-70 mb-1">Penalty Mission</p>
-          <div className="flex items-center justify-center space-x-1">
-            <span className="text-3xl font-mono font-bold text-white/90">{t.h}</span>
-            <span className="text-xl text-red-600 animate-pulse">:</span>
-            <span className="text-3xl font-mono font-bold text-white/90">{t.m}</span>
-            <span className="text-xl text-red-600 animate-pulse">:</span>
-            <span className="text-3xl font-mono font-bold text-white/90">{t.sec}</span>
+        {/* العداد العلوي: نيون أبيض ونظيف */}
+        <div className="relative z-50 mt-14 flex flex-col items-center">
+          <div className="px-3 py-0.5 border-b border-red-500/50">
+            <span className="text-red-500 font-bold tracking-[0.6em] text-[7px] uppercase">System Penalty</span>
+          </div>
+          <div className="text-4xl font-mono font-extralight text-white tracking-widest mt-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+            {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
-      </div>
-
-      {/* 2. المنصة الحمراء العريضة (الخط الذي طلبته) */}
-      <div className="relative h-[5vh] w-full z-50">
-        {/* المنصة المستطيلة المتوهجة */}
-        <div 
-          className="absolute inset-0 bg-red-600 shadow-[0_0_50px_rgba(220,38,38,0.8),inset_0_0_20px_rgba(255,255,255,0.5)] border-t border-white/30"
-          style={{ 
-            transform: 'rotateX(20deg) scaleX(1.1)',
-            boxShadow: '0 0 40px #ff0000, 0 10px 60px #7f0000'
-          }}
-        >
-          {/* تأثير البرق/الشرارات على المنصة */}
-          <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
-        </div>
-      </div>
-
-      {/* 3. الجزء السفلي - أرضية سوداء فاحمة قريبة جداً */}
-      <div className="relative h-[40vh] w-full bg-[#050505] flex justify-center">
-        {/* ظل المنصة على الأرضية السوداء */}
-        <div className="absolute top-0 w-full h-20 bg-gradient-to-b from-red-950/40 to-transparent blur-xl" />
         
-        {/* النص التحذيري الضخم - أسود على أسود (يظهر كبروز) */}
-        <div className="mt-16 opacity-10">
-            <h2 className="text-[15vw] font-black italic text-white tracking-tighter select-none">
-                SURVIVE
-            </h2>
+        {/* ضباب خفيف عند الأفق */}
+        <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent" />
+      </div>
+
+      {/* 2. الخط الفاصل: خط طاقة حاد وقريب جداً */}
+      <div className="relative z-50 h-[2px] w-full bg-red-600 shadow-[0_0_35px_5px_rgba(220,38,38,0.8),0_0_10px_1px_#ffffff]">
+        {/* توهج الانعكاس على الشاشة */}
+        <div className="absolute -top-4 left-0 right-0 h-8 bg-red-600/10 blur-xl" />
+      </div>
+
+      {/* 3. الجزء السفلي: أسود بالكامل (True Black) */}
+      <div className="relative flex-1 w-full bg-[#000000]">
+        {/* لا توجد خلفيات متحركة هنا، فقط سواد مطلق */}
+        
+        {/* نص "Warning" مخفي تقريباً في السواد */}
+        <div className="flex justify-center mt-10">
+           <span className="text-red-900/10 text-8xl font-black italic tracking-tighter">SURVIVE</span>
         </div>
       </div>
 
-      {/* تأثير الغبار الرقمي المتطاير */}
-      <div className="absolute inset-0 pointer-events-none z-[60] opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-slow-float" />
+      {/* تأثير شرارات طاقة حمراء نادرة تتطاير في السماء فقط */}
+      <div className="absolute top-0 left-0 right-0 h-[65vh] pointer-events-none z-30 opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
-      <style>{`
-        @keyframes slow-float {
-          from { background-position: 0 0; }
-          to { background-position: 0 -1000px; }
-        }
-        .animate-slow-float { animation: slow-float 60s linear infinite; }
-      `}</style>
-      
     </div>
   );
 };
