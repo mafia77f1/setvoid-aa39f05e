@@ -41,56 +41,62 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* الجزء العلوي - بنفسجي غامق (أجواء السولو ليفلينج) */}
-      <div className="relative h-[60vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center">
+      {/* الجزء العلوي - أجواء سولو ليفلينج */}
+      <div className="relative h-[65vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center justify-center">
         
-        {/* إضاءة بنفسجية خافتة في الخلفية */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.15)_0%,transparent_70%)]" />
+        {/* إضاءة خلفية مركزية */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
-        {/* العداد العلوي - صغير واحترافي */}
-        <div className="relative z-50 mt-12 flex flex-col items-center">
-          <div className="px-4 py-1 border-x border-red-600/30">
-            <span className="text-red-500 font-bold tracking-[0.5em] text-[8px] uppercase">
-              Penalty Countdown
+        {/* منطقة العداد الكبيرة */}
+        <div className="relative z-50 flex flex-col items-center">
+          {/* اسم المنطقة - كبير وبارز */}
+          <div className="mb-4 flex flex-col items-center">
+            <span className="text-red-600 font-black tracking-[0.8em] text-xl md:text-2xl uppercase italic drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+              Penalty Zone
             </span>
+            <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-red-600 to-transparent mt-2 shadow-[0_0_10px_rgba(220,38,38,1)]" />
           </div>
-          <div className="text-3xl font-mono font-light text-white tracking-widest mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+
+          {/* العداد الرقمي - ضخم */}
+          <div className="text-7xl md:text-9xl font-mono font-bold text-white tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
             {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
+          
+          <span className="text-gray-500 text-xs mt-4 tracking-[0.3em] uppercase">Time Remaining Until Redemption</span>
         </div>
 
-        {/* تأثير ضبابي بنفسجي فوق خط الأفق */}
+        {/* تأثير الضباب السفلي */}
         <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - أسود فاحم (الأرضية) */}
-      <div className="relative h-[40vh] w-full bg-black">
+      {/* الجزء السفلي - الأرضية مع الخط الأحمر المُزاح للأسفل */}
+      <div className="relative h-[35vh] w-full bg-black flex justify-center">
         
-        {/* الخط الأحمر القريب جداً من الشاشة */}
-        <div className="absolute top-0 left-0 right-0 z-50">
-          {/* الخط الأساسي المتوهج */}
-          <div className="h-[3px] w-full bg-red-600 shadow-[0_0_20px_2px_rgba(220,38,38,0.9),0_0_40px_10px_rgba(220,38,38,0.4)]" />
-          
-          {/* انعكاس الضوء الأحمر على "عدسة" الشاشة القريبة */}
-          <div className="absolute -top-1 w-full h-4 bg-red-500/20 blur-md" />
+        {/* الخط الأحمر - تم إنزاله قليلاً ليعطي مدى بصري أبعد */}
+        <div className="absolute top-10 left-0 right-0 z-50">
+          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_30px_5px_rgba(220,38,38,0.8),0_0_60px_15px_rgba(220,38,38,0.3)]" />
+          <div className="absolute -top-2 w-full h-8 bg-red-600/10 blur-xl" />
         </div>
 
-        {/* تفاصيل الأرضية السوداء (تأثير صخري باهت جداً) */}
-        <div className="w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+        {/* تفاصيل الأرضية */}
+        <div className="w-full h-full opacity-30 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         
-        {/* ظل أسود إضافي لتعميق السواد في الأسفل */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
+        {/* نصوص تحذيرية صغيرة جداً في الأسفل لإضافة طابع تقني (System UI) */}
+        <div className="absolute bottom-6 w-full px-10 flex justify-between items-end opacity-40">
+            <div className="text-[10px] text-red-500 font-mono">STATUS: PENALIZED</div>
+            <div className="text-[10px] text-red-500 font-mono text-right">SYSTEM_ERROR_0x992<br/>UNAUTHORIZED_EXIT_STRICTLY_PROHIBITED</div>
+        </div>
       </div>
 
-      {/* تأثير الغبار البنفسجي/الأحمر المتطاير */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.07] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
+      {/* تأثير الغبار المتطاير */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
         @keyframes float {
           0% { background-position: 0 0; }
           100% { background-position: 500px 1000px; }
         }
-        .animate-float { animation: float 100s linear infinite; }
+        .animate-float { animation: float 80s linear infinite; }
       `}</style>
       
     </div>
