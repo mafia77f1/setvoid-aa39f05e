@@ -39,70 +39,55 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 overflow-hidden font-mono select-none flex flex-col items-center">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-mono select-none flex flex-col items-center">
       
-      {/* تأثير الشبكة الخلفية (Grid) - مثل أنظمة الألعاب */}
-      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+      {/* خلفية معتمة مع وهج أحمر خفيف جداً في الأعلى */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,#450a0a_0%,#000000_70%)] opacity-40" />
 
-      {/* الحاوية العلوية - العداد */}
-      <div className="relative z-50 mt-16 flex flex-col items-center">
+      {/* منطقة العداد العلوية */}
+      <div className="relative z-50 mt-12 flex flex-col items-center animate-fade-in">
         
-        {/* عنوان النظام */}
-        <div className="mb-2 flex items-center gap-4">
-          <div className="h-[1px] w-12 bg-red-600/50" />
-          <span className="text-red-600 text-xs font-bold tracking-[0.5em] uppercase animate-pulse">
-            Penalty Quest: Survival
-          </span>
-          <div className="h-[1px] w-12 bg-red-600/50" />
-        </div>
+        {/* كلمة العقاب */}
+        <h1 className="text-red-600 text-2xl font-black tracking-[0.3em] mb-4 uppercase drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+          Penalty Zone
+        </h1>
 
-        {/* جسم العداد - بسيط وحاد */}
-        <div className="relative group">
-          {/* وهج خلفي خفيف */}
-          <div className="absolute -inset-1 bg-red-600/20 blur-xl rounded-full opacity-50" />
+        {/* الحاوية الرئيسية (الكاردات والعداد) */}
+        <div className="flex items-center gap-6">
           
-          <div className="relative flex items-baseline gap-2 text-white font-black italic">
-            <span className="text-6xl md:text-7xl tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              {t.h}
-            </span>
-            <span className="text-4xl text-red-600 animate-[blink_1s_infinite]">:</span>
-            <span className="text-6xl md:text-7xl tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              {t.m}
-            </span>
-            <span className="text-4xl text-red-600 animate-[blink_1s_infinite]">:</span>
-            <span className="text-6xl md:text-7xl tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              {t.sec}
-            </span>
-          </div>
-        </div>
+          {/* كارد أحمر جانبي (يسار) مائل */}
+          <div className="w-1.5 h-20 bg-red-600 skew-x-[-15deg] shadow-[0_0_20px_#dc2626] border-r border-white/20" />
 
-        {/* شريط التقدم الصغير تحت العداد */}
-        <div className="mt-4 w-48 h-[2px] bg-white/10 overflow-hidden">
-          <div 
-            className="h-full bg-red-600 transition-all duration-1000 ease-linear shadow-[0_0_8px_#dc2626]" 
-            style={{ width: `${(timeRemaining % 60) * 1.66}%` }}
-          />
+          {/* العداد المعكوس (Sec : Min : Hour) */}
+          <div className="flex items-baseline gap-3 text-white font-black italic">
+            <div className="flex flex-col items-center">
+              <span className="text-6xl md:text-7xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{t.sec}</span>
+            </div>
+            <span className="text-4xl text-red-600 animate-pulse">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-6xl md:text-7xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{t.m}</span>
+            </div>
+            <span className="text-4xl text-red-600 animate-pulse">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-6xl md:text-7xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{t.h}</span>
+            </div>
+          </div>
+
+          {/* كارد أحمر جانبي (يمين) مائل */}
+          <div className="w-1.5 h-20 bg-red-600 skew-x-[15deg] shadow-[0_0_20px_#dc2626] border-l border-white/20" />
         </div>
       </div>
 
-      {/* المنصة السفلية - "الأرض" */}
-      <div className="absolute bottom-0 w-full h-[12vh]">
-        {/* السطح العلوي للمنصة (خط ليزر) */}
-        <div className="w-full h-[1px] bg-red-600 shadow-[0_0_15px_#dc2626]" />
+      {/* المنصة السفلية (الأرضية العريضة) */}
+      <div className="absolute bottom-0 w-full h-[10vh]">
+        {/* خط الأفق المتوهج */}
+        <div className="w-full h-[2px] bg-red-600 shadow-[0_0_25px_#dc2626] relative z-10" />
         
-        {/* جسم المنصة */}
-        <div className="w-full h-full bg-gradient-to-b from-red-950/20 to-black/80 backdrop-blur-sm border-t border-red-900/10 flex flex-col items-center pt-4">
-          <span className="text-red-900/40 text-[10px] tracking-[1em] uppercase font-bold">
-            Emergency System Active
-          </span>
-          
-          {/* لمسة نهائية: الخطوط المائلة الأرضية */}
-          <div className="absolute inset-0 opacity-5 flex justify-around items-end pb-2 pointer-events-none">
-             {[...Array(10)].map((_, i) => (
-               <div key={i} className="w-[1px] h-full bg-white -rotate-[30deg]" />
-             ))}
-          </div>
-        </div>
+        {/* القاعدة */}
+        <div className="w-full h-full bg-gradient-to-b from-red-950/30 to-black border-t border-red-600/20" />
+        
+        {/* تأثير ضوئي للأرضية */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_40px,rgba(220,38,38,0.05)_41px)]" />
       </div>
 
       <style>{`
@@ -110,14 +95,16 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         
         .font-mono { font-family: 'Orbitron', sans-serif; }
 
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.1; }
+        .italic {
+          transform: skewX(-10deg);
         }
 
-        /* تحسين شكل الأرقام لتكون مائلة قليلاً مثل الأنمي */
-        .italic {
-          transform: skewX(-5deg);
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
         }
       `}</style>
 
