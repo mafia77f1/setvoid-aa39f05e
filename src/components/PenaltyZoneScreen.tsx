@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 interface PenaltyZoneScreenProps {
   endTime: string; 
-  onTimeComplete: () => void;
+  onTimeComplete?: () => void;
 }
 
 export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreenProps) => {
@@ -39,48 +39,88 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col items-center">
       
-      {/* 1. الجزء العلوي: سماء بنفسجية محمرة (Solo Leveling Sky) */}
-      <div className="relative h-[65vh] w-full overflow-hidden">
-        {/* التدرج اللوني للسماء */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2e0b3d] via-[#4a0a1c] to-black" />
-        
-        {/* توهج مركزي يعطي عمق للسماء */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
+      {/* الخلفية بتدرج بنفسجي عميق */}
+      <div className="absolute inset-0 z-0 h-full bg-[radial-gradient(circle_at_50%_20%,#1a0b2e_0%,#000000_100%)] opacity-80" />
 
-        {/* العداد العلوي: نيون أبيض ونظيف */}
-        <div className="relative z-50 mt-14 flex flex-col items-center">
-          <div className="px-3 py-0.5 border-b border-red-500/50">
-            <span className="text-red-500 font-bold tracking-[0.6em] text-[7px] uppercase">System Penalty</span>
+      {/* حاوية العداد العلوية - تم تصغيرها ونقلها للأعلى */}
+      <div className="relative z-50 mt-10 flex items-center gap-3 animate-scale-in scale-75 md:scale-90">
+        
+        {/* الكارد الأحمر الجانبي (يسار) - أصغر */}
+        <div className="h-16 w-1 bg-gradient-to-b from-red-600 via-red-900 to-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
+
+        {/* جسم العداد الرئيسي */}
+        <div className="relative bg-[#050505] border-x-2 border-purple-600/50 px-6 py-3 shadow-[0_0_40px_rgba(0,0,0,1)]">
+          {/* نص علوي صغير */}
+          <div className="absolute -top-2 left-0 right-0 flex justify-center">
+            <span className="bg-purple-600 text-black text-[8px] font-black px-3 py-0.5 clip-path-polygon">
+              SYSTEM PENALTY
+            </span>
           </div>
-          <div className="text-4xl font-mono font-extralight text-white tracking-widest mt-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-            {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
+
+          {/* العداد الأسود المدمج */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-black text-5xl md:text-6xl font-black tracking-tighter leading-none [text-shadow:_-1.5px_-1.5px_0_#fff,_1.5px_-1.5px_0_#fff,_-1.5px_1.5px_0_#fff,_1.5px_1.5px_0_#fff]">
+              {t.h}
+            </span>
+            <span className="text-purple-500 text-3xl font-black animate-pulse">:</span>
+            <span className="text-black text-5xl md:text-6xl font-black tracking-tighter leading-none [text-shadow:_-1.5px_-1.5px_0_#fff,_1.5px_-1.5px_0_#fff,_-1.5px_1.5px_0_#fff,_1.5px_1.5px_0_#fff]">
+              {t.m}
+            </span>
+            <span className="text-purple-500 text-3xl font-black animate-pulse">:</span>
+            <span className="text-black text-5xl md:text-6xl font-black tracking-tighter leading-none [text-shadow:_-1.5px_-1.5px_0_#fff,_1.5px_-1.5px_0_#fff,_-1.5px_1.5px_0_#fff,_1.5px_1.5px_0_#fff]">
+              {t.sec}
+            </span>
+          </div>
+
+          <div className="mt-2 flex justify-center items-center opacity-30">
+            <span className="text-purple-400 text-[7px] font-bold tracking-[0.4em]">REMAINING</span>
           </div>
         </div>
-        
-        {/* ضباب خفيف عند الأفق */}
-        <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent" />
+
+        {/* الكارد الأحمر الجانبي (يمين) - أصغر */}
+        <div className="h-16 w-1 bg-gradient-to-b from-red-600 via-red-900 to-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
       </div>
 
-      {/* 2. الخط الفاصل: خط طاقة حاد وقريب جداً */}
-      <div className="relative z-50 h-[2px] w-full bg-red-600 shadow-[0_0_35px_5px_rgba(220,38,38,0.8),0_0_10px_1px_#ffffff]">
-        {/* توهج الانعكاس على الشاشة */}
-        <div className="absolute -top-4 left-0 right-0 h-8 bg-red-600/10 blur-xl" />
-      </div>
-
-      {/* 3. الجزء السفلي: أسود بالكامل (True Black) */}
-      <div className="relative flex-1 w-full bg-[#000000]">
-        {/* لا توجد خلفيات متحركة هنا، فقط سواد مطلق */}
+      {/* المنصة السفلية (الأرضية) */}
+      <div className="absolute bottom-0 left-0 right-0 h-[15vh] flex flex-col items-center">
+        {/* حافة المنصة المتوهجة */}
+        <div className="w-full h-[3px] bg-gradient-to-r from-transparent via-red-600 to-transparent shadow-[0_0_20px_rgba(220,38,38,1)] z-10" />
         
-        {/* نص "Warning" مخفي تقريباً في السواد */}
-        <div className="flex justify-center mt-10">
-           <span className="text-red-900/10 text-8xl font-black italic tracking-tighter">SURVIVE</span>
+        {/* جسم المنصة - تدرج معدني عميق */}
+        <div className="w-full h-full bg-gradient-to-b from-[#1a0505] via-black to-black border-t border-red-900/20 flex justify-center overflow-hidden">
+          {/* تفاصيل ميكانيكية على الأرضية */}
+          <div className="flex gap-16 mt-6 opacity-10">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="w-24 h-[1px] bg-red-500 rotate-[45deg] blur-[0.5px]" />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* تأثير شرارات طاقة حمراء نادرة تتطاير في السماء فقط */}
-      <div className="absolute top-0 left-0 right-0 h-[65vh] pointer-events-none z-30 opacity-[0.1] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+      {/* ظل خفيف في منتصف الشاشة للعمق */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-32 bg-purple-900/5 blur-[120px] pointer-events-none" />
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
+        
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        .clip-path-polygon {
+          clip-path: polygon(15% 0, 85% 0, 100% 100%, 0% 100%);
+        }
+
+        @keyframes scale-in {
+          0% { transform: scale(0.7); opacity: 0; }
+          100% { transform: scale(0.9); opacity: 1; }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.6s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+        }
+
+        .text-black { color: #000; }
+      `}</style>
 
     </div>
   );
