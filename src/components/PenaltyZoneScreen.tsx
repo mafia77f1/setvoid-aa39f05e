@@ -41,49 +41,50 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* الجزء العلوي - بنفسجي غامق (أجواء السولو ليفلينج) */}
+      {/* الجزء العلوي - بنفسجي غامق */}
       <div className="relative h-[60vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center justify-center">
         
         {/* إضاءة بنفسجية خافتة في الخلفية */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
-        {/* العداد العلوي - مكبّر واحترافي */}
+        {/* العداد العلوي - تم تكبيره */}
         <div className="relative z-50 flex flex-col items-center">
           <div className="px-6 py-2 border-x-2 border-red-600/40 mb-4">
-            <span className="text-red-500 font-black tracking-[0.8em] text-[14px] uppercase">
+            <span className="text-red-500 font-bold tracking-[0.6em] text-[12px] md:text-[14px] uppercase">
               Penalty Countdown
             </span>
           </div>
-          <div className="text-7xl md:text-8xl font-mono font-bold text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-            {t.h}<span className="text-red-600 animate-pulse mx-1">:</span>{t.m}<span className="text-red-600 animate-pulse mx-1">:</span>{t.sec}
+          {/* تكبير حجم الأرقام */}
+          <div className="text-6xl md:text-8xl font-mono font-light text-white tracking-[0.2em] drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+            {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
 
         {/* تأثير ضبابي بنفسجي فوق خط الأفق */}
-        <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-black to-transparent z-10" />
+        <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - أسود فاحم (الأرضية) */}
-      <div className="relative h-[40vh] w-full bg-black">
+      {/* الجزء السفلي - الأسود الفاحم */}
+      <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
-        {/* الخط الأحمر - تم إنزاله قليلاً (top-12) ليعطي مساحة أكبر */}
-        <div className="absolute top-12 left-0 right-0 z-50">
+        {/* الخط الأحمر - تم إنزاله للأسفل (Positioned at 30% of the lower section) */}
+        <div className="absolute top-[30%] left-0 right-0 z-50">
           {/* الخط الأساسي المتوهج */}
-          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_4px_rgba(220,38,38,0.9),0_0_50px_15px_rgba(220,38,38,0.3)]" />
+          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
           
           {/* انعكاس الضوء الأحمر */}
           <div className="absolute -top-2 w-full h-8 bg-red-500/20 blur-xl" />
         </div>
 
-        {/* تفاصيل الأرضية السوداء */}
-        <div className="w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+        {/* تفاصيل الأرضية */}
+        <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         
         {/* ظل أسود إضافي */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
 
-      {/* تأثير الغبار البنفسجي/الأحمر المتطاير */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.07] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
+      {/* تأثير الغبار المتطاير */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
         @keyframes float {
