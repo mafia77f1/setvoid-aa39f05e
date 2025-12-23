@@ -39,59 +39,60 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none" style={{ perspective: '1000px' }}>
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* 1. العداد العلوي الصغير (System UI) */}
-      <div className="relative z-50 flex flex-col items-center pt-10 w-full">
-        <div className="flex flex-col items-center opacity-80">
-          <span className="text-red-600 font-bold tracking-[0.4em] text-[9px] uppercase mb-1 drop-shadow-[0_0_5px_rgba(220,38,38,0.5)]">
-            SYSTEM: PENALTY INFO
-          </span>
-          <div className="text-2xl font-mono font-light text-white tracking-[0.2em] tabular-nums">
-            {t.h}<span className="text-red-600">:</span>{t.m}<span className="text-red-600">:</span>{t.sec}
+      {/* الجزء العلوي - بنفسجي غامق (أجواء السولو ليفلينج) */}
+      <div className="relative h-[60vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center">
+        
+        {/* إضاءة بنفسجية خافتة في الخلفية */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.15)_0%,transparent_70%)]" />
+
+        {/* العداد العلوي - صغير واحترافي */}
+        <div className="relative z-50 mt-12 flex flex-col items-center">
+          <div className="px-4 py-1 border-x border-red-600/30">
+            <span className="text-red-500 font-bold tracking-[0.5em] text-[8px] uppercase">
+              Penalty Countdown
+            </span>
+          </div>
+          <div className="text-3xl font-mono font-light text-white tracking-widest mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+            {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
+
+        {/* تأثير ضبابي بنفسجي فوق خط الأفق */}
+        <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* 2. الأرضية السوداء الضخمة مع الخط القريب */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[50vh]">
+      {/* الجزء السفلي - أسود فاحم (الأرضية) */}
+      <div className="relative h-[40vh] w-full bg-black">
         
-        {/* الخط الأحمر - بتقنية الـ Perspective ليبدو قريباً جداً */}
-        <div 
-          className="absolute top-0 left-[-10%] right-[-10%] h-[4px] bg-red-600 shadow-[0_0_40px_10px_rgba(220,38,38,0.7),0_0_10px_2px_white]"
-          style={{ 
-            transform: 'rotateX(45deg)',
-            boxShadow: '0 0 50px #ff0000, 0 0 100px #7f0000'
-          }}
-        />
-
-        {/* السواد الفاحم (الأرضية) */}
-        <div className="w-full h-full bg-black flex flex-col items-center justify-start pt-12">
-            {/* نص باهت جداً في العمق الأسود */}
-            <div className="opacity-[0.03] select-none pointer-events-none">
-                <h2 className="text-[12vw] font-black italic text-white leading-none">WARNING</h2>
-            </div>
+        {/* الخط الأحمر القريب جداً من الشاشة */}
+        <div className="absolute top-0 left-0 right-0 z-50">
+          {/* الخط الأساسي المتوهج */}
+          <div className="h-[3px] w-full bg-red-600 shadow-[0_0_20px_2px_rgba(220,38,38,0.9),0_0_40px_10px_rgba(220,38,38,0.4)]" />
+          
+          {/* انعكاس الضوء الأحمر على "عدسة" الشاشة القريبة */}
+          <div className="absolute -top-1 w-full h-4 bg-red-500/20 blur-md" />
         </div>
 
-        {/* توهج أحمر على أطراف الشاشة لزيادة حدة القرب */}
-        <div className="absolute inset-0 bg-gradient-to-t from-red-900/20 via-transparent to-transparent pointer-events-none" />
+        {/* تفاصيل الأرضية السوداء (تأثير صخري باهت جداً) */}
+        <div className="w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+        
+        {/* ظل أسود إضافي لتعميق السواد في الأسفل */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
 
-      {/* تأثير نبض خفيف للشاشة بأكملها (أحمر خافت) */}
-      <div className="absolute inset-0 pointer-events-none z-[60] animate-screen-pulse" />
+      {/* تأثير الغبار البنفسجي/الأحمر المتطاير */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.07] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
-        @keyframes screen-pulse {
-          0%, 100% { box-shadow: inset 0 0 50px rgba(0,0,0,1); }
-          50% { box-shadow: inset 0 0 100px rgba(220,38,38,0.15); }
+        @keyframes float {
+          0% { background-position: 0 0; }
+          100% { background-position: 500px 1000px; }
         }
-        .animate-screen-pulse { 
-          animation: screen-pulse 4s ease-in-out infinite; 
-          width: 100%; 
-          height: 100%;
-        }
+        .animate-float { animation: float 100s linear infinite; }
       `}</style>
-
+      
     </div>
   );
 };
