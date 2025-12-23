@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment } from '@/types/game';
 
-const XP_PER_LEVEL = 100;
+// نظام سولو ليفلينج: الصعوبة تزداد كلما ارتفع المستوى
+const BASE_XP = 100; // الـ XP المطلوب لأول مستوى
+const DIFFICULTY_EXPONENT = 1.5; // كلما زاد هذا الرقم، زادت صعوبة الليفل بشكل انفجاري
 
 const getInitialQuests = (): Quest[] => [
   // Strength quests
@@ -186,13 +188,37 @@ export const useGameState = () => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
   }, [gameState]);
 
+  // --- التعديل الجوهري هنا ---
   const calculateLevel = (xp: number): number => {
-    return Math.floor(xp / XP_PER_LEVEL) + 1;
+    let level = 1;
+    // نحسب المتطلبات التراكمية لكل مستوى
+    while (true) {
+      const xpNeededForNext = Math.floor(BASE_XP * Math.pow(level, DIFFICULTY_EXPONENT));
+      if (xp >= xpNeededForNext) {
+        xp -= xpNeededForNext;
+        level++;
+      } else {
+        break;
+      }
+    }
+    return level;
   };
 
   const getXpProgress = (xp: number): number => {
-    return (xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+    const currentLevel = calculateLevel(xp);
+    
+    // حساب إجمالي الـ XP الذي استهلكته المستويات السابقة
+    let accumulatedXp = 0;
+    for (let i = 1; i < currentLevel; i++) {
+      accumulatedXp += Math.floor(BASE_XP * Math.pow(i, DIFFICULTY_EXPONENT));
+    }
+    
+    const xpInCurrentLevel = xp - accumulatedXp;
+    const xpRequiredForNext = Math.floor(BASE_XP * Math.pow(currentLevel, DIFFICULTY_EXPONENT));
+    
+    return Math.min(100, (xpInCurrentLevel / xpRequiredForNext) * 100);
   };
+  // -------------------------
 
   const getTotalLevel = (levels: typeof gameState.levels): number => {
     return levels.strength + levels.mind + levels.spirit + levels.quran + levels.vitality;
@@ -231,7 +257,6 @@ export const useGameState = () => {
         q.id === questId ? { ...q, completed: true } : q
       );
 
-      // Update boss HP if quest is required - damage based on player level
       let newBoss = prev.currentBoss;
       if (newBoss && newBoss.requiredQuests.includes(questId)) {
         const baseDamage = Math.floor(newBoss.maxHp / newBoss.requiredQuests.length);
@@ -244,7 +269,6 @@ export const useGameState = () => {
         };
       }
 
-      // Update abilities based on category level
       const newAbilities = prev.abilities.map(ability => {
         const categoryLevel = newLevels[ability.category];
         if (!ability.unlocked && categoryLevel >= ability.requiredLevel) {
@@ -253,28 +277,18 @@ export const useGameState = () => {
         return ability;
       });
 
-      // Update achievements
       const newAchievements = prev.achievements.map(ach => {
-        if (ach.id === 'ach1' && !ach.unlocked) {
-          return { ...ach, progress: 1, unlocked: true };
-        }
+        if (ach.id === 'ach1' && !ach.unlocked) return { ...ach, progress: 1, unlocked: true };
         if (ach.id === 'ach5') {
           const newProgress = prev.totalQuestsCompleted + 1;
           return { ...ach, progress: newProgress, unlocked: newProgress >= ach.requirement };
         }
-        if (ach.id === 'ach7') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 10 };
-        }
-        if (ach.id === 'ach8') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 50 };
-        }
-        if (ach.id === 'ach9') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 100 };
-        }
+        if (ach.id === 'ach7') return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 10 };
+        if (ach.id === 'ach8') return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 50 };
+        if (ach.id === 'ach9') return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 100 };
         return ach;
       });
 
-      // Update daily stats
       const today = new Date().toISOString().split('T')[0];
       const todayStatIndex = prev.dailyStats.findIndex(s => s.date === today);
       let newDailyStats = [...prev.dailyStats];
@@ -297,7 +311,6 @@ export const useGameState = () => {
         });
       }
 
-      // Gain gold and shadow points
       const goldGain = quest.difficulty === 'legendary' ? 50 : 
                        quest.difficulty === 'hard' ? 30 : 
                        quest.difficulty === 'medium' ? 15 : 10;
@@ -321,7 +334,7 @@ export const useGameState = () => {
         energy: Math.max(0, prev.energy - 5),
       };
     });
-  }, []);
+  }, [calculateLevel]);
 
   const completePrayerQuest = useCallback((prayerId: string) => {
     setGameState(prev => {
@@ -353,7 +366,7 @@ export const useGameState = () => {
         gold: prev.gold + 25,
       };
     });
-  }, []);
+  }, [calculateLevel]);
 
   const startGrandQuest = useCallback((category: StatType, title: string, tasks: string[]) => {
     const startDate = new Date();
@@ -447,7 +460,6 @@ export const useGameState = () => {
       
       const today = new Date().toISOString().split('T')[0];
       
-      // Check cooldown
       if (ability.lastUsed && ability.cooldownDays > 0) {
         const lastUsed = new Date(ability.lastUsed);
         const now = new Date();
