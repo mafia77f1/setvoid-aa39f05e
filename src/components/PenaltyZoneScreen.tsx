@@ -39,62 +39,84 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col items-center">
       
-      {/* 1. الجزء العلوي: تدرج بنفسجي (Solo Leveling Style) */}
-      <div className="absolute inset-0 z-0 h-[80vh] bg-gradient-to-b from-[#1a0b2e] via-[#0f051a] to-[#000000]">
-        {/* تأثير ذرات "مانا" خفيفة */}
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-mana-flow" />
+      {/* 1. الخلفية الدرامية (Mana Void) */}
+      <div className="absolute inset-0 z-0 h-[85vh] bg-gradient-to-b from-[#0a0212] via-[#120626] to-black">
+        {/* شبكة طاقة خفيفة جداً في الخلفية */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
         
-        {/* توهج مركزي ناعم */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(139,92,246,0.1)_0%,transparent_70%)]" />
+        {/* توهج المانا البنفسجي المتحرك */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.15)_0%,transparent_60%)] animate-pulse" />
       </div>
 
-      {/* 2. العداد المصغر: يشبه تنبيهات "النظام" */}
-      <div className="relative z-50 flex flex-col items-center pt-12 w-full">
-        <div className="bg-black/40 backdrop-blur-md border border-purple-500/30 px-8 py-3 rounded-sm flex flex-col items-center shadow-[0_0_20px_rgba(139,92,246,0.1)]">
-          <div className="text-purple-400 font-bold tracking-[0.3em] text-[10px] uppercase mb-1 flex items-center gap-2">
-            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-            Penalty Quest: Survival
-          </div>
+      {/* 2. حاوية العداد (The System Interface) */}
+      <div className="relative z-50 mt-24 w-full max-w-2xl px-4" style={{ perspective: '1000px' }}>
+        <div className="relative transform rotateX-10 border-y border-purple-500/20 bg-gradient-to-r from-transparent via-purple-900/10 to-transparent py-10">
           
-          <div className="flex items-center gap-1">
-            <span className="text-4xl font-mono font-light text-white tracking-wider tabular-nums">
-              {t.h}<span className="text-purple-500">:</span>{t.m}<span className="text-purple-500">:</span>{t.sec}
+          {/* أيقونة التحذير العلوية */}
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black border border-purple-500 px-4 py-0.5 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+            <span className="text-[10px] font-bold text-purple-400 tracking-[0.5em] uppercase">
+              Warning
             </span>
           </div>
+
+          {/* العداد العملاق */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-purple-400/60 text-xs font-bold tracking-[0.4em] mb-4 uppercase italic">
+              Penalty Quest: Survive the Void
+            </div>
+            
+            <div className="flex items-baseline gap-3 text-7xl md:text-9xl font-black italic tracking-tighter">
+              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.h}</span>
+              <span className="text-purple-600 animate-pulse">:</span>
+              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.m}</span>
+              <span className="text-purple-600 animate-pulse">:</span>
+              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.sec}</span>
+            </div>
+
+            {/* شريط التقدم الوهمي تحت العداد */}
+            <div className="w-64 h-[2px] bg-purple-900/30 mt-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-purple-500 animate-scan shadow-[0_0_10px_#a855f7]" />
+            </div>
+          </div>
+
+          {/* زخارف جانبية (System Brackets) */}
+          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
+          <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
         </div>
-        
-        {/* نص تحذيري تحت العداد */}
-        <div className="mt-4 text-purple-300/40 text-[9px] tracking-widest uppercase font-medium">
-          Failure to complete will result in penalty extension
+
+        {/* رسالة النظام السفلية */}
+        <div className="text-center mt-8 space-y-2">
+          <p className="text-purple-300/50 text-[10px] tracking-[0.2em] font-medium uppercase animate-bounce">
+            [ Time remaining until execution ]
+          </p>
         </div>
       </div>
 
-      {/* 3. الخط الفاصل والأرضية */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[20vh] bg-black">
-        
-        {/* الخط الأحمر (بسيط وغير مشع كما طلبت) */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-900/40" />
-        
-        {/* محتوى الأرضية السفلية (أسود فاحم) */}
-        <div className="w-full h-full flex items-center justify-center">
-            {/* فارغ تماماً ليعطي إحساس العمق المظلم */}
-        </div>
+      {/* 3. الخط الفاصل والأرضية (أخفض وأسود فاحم) */}
+      <div className="absolute bottom-0 left-0 right-0 z-40 h-[15vh] bg-black">
+        {/* الخط الأحمر البسيط - منخفض جداً */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-900/30" />
       </div>
 
       <style>{`
-        @keyframes mana-flow {
-          from { background-position: 0 0; }
-          to { background-position: 500px 1000px; }
-        }
-        .animate-mana-flow { 
-          animation: mana-flow 120s linear infinite; 
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,900&family=Rajdhani:wght@500;700&display=swap');
         
-        /* تحسين مظهر الخطوط لتشبه ألعاب RPG */
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
         .font-sans { font-family: 'Rajdhani', sans-serif; }
+        .font-black { font-family: 'Exo 2', sans-serif; }
+
+        @keyframes scan {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-scan {
+          animation: scan 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .rotateX-10 {
+          transform: rotateX(15deg);
+        }
       `}</style>
 
     </div>
