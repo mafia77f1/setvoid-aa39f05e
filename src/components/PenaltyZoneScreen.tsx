@@ -39,60 +39,57 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none" style={{ perspective: '1000px' }}>
       
-      {/* 1. العداد العلوي (أسلوب نظام Solo Leveling) */}
-      <div className="relative z-50 flex flex-col items-center pt-6 w-full">
-        <div className="flex flex-col items-center">
-          {/* نص التنبيه الصغير */}
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-[1px] w-8 bg-red-600"></div>
-            <span className="text-red-600 font-bold tracking-[0.3em] text-[10px] uppercase">
-              Penalty Quest: Survive
-            </span>
-            <div className="h-[1px] w-8 bg-red-600"></div>
-          </div>
-          
-          {/* الوقت الرقمي - أصغر وأكثر حدة */}
-          <div className="text-3xl font-mono font-light text-white/90 tracking-widest tabular-nums">
-            {t.h}<span className="animate-pulse text-red-600">:</span>{t.m}<span className="animate-pulse text-red-600">:</span>{t.sec}
+      {/* 1. العداد العلوي الصغير (System UI) */}
+      <div className="relative z-50 flex flex-col items-center pt-10 w-full">
+        <div className="flex flex-col items-center opacity-80">
+          <span className="text-red-600 font-bold tracking-[0.4em] text-[9px] uppercase mb-1 drop-shadow-[0_0_5px_rgba(220,38,38,0.5)]">
+            SYSTEM: PENALTY INFO
+          </span>
+          <div className="text-2xl font-mono font-light text-white tracking-[0.2em] tabular-nums">
+            {t.h}<span className="text-red-600">:</span>{t.m}<span className="text-red-600">:</span>{t.sec}
           </div>
         </div>
       </div>
 
-      {/* 2. بيئة الكهف (الخلفية العلوية) */}
-      <div className="absolute inset-0 z-0 h-[60vh]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(220,38,38,0.05)_0%,transparent 70%)]" />
-      </div>
-
-      {/* 3. الأرضية السوداء الكبيرة (الأسفل) */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[45vh] bg-black flex flex-col items-center">
+      {/* 2. الأرضية السوداء الضخمة مع الخط القريب */}
+      <div className="absolute bottom-0 left-0 right-0 z-40 h-[50vh]">
         
-        {/* الخط الأحمر المتوهج (أفق البوابة) */}
-        <div className="w-full h-[3px] bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8),0_0_60px_rgba(220,38,38,0.4)] relative">
-            {/* شرارات متوهجة فوق الخط */}
-            <div className="absolute inset-0 bg-gradient-to-t from-red-600 to-transparent blur-sm opacity-50"></div>
+        {/* الخط الأحمر - بتقنية الـ Perspective ليبدو قريباً جداً */}
+        <div 
+          className="absolute top-0 left-[-10%] right-[-10%] h-[4px] bg-red-600 shadow-[0_0_40px_10px_rgba(220,38,38,0.7),0_0_10px_2px_white]"
+          style={{ 
+            transform: 'rotateX(45deg)',
+            boxShadow: '0 0 50px #ff0000, 0 0 100px #7f0000'
+          }}
+        />
+
+        {/* السواد الفاحم (الأرضية) */}
+        <div className="w-full h-full bg-black flex flex-col items-center justify-start pt-12">
+            {/* نص باهت جداً في العمق الأسود */}
+            <div className="opacity-[0.03] select-none pointer-events-none">
+                <h2 className="text-[12vw] font-black italic text-white leading-none">WARNING</h2>
+            </div>
         </div>
 
-        {/* النص التحذيري الضخم في الأسفل (اختياري لجمالية Solo Leveling) */}
-        <div className="mt-20 opacity-20 flex flex-col items-center">
-            <h1 className="text-white text-6xl font-black tracking-tighter italic">PENALTY</h1>
-            <div className="h-1 w-full bg-red-900 mt-2"></div>
-        </div>
-
-        {/* تعتيم إضافي للأسفل لجعله "أسود فاحم" */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black to-black pointer-events-none"></div>
+        {/* توهج أحمر على أطراف الشاشة لزيادة حدة القرب */}
+        <div className="absolute inset-0 bg-gradient-to-t from-red-900/20 via-transparent to-transparent pointer-events-none" />
       </div>
 
-      {/* تأثير الغبار الرقمي */}
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float-dust" />
+      {/* تأثير نبض خفيف للشاشة بأكملها (أحمر خافت) */}
+      <div className="absolute inset-0 pointer-events-none z-[60] animate-screen-pulse" />
 
       <style>{`
-        @keyframes float-dust {
-          from { transform: translateY(0); }
-          to { transform: translateY(-100px); }
+        @keyframes screen-pulse {
+          0%, 100% { box-shadow: inset 0 0 50px rgba(0,0,0,1); }
+          50% { box-shadow: inset 0 0 100px rgba(220,38,38,0.15); }
         }
-        .animate-float-dust { animation: float-dust 20s linear infinite; }
+        .animate-screen-pulse { 
+          animation: screen-pulse 4s ease-in-out infinite; 
+          width: 100%; 
+          height: 100%;
+        }
       `}</style>
 
     </div>
