@@ -39,107 +39,60 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col items-center">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none">
       
-      {/* 1. الخلفية الدرامية (Mana Void) */}
-      <div className="absolute inset-0 z-0 h-[80vh] bg-gradient-to-b from-[#0a0212] via-[#120626] to-black">
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.15)_0%,transparent_60%)] animate-pulse" />
-      </div>
-
-      {/* 2. حاوية العداد (The System Interface) */}
-      <div className="relative z-50 mt-24 w-full max-w-2xl px-4" style={{ perspective: '1000px' }}>
-        <div className="relative transform rotateX-10 border-y border-purple-500/20 bg-gradient-to-r from-transparent via-purple-900/10 to-transparent py-10">
-          
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black border border-purple-500 px-4 py-0.5 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-            <span className="text-[10px] font-bold text-purple-400 tracking-[0.5em] uppercase">
-              Warning
+      {/* 1. العداد العلوي (أسلوب نظام Solo Leveling) */}
+      <div className="relative z-50 flex flex-col items-center pt-6 w-full">
+        <div className="flex flex-col items-center">
+          {/* نص التنبيه الصغير */}
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-[1px] w-8 bg-red-600"></div>
+            <span className="text-red-600 font-bold tracking-[0.3em] text-[10px] uppercase">
+              Penalty Quest: Survive
             </span>
+            <div className="h-[1px] w-8 bg-red-600"></div>
           </div>
-
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-purple-400/60 text-xs font-bold tracking-[0.4em] mb-4 uppercase italic">
-              Penalty Quest: Survive the Void
-            </div>
-            
-            <div className="flex items-baseline gap-3 text-7xl md:text-9xl font-black italic tracking-tighter">
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.h}</span>
-              <span className="text-purple-600 animate-pulse">:</span>
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.m}</span>
-              <span className="text-purple-600 animate-pulse">:</span>
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.sec}</span>
-            </div>
-
-            <div className="w-64 h-[2px] bg-purple-900/30 mt-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-purple-500 animate-scan shadow-[0_0_10px_#a855f7]" />
-            </div>
+          
+          {/* الوقت الرقمي - أصغر وأكثر حدة */}
+          <div className="text-3xl font-mono font-light text-white/90 tracking-widest tabular-nums">
+            {t.h}<span className="animate-pulse text-red-600">:</span>{t.m}<span className="animate-pulse text-red-600">:</span>{t.sec}
           </div>
-
-          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
-          <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
-        </div>
-
-        <div className="text-center mt-8 space-y-2">
-          <p className="text-purple-300/50 text-[10px] tracking-[0.2em] font-medium uppercase animate-bounce">
-            [ Time remaining until execution ]
-          </p>
         </div>
       </div>
 
-      {/* 3. المنصة السفلية العريضة (The Heavy Platform) */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[22vh] flex flex-col items-center">
+      {/* 2. بيئة الكهف (الخلفية العلوية) */}
+      <div className="absolute inset-0 z-0 h-[60vh]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(220,38,38,0.05)_0%,transparent 70%)]" />
+      </div>
+
+      {/* 3. الأرضية السوداء الكبيرة (الأسفل) */}
+      <div className="absolute bottom-0 left-0 right-0 z-40 h-[45vh] bg-black flex flex-col items-center">
         
-        {/* سطح المنصة العلوي مع منظور مائل */}
-        <div 
-          className="w-full h-16 bg-gradient-to-t from-[#0a0a0a] to-[#1a1a1a] border-t border-purple-500/30" 
-          style={{ transform: 'perspective(500px) rotateX(45deg)', transformOrigin: 'bottom' }}
-        />
-
-        {/* جسم المنصة الرئيسي والضخم */}
-        <div className="w-full flex-1 bg-[#050505] border-t-2 border-purple-900/40 relative overflow-hidden">
-          
-          {/* توهج ضوئي منعكس من العداد */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[3px] bg-purple-500/20 blur-md" />
-          
-          {/* علامات ميكانيكية جانبية */}
-          <div className="flex justify-between px-12 pt-8 opacity-20">
-            <div className="h-1.5 w-24 bg-purple-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-            <div className="h-1.5 w-24 bg-purple-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-          </div>
-
-          {/* نص النظام الخلفي الضخم */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-             <div className="text-[120px] font-black text-white/[0.02] tracking-tighter uppercase italic select-none">
-                Void System
-             </div>
-          </div>
-
-          {/* خط أحمر خافت جداً للتحذير النهائي */}
-          <div className="absolute bottom-4 left-0 right-0 h-[1px] bg-red-900/10" />
+        {/* الخط الأحمر المتوهج (أفق البوابة) */}
+        <div className="w-full h-[3px] bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8),0_0_60px_rgba(220,38,38,0.4)] relative">
+            {/* شرارات متوهجة فوق الخط */}
+            <div className="absolute inset-0 bg-gradient-to-t from-red-600 to-transparent blur-sm opacity-50"></div>
         </div>
 
-        {/* ظل سفلي عميق */}
-        <div className="w-full h-4 bg-black" />
+        {/* النص التحذيري الضخم في الأسفل (اختياري لجمالية Solo Leveling) */}
+        <div className="mt-20 opacity-20 flex flex-col items-center">
+            <h1 className="text-white text-6xl font-black tracking-tighter italic">PENALTY</h1>
+            <div className="h-1 w-full bg-red-900 mt-2"></div>
+        </div>
+
+        {/* تعتيم إضافي للأسفل لجعله "أسود فاحم" */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black to-black pointer-events-none"></div>
       </div>
+
+      {/* تأثير الغبار الرقمي */}
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float-dust" />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,900&family=Rajdhani:wght@500;700&display=swap');
-        
-        .font-sans { font-family: 'Rajdhani', sans-serif; }
-        .font-black { font-family: 'Exo 2', sans-serif; }
-
-        @keyframes scan {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+        @keyframes float-dust {
+          from { transform: translateY(0); }
+          to { transform: translateY(-100px); }
         }
-        .animate-scan {
-          animation: scan 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .rotateX-10 {
-          transform: rotateX(15deg);
-          transform-style: preserve-3d;
-        }
+        .animate-float-dust { animation: float-dust 20s linear infinite; }
       `}</style>
 
     </div>
