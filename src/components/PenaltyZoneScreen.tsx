@@ -39,83 +39,79 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   const t = formatTime(timeRemaining);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col items-center">
+    <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex items-center justify-center">
       
-      {/* 1. الخلفية الدرامية (Mana Void) */}
-      <div className="absolute inset-0 z-0 h-[85vh] bg-gradient-to-b from-[#0a0212] via-[#120626] to-black">
-        {/* شبكة طاقة خفيفة جداً في الخلفية */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-        
-        {/* توهج المانا البنفسجي المتحرك */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(139,92,246,0.15)_0%,transparent_60%)] animate-pulse" />
-      </div>
+      {/* الخلفية بتدرج بنفسجي عميق جداً */}
+      <div className="absolute inset-0 z-0 h-full bg-[radial-gradient(circle_at_50%_50%,#1a0b2e_0%,#000000_100%)] opacity-80" />
 
-      {/* 2. حاوية العداد (The System Interface) */}
-      <div className="relative z-50 mt-24 w-full max-w-2xl px-4" style={{ perspective: '1000px' }}>
-        <div className="relative transform rotateX-10 border-y border-purple-500/20 bg-gradient-to-r from-transparent via-purple-900/10 to-transparent py-10">
-          
-          {/* أيقونة التحذير العلوية */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black border border-purple-500 px-4 py-0.5 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-            <span className="text-[10px] font-bold text-purple-400 tracking-[0.5em] uppercase">
-              Warning
+      {/* حاوية العداد المركزية - المنصة */}
+      <div className="relative z-50 flex items-center gap-4 animate-scale-in">
+        
+        {/* الكارد الأحمر الجانبي (يسار) */}
+        <div className="h-32 w-2 bg-gradient-to-b from-red-600 via-red-900 to-red-600 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] border-r border-white/10" />
+
+        {/* جسم العداد الرئيسي */}
+        <div className="relative bg-[#050505] border-x-4 border-purple-600/50 px-10 py-6 shadow-[0_0_50px_rgba(0,0,0,1)]">
+          {/* نص علوي صغير */}
+          <div className="absolute -top-3 left-0 right-0 flex justify-center">
+            <span className="bg-purple-600 text-black text-[10px] font-black px-4 py-0.5 clip-path-polygon">
+              SYSTEM PENALTY
             </span>
           </div>
 
-          {/* العداد العملاق */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-purple-400/60 text-xs font-bold tracking-[0.4em] mb-4 uppercase italic">
-              Penalty Quest: Survive the Void
-            </div>
-            
-            <div className="flex items-baseline gap-3 text-7xl md:text-9xl font-black italic tracking-tighter">
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.h}</span>
-              <span className="text-purple-600 animate-pulse">:</span>
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.m}</span>
-              <span className="text-purple-600 animate-pulse">:</span>
-              <span className="text-white drop-shadow-[0_0_30px_rgba(168,85,247,0.4)]">{t.sec}</span>
-            </div>
-
-            {/* شريط التقدم الوهمي تحت العداد */}
-            <div className="w-64 h-[2px] bg-purple-900/30 mt-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-purple-500 animate-scan shadow-[0_0_10px_#a855f7]" />
-            </div>
+          {/* العداد الأسود العريض (الجبار) */}
+          <div className="flex items-center gap-2">
+            <span className="text-black text-8xl md:text-9xl font-black tracking-tighter leading-none filter drop-shadow-[0_0_2px_rgba(168,85,247,0.8)] [text-shadow:_-2px_-2px_0_#fff,_2px_-2px_0_#fff,_-2px_2px_0_#fff,_2px_2px_0_#fff]">
+              {t.h}
+            </span>
+            <span className="text-purple-500 text-7xl font-black animate-pulse">:</span>
+            <span className="text-black text-8xl md:text-9xl font-black tracking-tighter leading-none filter drop-shadow-[0_0_2px_rgba(168,85,247,0.8)] [text-shadow:_-2px_-2px_0_#fff,_2px_-2px_0_#fff,_-2px_2px_0_#fff,_2px_2px_0_#fff]">
+              {t.m}
+            </span>
+            <span className="text-purple-500 text-7xl font-black animate-pulse">:</span>
+            <span className="text-black text-8xl md:text-9xl font-black tracking-tighter leading-none filter drop-shadow-[0_0_2px_rgba(168,85,247,0.8)] [text-shadow:_-2px_-2px_0_#fff,_2px_-2px_0_#fff,_-2px_2px_0_#fff,_2px_2px_0_#fff]">
+              {t.sec}
+            </span>
           </div>
 
-          {/* زخارف جانبية (System Brackets) */}
-          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
-          <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50" />
+          {/* تفاصيل تقنية تحت العداد */}
+          <div className="mt-4 flex justify-between items-center opacity-40">
+            <div className="h-[1px] w-12 bg-purple-500" />
+            <span className="text-purple-400 text-[9px] font-bold tracking-[0.3em]">REMAINING TIME</span>
+            <div className="h-[1px] w-12 bg-purple-500" />
+          </div>
         </div>
 
-        {/* رسالة النظام السفلية */}
-        <div className="text-center mt-8 space-y-2">
-          <p className="text-purple-300/50 text-[10px] tracking-[0.2em] font-medium uppercase animate-bounce">
-            [ Time remaining until execution ]
-          </p>
-        </div>
+        {/* الكارد الأحمر الجانبي (يمين) */}
+        <div className="h-32 w-2 bg-gradient-to-b from-red-600 via-red-900 to-red-600 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.5)] border-l border-white/10" />
       </div>
 
-      {/* 3. الخط الفاصل والأرضية (أخفض وأسود فاحم) */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 h-[15vh] bg-black">
-        {/* الخط الأحمر البسيط - منخفض جداً */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-900/30" />
-      </div>
+      {/* الخط الأحمر السفلي - بسيط وغير مشع */}
+      <div className="absolute bottom-[10vh] left-0 right-0 h-[1.5px] bg-red-950/50" />
+
+      {/* الشاشة السفلية - أسود فاحم */}
+      <div className="absolute bottom-0 left-0 right-0 h-[10vh] bg-black" />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,900&family=Rajdhani:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Syncopate:wght@700&display=swap');
         
-        .font-sans { font-family: 'Rajdhani', sans-serif; }
-        .font-black { font-family: 'Exo 2', sans-serif; }
-
-        @keyframes scan {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-scan {
-          animation: scan 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        .clip-path-polygon {
+          clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
         }
 
-        .rotateX-10 {
-          transform: rotateX(15deg);
+        @keyframes scale-in {
+          0% { transform: scale(0.9); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.5s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+        }
+
+        /* جعل النص الأسود بارز جداً بخلفية بيضاء رفيعة */
+        .text-black {
+          color: #000;
         }
       `}</style>
 
