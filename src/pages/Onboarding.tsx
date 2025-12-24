@@ -15,6 +15,10 @@ const Onboarding = () => {
     setStep('name');
   };
 
+  const handleDecline = () => {
+    window.close();
+  };
+
   const handleStart = () => {
     if (playerName.trim()) {
       playLevelUp();
@@ -27,99 +31,105 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 overflow-hidden select-none">
+    <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
       
-      {/* خلفية ضبابية منتشرة خلف الكارد */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full" />
+      {/* خلفية الضباب الأزرق */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الكارد الصغير - مصمم خصيصاً للهاتف */}
-      <div className="relative z-10 w-full max-w-[340px] animate-modal-appear">
+      {/* الحاوية الرئيسية - عريضة ومصغرة */}
+      <div className="relative w-full max-w-[550px] animate-modal-appear px-2">
         
-        {/* الحواف النيونية العلوية والسفلية (قصيرة وحادة) */}
-        <div className="absolute -top-4 left-4 right-4 h-[1.5px] bg-blue-400 shadow-[0_0_15px_#3b82f6]" />
-        <div className="absolute -bottom-4 left-4 right-4 h-[1.5px] bg-blue-400 shadow-[0_0_15px_#3b82f6]" />
+        {/* الحواف النيونية (أعلى وأسفل) ممتدة بالعرض */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
 
-        {/* جسم الكارد الضبابي (Frosted Glass) */}
-        <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden rounded-sm">
+        {/* الكارد الخارجي العريض */}
+        <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           
-          {/* طبقة ضباب إضافية (Texture) */}
-          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]" />
-
-          {/* العنوان بخلفية أغمق قليلاً */}
-          <div className="bg-black/60 border-b border-white/10 py-3 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border border-white/60 rounded-full flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">!</span>
+          {/* الكارد الداخلي الشفاف مع الحافة المكسورة */}
+          <div 
+            className="bg-black/60 border border-blue-400/30 overflow-hidden"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}
+          >
+            
+            {/* عنوان الإشعار المصغر - NOTIFICATION */}
+            <div className="bg-black/90 border-b border-white/5 py-3 flex items-center justify-center gap-3">
+              <div className="w-6 h-6 border border-white/60 rounded-full flex items-center justify-center shadow-[0_0_8px_white]">
+                <span className="text-white font-black text-xs">!</span>
+              </div>
+              <h2 className="text-white font-black tracking-[0.4em] italic text-sm sm:text-base drop-shadow-[0_0_10px_white]">
+                NOTIFICATION
+              </h2>
             </div>
-            <h2 className="text-white font-black tracking-[0.3em] italic text-sm drop-shadow-[0_0_8px_white]">
-              NOTIFICATION
-            </h2>
-          </div>
 
-          <div className="p-5 flex flex-col items-center">
-            {step === 'welcome' && (
-              <div className="w-full text-center">
-                {/* المحتوى النصي - مرتب لعدم الخروج */}
-                <div className="space-y-4 mb-8 px-2">
-                  <p className="text-white/80 text-[13px] font-medium leading-relaxed drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
-                    You have acquired the qualifications
-                  </p>
-                  <p className="text-white text-xl font-black leading-tight">
-                    to be a <span className="text-blue-400 italic drop-shadow-[0_0_15px_#3b82f6] underline decoration-blue-500/50 underline-offset-4">Player</span>.
-                  </p>
-                  <p className="text-white/40 italic text-[12px]">Will you accept?</p>
+            <div className="p-6 sm:p-10 flex flex-col items-center">
+              {step === 'welcome' && (
+                <div className="w-full">
+                  {/* نصوص بتوهج صافي وحجم أصغر */}
+                  <div className="text-center space-y-4 mb-8">
+                    <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">
+                      You have acquired the qualifications
+                    </p>
+                    <p className="text-white text-xl sm:text-2xl font-black">
+                      to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.
+                    </p>
+                    <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white]">
+                      Will you accept?
+                    </p>
+                  </div>
+
+                  {/* أزرار بالعرض دائماً حتى في الموبايل */}
+                  <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
+                    <button
+                      onClick={handleAccept}
+                      className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]"
+                    >
+                      ACCEPT
+                    </button>
+                    <button
+                      onClick={handleDecline}
+                      className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all"
+                    >
+                      NOT ACCEPT
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                {/* أزرار بالعرض متناسقة جداً */}
-                <div className="flex flex-row gap-3 w-full">
+              {step === 'name' && (
+                <div className="w-full text-center flex flex-col items-center">
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="ENTER NAME..."
+                    className="w-full max-w-[250px] sm:max-w-sm bg-transparent border-b border-blue-500/50 py-2 text-center text-xl sm:text-2xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5"
+                    autoFocus
+                  />
                   <button
-                    onClick={handleAccept}
-                    className="flex-1 py-2 bg-transparent border border-white/50 text-white font-bold text-sm italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_8px_white]"
+                    onClick={handleStart}
+                    disabled={!playerName.trim()}
+                    className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white]"
                   >
-                    ACCEPT
-                  </button>
-                  <button
-                    onClick={() => window.close()}
-                    className="flex-1 py-2 bg-transparent border border-white/5 text-white/30 font-bold text-xs italic hover:text-white/60 transition-all"
-                  >
-                    REJECT
+                    CONFIRM
                   </button>
                 </div>
-              </div>
-            )}
-
-            {step === 'name' && (
-              <div className="w-full text-center py-2">
-                <h2 className="text-white font-black tracking-[0.2em] text-[11px] mb-6 drop-shadow-[0_0_8px_white]">REGISTER PLAYER</h2>
-                <input
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="NAME..."
-                  className="w-full bg-transparent border-b border-blue-500/40 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/10"
-                  autoFocus
-                />
-                <button
-                  onClick={handleStart}
-                  disabled={!playerName.trim()}
-                  className="mt-8 w-full py-2 bg-white text-black font-black text-sm italic shadow-[0_0_15px_white]"
-                >
-                  CONFIRM
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       <style>{`
         @keyframes modal-appear {
-          from { opacity: 0; transform: translateY(10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: scale(1.05); }
+          to { opacity: 1; transform: scale(1); }
         }
         .animate-modal-appear {
-          animation: modal-appear 0.4s ease-out forwards;
+          animation: modal-appear 0.4s ease-out;
         }
       `}</style>
     </div>
