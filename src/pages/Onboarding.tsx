@@ -27,110 +27,99 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#010205] flex items-center justify-center p-4 overflow-hidden select-none font-sans">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 overflow-hidden select-none">
       
-      {/* تأثير الضباب الخلفي الصافي */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full" />
+      {/* خلفية ضبابية منتشرة خلف الكارد */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full" />
       </div>
 
-      <div className="relative w-full max-w-[450px] animate-modal-appear">
+      {/* الكارد الصغير - مصمم خصيصاً للهاتف */}
+      <div className="relative z-10 w-full max-w-[340px] animate-modal-appear">
         
-        {/* الحواف النيونية العلوية والسفلية */}
-        <div className="absolute -top-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff]" />
-        <div className="absolute -bottom-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff]" />
+        {/* الحواف النيونية العلوية والسفلية (قصيرة وحادة) */}
+        <div className="absolute -top-4 left-4 right-4 h-[1.5px] bg-blue-400 shadow-[0_0_15px_#3b82f6]" />
+        <div className="absolute -bottom-4 left-4 right-4 h-[1.5px] bg-blue-400 shadow-[0_0_15px_#3b82f6]" />
 
-        {/* الكارد الرئيسي الشفاف */}
-        <div className="relative bg-black/40 backdrop-blur-3xl border-x border-blue-500/30 p-1">
+        {/* جسم الكارد الضبابي (Frosted Glass) */}
+        <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden rounded-sm">
           
-          <div className="border border-white/10 p-4 sm:p-8">
-            
-            {/* 1. رأس الإشعار: علامة التعجب والنص داخل صناديق منفصلة */}
-            <div className="flex items-center justify-center gap-2 mb-10">
-              {/* صندوق علامة التعجب المربع المشع */}
-              <div className="w-10 h-10 bg-black/80 border border-white/40 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                <span className="text-white font-black text-2xl drop-shadow-[0_0_15px_white]">!</span>
-              </div>
-              
-              {/* صندوق كلمة NOTIFICATION */}
-              <div className="h-10 px-6 bg-black/80 border border-white/40 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                <h2 className="text-white font-black tracking-[0.4em] italic text-sm sm:text-lg drop-shadow-[0_0_15px_white]">
-                  NOTIFICATION
-                </h2>
-              </div>
+          {/* طبقة ضباب إضافية (Texture) */}
+          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]" />
+
+          {/* العنوان بخلفية أغمق قليلاً */}
+          <div className="bg-black/60 border-b border-white/10 py-3 flex items-center justify-center gap-2">
+            <div className="w-5 h-5 border border-white/60 rounded-full flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">!</span>
             </div>
+            <h2 className="text-white font-black tracking-[0.3em] italic text-sm drop-shadow-[0_0_8px_white]">
+              NOTIFICATION
+            </h2>
+          </div>
 
-            <div className="flex flex-col items-center">
-              {step === 'welcome' && (
-                <div className="w-full text-center">
-                  {/* النصوص بتوهج أبيض قوي جداً */}
-                  <div className="space-y-4 mb-12">
-                    <p className="text-white font-bold text-sm sm:text-lg drop-shadow-[0_0_12px_white]">
-                      You have acquired the qualifications
-                    </p>
-                    <p className="text-white text-xl sm:text-2xl font-black leading-tight drop-shadow-[0_0_18px_white]">
-                      to be a <span className="text-blue-400 italic drop-shadow-[0_0_25px_#3b82f6]">Player</span>.
-                    </p>
-                    <p className="text-white/60 italic text-[12px] drop-shadow-[0_0_8px_white]">Will you accept?</p>
-                  </div>
-
-                  {/* 2. الأزرار الشفافة بحواف مكسورة */}
-                  <div className="flex flex-row gap-4 w-full px-2">
-                    <button
-                      onClick={handleAccept}
-                      className="flex-1 py-3 bg-white/5 border border-white/40 text-white font-black italic text-sm sm:text-base hover:bg-white hover:text-black transition-all drop-shadow-[0_0_15px_white]"
-                      style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                    >
-                      ACCEPT
-                    </button>
-                    <button
-                      onClick={() => window.close()}
-                      className="flex-1 py-3 bg-white/5 border border-white/20 text-white/40 font-black italic text-xs sm:text-sm hover:border-white hover:text-white transition-all"
-                      style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
-                    >
-                      NOT ACCEPT
-                    </button>
-                  </div>
+          <div className="p-5 flex flex-col items-center">
+            {step === 'welcome' && (
+              <div className="w-full text-center">
+                {/* المحتوى النصي - مرتب لعدم الخروج */}
+                <div className="space-y-4 mb-8 px-2">
+                  <p className="text-white/80 text-[13px] font-medium leading-relaxed drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                    You have acquired the qualifications
+                  </p>
+                  <p className="text-white text-xl font-black leading-tight">
+                    to be a <span className="text-blue-400 italic drop-shadow-[0_0_15px_#3b82f6] underline decoration-blue-500/50 underline-offset-4">Player</span>.
+                  </p>
+                  <p className="text-white/40 italic text-[12px]">Will you accept?</p>
                 </div>
-              )}
 
-              {step === 'name' && (
-                <div className="w-full text-center">
-                  <div className="inline-block px-4 py-1 bg-black/60 border border-white/20 mb-8 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                    <h2 className="text-white font-black tracking-[0.2em] text-[10px] drop-shadow-[0_0_10px_white]">REGISTER PLAYER</h2>
-                  </div>
-                  
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="ENTER NAME..."
-                    className="w-full bg-transparent border-b border-blue-500/50 py-2 text-center text-xl sm:text-3xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5 drop-shadow-[0_0_10px_white]"
-                    autoFocus
-                  />
-                  
+                {/* أزرار بالعرض متناسقة جداً */}
+                <div className="flex flex-row gap-3 w-full">
                   <button
-                    onClick={handleStart}
-                    disabled={!playerName.trim()}
-                    className="mt-12 w-full max-w-[200px] py-3 bg-white/10 border border-white/60 text-white font-black text-lg italic hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] disabled:opacity-10"
-                    style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 75%, 90% 100%, 0 100%, 0 25%)' }}
+                    onClick={handleAccept}
+                    className="flex-1 py-2 bg-transparent border border-white/50 text-white font-bold text-sm italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_8px_white]"
                   >
-                    CONFIRM
+                    ACCEPT
+                  </button>
+                  <button
+                    onClick={() => window.close()}
+                    className="flex-1 py-2 bg-transparent border border-white/5 text-white/30 font-bold text-xs italic hover:text-white/60 transition-all"
+                  >
+                    REJECT
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {step === 'name' && (
+              <div className="w-full text-center py-2">
+                <h2 className="text-white font-black tracking-[0.2em] text-[11px] mb-6 drop-shadow-[0_0_8px_white]">REGISTER PLAYER</h2>
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="NAME..."
+                  className="w-full bg-transparent border-b border-blue-500/40 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/10"
+                  autoFocus
+                />
+                <button
+                  onClick={handleStart}
+                  disabled={!playerName.trim()}
+                  className="mt-8 w-full py-2 bg-white text-black font-black text-sm italic shadow-[0_0_15px_white]"
+                >
+                  CONFIRM
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <style>{`
         @keyframes modal-appear {
-          from { opacity: 0; transform: scale(1.05); filter: blur(10px); }
-          to { opacity: 1; transform: scale(1); filter: blur(0); }
+          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-modal-appear {
-          animation: modal-appear 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: modal-appear 0.4s ease-out forwards;
         }
       `}</style>
     </div>
