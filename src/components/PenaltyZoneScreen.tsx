@@ -47,16 +47,16 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         {/* إضاءة بنفسجية خافتة في الخلفية */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
-        {/* العداد العلوي - تم تعديل الحجم ليتناسب مع الشاشة */}
+        {/* العداد العلوي */}
         <div className="relative z-50 flex flex-col items-center w-full px-4">
-          <div className="px-4 py-1 border-x border-red-600/40 mb-3">
-            <span className="text-red-500 font-bold tracking-[0.4em] text-[10px] md:text-[12px] uppercase">
+          <div className="px-6 py-1 border-x-2 border-red-600/40 mb-6">
+            <span className="text-red-500 font-bold tracking-[0.5em] text-[12px] md:text-[14px] uppercase">
               Penalty Countdown
             </span>
           </div>
           
-          {/* تصغير حجم الأرقام لضمان عدم خروجها عن إطار الشاشة الصغيرة */}
-          <div className="text-4xl sm:text-5xl md:text-7xl font-mono font-light text-white tracking-[0.1em] drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+          {/* تم تكبير العداد هنا: من 4xl إلى 6xl ومن 7xl إلى 9xl */}
+          <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-light text-white tracking-[0.1em] drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
             {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
