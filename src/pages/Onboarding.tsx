@@ -86,13 +86,13 @@ const Onboarding = () => {
                       onClick={handleAccept}
                       className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]"
                     >
-                      Yes
+                      ACCEPT
                     </button>
                     <button
                       onClick={handleDecline}
                       className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all"
                     >
-                      No
+                      NOT ACCEPT
                     </button>
                   </div>
                 </div>
