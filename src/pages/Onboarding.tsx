@@ -33,128 +33,100 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#050b14] flex items-center justify-center p-4 overflow-hidden">
       
-      {/* 1. تأثيرات الخلفية - جزيئات وضباب أزرق */}
+      {/* خلفية سولو ليفلينج - ضباب أزرق وتوهج بعيد */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,149,255,0.1),transparent_70%)]" />
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-        {/* خطوط متحركة خفيفة في الخلفية */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,149,255,0.05)_1px,transparent_1px)] bg-[size:100%_4px] animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30" />
       </div>
 
-      <div className="relative w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-2xl animate-modal-appear">
         
-        {/* 2. الإطار النيوني الخارجي (الجزء العلوي والسفلي المتوهج) */}
-        <div className="absolute -top-10 left-0 right-0 h-1 bg-cyan-500 shadow-[0_0_25px_#06b6d4] animate-pulse" />
-        <div className="absolute -top-12 left-1/4 right-1/4 h-4 border-t-2 border-x-2 border-cyan-400/50 rounded-t-xl" />
+        {/* الحواف العلوية والسفلية المتوهجة (مثل الصورة تماماً) */}
+        <div className="absolute -top-8 left-0 right-0 h-[2px] bg-blue-400 shadow-[0_0_20px_#60a5fa]" />
+        <div className="absolute -top-10 left-10 right-10 h-[4px] bg-blue-500/50 blur-sm" />
         
-        <div className="absolute -bottom-10 left-0 right-0 h-1 bg-cyan-500 shadow-[0_0_25px_#06b6d4] animate-pulse" />
-        <div className="absolute -bottom-12 left-1/4 right-1/4 h-4 border-b-2 border-x-2 border-cyan-400/50 rounded-b-xl" />
+        <div className="absolute -bottom-8 left-0 right-0 h-[2px] bg-blue-400 shadow-[0_0_20px_#60a5fa]" />
+        <div className="absolute -bottom-10 left-10 right-10 h-[4px] bg-blue-500/50 blur-sm" />
 
-        {step === 'welcome' && (
-          <div className="relative overflow-hidden rounded-sm border border-cyan-500/30 bg-black/80 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in duration-500">
+        {/* الكارد الخارجي (Outer Card) */}
+        <div className="border border-blue-500/20 bg-blue-950/10 backdrop-blur-sm p-4 rounded-sm">
+          
+          {/* الكارد الداخلي (Inner Card - المحتوى) */}
+          <div className="border border-blue-400/40 bg-black/80 p-8 relative overflow-hidden">
             
-            {/* زخارف الزوايا النيونية */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
-            <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
+            {/* تأثير الخطوط الرقمية داخل الكارد */}
+            <div className="absolute inset-0 opacity-5 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:100%_3px]" />
 
-            <div className="p-12 relative z-10">
-              {/* الترويسة - Notification */}
-              <div className="flex justify-center mb-8">
-                <div className="flex items-center gap-4 border-b border-cyan-500/50 pb-2 px-10">
-                   <div className="w-8 h-8 rounded-full border-2 border-cyan-400 flex items-center justify-center">
-                      <span className="text-cyan-400 font-bold">!</span>
-                   </div>
-                   <h2 className="text-2xl font-black text-white tracking-[0.3em] italic">NOTIFICATION</h2>
+            {step === 'welcome' && (
+              <div className="relative z-10">
+                {/* Header: Icon + NOTIFICATION */}
+                <div className="flex items-center justify-center gap-4 mb-10 border-b border-blue-500/30 pb-4">
+                  <div className="w-10 h-10 border-2 border-blue-400 rounded-full flex items-center justify-center">
+                    <span className="text-blue-400 font-bold text-xl">!</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white tracking-[0.4em]">NOTIFICATION</h2>
+                </div>
+
+                <div className="text-center space-y-6 mb-12">
+                  <p className="text-blue-100/80 text-lg tracking-wide">
+                    You have acquired the qualifications
+                  </p>
+                  <p className="text-xl text-white">
+                    to be a <span className="text-blue-400 font-bold italic underline underline-offset-4">Player</span>. Will you accept?
+                  </p>
+                </div>
+
+                <div className="flex gap-8 justify-center">
+                  <button
+                    onClick={handleAccept}
+                    className="px-12 py-2 border border-blue-500/50 text-blue-400 font-bold hover:bg-blue-500/10 transition-all active:scale-95"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={handleDecline}
+                    className="px-12 py-2 border border-blue-500/20 text-blue-100/40 font-bold hover:bg-white/5 transition-all"
+                  >
+                    No
+                  </button>
                 </div>
               </div>
+            )}
 
-              {/* المحتوى النصي */}
-              <div className="text-center space-y-6 mb-12">
-                <p className="text-cyan-100/70 text-xl font-medium tracking-wide">
-                  You have acquired the qualifications
-                </p>
-                <p className="text-2xl text-white">
-                  to be a <span className="text-cyan-400 font-black italic underline decoration-cyan-500/50 underline-offset-8 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]">Player</span>.
-                </p>
-                <p className="text-xl text-cyan-100/70 pt-4">Will you accept?</p>
-              </div>
-
-              {/* الأزرار */}
-              <div className="flex gap-10 justify-center">
-                <button
-                  onClick={handleAccept}
-                  className="group relative px-12 py-3 bg-cyan-900/20 border border-cyan-500 text-cyan-400 font-black text-xl italic hover:bg-cyan-500 hover:text-black transition-all duration-300 transform hover:scale-105"
-                >
-                  <div className="absolute inset-0 bg-cyan-400 opacity-0 group-hover:opacity-20 blur-md transition-opacity" />
-                  YES
-                </button>
-                <button
-                  onClick={handleDecline}
-                  className="px-12 py-3 bg-red-900/10 border border-red-900/50 text-red-900 font-black text-xl italic hover:bg-red-900/20 transition-all"
-                >
-                  NO
-                </button>
-              </div>
-            </div>
-
-            {/* تأثير الخطوط الرقمية الخلفية داخل اللوحة */}
-            <div className="absolute inset-0 pointer-events-none opacity-10 bg-[url('https://www.transparenttextures.com/patterns/grid-me.png')]" />
-          </div>
-        )}
-
-        {step === 'name' && (
-          <div className="relative overflow-hidden rounded-sm border border-cyan-500/30 bg-black/80 backdrop-blur-md p-12 animate-in slide-in-from-bottom-10 duration-500">
-             <div className="text-center mb-10">
-                <h2 className="text-xl font-bold text-cyan-400 tracking-[0.2em] mb-8">IDENTITY VERIFICATION</h2>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="ENTER PLAYER NAME..."
-                    className="w-full bg-transparent border-b-2 border-cyan-500/50 py-4 text-center text-3xl font-black text-white focus:outline-none focus:border-cyan-400 transition-all placeholder:text-cyan-900/50"
-                    autoFocus
-                    onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-                  />
-                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-400 shadow-[0_0_15px_#22d3ee] scale-x-0 focus-within:scale-x-100 transition-transform" />
-                </div>
-             </div>
-
-             <div className="flex justify-center">
+            {step === 'name' && (
+              <div className="relative z-10 text-center">
+                <h2 className="text-blue-400 font-bold tracking-[0.2em] mb-8">IDENTITY VERIFICATION</h2>
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="اسم اللاعب..."
+                  className="w-full bg-transparent border-b border-blue-500/50 py-4 text-center text-2xl font-bold text-white focus:outline-none focus:border-blue-400 transition-all"
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleStart()}
+                />
                 <button
                   onClick={handleStart}
                   disabled={!playerName.trim()}
-                  className="px-20 py-4 border-2 border-cyan-500 text-cyan-400 font-black text-2xl tracking-tighter hover:bg-cyan-500 hover:text-black disabled:opacity-20 transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                  className="mt-10 px-16 py-3 border border-blue-400 text-blue-400 font-bold hover:bg-blue-400 hover:text-black transition-all disabled:opacity-20"
                 >
-                  CONFIRM
+                  Confirm
                 </button>
-             </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {step === 'loading' && (
-          <div className="flex flex-col items-center justify-center animate-pulse">
-            <div className="w-64 h-2 bg-cyan-900 rounded-full overflow-hidden border border-cyan-500/30">
-              <div className="h-full bg-cyan-500 shadow-[0_0_20px_#06b6d4] animate-[loading_2s_ease-in-out_infinite]" style={{width: '60%'}} />
-            </div>
-            <p className="mt-6 text-cyan-400 font-black italic tracking-[0.5em] text-xl">INITIALIZING SYSTEM...</p>
+            {step === 'loading' && (
+              <div className="py-10 text-center animate-pulse">
+                <p className="text-blue-400 font-bold tracking-[0.3em] text-xl italic">
+                  INITIALIZING SYSTEM...
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
-
-      <style>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        .animate-pulse-slow {
-          animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-      `}</style>
     </div>
   );
 };
