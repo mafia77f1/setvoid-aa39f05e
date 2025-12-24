@@ -32,64 +32,71 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 overflow-hidden font-sans select-none">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 overflow-hidden font-sans select-none">
       
-      {/* خلفية النظام - ضباب أزرق خفيف */}
+      {/* خلفية غامقة جداً مع توهج أزرق خافت */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,149,255,0.1),transparent_70%)]" />
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,100,255,0.05),transparent_80%)]" />
       </div>
 
-      <div className="relative w-full max-w-[340px] sm:max-w-md animate-modal-appear">
+      <div className="relative w-full max-w-[360px] animate-modal-appear">
         
-        {/* الحواف النيونية للهاتف (صغيرة وحادة) */}
-        <div className="absolute -top-6 left-2 right-2 h-[2px] bg-cyan-400 shadow-[0_0_15px_#22d3ee] z-20" />
-        <div className="absolute -bottom-6 left-2 right-2 h-[2px] bg-cyan-400 shadow-[0_0_15px_#22d3ee] z-20" />
+        {/* الحواف النيونية الخارجية - حادة جداً */}
+        <div className="absolute -top-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6]" />
+        <div className="absolute -bottom-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6]" />
 
-        {/* الكارد الخارجي الصغير */}
-        <div className="border border-cyan-500/20 bg-cyan-950/10 backdrop-blur-sm p-[1.5px] rounded-sm shadow-2xl">
+        {/* الكارد الخارجي مع حواف متكسرة (Brutal Geometric Shape) */}
+        <div 
+          className="bg-blue-900/10 backdrop-blur-sm p-[2px]"
+          style={{ clipPath: 'polygon(0 10%, 5% 0, 95% 0, 100% 10%, 100% 90%, 95% 100%, 5% 100%, 0 90%)' }}
+        >
           
-          {/* الكارد الداخلي الشفاف (المحتوى محشور بالداخل بدقة) */}
-          <div className="relative border border-cyan-400/30 bg-black/60 backdrop-blur-lg p-6 py-8 overflow-hidden flex flex-col items-center">
+          {/* الكارد الداخلي الشفاف مع الحواف "الجبارة" */}
+          <div 
+            className="bg-black/60 backdrop-blur-xl p-6 border border-blue-500/30 relative"
+            style={{ clipPath: 'polygon(0 12%, 6% 0, 94% 0, 100% 12%, 100% 88%, 94% 100%, 6% 100%, 0 88%)' }}
+          >
             
-            {/* تأثير الشبكة الرقمية */}
-            <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(34,211,238,0.1)_1px,transparent_1px)] bg-[size:100%_4px]" />
+            {/* تأثير الخطوط الرقمية السوداء الشفافة في الخلفية */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[linear-gradient(rgba(0,0,0,0.8)_1px,transparent_1px)] bg-[size:100%_3px]" />
 
             {step === 'welcome' && (
-              <div className="relative z-10 w-full flex flex-col items-center text-center">
+              <div className="relative z-10 flex flex-col items-center">
                 
-                {/* الجزء العلوي: الأيقونة والعنوان */}
-                <div className="flex flex-col items-center gap-3 mb-8 w-full border-b border-cyan-500/20 pb-4">
-                  <div className="w-10 h-10 border-2 border-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.4)]">
-                    <span className="text-cyan-400 font-black text-xl drop-shadow-[0_0_5px_#22d3ee]">!</span>
+                {/* كارد الأشعار الصغير (NOTIFICATION) */}
+                <div className="w-full bg-black/40 border border-white/10 px-4 py-3 mb-8 flex items-center justify-center gap-3 shadow-[inset_0_0_15px_rgba(0,0,0,0.5)]">
+                  <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center">
+                    <span className="text-white font-bold text-lg drop-shadow-[0_0_5px_#fff]">!</span>
                   </div>
-                  <h2 className="text-xl font-black text-white tracking-[0.2em] italic drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]">
+                  <h2 className="text-white font-black tracking-[0.3em] text-lg drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] italic">
                     NOTIFICATION
                   </h2>
                 </div>
 
-                {/* نص الرسالة - مرتب داخل الكارد */}
-                <div className="space-y-4 mb-10 px-2">
-                  <p className="text-cyan-100/80 text-sm leading-relaxed tracking-wide">
+                {/* الكلام المتوهج بالأبيض بالكامل */}
+                <div className="text-center space-y-4 mb-10">
+                  <p className="text-white/90 text-[15px] font-bold tracking-tight drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
                     You have acquired the qualifications
                   </p>
-                  <p className="text-lg text-white font-bold leading-tight">
-                    to be a <span className="text-cyan-400 italic drop-shadow-[0_0_10px_#22d3ee]">Player</span>.
+                  <p className="text-white text-xl font-black drop-shadow-[0_0_15px_rgba(255,255,255,0.9)]">
+                    to be a <span className="italic border-b border-white">Player</span>.
                   </p>
-                  <p className="text-sm text-cyan-100/60 italic">Will you accept?</p>
+                  <p className="text-white/70 text-sm italic drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                    Will you accept?
+                  </p>
                 </div>
 
-                {/* الأزرار بأسلوب سولو ليفلينج للهاتف */}
-                <div className="flex gap-4 w-full justify-center">
+                {/* أزرار سولو ليفلينج الحادة */}
+                <div className="flex gap-4 w-full">
                   <button
                     onClick={handleAccept}
-                    className="flex-1 max-w-[120px] py-2 bg-transparent border border-cyan-500/60 text-cyan-400 font-black text-sm italic hover:bg-cyan-500 hover:text-black transition-all"
+                    className="flex-1 py-2 bg-transparent border border-white/40 text-white font-black italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]"
                   >
                     ACCEPT
                   </button>
                   <button
                     onClick={handleDecline}
-                    className="flex-1 max-w-[120px] py-2 bg-transparent border border-red-900/30 text-red-900/60 font-black text-sm italic hover:border-red-600 hover:text-red-600 transition-all"
+                    className="flex-1 py-2 bg-transparent border border-white/10 text-white/40 font-black italic hover:border-white/40 hover:text-white transition-all"
                   >
                     NOT ACCEPT
                   </button>
@@ -97,35 +104,25 @@ const Onboarding = () => {
               </div>
             )}
 
+            {/* باقي الخطوات (Name & Loading) تتبع نفس التنسيق الحاد */}
             {step === 'name' && (
-              <div className="relative z-10 w-full text-center">
-                <h2 className="text-cyan-400 font-black tracking-[0.2em] text-sm mb-8">IDENTITY VERIFICATION</h2>
+              <div className="relative z-10 flex flex-col items-center py-6">
+                <h2 className="text-white font-black tracking-[0.2em] text-sm mb-8 drop-shadow-[0_0_8px_white]">IDENTITY VERIFICATION</h2>
                 <input
                   type="text"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="NAME..."
-                  className="w-full bg-transparent border-b border-cyan-500/40 py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-cyan-400 transition-all placeholder:text-cyan-950/30"
+                  className="w-full bg-transparent border-b-2 border-white/20 py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/10"
                   autoFocus
                 />
                 <button
                   onClick={handleStart}
                   disabled={!playerName.trim()}
-                  className="mt-10 w-full py-3 border border-cyan-500 text-cyan-400 font-black text-lg italic hover:bg-cyan-500 hover:text-black transition-all disabled:opacity-10"
+                  className="mt-10 w-full py-3 border border-white text-white font-black italic hover:bg-white hover:text-black transition-all disabled:opacity-10 drop-shadow-[0_0_10px_white]"
                 >
-                  START
+                  CONFIRM
                 </button>
-              </div>
-            )}
-
-            {step === 'loading' && (
-              <div className="py-12 flex flex-col items-center">
-                <div className="w-40 h-[1px] bg-cyan-900/50 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-cyan-400 shadow-[0_0_10px_#22d3ee] animate-loading-slide" />
-                </div>
-                <p className="mt-4 text-cyan-400 font-black italic tracking-[0.3em] text-xs animate-pulse">
-                  SYSTEM INITIALIZING...
-                </p>
               </div>
             )}
           </div>
@@ -133,17 +130,12 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes loading-slide {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-loading-slide { animation: loading-slide 1.5s infinite linear; }
         .animate-modal-appear {
-          animation: modal-appear 0.4s ease-out;
+          animation: modal-appear 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         @keyframes modal-appear {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
+          from { opacity: 0; transform: scale(1.1) rotateX(10deg); }
+          to { opacity: 1; transform: scale(1) rotateX(0); }
         }
       `}</style>
     </div>
