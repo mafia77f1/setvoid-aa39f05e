@@ -59,43 +59,44 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - الشخصية الرياضية الحادة */}
+      {/* الجزء السفلي - شخصية جين وو الحادة */}
       <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
-        <div className="absolute top-[20%] left-0 right-0 z-50 flex flex-col items-center">
+        <div className="absolute top-[10%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* مجسم بشري "ناشف" وحاد (Aesthetic Shredded Physique) */}
-          <div className="relative mb-[-12px] w-32 h-56 flex justify-center items-end scale-125">
+          {/* مجسم يحاكي هيبة سونج جين وو (Shadow Monarch Silhouette) */}
+          <div className="relative mb-[-15px] w-40 h-64 flex justify-center items-end scale-110">
             <svg 
               viewBox="0 0 100 200" 
-              className="w-full h-full drop-shadow-[0_0_15px_rgba(220,38,38,0.9)]"
-              fill="none" 
+              className="w-full h-full drop-shadow-[0_0_20px_rgba(220,38,38,1)]"
               xmlns="http://www.w3.org/2000/svg"
             >
               <defs>
-                <linearGradient id="shreddedBody" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="white" />
-                  <stop offset="70%" stopColor="#ff0000" />
+                <linearGradient id="monarchGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="40%" stopColor="#ffffff" />
+                  <stop offset="80%" stopColor="#ff0000" />
                   <stop offset="100%" stopColor="#450a0a" />
                 </linearGradient>
               </defs>
 
-              {/* الرسم: رأس حاد، رقبة قوية، أكتاف عريضة جداً، خصر منحوت، وأرجل قوية */}
+              {/* الرسم الحاد: رأس ذو زوايا، رقبة واضحة، أكتاف عريضة ومسطحة جداً، خصر ضيق */}
               <path 
-                d="M50,5 c3,0 5.5,3 5.5,7 c0,4 -2.5,7 -5.5,7 c-3,0 -5.5,-3 -5.5,-7 c0,-4 2.5,-7 5.5,-7 Z 
-                   M48,19 h4 v5 h-4 Z 
-                   M50,24 c-5,0 -12,2 -16,6 c-8,2 -16,6 -18,12 c-2,8 0,35 0,38 c0,3 2,4 4,4 s4,-1 4,-4 v-28 c3,-2 6,0 6,2 v42 l-4,60 c0,4 3,6 5,6 s5,-2 5,-6 l4,-45 h2 l4,45 c0,4 3,6 5,6 s5,-2 5,-6 l-4,-60 v-42 c0,-2 3,-4 6,-2 v28 c0,3 2,4 4,4 s4,-1 4,-4 c0,-3 2,-30 0,-38 c-2,-6 -10,-10 -18,-12 c-4,-4 -11,-6 -16,-6 Z" 
-                fill="url(#shreddedBody)"
+                d="M50,15 l-4,2 l0,8 l4,4 l4,-4 l0,-8 l-4,-2 Z 
+                   M48,29 h4 v6 h-4 Z 
+                   M25,42 l25,3 l25,-3 l3,8 l-3,15 l-5,30 l-2,60 l7,2 l-10,12 l-10,-12 l7,-2 l-2,-60 l-10,0 l-2,60 l7,2 l-10,12 l-10,-12 l7,-2 l-2,-60 l-5,-30 l-3,-15 l3,-8 Z" 
+                fill="url(#monarchGradient)"
+                stroke="#ff0000"
+                strokeWidth="0.5"
               />
             </svg>
             
-            {/* وهج الأرضية */}
-            <div className="absolute bottom-10 w-20 h-6 bg-red-600/60 blur-2xl rounded-full" />
+            {/* توهج الظل أسفل القدمين */}
+            <div className="absolute bottom-8 w-24 h-8 bg-red-600/60 blur-2xl rounded-full animate-pulse" />
           </div>
 
-          {/* الخط الأحمر الرئيسي */}
-          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_35px_8px_rgba(220,38,38,1)]" />
-          <div className="absolute top-[215px] w-full h-12 bg-red-500/30 blur-3xl" />
+          {/* الخط الأحمر الحاد */}
+          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_40px_10px_rgba(220,38,38,1)]" />
         </div>
 
         <div className="w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
