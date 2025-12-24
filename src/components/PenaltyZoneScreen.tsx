@@ -59,50 +59,48 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - الخط والشخصية البشرية الاحترافية */}
+      {/* الجزء السفلي - الشخصية القوية جسدياً */}
       <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
-        <div className="absolute top-[30%] left-0 right-0 z-50 flex flex-col items-center">
+        <div className="absolute top-[25%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* مجسم بشري مرسوم بدقة عالية (Humanoid Vector) */}
-          <div className="relative mb-[-8px] w-24 h-40 flex justify-center items-end">
+          {/* مجسم بشري قوي (Powerful Humanoid) */}
+          <div className="relative mb-[-12px] w-32 h-48 flex justify-center items-end scale-110">
             <svg 
               viewBox="0 0 100 200" 
-              className="w-full h-full drop-shadow-[0_0_15px_rgba(220,38,38,0.7)]"
+              className="w-full h-full drop-shadow-[0_0_20px_rgba(220,38,38,0.8)]"
               fill="none" 
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* تدرج لوني للجسم */}
               <defs>
-                <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id="muscularBody" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="white" />
-                  <stop offset="50%" stopColor="#ef4444" />
-                  <stop offset="100%" stopColor="#991b1b" />
+                  <stop offset="60%" stopColor="#dc2626" />
+                  <stop offset="100%" stopColor="#7f1d1d" />
                 </linearGradient>
               </defs>
 
-              {/* رسم الجسم: الرأس، الأكتاف، الظهر، الصدر والأطراف كقطعة واحدة */}
+              {/* رسم الجسم: رأس، رقبة، أكتاف عريضة، أذرع قوية، وجذع رياضي */}
               <path 
-                d="M50,15 c5,0 9,4 9,10 c0,6 -4,10 -9,10 c-5,0 -9,-4 -9,-10 c0,-6 4,-10 9,-10 Z 
-                   M50,35 c-2,0 -3,2 -3,4 l-1,6 c-12,2 -18,6 -20,15 c-2,10 -1,30 -1,35 c0,3 2,5 4,5 s4,-2 4,-5 l1,-25 l2,40 l-2,50 c0,4 3,6 5,6 s5,-2 5,-6 l3,-45 l3,45 c0,4 3,6 5,6 s5,-2 5,-6 l-2,-50 l2,-40 l1,25 c0,3 2,5 4,5 s4,-2 4,-5 c0,-5 1,-25 -1,-35 c-2,-9 -8,-13 -20,-15 l-1,-6 c0,-2 -1,-4 -3,-4 Z" 
-                fill="url(#bodyGradient)"
+                d="M50,10 c4,0 7,3 7,8 c0,5 -3,8 -7,8 c-4,0 -7,-3 -7,-8 c0,-5 3,-8 7,-8 Z 
+                   M48,26 h4 v6 h-4 Z 
+                   M50,32 c-4,0 -6,2 -8,4 c-8,2 -18,5 -22,14 c-3,8 -2,35 -2,40 c0,4 3,6 6,6 s6,-2 6,-6 c0,-5 -1,-22 1,-28 c2,-2 4,0 4,2 v45 l-3,55 c0,5 4,8 7,8 s7,-3 7,-8 l3,-45 l3,45 c0,5 4,8 7,8 s7,-3 7,-8 l-3,-55 v-45 c0,-2 2,-4 4,-2 c2,6 1,23 1,28 c0,4 3,6 6,6 s6,-2 6,-6 c0,-5 1,-32 -2,-40 c-4,-9 -14,-12 -22,-14 c-2,-2 -4,-4 -8,-4 Z" 
+                fill="url(#muscularBody)"
               />
             </svg>
             
-            {/* وهج تحت الشخصية */}
-            <div className="absolute bottom-4 w-12 h-4 bg-red-600/40 blur-xl rounded-full" />
+            {/* وهج القاعدة */}
+            <div className="absolute bottom-6 w-16 h-5 bg-red-600/50 blur-xl rounded-full" />
           </div>
 
-          {/* الخط الأحمر */}
-          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
-          <div className="absolute top-[160px] w-full h-8 bg-red-500/20 blur-xl" />
+          {/* الخط الأحمر المتوهج */}
+          <div className="h-[5px] w-full bg-red-600 shadow-[0_0_30px_5px_rgba(220,38,38,1)]" />
+          <div className="absolute top-[180px] w-full h-10 bg-red-500/20 blur-2xl" />
         </div>
 
         <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
-
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
         @keyframes float {
@@ -111,7 +109,7 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         }
         .animate-float { animation: float 100s linear infinite; }
       `}</style>
-      
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
     </div>
   );
 };
