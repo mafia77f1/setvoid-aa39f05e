@@ -56,75 +56,55 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
             {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
+
         <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - شخصية ذات حواف حادة ومسطحة */}
+      {/* الجزء السفلي - الخط الأحمر والشخصية المتصلة */}
       <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
-        <div className="absolute top-[10%] left-0 right-0 z-50 flex flex-col items-center">
+        <div className="absolute top-[30%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* مجسم حاد الزوايا (Sharp Polygon Body) */}
-          <div className="relative mb-[-20px] w-48 h-72 flex justify-center items-end scale-90">
-            <svg 
-              viewBox="0 0 100 200" 
-              className="w-full h-full drop-shadow-[0_0_25px_rgba(255,0,0,0.8)]"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <linearGradient id="sharpGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="30%" stopColor="#ffffff" />
-                  <stop offset="80%" stopColor="#ff0000" />
-                  <stop offset="100%" stopColor="#220000" />
-                </linearGradient>
-              </defs>
-
-              {/* الرسم: أكتاف مسطحة عريضة، رقبة حادة، خصر رياضي ضيق، وأطراف مستقيمة */}
-              <path 
-                d="
-                /* الرأس المسطح الحاد */
-                M44,15 L56,15 L58,28 L42,28 Z 
-                
-                /* الرقبة الواضحة */
-                M47,28 L53,28 L53,35 L47,35 Z 
-                
-                /* الجسم العلوي: أكتاف مسطحة وعريضة جداً */
-                M15,35 L85,35 L82,45 L70,60 L50,65 L30,60 L18,45 Z
-                
-                /* الذراع اليسرى الحادة */
-                M15,35 L10,65 L14,70 L20,45 Z
-                
-                /* الذراع اليمنى الحادة */
-                M85,35 L90,65 L86,70 L80,45 Z
-                
-                /* الجذع والخصر النحيف V-SHAPE */
-                M30,60 L50,65 L70,60 L65,100 L35,100 Z
-                
-                /* الرجل اليسرى */
-                M35,100 L42,100 L38,180 L30,180 Z
-                
-                /* الرجل اليمنى */
-                M58,100 L65,100 L70,180 L62,180 Z
-                " 
-                fill="url(#sharpGradient)"
-                stroke="#ff0000"
-                strokeWidth="1"
-                strokeLinejoin="miter"
-              />
-            </svg>
+          {/* مجسم الشخصية (Avatar) بتصميم متصل الأطراف */}
+          <div className="relative mb-[-1px] flex flex-col items-center">
             
-            {/* انعكاس الضوء تحت الشخصية */}
-            <div className="absolute bottom-4 w-28 h-8 bg-red-600/50 blur-3xl rounded-full" />
+            {/* الرأس */}
+            <div className="w-5 h-5 bg-white rounded-full shadow-[0_0_15px_white] mb-1 z-10" />
+            
+            {/* الجسم العلوي مع اليدين المتصلة */}
+            <div className="relative w-12 h-10 flex justify-center">
+                {/* الجذع الأساسي */}
+                <div className="absolute w-7 h-10 bg-gradient-to-b from-white via-white/90 to-red-600/60 rounded-t-xl" />
+                
+                {/* اليد اليسرى متصلة بالكتف */}
+                <div className="absolute left-0 top-1 w-3 h-9 bg-gradient-to-b from-white/90 to-red-600/40 rounded-full -rotate-[15deg] origin-top" />
+                
+                {/* اليد اليمنى متصلة بالكتف */}
+                <div className="absolute right-0 top-1 w-3 h-9 bg-gradient-to-b from-white/90 to-red-600/40 rounded-full rotate-[15deg] origin-top" />
+            </div>
+
+            {/* الجسم السفلي مع الرجلين المتصلة */}
+            <div className="relative w-8 h-12 flex justify-between px-1">
+                {/* الرجل اليسرى متصلة بالحوض */}
+                <div className="w-[5px] h-12 bg-gradient-to-b from-red-600/60 to-red-600 rounded-b-full shadow-[0_5px_10px_rgba(220,38,38,0.3)]" />
+                {/* الرجل اليمنى متصلة بالحوض */}
+                <div className="w-[5px] h-12 bg-gradient-to-b from-red-600/60 to-red-600 rounded-b-full shadow-[0_5px_10px_rgba(220,38,38,0.3)]" />
+            </div>
+
+            {/* وهج الارتكاز تحت الأرجل */}
+            <div className="absolute -bottom-2 w-14 h-4 bg-red-600/40 blur-md rounded-full" />
           </div>
 
-          {/* الخط الأحمر القوي */}
-          <div className="h-[5px] w-full bg-red-600 shadow-[0_0_40px_12px_rgba(220,38,38,1)]" />
+          {/* الخط الأحمر المتوهج */}
+          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
+          <div className="absolute top-[88px] w-full h-8 bg-red-500/20 blur-xl" />
         </div>
 
-        <div className="w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+        <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
+
+      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
         @keyframes float {
@@ -133,7 +113,7 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         }
         .animate-float { animation: float 100s linear infinite; }
       `}</style>
-      <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
+      
     </div>
   );
 };
