@@ -41,7 +41,7 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* الجزء العلوي - العداد */}
+      {/* الجزء العلوي - العداد العملاق */}
       <div className="relative h-[60vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
@@ -56,52 +56,59 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
             {t.h}<span className="text-red-600 animate-pulse">:</span>{t.m}<span className="text-red-600 animate-pulse">:</span>{t.sec}
           </div>
         </div>
+
         <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي - الخط والشخصية البشرية الاحترافية */}
+      {/* الجزء السفلي - الخط والشخصية المحسنة */}
       <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
         <div className="absolute top-[30%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* مجسم بشري مرسوم بدقة عالية (Humanoid Vector) */}
-          <div className="relative mb-[-8px] w-24 h-40 flex justify-center items-end">
-            <svg 
-              viewBox="0 0 100 200" 
-              className="w-full h-full drop-shadow-[0_0_15px_rgba(220,38,38,0.7)]"
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* تدرج لوني للجسم */}
-              <defs>
-                <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="white" />
-                  <stop offset="50%" stopColor="#ef4444" />
-                  <stop offset="100%" stopColor="#991b1b" />
-                </linearGradient>
-              </defs>
-
-              {/* رسم الجسم: الرأس، الأكتاف، الظهر، الصدر والأطراف كقطعة واحدة */}
-              <path 
-                d="M50,15 c5,0 9,4 9,10 c0,6 -4,10 -9,10 c-5,0 -9,-4 -9,-10 c0,-6 4,-10 9,-10 Z 
-                   M50,35 c-2,0 -3,2 -3,4 l-1,6 c-12,2 -18,6 -20,15 c-2,10 -1,30 -1,35 c0,3 2,5 4,5 s4,-2 4,-5 l1,-25 l2,40 l-2,50 c0,4 3,6 5,6 s5,-2 5,-6 l3,-45 l3,45 c0,4 3,6 5,6 s5,-2 5,-6 l-2,-50 l2,-40 l1,25 c0,3 2,5 4,5 s4,-2 4,-5 c0,-5 1,-25 -1,-35 c-2,-9 -8,-13 -20,-15 l-1,-6 c0,-2 -1,-4 -3,-4 Z" 
-                fill="url(#bodyGradient)"
-              />
-            </svg>
+          {/* مجسم الشخصية المطور */}
+          <div className="relative mb-[-2px] flex flex-col items-center">
             
-            {/* وهج تحت الشخصية */}
-            <div className="absolute bottom-4 w-12 h-4 bg-red-600/40 blur-xl rounded-full" />
+            {/* الرأس المتوهج */}
+            <div className="w-5 h-5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.9)] mb-1 z-20" />
+            
+            {/* الجذع مع الأكتاف واليدين */}
+            <div className="relative w-14 h-12 flex justify-center">
+                {/* الأكتاف (المفاصل) */}
+                <div className="absolute top-0 w-10 h-4 bg-white/20 rounded-full blur-[1px]" />
+                
+                {/* اليد اليسرى - تصميم انسيابي */}
+                <div className="absolute left-0 top-1 w-[4px] h-10 bg-gradient-to-b from-white via-white/50 to-transparent rounded-full -rotate-[20deg] origin-top shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+                
+                {/* الصدر والجذع */}
+                <div className="absolute w-7 h-11 bg-gradient-to-b from-white via-red-500/40 to-red-600/80 rounded-t-[40%] rounded-b-[10%] clip-path-body shadow-inner" />
+                
+                {/* اليد اليمنى - تصميم انسيابي */}
+                <div className="absolute right-0 top-1 w-[4px] h-10 bg-gradient-to-b from-white via-white/50 to-transparent rounded-full rotate-[20deg] origin-top shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+            </div>
+
+            {/* الأرجل - تصميم مخروطي متصل بالحوض */}
+            <div className="relative w-8 h-12 flex justify-between px-[2px] mt-[-1px]">
+                {/* الرجل اليسرى عريضة من الأعلى */}
+                <div className="w-[6px] h-12 bg-gradient-to-b from-red-600/80 to-red-700 rounded-t-sm rounded-b-full transform -skew-x-3 shadow-[0_0_10px_rgba(220,38,38,0.4)]" />
+                {/* الرجل اليمنى عريضة من الأعلى */}
+                <div className="w-[6px] h-12 bg-gradient-to-b from-red-600/80 to-red-700 rounded-t-sm rounded-b-full transform skew-x-3 shadow-[0_0_10px_rgba(220,38,38,0.4)]" />
+            </div>
+
+            {/* قاعدة الارتكاز */}
+            <div className="absolute -bottom-2 w-16 h-4 bg-red-600/50 blur-lg rounded-[100%] animate-pulse" />
           </div>
 
-          {/* الخط الأحمر */}
+          {/* الخط الأحمر الرئيسي */}
           <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
-          <div className="absolute top-[160px] w-full h-8 bg-red-500/20 blur-xl" />
+          <div className="absolute top-[96px] w-full h-8 bg-red-500/20 blur-xl" />
         </div>
 
+        {/* الأرضية الكاربونية */}
         <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
 
+      {/* تأثير الغبار */}
       <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
