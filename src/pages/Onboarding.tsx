@@ -27,92 +27,92 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#010205] flex items-center justify-center p-4 overflow-hidden select-none font-sans">
+    <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
       
-      {/* تأثير الضباب الخلفي الصافي */}
+      {/* خلفية الضباب الأزرق */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      <div className="relative w-full max-w-[450px] animate-modal-appear">
+      <div className="relative w-full max-w-[550px] animate-modal-appear px-2">
         
-        {/* الحواف النيونية العلوية والسفلية */}
-        <div className="absolute -top-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff]" />
-        <div className="absolute -bottom-10 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff]" />
+        {/* الحواف النيونية (أعلى وأسفل) */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
 
-        {/* الكارد الرئيسي الشفاف */}
-        <div className="relative bg-black/40 backdrop-blur-3xl border-x border-blue-500/30 p-1">
+        <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           
-          <div className="border border-white/10 p-4 sm:p-8">
+          <div 
+            className="bg-black/60 border border-blue-400/30 overflow-hidden"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}
+          >
             
-            {/* 1. رأس الإشعار: علامة التعجب والنص داخل صناديق منفصلة */}
-            <div className="flex items-center justify-center gap-2 mb-10">
-              {/* صندوق علامة التعجب المربع المشع */}
-              <div className="w-10 h-10 bg-black/80 border border-white/40 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                <span className="text-white font-black text-2xl drop-shadow-[0_0_15px_white]">!</span>
+            {/* 1. رأس الإشعار: صناديق منفصلة بتوهج أبيض قوي */}
+            <div className="bg-black/90 border-b border-white/5 py-5 flex items-center justify-center gap-3">
+              {/* صندوق علامة التعجب المربع */}
+              <div className="w-8 h-8 bg-black border border-white/60 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                <span className="text-white font-black text-xl drop-shadow-[0_0_10px_white]">!</span>
               </div>
               
               {/* صندوق كلمة NOTIFICATION */}
-              <div className="h-10 px-6 bg-black/80 border border-white/40 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                <h2 className="text-white font-black tracking-[0.4em] italic text-sm sm:text-lg drop-shadow-[0_0_15px_white]">
+              <div className="h-8 px-4 bg-black border border-white/60 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                <h2 className="text-white font-black tracking-[0.4em] italic text-xs sm:text-sm drop-shadow-[0_0_10px_white]">
                   NOTIFICATION
                 </h2>
               </div>
             </div>
 
-            <div className="flex flex-col items-center">
+            <div className="p-6 sm:p-10 flex flex-col items-center">
               {step === 'welcome' && (
-                <div className="w-full text-center">
-                  {/* النصوص بتوهج أبيض قوي جداً */}
-                  <div className="space-y-4 mb-12">
+                <div className="w-full">
+                  {/* نصوص مشعة بقوة */}
+                  <div className="text-center space-y-4 mb-10">
                     <p className="text-white font-bold text-sm sm:text-lg drop-shadow-[0_0_12px_white]">
                       You have acquired the qualifications
                     </p>
-                    <p className="text-white text-xl sm:text-2xl font-black leading-tight drop-shadow-[0_0_18px_white]">
-                      to be a <span className="text-blue-400 italic drop-shadow-[0_0_25px_#3b82f6]">Player</span>.
+                    <p className="text-white text-xl sm:text-2xl font-black drop-shadow-[0_0_15px_white]">
+                      to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.
                     </p>
-                    <p className="text-white/60 italic text-[12px] drop-shadow-[0_0_8px_white]">Will you accept?</p>
+                    <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_8px_white]">
+                      Will you accept?
+                    </p>
                   </div>
 
-                  {/* 2. الأزرار الشفافة بحواف مكسورة */}
-                  <div className="flex flex-row gap-4 w-full px-2">
+                  {/* 2. أزرار YES و NO شفافة بحدود مكسرة */}
+                  <div className="flex flex-row gap-4 sm:gap-6 w-full max-w-sm mx-auto">
                     <button
                       onClick={handleAccept}
-                      className="flex-1 py-3 bg-white/5 border border-white/40 text-white font-black italic text-sm sm:text-base hover:bg-white hover:text-black transition-all drop-shadow-[0_0_15px_white]"
+                      className="flex-1 py-3 bg-white/5 border border-white/40 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_15px_white]"
                       style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                     >
-                      ACCEPT
+                      YES
                     </button>
                     <button
                       onClick={() => window.close()}
-                      className="flex-1 py-3 bg-white/5 border border-white/20 text-white/40 font-black italic text-xs sm:text-sm hover:border-white hover:text-white transition-all"
+                      className="flex-1 py-3 bg-white/5 border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/50 hover:text-white transition-all"
                       style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)' }}
                     >
-                      NOT ACCEPT
+                      NO
                     </button>
                   </div>
                 </div>
               )}
 
               {step === 'name' && (
-                <div className="w-full text-center">
-                  <div className="inline-block px-4 py-1 bg-black/60 border border-white/20 mb-8 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                    <h2 className="text-white font-black tracking-[0.2em] text-[10px] drop-shadow-[0_0_10px_white]">REGISTER PLAYER</h2>
-                  </div>
-                  
+                <div className="w-full text-center flex flex-col items-center">
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
                   <input
                     type="text"
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
                     placeholder="ENTER NAME..."
-                    className="w-full bg-transparent border-b border-blue-500/50 py-2 text-center text-xl sm:text-3xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5 drop-shadow-[0_0_10px_white]"
+                    className="w-full max-w-[250px] sm:max-w-sm bg-transparent border-b border-blue-500/50 py-2 text-center text-xl sm:text-2xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5 drop-shadow-[0_0_8px_white]"
                     autoFocus
                   />
-                  
                   <button
                     onClick={handleStart}
                     disabled={!playerName.trim()}
-                    className="mt-12 w-full max-w-[200px] py-3 bg-white/10 border border-white/60 text-white font-black text-lg italic hover:bg-white hover:text-black transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] disabled:opacity-10"
+                    className="mt-8 px-10 py-3 bg-white/10 border border-white/60 text-white font-black text-lg italic hover:bg-white hover:text-black transition-all shadow-[0_0_20px_white]"
                     style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 75%, 90% 100%, 0 100%, 0 25%)' }}
                   >
                     CONFIRM
@@ -126,11 +126,11 @@ const Onboarding = () => {
 
       <style>{`
         @keyframes modal-appear {
-          from { opacity: 0; transform: scale(1.05); filter: blur(10px); }
-          to { opacity: 1; transform: scale(1); filter: blur(0); }
+          from { opacity: 0; transform: scale(1.05); }
+          to { opacity: 1; transform: scale(1); }
         }
         .animate-modal-appear {
-          animation: modal-appear 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: modal-appear 0.4s ease-out;
         }
       `}</style>
     </div>
