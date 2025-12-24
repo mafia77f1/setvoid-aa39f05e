@@ -33,100 +33,128 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050b14] flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 overflow-hidden font-sans select-none">
       
-      {/* خلفية سولو ليفلينج - ضباب أزرق وتوهج بعيد */}
+      {/* الخلفية الأصلية - ضباب أزرق عميق وتأثير جزيئات */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,149,255,0.15),transparent_70%)]" />
+        <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-900/10 via-transparent to-blue-900/10" />
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl animate-modal-appear">
+      <div className="relative w-full max-w-2xl animate-modal-appear">
         
-        {/* الحواف العلوية والسفلية المتوهجة (مثل الصورة تماماً) */}
-        <div className="absolute -top-8 left-0 right-0 h-[2px] bg-blue-400 shadow-[0_0_20px_#60a5fa]" />
-        <div className="absolute -top-10 left-10 right-10 h-[4px] bg-blue-500/50 blur-sm" />
-        
-        <div className="absolute -bottom-8 left-0 right-0 h-[2px] bg-blue-400 shadow-[0_0_20px_#60a5fa]" />
-        <div className="absolute -bottom-10 left-10 right-10 h-[4px] bg-blue-500/50 blur-sm" />
+        {/* الحواف النيونية الخارجية - متطابقة مع الصورة */}
+        <div className="absolute -top-12 left-0 right-0 h-[3px] bg-cyan-400 shadow-[0_0_25px_#22d3ee,0_0_10px_#22d3ee] z-20" />
+        <div className="absolute -bottom-12 left-0 right-0 h-[3px] bg-cyan-400 shadow-[0_0_25px_#22d3ee,0_0_10px_#22d3ee] z-20" />
 
-        {/* الكارد الخارجي (Outer Card) */}
-        <div className="border border-blue-500/20 bg-blue-950/10 backdrop-blur-sm p-4 rounded-sm">
+        {/* الكارد الخارجي (الإطار الزجاجي) */}
+        <div className="relative border border-cyan-500/20 bg-cyan-950/5 backdrop-blur-[2px] p-[2px] rounded-sm">
           
-          {/* الكارد الداخلي (Inner Card - المحتوى) */}
-          <div className="border border-blue-400/40 bg-black/80 p-8 relative overflow-hidden">
+          {/* الكارد الداخلي - شفاف تماماً (Glassmorphism) كما في الصورة */}
+          <div className="relative border border-cyan-400/40 bg-black/40 backdrop-blur-md p-10 overflow-hidden">
             
-            {/* تأثير الخطوط الرقمية داخل الكارد */}
-            <div className="absolute inset-0 opacity-5 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:100%_3px]" />
+            {/* تأثير الخطوط الرقمية المائلة (Scanlines) */}
+            <div className="absolute inset-0 pointer-events-none opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(34,211,238,0.1)_3px,transparent_4px)]" />
 
             {step === 'welcome' && (
               <div className="relative z-10">
-                {/* Header: Icon + NOTIFICATION */}
-                <div className="flex items-center justify-center gap-4 mb-10 border-b border-blue-500/30 pb-4">
-                  <div className="w-10 h-10 border-2 border-blue-400 rounded-full flex items-center justify-center">
-                    <span className="text-blue-400 font-bold text-xl">!</span>
+                {/* العنوان مع أيقونة التنبيه وتوهج النص */}
+                <div className="flex items-center justify-center gap-6 mb-12">
+                  <div className="w-12 h-12 border-2 border-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.5)]">
+                    <span className="text-cyan-400 font-black text-2xl drop-shadow-[0_0_8px_#22d3ee]">!</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-white tracking-[0.4em]">NOTIFICATION</h2>
+                  <h2 className="text-3xl font-black text-white tracking-[0.4em] italic drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]">
+                    NOTIFICATION
+                  </h2>
                 </div>
 
-                <div className="text-center space-y-6 mb-12">
-                  <p className="text-blue-100/80 text-lg tracking-wide">
+                {/* المحتوى النصي مع توهج أزرق ناعم */}
+                <div className="text-center space-y-8 mb-16">
+                  <p className="text-cyan-100/90 text-xl font-medium tracking-wide drop-shadow-[0_0_5px_rgba(34,211,238,0.3)]">
                     You have acquired the qualifications
                   </p>
-                  <p className="text-xl text-white">
-                    to be a <span className="text-blue-400 font-bold italic underline underline-offset-4">Player</span>. Will you accept?
+                  <p className="text-2xl text-white font-semibold">
+                    to be a <span className="text-cyan-400 font-black italic drop-shadow-[0_0_15px_#22d3ee]">Player</span>.
                   </p>
+                  <p className="text-xl text-cyan-100/80 italic">Will you accept?</p>
                 </div>
 
-                <div className="flex gap-8 justify-center">
+                {/* أزرار Accept و Not Accept بأسلوب سولو ليفلينج */}
+                <div className="flex gap-12 justify-center">
                   <button
                     onClick={handleAccept}
-                    className="px-12 py-2 border border-blue-500/50 text-blue-400 font-bold hover:bg-blue-500/10 transition-all active:scale-95"
+                    className="group relative px-14 py-3 bg-transparent border-2 border-cyan-500/60 text-cyan-400 font-black text-xl italic hover:bg-cyan-500 hover:text-black transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                   >
-                    Yes
+                    ACCEPT
                   </button>
                   <button
                     onClick={handleDecline}
-                    className="px-12 py-2 border border-blue-500/20 text-blue-100/40 font-bold hover:bg-white/5 transition-all"
+                    className="px-14 py-3 bg-transparent border-2 border-red-900/30 text-red-900/60 font-black text-xl italic hover:border-red-600/50 hover:text-red-600 transition-all"
                   >
-                    No
+                    NOT ACCEPT
                   </button>
                 </div>
               </div>
             )}
 
             {step === 'name' && (
-              <div className="relative z-10 text-center">
-                <h2 className="text-blue-400 font-bold tracking-[0.2em] mb-8">IDENTITY VERIFICATION</h2>
-                <input
-                  type="text"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="اسم اللاعب..."
-                  className="w-full bg-transparent border-b border-blue-500/50 py-4 text-center text-2xl font-bold text-white focus:outline-none focus:border-blue-400 transition-all"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-                />
+              <div className="relative z-10 text-center py-4">
+                <h2 className="text-cyan-400 font-black tracking-[0.3em] text-xl mb-12 drop-shadow-[0_0_10px_#22d3ee]">
+                  CHARACTER REGISTRATION
+                </h2>
+                <div className="relative max-w-md mx-auto">
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="NAME..."
+                    className="w-full bg-transparent border-b-2 border-cyan-500/40 py-4 text-center text-4xl font-black text-white focus:outline-none focus:border-cyan-400 transition-all placeholder:text-cyan-950"
+                    autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && handleStart()}
+                  />
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-cyan-400 shadow-[0_0_20px_#22d3ee] opacity-50" />
+                </div>
                 <button
                   onClick={handleStart}
                   disabled={!playerName.trim()}
-                  className="mt-10 px-16 py-3 border border-blue-400 text-blue-400 font-bold hover:bg-blue-400 hover:text-black transition-all disabled:opacity-20"
+                  className="mt-14 px-20 py-4 border-2 border-cyan-500 text-cyan-400 font-black text-2xl italic hover:bg-cyan-500 hover:text-black transition-all disabled:opacity-10"
                 >
-                  Confirm
+                  START MISSION
                 </button>
               </div>
             )}
 
             {step === 'loading' && (
-              <div className="py-10 text-center animate-pulse">
-                <p className="text-blue-400 font-bold tracking-[0.3em] text-xl italic">
-                  INITIALIZING SYSTEM...
+              <div className="py-20 flex flex-col items-center">
+                <div className="w-full max-w-xs h-1 bg-cyan-900/30 overflow-hidden">
+                  <div className="h-full bg-cyan-400 shadow-[0_0_15px_#22d3ee] animate-loading-bar" />
+                </div>
+                <p className="mt-8 text-cyan-400 font-black italic tracking-[0.6em] text-xl animate-pulse">
+                  SYNCING SYSTEM...
                 </p>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes loading-bar {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-loading-bar {
+          animation: loading-bar 1.5s infinite linear;
+        }
+        .animate-modal-appear {
+          animation: modal-appear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modal-appear {
+          from { opacity: 0; transform: scale(0.9) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
