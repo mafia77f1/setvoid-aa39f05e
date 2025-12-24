@@ -41,10 +41,13 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden font-sans select-none flex flex-col">
       
-      {/* الجزء العلوي */}
+      {/* الجزء العلوي - بنفسجي غامق */}
       <div className="relative h-[60vh] w-full bg-gradient-to-b from-[#1a0b2e] via-[#0d0517] to-black flex flex-col items-center justify-center">
+        
+        {/* إضاءة بنفسجية خافتة في الخلفية */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(139,92,246,0.2)_0%,transparent_70%)]" />
 
+        {/* العداد العلوي */}
         <div className="relative z-50 flex flex-col items-center w-full px-4">
           <div className="px-6 py-1 border-x-2 border-red-600/40 mb-6">
             <span className="text-red-500 font-bold tracking-[0.5em] text-[12px] md:text-[14px] uppercase">
@@ -57,40 +60,40 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
           </div>
         </div>
 
+        {/* تأثير ضبابي بنفسجي فوق خط الأفق */}
         <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-black to-transparent z-10" />
       </div>
 
-      {/* الجزء السفلي والخط الأحمر مع المجسم */}
+      {/* الجزء السفلي - الأسود الفاحم مع الشخصية والخط */}
       <div className="relative h-[40vh] w-full bg-black flex flex-col items-center">
         
-        {/* الخط الأحمر والمجسم */}
-        <div className="absolute top-[30%] left-0 right-0 z-50 flex justify-center items-center">
-          {/* الخط الأيسر */}
-          <div className="h-[4px] flex-1 bg-red-600 shadow-[0_0_20px_rgba(220,38,38,1)]" />
+        {/* الخط الأحمر ومجسم الشخص */}
+        <div className="absolute top-[30%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* المجسم (The Object) */}
-          <div className="relative mx-0 flex items-center justify-center group">
-             {/* وهج خلف المجسم */}
-             <div className="absolute w-24 h-24 bg-red-600/30 blur-2xl rounded-full animate-pulse" />
-             
-             {/* شكل سداسي (Hexagon) */}
-             <div className="w-16 h-16 bg-black border-2 border-red-600 rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.8)] overflow-hidden">
-                <div className="rotate-[-45deg] flex flex-col items-center">
-                   <div className="w-6 h-[2px] bg-red-600 mb-1"></div>
-                   <div className="w-4 h-4 border-2 border-red-600 rounded-full animate-spin-slow"></div>
-                   <div className="w-6 h-[2px] bg-red-600 mt-1"></div>
-                </div>
-             </div>
+          {/* مجسم الشخص فوق الخط مباشرة */}
+          <div className="relative mb-[-4px]"> {/* جعل الشخص يلمس الخط تماماً */}
+            <div className="relative w-12 h-20 flex flex-col items-center">
+              {/* الرأس */}
+              <div className="w-5 h-5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)] mb-1" />
+              {/* الجسم */}
+              <div className="w-8 h-12 bg-gradient-to-b from-white to-red-600 rounded-t-xl shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
+              {/* وهج تحت الشخص */}
+              <div className="absolute -bottom-2 w-10 h-10 bg-red-600/40 blur-lg rounded-full" />
+            </div>
           </div>
 
-          {/* الخط الأيمن */}
-          <div className="h-[4px] flex-1 bg-red-600 shadow-[0_0_20px_rgba(220,38,38,1)]" />
+          {/* الخط الأحمر المتوهج */}
+          <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
+          <div className="absolute top-[76px] w-full h-8 bg-red-500/20 blur-xl" />
         </div>
 
+        {/* تفاصيل الأرضية */}
         <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
+        
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
 
+      {/* تأثير الغبار المتطاير */}
       <div className="absolute inset-0 pointer-events-none z-30 opacity-[0.09] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-float" />
 
       <style>{`
@@ -98,12 +101,7 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
           0% { background-position: 0 0; }
           100% { background-position: 500px 1000px; }
         }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
         .animate-float { animation: float 100s linear infinite; }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
       `}</style>
       
     </div>
