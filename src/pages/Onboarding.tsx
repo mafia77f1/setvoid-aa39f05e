@@ -32,65 +32,63 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#010205] flex items-center justify-center p-4 overflow-hidden select-none">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 overflow-hidden select-none">
       
-      {/* خلفية ضبابية زرقاء عميقة بدون خطوط */}
+      {/* خلفية النظام - ضباب أزرق خافت جداً */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[500px] bg-blue-900/10 blur-[180px] rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,100,255,0.05),transparent_80%)]" />
       </div>
 
-      <div className="relative w-full max-w-[650px] animate-modal-appear">
+      <div className="relative w-full max-w-[380px] animate-modal-appear">
         
-        {/* الحواف النيونية (أعلى وأسفل) ممتدة بالعرض */}
-        <div className="absolute -top-10 left-[-5%] right-[-5%] h-[3px] bg-blue-500 shadow-[0_0_30px_#3b82f6,0_0_10px_#fff] z-20" />
-        <div className="absolute -bottom-10 left-[-5%] right-[-5%] h-[3px] bg-blue-500 shadow-[0_0_30px_#3b82f6,0_0_10px_#fff] z-20" />
+        {/* الحواف النيونية الخارجية - حادة ومسطحة */}
+        <div className="absolute -top-8 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6]" />
+        <div className="absolute -bottom-8 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6]" />
 
-        {/* الكارد الخارجي العريض */}
-        <div className="relative border-x border-blue-500/40 bg-transparent backdrop-blur-2xl">
+        {/* الكارد الخارجي - حواف حادة جداً */}
+        <div className="border border-blue-500/30 bg-blue-900/5 p-[1px] rounded-none">
           
-          {/* الكارد الداخلي: شفاف تماماً، حواف حادة، وبدون أي تأثير شبكة */}
+          {/* الكارد الداخلي - شفاف تماماً + حواف حادة ومكسورة من الزوايا */}
           <div 
-            className="bg-black/50 border border-blue-400/30 overflow-hidden"
-            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%)' }}
+            className="bg-black/60 backdrop-blur-xl border border-blue-400/40 p-0 overflow-hidden"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 85%, 92% 100%, 0 100%)' }}
           >
             
-            {/* عنوان الإشعار - NOTIFICATION */}
-            <div className="bg-black/90 border-b border-white/5 py-4 flex items-center justify-center gap-4">
-              <div className="w-8 h-8 border-2 border-white/70 rounded-full flex items-center justify-center shadow-[0_0_10px_white]">
-                <span className="text-white font-black text-lg">!</span>
+            {/* منطقة العنوان (NOTIFICATION) - كارد داخلي بخطوط سوداء */}
+            <div className="bg-black/80 border-b border-white/10 p-4 flex items-center justify-center gap-3">
+              <div className="w-8 h-8 border border-white/60 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold drop-shadow-[0_0_8px_white]">!</span>
               </div>
-              <h2 className="text-white font-black tracking-[0.6em] italic text-xl drop-shadow-[0_0_15px_white]">
+              <h2 className="text-white font-black tracking-[0.5em] italic text-lg drop-shadow-[0_0_12px_white]">
                 NOTIFICATION
               </h2>
             </div>
 
-            <div className="p-12 flex flex-col items-center">
+            <div className="p-8 flex flex-col items-center">
               {step === 'welcome' && (
-                <div className="w-full">
-                  {/* النصوص بتوهج صافي بدون تشويش */}
-                  <div className="text-center space-y-6 mb-12">
-                    <p className="text-white/90 text-xl font-bold tracking-wide drop-shadow-[0_0_8px_white]">
+                <div className="w-full text-center">
+                  {/* الكلام المتوهج بالأبيض */}
+                  <div className="space-y-6 mb-12">
+                    <p className="text-white/90 text-lg font-bold drop-shadow-[0_0_5px_white]">
                       You have acquired the qualifications
                     </p>
-                    <p className="text-white text-3xl font-black">
-                      to be a <span className="text-blue-400 italic drop-shadow-[0_0_25px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-8">Player</span>.
+                    <p className="text-white text-2xl font-black drop-shadow-[0_0_15px_white]">
+                      to be a <span className="italic underline underline-offset-4">Player</span>.
                     </p>
-                    <p className="text-white/60 italic text-lg pt-4 drop-shadow-[0_0_5px_white]">
-                      Will you accept?
-                    </p>
+                    <p className="text-white/60 italic text-sm pt-2">Will you accept?</p>
                   </div>
 
-                  {/* الأزرار جنب بعضها (Accept & Not Accept) */}
-                  <div className="flex flex-row gap-6 w-full max-w-md mx-auto">
+                  {/* أزرار سولو ليفلينج الحادة */}
+                  <div className="flex gap-4">
                     <button
                       onClick={handleAccept}
-                      className="flex-1 py-3 bg-transparent border-2 border-white/70 text-white font-black text-xl italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_15px_white]"
+                      className="flex-1 py-3 border border-white/50 text-white font-bold italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]"
                     >
                       ACCEPT
                     </button>
                     <button
                       onClick={handleDecline}
-                      className="flex-1 py-3 bg-transparent border border-white/10 text-white/30 font-black text-lg italic hover:border-white/40 hover:text-white transition-all"
+                      className="flex-1 py-3 border border-white/10 text-white/30 font-bold italic hover:border-white/50 hover:text-white transition-all"
                     >
                       NOT ACCEPT
                     </button>
@@ -99,37 +97,40 @@ const Onboarding = () => {
               )}
 
               {step === 'name' && (
-                <div className="w-full text-center flex flex-col items-center">
-                  <h2 className="text-white font-black tracking-[0.4em] text-lg mb-8 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
+                <div className="w-full text-center py-4">
+                  <h2 className="text-white font-black tracking-[0.2em] mb-8 drop-shadow-[0_0_10px_white]">IDENTITY VERIFICATION</h2>
                   <input
                     type="text"
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
                     placeholder="ENTER NAME..."
-                    className="w-full max-w-sm bg-transparent border-b-2 border-blue-500/50 py-3 text-center text-3xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5"
+                    className="w-full bg-transparent border-b-2 border-white/20 py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/10"
                     autoFocus
                   />
                   <button
                     onClick={handleStart}
                     disabled={!playerName.trim()}
-                    className="mt-12 px-16 py-4 bg-white text-black font-black text-2xl italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_30px_white]"
+                    className="mt-10 w-full py-4 bg-white text-black font-black italic hover:bg-transparent hover:text-white border border-white transition-all disabled:opacity-20"
                   >
                     CONFIRM
                   </button>
                 </div>
               )}
             </div>
+
+            {/* تأثير الخطوط السوداء الشفافة (Grid) */}
+            <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(0,0,0,1)_1px,transparent_1px)] bg-[size:100%_4px]" />
           </div>
         </div>
       </div>
 
       <style>{`
         @keyframes modal-appear {
-          from { opacity: 0; transform: scale(1.05); filter: blur(10px); }
-          to { opacity: 1; transform: scale(1); filter: blur(0); }
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-modal-appear {
-          animation: modal-appear 0.5s ease-out;
+          animation: modal-appear 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
       `}</style>
     </div>
