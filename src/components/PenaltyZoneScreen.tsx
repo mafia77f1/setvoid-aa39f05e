@@ -65,52 +65,55 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
         
         <div className="absolute top-[30%] left-0 right-0 z-50 flex flex-col items-center">
           
-          {/* مجسم بشري انسيابي (Humanoid Silhouette) */}
-          <div className="relative mb-[-2px] flex flex-col items-center group animate-pulse-slow">
+          {/* مجسم جسم الإنسان الطبيعي (Anatomical Human Silhouette) */}
+          <div className="relative mb-[-1px] flex flex-col items-center scale-110">
             
-            {/* الرأس والرقبة */}
-            <div className="w-4 h-5 bg-white rounded-[45%] mb-[-2px] z-20 shadow-[0_0_10px_white]" />
-            <div className="w-2 h-2 bg-white/80 mx-auto" /> 
+            {/* الرأس (بيضاوي طبيعي) */}
+            <div className="w-[18px] h-[22px] bg-white rounded-[50%_50%_45%_45%] shadow-[0_0_10px_rgba(255,255,255,0.5)] z-30" />
             
-            {/* الجذع (الأكتاف، الصدر، الخصر) */}
-            <div className="relative w-12 flex justify-center">
-                {/* الأكتاف العريضة */}
-                <div className="absolute top-0 w-11 h-4 bg-gradient-to-r from-white/20 via-white to-white/20 rounded-full blur-[0.5px]" />
+            {/* الرقبة */}
+            <div className="w-[6px] h-[4px] bg-white/90 mt-[-2px] z-20" />
+
+            {/* الجذع (الصدر والخصر) */}
+            <div className="relative w-14 flex flex-col items-center">
+                {/* الأكتاف العريضة الانسيابية */}
+                <div className="absolute top-0 w-12 h-5 bg-white rounded-[50%_50%_20%_20%] z-10" />
                 
-                {/* الذراع اليسرى المتصلة */}
-                <div className="absolute left-[-2px] top-[2px] w-[5px] h-11 bg-gradient-to-b from-white to-red-600/40 rounded-full -rotate-[12deg] origin-top shadow-sm" />
+                {/* الذراع اليسرى (متصلة وبنسب طبيعية) */}
+                <div className="absolute left-[-1px] top-1 w-3 h-[45px] bg-gradient-to-b from-white via-white/70 to-red-600/30 rounded-full -rotate-[8deg] origin-top" />
                 
-                {/* القفص الصدري والبطن */}
-                <div className="w-8 h-12 bg-gradient-to-b from-white via-white/80 to-red-600/60 rounded-t-[30%] rounded-b-[60%] z-10" />
+                {/* القفص الصدري يضيق عند الخصر */}
+                <div className="w-[26px] h-[38px] bg-gradient-to-b from-white via-white/80 to-red-600/50 rounded-[20%_20%_40%_40%] z-10" />
                 
-                {/* الذراع اليمنى المتصلة */}
-                <div className="absolute right-[-2px] top-[2px] w-[5px] h-11 bg-gradient-to-b from-white to-red-600/40 rounded-full rotate-[12deg] origin-top shadow-sm" />
+                {/* الذراع اليمنى (متصلة وبنسب طبيعية) */}
+                <div className="absolute right-[-1px] top-1 w-3 h-[45px] bg-gradient-to-b from-white via-white/70 to-red-600/30 rounded-full rotate-[8deg] origin-top" />
             </div>
 
             {/* الحوض والأرجل البشرية */}
-            <div className="relative flex justify-center gap-[6px] mt-[-6px]">
-                {/* الفخذ والساق اليسرى */}
-                <div className="w-[6px] h-14 flex flex-col">
-                  <div className="h-7 bg-gradient-to-b from-red-600/60 to-red-600 rounded-t-full" /> {/* فخذ */}
-                  <div className="h-7 bg-red-600 rounded-b-full mt-[-2px]" /> {/* ساق */}
+            <div className="flex justify-center gap-[4px] mt-[-4px]">
+                {/* الرجل اليسرى (فخذ، ركبة، ساق) */}
+                <div className="w-[9px] h-[55px] flex flex-col items-center">
+                  <div className="w-full h-[28px] bg-gradient-to-b from-red-600/50 to-red-600 rounded-[40%_40%_20%_20%]" /> {/* فخذ */}
+                  <div className="w-[7px] h-[27px] bg-red-600 rounded-b-full shadow-[0_4px_8px_rgba(220,38,38,0.4)]" /> {/* ساق */}
                 </div>
                 
-                {/* الفخذ والساق اليمنى */}
-                <div className="w-[6px] h-14 flex flex-col">
-                  <div className="h-7 bg-gradient-to-b from-red-600/60 to-red-600 rounded-t-full" /> {/* فخذ */}
-                  <div className="h-7 bg-red-600 rounded-b-full mt-[-2px]" /> {/* ساق */}
+                {/* الرجل اليمنى (فخذ، ركبة، ساق) */}
+                <div className="w-[9px] h-[55px] flex flex-col items-center">
+                  <div className="w-full h-[28px] bg-gradient-to-b from-red-600/50 to-red-600 rounded-[40%_40%_20%_20%]" /> {/* فخذ */}
+                  <div className="w-[7px] h-[27px] bg-red-600 rounded-b-full shadow-[0_4px_8px_rgba(220,38,38,0.4)]" /> {/* ساق */}
                 </div>
             </div>
 
-            {/* الارتكاز والوهج */}
-            <div className="absolute -bottom-3 w-16 h-6 bg-red-600/30 blur-xl rounded-full" />
+            {/* وهج تحت الأرجل */}
+            <div className="absolute -bottom-2 w-16 h-4 bg-red-600/40 blur-lg rounded-full" />
           </div>
 
           {/* الخط الأحمر */}
           <div className="h-[4px] w-full bg-red-600 shadow-[0_0_25px_3px_rgba(220,38,38,1),0_0_50px_15px_rgba(220,38,38,0.5)]" />
-          <div className="absolute top-[105px] w-full h-8 bg-red-500/20 blur-xl" />
+          <div className="absolute top-[120px] w-full h-8 bg-red-500/20 blur-xl" />
         </div>
 
+        {/* تفاصيل الأرضية */}
         <div className="w-full h-full opacity-25 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] mix-blend-overlay" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
       </div>
@@ -122,12 +125,7 @@ export const PenaltyZoneScreen = ({ endTime, onTimeComplete }: PenaltyZoneScreen
           0% { background-position: 0 0; }
           100% { background-position: 500px 1000px; }
         }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.9; transform: scale(0.98); }
-        }
         .animate-float { animation: float 100s linear infinite; }
-        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
       `}</style>
       
     </div>
