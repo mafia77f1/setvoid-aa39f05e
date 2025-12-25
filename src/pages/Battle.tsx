@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { DungeonBattleUI } from '@/components/DungeonBattleUI';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { 
   Skull, 
   Swords, 
-  Zap, 
-  Target,
+  Shield,
   Trophy,
-  ChevronRight
+  Sparkles,
+  Gift,
+  Zap,
+  User,
+  Ghost
 } from 'lucide-react';
 
 const Battle = () => {
@@ -20,6 +24,7 @@ const Battle = () => {
   const { playAttack, playVictory, playUseAbility, playBossDamage } = useSoundEffects();
   const [showVictory, setShowVictory] = useState(false);
   const [isAttacking, setIsAttacking] = useState(false);
+  const [loot, setLoot] = useState<{ gold: number; shadowPoints: number; item?: string } | null>(null);
 
   const boss = gameState.currentBoss;
   const canSeeBossHp = gameState.abilities.find(a => a.id === 'a7')?.unlocked || false;
@@ -28,6 +33,14 @@ const Battle = () => {
     if (boss && boss.defeated && !showVictory) {
       setShowVictory(true);
       playVictory();
+      const bossLevel = boss.level || 1;
+      const goldReward = 50 * bossLevel + Math.floor(Math.random() * 50);
+      const shadowReward = bossLevel >= 3 ? Math.floor(bossLevel * 2 + Math.random() * 5) : 0;
+      setLoot({
+        gold: goldReward,
+        shadowPoints: shadowReward,
+        item: bossLevel >= 5 ? 'سيف الظلال العظيم' : undefined
+      });
     }
   }, [boss?.defeated, showVictory, playVictory]);
 
@@ -36,24 +49,69 @@ const Battle = () => {
     return null;
   }
 
-  const handleQuestAction = (questId: string) => {
+  const handleQuestComplete = (questId: string) => {
     setIsAttacking(true);
     playAttack();
     setTimeout(() => {
       playBossDamage();
       completeQuest(questId);
       setIsAttacking(false);
-    }, 400);
+      toast({
+        title: "تم تنفيذ المهارة!",
+        description: "ضرر حرج للزعيم",
+      });
+    }, 500);
   };
 
+  const handleUseAbility = (abilityId: string) => {
+    playUseAbility();
+    useAbility(abilityId);
+  };
+
+  // شاشة النصر بتصميم Solo Leveling
   if (showVictory) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <div className="text-center animate-in zoom-in duration-500">
-          <Trophy className="w-20 h-20 text-yellow-500 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
-          <h1 className="text-5xl font-black text-white italic tracking-tighter mb-8">VICTORY</h1>
-          <Button onClick={() => { resetBoss(); navigate('/boss'); }} className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 text-xl rounded-none skew-x-[-12deg]">
-            CONTINUE
+      <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a0a0c] overflow-hidden relative">
+        {/* خلفية مشعة */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent opacity-50" />
+        
+        <div className="max-w-md w-full p-8 rounded-none border-t-2 border-b-2 border-purple-500 bg-black/80 backdrop-blur-xl relative z-10 text-center shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-purple-600 px-6 py-1 skew-x-[-20deg] border-2 border-white">
+            <span className="text-white font-black italic text-xl uppercase tracking-tighter">Level Up</span>
+          </div>
+
+          <h1 className="text-5xl font-black text-white mb-2 italic tracking-tighter">لقد هزمت الزعيم</h1>
+          <p className="text-purple-400 font-mono mb-8 uppercase tracking-widest">[تم الحصول على المكافآت]</p>
+
+          {loot && (
+            <div className="space-y-4 mb-8">
+              <div className="flex justify-between items-center p-3 bg-white/5 border-l-4 border-yellow-500">
+                <span className="text-gray-400 font-bold">الذهب</span>
+                <span className="text-yellow-500 font-black text-xl">+{loot.gold} G</span>
+              </div>
+              {loot.shadowPoints > 0 && (
+                <div className="flex justify-between items-center p-3 bg-white/5 border-l-4 border-purple-500">
+                  <span className="text-gray-400 font-bold">نقاط الظل</span>
+                  <span className="text-purple-500 font-black text-xl">+{loot.shadowPoints} SP</span>
+                </div>
+              )}
+              {loot.item && (
+                <div className="p-4 bg-purple-900/20 border border-purple-500/50 flex items-center gap-4">
+                  <div className="p-2 bg-purple-500"><Gift className="text-white" /></div>
+                  <div className="text-right">
+                    <p className="text-xs text-purple-300">عنصر جديد</p>
+                    <p className="text-white font-bold">{loot.item}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <Button 
+            onClick={() => { resetBoss(); navigate('/boss'); }} 
+            className="w-full h-16 bg-white text-black hover:bg-purple-500 hover:text-white transition-all font-black text-xl rounded-none border-r-4 border-purple-600"
+          >
+            العودة للمقبرة
           </Button>
         </div>
       </div>
@@ -61,120 +119,82 @@ const Battle = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden">
-      
-      {/* 1. Header & Boss HP Bar */}
-      <div className="pt-10 px-6 text-center">
-        <div className="flex items-center justify-center gap-4 mb-1">
-          <div className="h-[2px] w-12 bg-red-600" />
-          <h1 className="text-4xl font-black tracking-[0.2em] italic">BOSS RAID</h1>
-          <div className="h-[2px] w-12 bg-red-600" />
+    <div className="min-h-screen bg-[#fcfcfc] flex flex-col font-sans relative overflow-hidden">
+      {/* منطقة المواجهة - Arena */}
+      <div className="h-[50vh] relative bg-gradient-to-b from-purple-100 to-white flex items-center justify-center">
+        {/* المنصة */}
+        <div className="absolute bottom-10 w-full h-24 bg-gradient-to-t from-black/20 to-transparent flex items-center justify-center">
+             <div className="w-[80%] h-[2px] bg-gradient-to-r from-transparent via-red-600 to-transparent shadow-[0_0_15px_red]" />
         </div>
-        <p className="text-xs text-slate-400 font-bold tracking-widest uppercase mb-4">
-          {boss.name} HP
-        </p>
-        
-        {/* Cinematic HP Bar */}
-        <div className="max-w-md mx-auto relative h-4 bg-slate-900 border border-white/10 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-red-800 to-red-500 transition-all duration-700 shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-            style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }}
-          />
-        </div>
-        <p className="mt-2 text-[10px] text-red-500 font-black tracking-[0.3em] uppercase opacity-80">
-          {canSeeBossHp ? `HP: ${boss.hp} / ${boss.maxHp}` : "UNKNOWN THREAT"}
-        </p>
-      </div>
 
-      {/* 2. Battle Arena (The Characters) */}
-      <div className="flex-1 relative flex items-center justify-center min-h-[300px]">
-        {/* Light Beam Effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent" />
-        
-        <div className="flex justify-between w-full max-w-xl px-4 relative z-10">
-          {/* Player (Blue Silhouette) */}
-          <div className={cn(
-            "relative transition-all duration-300",
-            isAttacking ? "translate-x-12 scale-110" : ""
-          )}>
-            <div className="w-32 h-48 bg-blue-400/20 blur-2xl absolute inset-0 rounded-full" />
-            <img 
-              src="https://api.iconify.design/mdi:human-handsup.svg?color=%2360a5fa" 
-              className="w-32 h-48 object-contain drop-shadow-[0_0_20px_rgba(96,165,250,0.8)]" 
-              alt="Player"
-            />
-            {/* Blue Aura Effect */}
-            <div className="absolute top-0 left-0 w-full h-full animate-pulse bg-blue-500/10 mix-blend-screen" />
-          </div>
-
-          {/* Boss (Purple Silhouette) */}
+        {/* الشخصية (اللاعب) */}
+        <div className={cn(
+          "absolute left-[15%] bottom-16 transition-all duration-300",
+          isAttacking ? "translate-x-20 scale-110" : ""
+        )}>
           <div className="relative">
-            <div className="w-40 h-56 bg-purple-600/20 blur-3xl absolute inset-0 rounded-full" />
-            <img 
-              src="https://api.iconify.design/mdi:emoticon-devil-outline.svg?color=%23a855f7" 
-              className="w-40 h-56 object-contain drop-shadow-[0_0_25px_rgba(168,85,247,0.8)]" 
-              alt="Boss"
-            />
-            {/* Smoke Effect (Simulated with Gradient) */}
-            <div className="absolute -bottom-4 left-0 w-full h-12 bg-gradient-to-t from-purple-900/40 to-transparent blur-xl" />
+            <div className="absolute -inset-4 bg-blue-500/20 blur-xl rounded-full" />
+            <div className="bg-white border-4 border-black p-4 rounded-full relative z-10 shadow-2xl">
+              <User size={60} className="text-black" />
+            </div>
+            <div className="mt-4 bg-black text-white text-[10px] px-2 py-0.5 font-bold uppercase tracking-tighter italic">
+              Level {gameState.level}
+            </div>
           </div>
         </div>
 
-        {/* Floor Line */}
-        <div className="absolute bottom-20 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-50" />
-      </div>
-
-      {/* 3. Actions / Quests Area */}
-      <div className="p-6 bg-gradient-to-t from-black to-transparent">
-        <div className="max-w-md mx-auto space-y-3">
-          
-          {/* Section Label */}
-          <div className="relative flex justify-center mb-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-blue-900/50"></div></div>
-            <span className="relative px-4 bg-[#050505] text-[10px] font-black text-blue-400 tracking-[0.4em] uppercase">Active Quests</span>
+        {/* الوحش (الظل) */}
+        <div className="absolute right-[15%] bottom-16 animate-pulse">
+          <div className="relative">
+             <div className="absolute -inset-10 bg-purple-600/30 blur-3xl rounded-full animate-bounce" />
+             <div className="bg-purple-950 border-4 border-black p-6 rounded-2xl relative z-10 rotate-12 shadow-[10px_10px_0px_#000]">
+               <Ghost size={80} className="text-purple-400" />
+             </div>
+             <div className="mt-4 bg-purple-600 text-white text-[10px] px-2 py-0.5 font-bold uppercase text-center italic">
+               Boss: {boss.name}
+            </div>
           </div>
+        </div>
 
-          {/* Quest Cards */}
-          {gameState.quests.filter(q => !q.completed).map((quest) => (
-            <button
-              key={quest.id}
-              onClick={() => handleQuestAction(quest.id)}
-              className="w-full group relative bg-black/40 border border-blue-900/30 hover:border-blue-400 p-4 transition-all duration-300"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-2 border border-blue-900 group-hover:bg-blue-500/10 transition-colors">
-                  <Swords className="w-5 h-5 text-blue-500" />
+        {/* تفاصيل الطاقة و HP فوق الرؤوس */}
+        <div className="absolute top-10 w-full px-10 flex justify-between items-start">
+            <div className="space-y-2 w-48">
+                <div className="flex justify-between text-[10px] font-black uppercase italic">
+                    <span>Player HP</span>
+                    <span>{gameState.hp}</span>
                 </div>
-                <div className="flex-1 text-right">
-                  <h3 className="text-sm font-black text-slate-200 group-hover:text-white tracking-wide uppercase">{quest.title}</h3>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-tighter">Required Action: Execute Attack</p>
+                <div className="h-2 w-full bg-gray-200 border border-black overflow-hidden">
+                    <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${(gameState.hp / gameState.maxHp) * 100}%` }} />
                 </div>
-                <ChevronRight className="w-4 h-4 text-blue-900 group-hover:text-blue-400" />
-              </div>
-              {/* Card Glow Effect */}
-              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-          ))}
+            </div>
 
-          {/* Ability Section */}
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            <Button className="bg-transparent border border-purple-900 text-purple-400 text-[10px] font-black tracking-widest hover:bg-purple-900/20">
-              <Zap className="w-3 h-3 ml-2" /> CHALLENGE ABILITY
-            </Button>
-            <Button className="bg-transparent border border-red-900 text-red-500 text-[10px] font-black tracking-widest hover:bg-red-900/20">
-              <Target className="w-3 h-3 ml-2" /> WEAK POINT
-            </Button>
-          </div>
+            <div className="space-y-2 w-48 text-left">
+                <div className="flex justify-between text-[10px] font-black uppercase italic">
+                    <span>{canSeeBossHp ? boss.hp : '????'}</span>
+                    <span>Boss HP</span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 border border-black overflow-hidden">
+                    <div className="h-full bg-red-600 transition-all duration-500" style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }} />
+                </div>
+            </div>
         </div>
       </div>
 
-      {/* Footer Navigation Overlay (Optional) */}
-      <div className="h-16 border-t border-white/5 bg-black flex items-center justify-around opacity-50 px-8">
-         <div className="w-6 h-6 border border-white/20 rounded-sm" />
-         <div className="w-6 h-6 border border-white/20 rounded-sm" />
-         <div className="w-10 h-10 border-2 border-blue-500 rotate-45 flex items-center justify-center"><div className="-rotate-45 text-[8px]">BOSS</div></div>
-         <div className="w-6 h-6 border border-white/20 rounded-sm" />
-         <div className="w-6 h-6 border border-white/20 rounded-sm" />
+      {/* منطقة الأوامر والقوائم */}
+      <div className="flex-1 bg-white border-t-4 border-black p-6">
+        <DungeonBattleUI
+          boss={boss}
+          playerHp={gameState.hp}
+          maxPlayerHp={gameState.maxHp}
+          playerEnergy={gameState.energy}
+          maxPlayerEnergy={gameState.maxEnergy}
+          quests={gameState.quests}
+          abilities={gameState.abilities}
+          canSeeBossHp={canSeeBossHp}
+          onQuestComplete={handleQuestComplete}
+          onUseAbility={handleUseAbility}
+          onExit={() => navigate('/boss')}
+        />
       </div>
     </div>
   );
