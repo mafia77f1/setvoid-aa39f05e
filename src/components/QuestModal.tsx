@@ -1,176 +1,166 @@
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { X, Clock, Star, Zap, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Quest } from '@/types/game';
+import { cn } from '@/lib/utils';
+import { Check, Clock, Dumbbell, Brain, Heart, BookOpen, Zap, X } from 'lucide-react';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
-interface QuestTaskModalProps {
+interface QuestModalProps {
   quest: Quest;
-  isOpen: boolean;
+  onComplete: (id: string) => void;
   onClose: () => void;
-  onComplete: () => void;
 }
 
-const difficultyConfig = {
-  easy: { 
-    color: 'text-foreground/80', 
-    bgColor: 'bg-foreground/10',
-    borderColor: 'border-foreground/30',
-    label: 'سهل',
-    stars: 1
-  },
-  medium: { 
-    color: 'text-[hsl(210_100%_60%)]', 
-    bgColor: 'bg-[hsl(210_100%_50%/0.1)]',
-    borderColor: 'border-[hsl(210_100%_50%/0.3)]',
-    label: 'متوسط',
-    stars: 2
-  },
-  hard: { 
-    color: 'text-primary', 
-    bgColor: 'bg-primary/10',
-    borderColor: 'border-primary/30',
-    label: 'صعب',
-    stars: 3
-  },
-  legendary: { 
-    color: 'text-foreground', 
-    bgColor: 'bg-foreground/10',
-    borderColor: 'border-foreground/50',
-    label: 'أسطوري',
-    stars: 4
-  },
+const categoryConfig = {
+  strength: { icon: Dumbbell, color: 'text-strength', bgColor: 'bg-strength/20', borderColor: 'border-strength/50', name: 'القوة' },
+  mind: { icon: Brain, color: 'text-mind', bgColor: 'bg-mind/20', borderColor: 'border-mind/50', name: 'العقل' },
+  spirit: { icon: Heart, color: 'text-spirit', bgColor: 'bg-spirit/20', borderColor: 'border-spirit/50', name: 'الروح' },
+  quran: { icon: BookOpen, color: 'text-quran', bgColor: 'bg-quran/20', borderColor: 'border-quran/50', name: 'القرآن' },
 };
 
-export const QuestTaskModal = ({ quest, isOpen, onClose, onComplete }: QuestTaskModalProps) => {
-  const [isCompleting, setIsCompleting] = useState(false);
-  const config = difficultyConfig[quest.difficulty];
+const difficultyConfig = {
+  easy: { color: 'text-foreground', bgColor: 'bg-foreground/10', borderColor: 'border-foreground/30', label: 'سهلة' },
+  medium: { color: 'text-mind', bgColor: 'bg-mind/10', borderColor: 'border-mind/30', label: 'متوسطة' },
+  hard: { color: 'text-spirit', bgColor: 'bg-spirit/10', borderColor: 'border-spirit/30', label: 'صعبة' },
+  legendary: { color: 'text-foreground', bgColor: 'bg-foreground/20', borderColor: 'border-foreground/50', label: 'أسطورية' },
+};
 
-  if (!isOpen) return null;
+export const QuestModal = ({ quest, onComplete, onClose }: QuestModalProps) => {
+  const { playQuestComplete, playClick } = useSoundEffects();
+  const config = categoryConfig[quest.category];
+  const difficulty = difficultyConfig[quest.difficulty];
+  const Icon = config.icon;
 
   const handleComplete = () => {
-    setIsCompleting(true);
-    setTimeout(() => {
-      onComplete();
-      setIsCompleting(false);
-      onClose();
-    }, 500);
+    playQuestComplete();
+    onComplete(quest.id);
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fade-in"
+      onClick={onClose}
+    >
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className={cn(
-        "relative w-full max-w-md rounded-xl overflow-hidden animate-modal-appear",
-        "bg-gradient-to-b from-[hsl(200_80%_12%)] to-[hsl(210_60%_6%)]",
-        "border-2",
-        config.borderColor
-      )}>
-        {/* Glowing top border */}
-        <div className={cn(
-          "absolute inset-x-0 top-0 h-0.5",
-          "bg-gradient-to-r from-transparent via-[hsl(200_100%_60%)] to-transparent"
-        )} />
+        className={cn(
+          "relative max-w-md w-full mx-auto animate-scale-in",
+          "rounded-2xl border-2 overflow-hidden",
+          config.borderColor,
+          "bg-gradient-to-b from-card/95 to-background/95"
+        )}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Top Glow Bar */}
+        <div className={cn("absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent", config.color)} />
         
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/10 transition-colors z-10"
+          onClick={() => { playClick(); onClose(); }}
+          className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
         >
-          <X className="w-5 h-5 text-muted-foreground" />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-[hsl(200_100%_50%/0.2)]">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-5 h-5 text-[hsl(200_100%_70%)]" />
-            <span className="text-sm font-bold text-[hsl(200_100%_70%)] tracking-wider">
-              QUEST INFO
-            </span>
-          </div>
-          <h2 className="text-xl font-bold text-foreground mt-3">{quest.title}</h2>
-        </div>
+        {/* Corner Decorations */}
+        <div className={cn("absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2", config.borderColor)} />
+        <div className={cn("absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2", config.borderColor)} />
+        <div className={cn("absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2", config.borderColor)} />
 
-        {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Description */}
-          <div className="p-4 rounded-lg bg-[hsl(200_50%_10%/0.5)] border border-[hsl(200_100%_50%/0.1)]">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {quest.description}
-            </p>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Difficulty */}
+        <div className="p-6">
+          {/* Header */}
+          <div className="text-center mb-6">
             <div className={cn(
-              "p-3 rounded-lg border text-center",
-              config.bgColor,
-              config.borderColor
+              "inline-flex items-center gap-3 px-4 py-2 rounded-lg mb-4",
+              config.bgColor, "border", config.borderColor
             )}>
-              <div className="flex justify-center gap-0.5 mb-1">
-                {[...Array(config.stars)].map((_, i) => (
-                  <Star key={i} className={cn("w-4 h-4 fill-current", config.color)} />
-                ))}
+              <div className={cn("w-2 h-2 rounded-full animate-pulse", config.bgColor.replace('/20', ''))} />
+              <span className={cn("text-sm font-bold tracking-wider", config.color)}>QUEST INFO</span>
+            </div>
+          </div>
+
+          {/* Quest Category */}
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            [مهمة يومية: {config.name}]
+          </p>
+
+          {/* Quest Title */}
+          <div className="text-center mb-6">
+            <div className={cn(
+              "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4",
+              config.bgColor, "border", config.borderColor
+            )}>
+              <Icon className={cn("w-8 h-8", config.color)} />
+            </div>
+            <h3 className={cn("text-xl font-bold", config.color)}>{quest.title}</h3>
+            <p className="text-muted-foreground mt-2">{quest.description}</p>
+          </div>
+
+          {/* Quest Details */}
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+              <span className="text-sm text-muted-foreground">المكافأة</span>
+              <div className="flex items-center gap-1">
+                <Zap className={cn("w-4 h-4", config.color)} />
+                <span className={cn("font-bold", config.color)}>+{quest.xpReward} XP</span>
               </div>
-              <span className={cn("text-xs font-bold", config.color)}>{config.label}</span>
             </div>
 
-            {/* Time Limit */}
-            <div className="p-3 rounded-lg bg-[hsl(200_50%_10%/0.5)] border border-[hsl(200_100%_50%/0.1)] text-center">
-              <Clock className="w-4 h-4 mx-auto mb-1 text-orange-400" />
-              <span className="text-xs text-muted-foreground">
-                {quest.timeLimit ? `${quest.timeLimit} دقيقة` : 'طوال اليوم'}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+              <span className="text-sm text-muted-foreground">الصعوبة</span>
+              <span className={cn(
+                "px-3 py-1 rounded-full text-sm font-semibold",
+                difficulty.bgColor, difficulty.color
+              )}>
+                {difficulty.label}
               </span>
             </div>
-          </div>
 
-          {/* Reward */}
-          <div className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">المكافأة</span>
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                <span className="text-lg font-bold text-primary">+{quest.xpReward} XP</span>
+            {quest.timeLimit && (
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+                <span className="text-sm text-muted-foreground">الوقت المقترح</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-semibold">{quest.timeLimit} دقيقة</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Warning */}
-          <p className="text-xs text-center text-muted-foreground">
-            ⚠️ عدم إكمال المهمات اليومية سيؤدي إلى <span className="text-destructive font-bold">عقوبة</span>
-          </p>
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 mb-6">
+            <p className="text-sm text-destructive text-center">
+              تحذير: عدم إكمال المهمات سيؤدي إلى <span className="font-bold">عقوبة</span> مناسبة
+            </p>
+          </div>
+
+          {/* Complete Button */}
+          <button
+            onClick={handleComplete}
+            disabled={quest.completed}
+            className={cn(
+              "w-full p-4 rounded-xl font-bold text-lg transition-all",
+              "flex items-center justify-center gap-3",
+              quest.completed
+                ? "bg-secondary/20 border-2 border-secondary/50 text-secondary"
+                : cn(config.bgColor, "border-2", config.borderColor, config.color, "hover:opacity-80"),
+              "active:scale-95"
+            )}
+          >
+            {quest.completed ? (
+              <>
+                <Check className="w-6 h-6" />
+                مكتملة
+              </>
+            ) : (
+              <>
+                <Check className="w-6 h-6" />
+                إكمال المهمة
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Action Button */}
-        <div className="p-6 pt-0">
-          {quest.completed ? (
-            <div className="flex items-center justify-center gap-2 py-3 rounded-lg bg-[hsl(150_60%_30%/0.2)] border border-[hsl(150_60%_50%/0.3)]">
-              <CheckCircle className="w-5 h-5 text-[hsl(150_60%_50%)]" />
-              <span className="font-bold text-[hsl(150_60%_50%)]">مكتملة</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleComplete}
-              disabled={isCompleting}
-              className={cn(
-                "w-full py-4 rounded-lg font-bold text-lg transition-all",
-                "bg-gradient-to-r from-primary to-primary/80",
-                "border border-primary/50 shadow-lg shadow-primary/20",
-                "hover:from-primary/90 hover:to-primary/70",
-                "active:scale-[0.98]",
-                isCompleting && "animate-pulse"
-              )}
-            >
-              {isCompleting ? 'جارٍ الإكمال...' : 'إكمال المهمة'}
-            </button>
-          )}
-        </div>
+        {/* Bottom Glow Bar */}
+        <div className={cn("absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent", config.color)} />
       </div>
     </div>
   );
