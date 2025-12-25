@@ -2,9 +2,17 @@ import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Coins, ShoppingBag, Package } from 'lucide-react';
+import { Coins, ShoppingBag, Package, Zap, Shield, FlaskConical, Sword } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+// بيانات العناصر المستوحاة من سولو ليفلينج
+const SOLO_ITEMS = [
+  { id: '1', name: 'جرعة الشفاء (Life Potion)', price: 500, icon: <FlaskConical className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]" />, description: 'تستعيد 50% من نقاط الصحة المفقودة.', category: 'CONSUMABLE' },
+  { id: '2', name: 'خنجر كاساكا (Kasaka\'s Venom)', price: 15000, icon: <Sword className="w-8 h-8 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />, description: 'خنجر مصنوع من سم أفعى كاسكا. يسبب الشلل.', category: 'WEAPON' },
+  { id: '3', name: 'رداء المتخفي (Stealth Cloak)', price: 25000, icon: <Shield className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />, description: 'يخفي وجودك تماماً عن الوحوش من الرتبة C وأقل.', category: 'ARMOR' },
+  { id: '4', name: 'قلب التنين (Dragon\'s Heart)', price: 100000, icon: <Zap className="w-8 h-8 text-blue-600 drop-shadow-[0_0_12px_rgba(37,99,235,1)]" />, description: 'يزيد من مخزون المانا بشكل دائم.', category: 'LEGENDARY' },
+];
 
 const Market = () => {
   const { gameState, purchaseItem, useItem } = useGameState();
@@ -15,130 +23,139 @@ const Market = () => {
       purchaseItem(itemId);
       playPurchase();
       toast({
-        title: 'تم الشراء!',
-        description: `اشتريت ${name}`,
+        title: 'نظام: تم إتمام الشراء',
+        description: `تمت إضافة ${name} إلى مخزونك.`,
       });
     } else {
       toast({
-        title: 'ذهب غير كافٍ!',
-        description: 'أكمل المزيد من المهمات لكسب الذهب',
+        title: 'نظام: ذهب غير كافٍ',
+        description: 'تحذير! لا تملك ما يكفي من العملات الذهبية.',
         variant: 'destructive',
       });
     }
   };
 
-  const handleUseItem = (itemId: string, name: string) => {
-    useItem(itemId);
-    toast({
-      title: 'تم الاستخدام!',
-      description: `استخدمت ${name}`,
-    });
-  };
-
   return (
-    <div className="min-h-screen pb-24">
-      <header className="relative px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-6 h-6 text-secondary" />
-            <h1 className="text-xl font-bold">المتجر</h1>
+    <div className="min-h-screen bg-[#050505] text-slate-100 pb-24 font-sans selection:bg-cyan-500/30">
+      {/* خلفية بتأثير شبكي (Grid Overlay) تشبه النظام */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+      
+      <header className="relative px-6 py-8 border-b border-cyan-900/50 bg-black/40 backdrop-blur-md">
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <ShoppingBag className="w-6 h-6 text-cyan-400 animate-pulse" />
+              <h1 className="text-2xl font-black tracking-widest uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
+                متجر النظام
+              </h1>
+            </div>
+            <p className="text-[10px] text-cyan-700 font-mono mt-1">SYSTEM STORE - LEVEL: S</p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/20 border border-secondary/40">
-            <Coins className="w-5 h-5 text-secondary" />
-            <span className="font-bold text-secondary">{gameState.gold}</span>
+          
+          <div className="flex items-center gap-3 px-5 py-2 rounded-sm bg-cyan-950/30 border-r-2 border-l-2 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+            <Coins className="w-5 h-5 text-yellow-500" />
+            <span className="font-mono text-xl font-bold text-cyan-100 tabular-nums">
+              {gameState.gold.toLocaleString()}
+            </span>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Items for Sale */}
-        <section className="system-panel p-4">
-          <h3 className="font-bold mb-4 text-primary">العناصر المتاحة</h3>
+      <main className="container max-w-2xl mx-auto px-4 py-8 space-y-10 relative">
+        
+        {/* المتجر (Items for Sale) */}
+        <section>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-1 h-6 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,1)]"></div>
+            <h3 className="text-lg font-bold tracking-tighter uppercase italic">العناصر المتاحة</h3>
+          </div>
           
-          <div className="space-y-3">
-            {gameState.inventory.map((item) => (
+          <div className="grid gap-4">
+            {SOLO_ITEMS.map((item) => (
               <div
                 key={item.id}
                 className={cn(
-                  "flex items-center gap-4 p-4 rounded-xl",
-                  "bg-gradient-to-r from-card/80 to-card/40",
-                  "border border-primary/20"
+                  "group relative overflow-hidden transition-all duration-300",
+                  "bg-gradient-to-r from-[#0a0a0c] to-[#121218]",
+                  "border border-slate-800 hover:border-cyan-500/50",
+                  "p-4 rounded-none skew-x-[-1deg]"
                 )}
               >
-                <div className="text-4xl">{item.icon}</div>
-                
-                <div className="flex-1">
-                  <h4 className="font-bold">{item.name}</h4>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Coins className="w-4 h-4 text-secondary" />
-                    <span className="text-sm font-bold text-secondary">{item.price}</span>
+                <div className="flex items-center gap-5 relative z-10">
+                  {/* حاوية الأيقونة (تصميم جبار) */}
+                  <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-black border border-cyan-900 shadow-[inset_0_0_10px_rgba(6,182,212,0.1)] group-hover:shadow-[inset_0_0_20px_rgba(6,182,212,0.2)]">
+                    {item.icon}
                   </div>
-                </div>
+                  
+                  <div className="flex-1">
+                    <h4 className="text-md font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">
+                      {item.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-[10px] font-mono text-cyan-600">PRICE:</span>
+                      <span className="text-sm font-bold text-yellow-500/90">{item.price.toLocaleString()} G</span>
+                    </div>
+                  </div>
 
-                <div className="flex flex-col gap-2">
                   <Button
-                    size="sm"
                     onClick={() => handlePurchase(item.id, item.price, item.name)}
                     disabled={gameState.gold < item.price}
-                    className="gap-1"
+                    className={cn(
+                      "h-10 px-6 rounded-none font-bold uppercase italic skew-x-[10deg]",
+                      "bg-cyan-600 hover:bg-cyan-400 text-black transition-all",
+                      "disabled:bg-slate-800 disabled:text-slate-500"
+                    )}
                   >
                     شراء
                   </Button>
-                  {item.quantity > 0 && (
-                    <span className="text-xs text-center text-muted-foreground">
-                      لديك: {item.quantity}
-                    </span>
-                  )}
                 </div>
+                {/* تأثير ضوئي عند التمرير */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Inventory */}
-        <section className="system-panel p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Package className="w-5 h-5 text-primary" />
-            <h3 className="font-bold">المخزون</h3>
+        {/* المخزون (Inventory) */}
+        <section className="bg-[#0a0a0c]/80 border border-slate-800 p-6 rounded-none relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-600/5 blur-[60px]"></div>
+          
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Package className="w-5 h-5 text-purple-500" />
+              <h3 className="text-lg font-bold italic tracking-widest uppercase">المخزون الشخصي</h3>
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 uppercase">Capacity: ∞</span>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {gameState.inventory.filter(i => i.quantity > 0).map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleUseItem(item.id, item.name)}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-4 rounded-xl",
-                  "bg-gradient-to-b from-primary/10 to-primary/5",
-                  "border border-primary/30",
-                  "hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10",
-                  "transition-all active:scale-95"
-                )}
+                onClick={() => useItem(item.id)}
+                className="group relative flex flex-col items-center p-4 bg-black/40 border border-slate-800 hover:border-purple-500/50 transition-all"
               >
-                <div className="text-3xl">{item.icon}</div>
-                <span className="text-sm font-semibold">{item.name}</span>
-                <span className="text-xs text-muted-foreground">x{item.quantity}</span>
-                <span className="text-xs text-primary">اضغط للاستخدام</span>
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{item.icon}</div>
+                <span className="text-xs font-bold text-slate-300">{item.name}</span>
+                <span className="absolute top-1 right-2 text-[10px] font-mono text-cyan-500 italic">x{item.quantity}</span>
+                <div className="mt-2 text-[8px] text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold tracking-tighter">
+                  استخدام الآن
+                </div>
               </button>
             ))}
             
             {gameState.inventory.filter(i => i.quantity > 0).length === 0 && (
-              <div className="col-span-2 text-center py-8 text-muted-foreground">
-                <Package className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">المخزون فارغ</p>
-                <p className="text-xs">اشترِ عناصر من المتجر</p>
+              <div className="col-span-full py-12 flex flex-col items-center opacity-20">
+                <Package className="w-16 h-16 mb-2" />
+                <p className="text-xs uppercase tracking-[0.3em]">المخزون فارغ حالياً</p>
               </div>
             )}
           </div>
         </section>
 
-        {/* Info */}
-        <div className="system-panel p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            أكمل المهمات اليومية لكسب الذهب وشراء العناصر المفيدة!
-          </p>
-        </div>
       </main>
 
       <BottomNav />
