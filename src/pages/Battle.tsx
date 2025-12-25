@@ -1,83 +1,76 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
-import { cn } from '@/lib/utils';
 
 const Battle = () => {
   const navigate = useNavigate();
   const { gameState } = useGameState();
   const boss = gameState.currentBoss;
-  const [isAttacking, setIsAttacking] = useState(false);
 
   if (!boss) {
     navigate('/boss');
     return null;
   }
 
+  // مكون مجسم الجسم البشري (Humanoid Figure)
+  const HumanoidFigure = ({ color, isEnemy = false }) => (
+    <div className={`relative flex flex-col items-center ${isEnemy ? 'animate-pulse' : ''}`}>
+      {/* الرأس */}
+      <div className={`w-8 h-8 rounded-full mb-1 ${color} border-2 border-white/20`} />
+      {/* الرقبة */}
+      <div className={`w-2 h-2 ${color} opacity-80`} />
+      {/* الجذع والأذرع */}
+      <div className="relative">
+        {/* الأذرع */}
+        <div className={`absolute -left-6 top-0 w-4 h-16 ${color} rounded-full rotate-12 origin-top border border-white/10`} />
+        <div className={`absolute -right-6 top-0 w-4 h-16 ${color} rounded-full -rotate-12 origin-top border border-white/10`} />
+        {/* الجذع */}
+        <div className={`w-12 h-20 ${color} rounded-t-lg border-x-2 border-white/10`} />
+      </div>
+      {/* الحوض */}
+      <div className={`w-12 h-4 ${color} rounded-b-md opacity-90`} />
+      {/* الأرجل */}
+      <div className="flex gap-2 mt-1">
+        <div className={`w-4 h-20 ${color} rounded-b-full border-b-2 border-white/20`} />
+        <div className={`w-4 h-20 ${color} rounded-b-full border-b-2 border-white/20`} />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden flex flex-col items-center justify-center font-sans relative">
+    <div className="min-h-screen bg-black text-white overflow-hidden flex flex-col items-center justify-center font-sans">
       
-      {/* 1. الساحة والمنصة */}
-      <div className="relative w-full h-screen flex flex-col items-center justify-center">
+      <div className="relative w-full h-[60vh] flex flex-col items-center justify-center">
         
-        {/* المنصة: خط أحمر حاد وممتد */}
-        <div className="absolute bottom-[30%] w-full">
-            <div className="w-full h-[4px] bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)]"></div>
-            {/* تظليل أسفل الخط ليعطي عمق */}
-            <div className="w-full h-40 bg-gradient-to-b from-red-900/20 to-transparent opacity-50"></div>
+        {/* المنصة: خط أحمر حاد ومضيء */}
+        <div className="absolute bottom-[20%] w-full flex flex-col items-center">
+          <div className="w-[90%] h-[3px] bg-red-600 shadow-[0_0_15px_rgba(220,38,38,1)]"></div>
         </div>
 
-        {/* 2. الشخصيات فوق الخط */}
-        <div className="relative w-full max-w-4xl flex justify-between items-end px-20 pb-[30%] z-10">
+        {/* الشخصيات */}
+        <div className="relative w-full max-w-2xl flex justify-between items-end px-12 pb-[20%] z-10">
           
-          {/* مجسم الإنسان (اللاعب) */}
-          <div 
-            className={cn(
-              "relative transition-all duration-300 ease-in-out cursor-pointer",
-              isAttacking ? "translate-x-20" : ""
-            )}
-            onClick={() => {
-              setIsAttacking(true);
-              setTimeout(() => setIsAttacking(false), 300);
-            }}
-          >
-            {/* جسم الإنسان المبسط */}
-            <div className="w-16 h-48 bg-blue-500/80 rounded-full border-2 border-blue-300 shadow-[0_0_30px_rgba(59,130,246,0.5)] relative overflow-hidden">
-                {/* الرأس */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-blue-200 rounded-full"></div>
-                {/* توهج داخلي */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            </div>
-            {/* تسمية اللاعب */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs font-bold tracking-widest text-blue-400 uppercase italic">
-                Player
+          {/* الوحش (على اليسار) - لون غامق/ظل */}
+          <div className="flex flex-col items-center">
+            <span className="mb-4 text-red-600 font-black italic text-xs tracking-widest uppercase opacity-50">Enemy</span>
+            <div className="drop-shadow-[0_0_20px_rgba(255,0,0,0.3)]">
+                <HumanoidFigure color="bg-zinc-900" isEnemy={true} />
             </div>
           </div>
 
-          {/* مجسم الظل (الوحش/البوس) */}
-          <div className="relative animate-pulse">
-            {/* جسم الظل الغامض */}
-            <div className="w-24 h-64 bg-gradient-to-t from-zinc-900 to-transparent rounded-t-full relative">
-                {/* تأثير الدخان/الظل */}
-                <div className="absolute inset-0 bg-black/40 blur-sm"></div>
-                {/* أعين متوهجة للظل */}
-                <div className="absolute top-12 w-full flex justify-around px-6">
-                    <div className="w-2 h-2 bg-red-600 rounded-full shadow-[0_0_10px_red]"></div>
-                    <div className="w-2 h-2 bg-red-600 rounded-full shadow-[0_0_10px_red]"></div>
-                </div>
-            </div>
-            {/* تسمية الوحش */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-xs font-bold tracking-widest text-red-600 uppercase italic">
-                Shadow
+          {/* اللاعب (على اليمين) - لون إنسان طبيعي/أزرق */}
+          <div className="flex flex-col items-center">
+            <span className="mb-4 text-blue-400 font-black italic text-xs tracking-widest uppercase opacity-50">Player</span>
+            <div className="drop-shadow-[0_0_25px_rgba(59,130,246,0.4)]">
+                <HumanoidFigure color="bg-blue-600" />
             </div>
           </div>
 
         </div>
       </div>
 
-      {/* نص ارشادي بسيط في الأسفل */}
-      <div className="absolute bottom-10 text-zinc-700 text-[10px] font-mono tracking-[0.2em] uppercase">
-        System: Combat Arena Initialized
+      <div className="mt-10 opacity-20 font-mono text-[10px] tracking-[0.5em]">
+        ARENA PHASE 01
       </div>
 
     </div>
