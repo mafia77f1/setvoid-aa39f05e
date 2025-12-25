@@ -2,163 +2,150 @@ import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
-import { Coins, ShoppingBag, Package, Zap, Shield, FlaskConical, Sword } from 'lucide-react';
+import { Coins, ShoppingBag, Package, Sparkles, Zap, Flame, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-
-// بيانات العناصر المستوحاة من سولو ليفلينج
-const SOLO_ITEMS = [
-  { id: '1', name: 'جرعة الشفاء (Life Potion)', price: 500, icon: <FlaskConical className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]" />, description: 'تستعيد 50% من نقاط الصحة المفقودة.', category: 'CONSUMABLE' },
-  { id: '2', name: 'خنجر كاساكا (Kasaka\'s Venom)', price: 15000, icon: <Sword className="w-8 h-8 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />, description: 'خنجر مصنوع من سم أفعى كاسكا. يسبب الشلل.', category: 'WEAPON' },
-  { id: '3', name: 'رداء المتخفي (Stealth Cloak)', price: 25000, icon: <Shield className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />, description: 'يخفي وجودك تماماً عن الوحوش من الرتبة C وأقل.', category: 'ARMOR' },
-  { id: '4', name: 'قلب التنين (Dragon\'s Heart)', price: 100000, icon: <Zap className="w-8 h-8 text-blue-600 drop-shadow-[0_0_12px_rgba(37,99,235,1)]" />, description: 'يزيد من مخزون المانا بشكل دائم.', category: 'LEGENDARY' },
-];
 
 const Market = () => {
   const { gameState, purchaseItem, useItem } = useGameState();
   const { playPurchase } = useSoundEffects();
 
+  // مصفوفة العناصر بأسعار وأسماء الانمي
+  const SOLO_ITEMS = [
+    { id: '1', name: 'جرعة تجديد الصحة', price: 500, icon: <Flame className="w-7 h-7" />, desc: 'تستعيد نقاط الحياة بالكامل فوراً.' },
+    { id: '2', name: 'مفتاح بوابة الرتبة S', price: 50000, icon: <Sparkles className="w-7 h-7" />, desc: 'يسمح لك بدخول زنزانة من الرتبة العليا.' },
+    { id: '3', name: 'خنجر كاساكا السام', price: 15000, icon: <Zap className="w-7 h-7" />, desc: 'فرصة 50% لشل حركة العدو عند الهجوم.' },
+    { id: '4', name: 'درع الفارس الأسود', price: 25000, icon: <ShieldAlert className="w-7 h-7" />, desc: 'يقلل الضرر الجسدي بنسبة 40%.' },
+  ];
+
   const handlePurchase = (itemId: string, price: number, name: string) => {
     if (gameState.gold >= price) {
       purchaseItem(itemId);
       playPurchase();
-      toast({
-        title: 'نظام: تم إتمام الشراء',
-        description: `تمت إضافة ${name} إلى مخزونك.`,
-      });
+      toast({ title: 'تمت العملية', description: `تم شراء ${name} بنجاح.` });
     } else {
-      toast({
-        title: 'نظام: ذهب غير كافٍ',
-        description: 'تحذير! لا تملك ما يكفي من العملات الذهبية.',
-        variant: 'destructive',
-      });
+      toast({ title: 'فشل العملية', description: 'الذهب المتاح غير كافٍ.', variant: 'destructive' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-100 pb-24 font-sans selection:bg-cyan-500/30">
-      {/* خلفية بتأثير شبكي (Grid Overlay) تشبه النظام */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+    <div className="min-h-screen relative bg-[#020617] text-cyan-50 overflow-hidden font-sans">
       
-      <header className="relative px-6 py-8 border-b border-cyan-900/50 bg-black/40 backdrop-blur-md">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-6 h-6 text-cyan-400 animate-pulse" />
-              <h1 className="text-2xl font-black tracking-widest uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-                متجر النظام
-              </h1>
-            </div>
-            <p className="text-[10px] text-cyan-700 font-mono mt-1">SYSTEM STORE - LEVEL: S</p>
+      {/* خلفية ضبابية (Aurora Effect) */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-900/20 blur-[120px] rounded-full"></div>
+      </div>
+
+      <main className="relative z-10 container max-w-xl mx-auto px-4 py-10">
+        
+        {/* رأس الصفحة - الذهب */}
+        <div className="flex items-center justify-between mb-10 border-b border-cyan-500/30 pb-4 backdrop-blur-sm">
+          <div>
+            <h1 className="text-3xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 uppercase">
+              STORE / المتجر
+            </h1>
+            <p className="text-[10px] font-mono tracking-[0.2em] text-cyan-500/70">SYSTEM VERSION 2.0.4</p>
           </div>
-          
-          <div className="flex items-center gap-3 px-5 py-2 rounded-sm bg-cyan-950/30 border-r-2 border-l-2 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.1)]">
-            <Coins className="w-5 h-5 text-yellow-500" />
-            <span className="font-mono text-xl font-bold text-cyan-100 tabular-nums">
-              {gameState.gold.toLocaleString()}
-            </span>
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-2 bg-black/40 border border-cyan-500/50 px-4 py-1 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+              <Coins className="w-4 h-4 text-yellow-400" />
+              <span className="text-xl font-bold font-mono tracking-tighter tabular-nums">
+                {gameState.gold.toLocaleString()}
+              </span>
+            </div>
+            <span className="text-[9px] text-cyan-600 mt-1 uppercase tracking-widest font-bold text-left w-full">Current Gold</span>
           </div>
         </div>
-      </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-8 space-y-10 relative">
-        
-        {/* المتجر (Items for Sale) */}
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,1)]"></div>
-            <h3 className="text-lg font-bold tracking-tighter uppercase italic">العناصر المتاحة</h3>
-          </div>
-          
-          <div className="grid gap-4">
-            {SOLO_ITEMS.map((item) => (
-              <div
-                key={item.id}
-                className={cn(
-                  "group relative overflow-hidden transition-all duration-300",
-                  "bg-gradient-to-r from-[#0a0a0c] to-[#121218]",
-                  "border border-slate-800 hover:border-cyan-500/50",
-                  "p-4 rounded-none skew-x-[-1deg]"
-                )}
-              >
-                <div className="flex items-center gap-5 relative z-10">
-                  {/* حاوية الأيقونة (تصميم جبار) */}
-                  <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-black border border-cyan-900 shadow-[inset_0_0_10px_rgba(6,182,212,0.1)] group-hover:shadow-[inset_0_0_20px_rgba(6,182,212,0.2)]">
-                    {item.icon}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h4 className="text-md font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">
-                      {item.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[10px] font-mono text-cyan-600">PRICE:</span>
-                      <span className="text-sm font-bold text-yellow-500/90">{item.price.toLocaleString()} G</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => handlePurchase(item.id, item.price, item.name)}
-                    disabled={gameState.gold < item.price}
-                    className={cn(
-                      "h-10 px-6 rounded-none font-bold uppercase italic skew-x-[10deg]",
-                      "bg-cyan-600 hover:bg-cyan-400 text-black transition-all",
-                      "disabled:bg-slate-800 disabled:text-slate-500"
-                    )}
-                  >
-                    شراء
-                  </Button>
+        {/* قائمة العناصر */}
+        <div className="space-y-4">
+          {SOLO_ITEMS.map((item) => (
+            <div
+              key={item.id}
+              className="group relative"
+            >
+              {/* التوهج الخلفي عند التمرير */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-none opacity-0 group-hover:opacity-30 blur-sm transition duration-300"></div>
+              
+              <div className="relative flex items-center gap-4 bg-[#0a1120]/80 border border-cyan-900/50 p-4 backdrop-blur-xl transition-transform active:scale-[0.98]">
+                
+                {/* أيقونة العنصر */}
+                <div className="w-16 h-16 flex items-center justify-center border-2 border-cyan-500/20 bg-black/50 text-cyan-400 group-hover:text-white transition-colors group-hover:border-cyan-400 shadow-[inset_0_0_15px_rgba(6,182,212,0.1)]">
+                  {item.icon}
                 </div>
-                {/* تأثير ضوئي عند التمرير */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-            ))}
-          </div>
-        </section>
 
-        {/* المخزون (Inventory) */}
-        <section className="bg-[#0a0a0c]/80 border border-slate-800 p-6 rounded-none relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-600/5 blur-[60px]"></div>
-          
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Package className="w-5 h-5 text-purple-500" />
-              <h3 className="text-lg font-bold italic tracking-widest uppercase">المخزون الشخصي</h3>
+                {/* معلومات العنصر */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-lg font-bold tracking-tight text-cyan-100 uppercase italic">
+                    {item.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 truncate mb-2">{item.desc}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-cyan-600">COST:</span>
+                    <span className="text-sm font-bold text-yellow-500">{item.price.toLocaleString()} G</span>
+                  </div>
+                </div>
+
+                {/* زر الشراء */}
+                <Button
+                  onClick={() => handlePurchase(item.id, item.price, item.name)}
+                  disabled={gameState.gold < item.price}
+                  className={cn(
+                    "h-12 px-5 bg-transparent border-l border-cyan-500/30 hover:bg-cyan-500/10 rounded-none transition-all",
+                    "text-cyan-400 font-black italic tracking-widest hover:text-white",
+                    "disabled:opacity-20 disabled:grayscale"
+                  )}
+                >
+                  BUY
+                </Button>
+              </div>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase">Capacity: ∞</span>
+          ))}
+        </div>
+
+        {/* قسم المخزون - تصميم عائم */}
+        <div className="mt-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="w-5 h-5 text-purple-500" />
+            <h3 className="text-sm font-black uppercase tracking-widest italic text-purple-400">Inventory / المخزون</h3>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {gameState.inventory.filter(i => i.quantity > 0).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => useItem(item.id)}
-                className="group relative flex flex-col items-center p-4 bg-black/40 border border-slate-800 hover:border-purple-500/50 transition-all"
-              >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{item.icon}</div>
-                <span className="text-xs font-bold text-slate-300">{item.name}</span>
-                <span className="absolute top-1 right-2 text-[10px] font-mono text-cyan-500 italic">x{item.quantity}</span>
-                <div className="mt-2 text-[8px] text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-bold tracking-tighter">
-                  استخدام الآن
+
+          <div className="grid grid-cols-4 gap-2">
+            {[...Array(8)].map((_, i) => {
+              const item = gameState.inventory.filter(inv => inv.quantity > 0)[i];
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "aspect-square border flex items-center justify-center relative",
+                    item ? "border-cyan-500/50 bg-cyan-500/5" : "border-slate-800 bg-black/20"
+                  )}
+                >
+                  {item ? (
+                    <div 
+                      className="cursor-pointer group flex flex-col items-center"
+                      onClick={() => useItem(item.id)}
+                    >
+                      <div className="text-cyan-400 group-hover:scale-110 transition-transform">{item.icon}</div>
+                      <span className="absolute bottom-0 right-1 text-[10px] font-mono text-cyan-300">x{item.quantity}</span>
+                    </div>
+                  ) : (
+                    <div className="w-1 h-1 bg-slate-800 rounded-full"></div>
+                  )}
                 </div>
-              </button>
-            ))}
-            
-            {gameState.inventory.filter(i => i.quantity > 0).length === 0 && (
-              <div className="col-span-full py-12 flex flex-col items-center opacity-20">
-                <Package className="w-16 h-16 mb-2" />
-                <p className="text-xs uppercase tracking-[0.3em]">المخزون فارغ حالياً</p>
-              </div>
-            )}
+              );
+            })}
           </div>
-        </section>
+        </div>
 
       </main>
 
-      <BottomNav />
+      {/* شريط السفلي بنمط الزجاج */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl border-t border-cyan-500/20 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <BottomNav />
+      </div>
+
     </div>
   );
 };
