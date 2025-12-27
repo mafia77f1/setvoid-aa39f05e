@@ -10,13 +10,6 @@ interface SystemNotificationProps {
   actions?: { label: string; onClick: () => void; variant?: 'primary' | 'secondary' }[];
 }
 
-const typeConfig = {
-  info: { borderColor: 'border-primary/60', glowColor: 'via-primary', headerBg: 'bg-primary/20', headerColor: 'text-primary' },
-  success: { borderColor: 'border-secondary/60', glowColor: 'via-secondary', headerBg: 'bg-secondary/20', headerColor: 'text-secondary' },
-  warning: { borderColor: 'border-yellow-500/60', glowColor: 'via-yellow-500', headerBg: 'bg-yellow-500/20', headerColor: 'text-yellow-500' },
-  error: { borderColor: 'border-destructive/60', glowColor: 'via-destructive', headerBg: 'bg-destructive/20', headerColor: 'text-destructive' },
-};
-
 export const SystemNotification = ({
   show,
   title,
@@ -27,79 +20,86 @@ export const SystemNotification = ({
 }: SystemNotificationProps) => {
   if (!show) return null;
 
-  const config = typeConfig[type];
-
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
       onClick={onClose}
     >
+      {/* إطار النافذة الرئيسي - ستايل الماركت */}
       <div 
-        className={cn(
-          "relative max-w-md w-full mx-auto animate-scale-in",
-          "rounded-2xl border-2 overflow-hidden",
-          config.borderColor,
-          "bg-gradient-to-b from-card/95 to-background/95"
-        )}
+        className="relative max-w-sm w-full bg-black/90 border-2 border-slate-200/90 shadow-[0_0_30px_rgba(30,58,138,0.5)] animate-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
-        {/* Top Glow Bar */}
-        <div className={cn("absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent to-transparent", config.glowColor)} />
-        
-        {/* Close Button */}
+        {/* الزوايا الديكورية البيضاء */}
+        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white z-10" />
+        <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white z-10" />
+        <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white z-10" />
+        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white z-10" />
+
+        {/* زر الإغلاق */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+          className="absolute top-2 right-2 p-1 hover:bg-white/10 transition-colors z-20"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 text-slate-400 hover:text-white" />
         </button>
 
-        {/* Corner Decorations */}
-        <div className={cn("absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2", config.borderColor)} />
-        <div className={cn("absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2", config.borderColor)} />
-        <div className={cn("absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2", config.borderColor)} />
-
-        <div className="p-6 pt-10">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <div className={cn(
-              "inline-flex items-center gap-3 px-4 py-2 rounded-lg",
-              config.headerBg, "border", config.borderColor
-            )}>
-              <div className={cn("w-2 h-2 rounded-full animate-pulse", config.headerBg.replace('/20', ''))} />
-              <span className={cn("text-sm font-bold tracking-wider", config.headerColor)}>NOTIFICATION</span>
+        <div className="p-6">
+          {/* Header - العنوان الطائر فوق الإطار */}
+          <div className="flex justify-center mb-8 mt-[-2.5rem]">
+            <div className="border border-slate-400/50 px-4 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              <span className="text-[10px] font-black tracking-[0.3em] text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] uppercase italic">
+                System Message
+              </span>
             </div>
           </div>
 
           {/* Content */}
-          <div className="text-center mb-6">
-            <h3 className={cn("text-xl font-bold mb-3", config.headerColor)}>{title}</h3>
-            <p className="text-foreground/80">{message}</p>
+          <div className="text-center space-y-4 mb-8">
+            <h3 className="text-lg font-black italic tracking-wider text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
+              {title}
+            </h3>
+            
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-slate-500/50 to-transparent" />
+            
+            <p className="text-xs text-slate-300 font-bold leading-relaxed italic tracking-tight">
+              {message}
+            </p>
           </div>
 
-          {/* Actions */}
-          {actions.length > 0 && (
-            <div className="flex gap-3 justify-center">
-              {actions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={action.onClick}
-                  className={cn(
-                    "px-6 py-3 rounded-lg font-bold transition-all active:scale-95",
-                    action.variant === 'secondary'
-                      ? "bg-muted/30 border-2 border-muted text-foreground hover:bg-muted/50"
-                      : cn(config.headerBg, "border-2", config.borderColor, config.headerColor, "hover:opacity-80")
-                  )}
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Actions - الأزرار */}
+          <div className="flex flex-col gap-2">
+            {actions.map((action, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  action.onClick();
+                  onClose();
+                }}
+                className={cn(
+                  "w-full py-3 text-[10px] font-black tracking-[0.2em] uppercase transition-all active:scale-95 border",
+                  action.variant === 'secondary'
+                    ? "bg-transparent border-slate-700 text-slate-500 hover:text-slate-300"
+                    : "bg-white/10 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:bg-white/20"
+                )}
+              >
+                {action.label}
+              </button>
+            ))}
+            
+            {actions.length === 0 && (
+              <button
+                onClick={onClose}
+                className="w-full py-3 bg-white text-black font-black text-[10px] tracking-[0.3em] uppercase hover:bg-slate-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+              >
+                Confirm
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Bottom Glow Bar */}
-        <div className={cn("absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent to-transparent", config.glowColor)} />
+        {/* Scanline Effect Overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
     </div>
   );
