@@ -10,118 +10,132 @@ interface ProfileCardProps {
   onUpdateProfile?: (name: string, title: string) => void;
 }
 
+// تعديل ألوان أيقونات الخصائص لتتناسب مع السمة البنفسجية والبيضاء
 const stats = [
-  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-white' },
-  { key: 'mind', label: 'INT', icon: Brain, color: 'text-white' },
-  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-white' },
-  { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-white' },
+  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-purple-400' },
+  { key: 'mind', label: 'INT', icon: Brain, color: 'text-purple-400' },
+  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-purple-400' },
+  { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-purple-400' },
 ] as const;
+
+// تعديل الرتب لتعتمد تدرجات البنفسجي والأبيض
+const getRankColor = (totalLevel: number) => {
+  return { 
+    border: 'border-purple-600', 
+    bg: 'bg-black', 
+    glow: 'shadow-purple-900/50', 
+    text: 'text-white' 
+  };
+};
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
-  
-  // تنسيق البطاقة باللون الأزرق مع خلفية سوداء
-  const cardStyle = "bg-black border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)]";
-  const glowText = "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]";
-
+  const rankColor = getRankColor(totalLevel);
   const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
   const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
 
   return (
     <>
-      <div className={cn("profile-card relative overflow-hidden", cardStyle)}>
-        {/* Corner Decorations بلون أزرق */}
-        <div className="corner-decoration corner-tl !border-blue-500" />
-        <div className="corner-decoration corner-tr !border-blue-500" />
-        <div className="corner-decoration corner-bl !border-blue-500" />
-        <div className="corner-decoration corner-br !border-blue-500" />
+      {/* الخلفية سوداء بالكامل مع حدود بنفسجية */}
+      <div className={cn("profile-card bg-black text-white border-2", rankColor.border, "shadow-[0_0_20px_rgba(147,51,234,0.3)]")}>
         
-        {/* تأثير خط المسح */}
-        <div className="scan-line !bg-blue-500/10" />
+        {/* Corner Decorations - تم تغييرها للبنفسجي */}
+        <div className="corner-decoration corner-tl border-purple-500" />
+        <div className="corner-decoration corner-tr border-purple-500" />
+        <div className="corner-decoration corner-bl border-purple-500" />
+        <div className="corner-decoration corner-br border-purple-500" />
+        
+        <div className="scan-line" />
 
-        {/* الهيدر بخلفية زرقاء ونص أبيض متوهج */}
-        <div className="status-header !bg-blue-600/20 border-b border-blue-500/50">
-          <h2 className={cn("tracking-widest font-black uppercase", glowText)}>STATUS</h2>
+        {/* Status Header - خلفية بنفسجية ونص أبيض */}
+        <div className="status-header bg-purple-900/80 border-b border-purple-500">
+          <h2 className="text-white tracking-[0.2em] font-bold">STATUS</h2>
         </div>
 
         <div className="p-6">
-          {/* قسم المستوى والاسم */}
+          {/* Level and Name Section */}
           <div className="flex items-start gap-6 mb-4">
             <div className="text-center">
-              <div className={cn("text-5xl font-bold", glowText)}>{totalLevel}</div>
-              <div className="text-[10px] text-blue-400 font-bold tracking-widest">LEVEL</div>
+              <div className={cn("text-5xl font-bold text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]")}>{totalLevel}</div>
+              <div className="text-xs text-purple-300 tracking-widest">LEVEL</div>
             </div>
 
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-blue-400 font-bold">JOB:</span>
-                <span className={cn("font-semibold text-sm", glowText)}>{totalLevel >= 100 ? gameState.playerJob : 'UNKNOWN'}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-purple-400">JOB:</span>
+                <span className="font-semibold text-white">{totalLevel >= 100 ? gameState.playerJob : 'غير معروف'}</span>
+              </div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-purple-400">NAME:</span>
+                <span className="font-semibold text-white">{gameState.playerName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-blue-400 font-bold">NAME:</span>
-                <span className={cn("font-semibold text-sm uppercase", glowText)}>{gameState.playerName}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-blue-400 font-bold">TITLE:</span>
-                <span className={cn("text-xs font-bold", glowText)}>{gameState.playerTitle}</span>
+                <span className="text-xs text-purple-400">TITLE:</span>
+                <span className="text-sm text-purple-300">{gameState.playerTitle}</span>
               </div>
             </div>
 
             <button 
               onClick={() => setShowEditModal(true)}
-              className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 transition-all"
+              className="p-2 rounded-lg bg-purple-900/30 border border-purple-500/50 hover:bg-purple-800/40 transition-all"
             >
-              <Edit className="w-4 h-4 text-blue-400" />
+              <Edit className="w-4 h-4 text-purple-400" />
             </button>
           </div>
 
-          {/* أشرطة الطاقة والحياة */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* HP and Energy Bars - الحفاظ على ألوانها التقليدية مع لمسة Solo Leveling */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] text-blue-400 font-bold">HP</span>
-                <span className={cn("text-[10px] font-bold", glowText)}>{Math.round(gameState.hp)}/{gameState.maxHp}</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1">
+                  <Shield className="w-4 h-4 text-red-500" />
+                  <span className="text-xs text-white">HP</span>
+                </div>
+                <span className="text-xs font-bold text-white">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
               </div>
-              <div className="h-2 bg-blue-900/20 border border-blue-500/30 rounded-full overflow-hidden">
-                <div className="h-full bg-white shadow-[0_0_10px_white]" style={{ width: `${hpPercentage}%` }} />
+              <div className="stats-bar h-3 bg-gray-900 border border-purple-900/50">
+                <div className="stats-bar-fill bg-red-600" style={{ width: `${hpPercentage}%` }} />
               </div>
             </div>
             <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] text-blue-400 font-bold">ENERGY</span>
-                <span className={cn("text-[10px] font-bold", glowText)}>{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1">
+                  <Zap className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs text-white">ENERGY</span>
+                </div>
+                <span className="text-xs font-bold text-white">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
               </div>
-              <div className="h-2 bg-blue-900/20 border border-blue-500/30 rounded-full overflow-hidden">
-                <div className="h-full bg-white shadow-[0_0_10px_white]" style={{ width: `${energyPercentage}%` }} />
+              <div className="stats-bar h-3 bg-gray-900 border border-purple-900/50">
+                <div className="stats-bar-fill bg-blue-500" style={{ width: `${energyPercentage}%` }} />
               </div>
             </div>
           </div>
 
-          <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent mb-4" />
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-4" />
 
-          {/* الإحصائيات السريعة */}
-          <div className="flex items-center justify-around mb-4 py-3 rounded-lg bg-blue-950/20 border border-blue-500/20">
+          {/* Quick Stats Row - خلفية بنفسجية داكنة جداً */}
+          <div className="flex items-center justify-around mb-4 py-3 rounded-lg bg-purple-950/20 border border-purple-500/30">
             <div className="text-center">
-              <Flame className="w-5 h-5 mx-auto mb-1 text-white drop-shadow-[0_0_5px_white]" />
-              <div className={cn("text-lg font-bold", glowText)}>{gameState.streakDays}</div>
-              <div className="text-[8px] text-blue-400 uppercase font-bold">Streak</div>
+              <Flame className="w-5 h-5 mx-auto mb-1 text-purple-400" />
+              <div className="text-lg font-bold text-white">{gameState.streakDays}</div>
+              <div className="text-[10px] text-purple-300">أيام متتالية</div>
             </div>
-            <div className="w-px h-8 bg-blue-500/20" />
+            <div className="w-px h-10 bg-purple-500/30" />
             <div className="text-center">
-              <div className={cn("text-lg font-bold", glowText)}>{todayQuests}/{totalQuests}</div>
-              <div className="text-[8px] text-blue-400 uppercase font-bold">Quests</div>
+              <div className="text-lg font-bold text-white">{todayQuests}/{totalQuests}</div>
+              <div className="text-[10px] text-purple-300">مهمات اليوم</div>
             </div>
-            <div className="w-px h-8 bg-blue-500/20" />
+            <div className="w-px h-10 bg-purple-500/30" />
             <div className="text-center">
-              <div className={cn("text-lg font-bold", glowText)}>{gameState.gold || 0}</div>
-              <div className="text-[8px] text-blue-400 uppercase font-bold">Gold</div>
+              <div className="text-lg font-bold text-purple-400">{gameState.gold || 0}</div>
+              <div className="text-[10px] text-purple-300">ذهب</div>
             </div>
           </div>
 
-          {/* شبكة الصفات (Stats) */}
+          {/* Stats Grid - كروت فرعية بحدود بنفسجية ونصوص بيضاء */}
           <div className="grid grid-cols-2 gap-3">
             {stats.map((stat) => {
               const Icon = stat.icon;
@@ -130,16 +144,16 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               const progress = getXpProgress(xp);
 
               return (
-                <div key={stat.key} className="p-3 rounded-lg bg-black border border-blue-500/20 hover:border-blue-500/50 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <Icon className="w-4 h-4 text-blue-400" />
-                    <span className={cn("text-sm font-bold", glowText)}>{level}</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[9px] text-blue-400 font-bold tracking-tighter uppercase">{stat.label}</span>
-                  </div>
-                  <div className="h-1 bg-blue-900/30 rounded-full overflow-hidden">
-                    <div className="h-full bg-white shadow-[0_0_5px_white]" style={{ width: `${progress}%` }} />
+                <div key={stat.key} className="flex items-center gap-3 p-3 rounded-lg bg-purple-900/10 border border-purple-500/20">
+                  <Icon className={cn('w-5 h-5', stat.color)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn('text-sm font-bold', stat.color)}>{stat.label}</span>
+                      <span className="stat-value text-sm text-white">{level}</span>
+                    </div>
+                    <div className="stats-bar h-2 bg-gray-900">
+                      <div className={cn('stats-bar-fill bg-purple-600')} style={{ width: `${progress}%` }} />
+                    </div>
                   </div>
                 </div>
               );
