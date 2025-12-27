@@ -9,13 +9,13 @@ import {
   Brain, 
   Heart, 
   Shield,
-  Sword,
   Crown,
   Plus,
   CircleUser,
   Zap,
   Target,
-  Lock
+  Lock,
+  Coins
 } from 'lucide-react';
 
 const Stats = () => {
@@ -24,43 +24,42 @@ const Stats = () => {
 
   const MAX_LEVEL = 100;
 
-  // ألوان Solo Leveling: الأزرق السماوي، الأزرق النيلي، والبنفسجي
   const stats = [
     { 
       category: 'strength' as const, 
       level: gameState.levels.strength, 
       xp: gameState.stats.strength, 
       xpProgress: getXpProgress(gameState.stats.strength),
-      name: 'القوة',
-      icon: <Dumbbell className="w-6 h-6" />,
-      color: 'hsl(190 100% 50%)' // أزرق سماوي ساطع
+      name: 'STRENGTH',
+      icon: <Dumbbell className="w-5 h-5" />,
+      color: '#60a5fa' // Blue-400
     },
     { 
       category: 'mind' as const, 
       level: gameState.levels.mind, 
       xp: gameState.stats.mind, 
       xpProgress: getXpProgress(gameState.stats.mind),
-      name: 'العقل',
-      icon: <Brain className="w-6 h-6" />,
-      color: 'hsl(210 100% 60%)' // أزرق نظام
+      name: 'MIND',
+      icon: <Brain className="w-5 h-5" />,
+      color: '#60a5fa'
     },
     { 
       category: 'spirit' as const, 
       level: gameState.levels.spirit, 
       xp: gameState.stats.spirit, 
       xpProgress: getXpProgress(gameState.stats.spirit),
-      name: 'الروح',
-      icon: <Heart className="w-6 h-6" />,
-      color: 'hsl(280 100% 65%)' // بنفسجي "ظل"
+      name: 'SPIRIT',
+      icon: <Heart className="w-5 h-5" />,
+      color: '#60a5fa'
     },
     { 
       category: 'agility' as const, 
       level: gameState.levels.agility || 0, 
       xp: gameState.stats.agility || 0, 
       xpProgress: getXpProgress(gameState.stats.agility || 0),
-      name: 'الرشاقة',
-      icon: <Zap className="w-6 h-6" />,
-      color: 'hsl(180 100% 45%)' // أزرق مخضر (Cyan)
+      name: 'AGILITY',
+      icon: <Zap className="w-5 h-5" />,
+      color: '#60a5fa'
     },
   ];
 
@@ -74,211 +73,111 @@ const Stats = () => {
   const totalLevel = gameState.totalLevel;
   
   const getLevelConfig = () => {
-    if (totalLevel >= 40) return { 
-      color: 'hsl(280 100% 70%)', // بنفسجي ملكي
-      glow: 'hsl(280 100% 60% / 0.8)',
-      tier: 'رتبة S'
-    };
-    if (totalLevel >= 20) return { 
-      color: 'hsl(200 100% 60%)', // أزرق ساطع
-      glow: 'hsl(200 100% 60% / 0.6)',
-      tier: 'رتبة B'
-    };
-    return { 
-      color: 'hsl(0 0% 100%)', // أبيض نقي
-      glow: 'hsl(0 0% 100% / 0.4)',
-      tier: 'رتبة E'
-    };
+    if (totalLevel >= 40) return { color: '#c084fc', tier: 'S-RANK' };
+    if (totalLevel >= 20) return { color: '#60a5fa', tier: 'B-RANK' };
+    return { color: '#ffffff', tier: 'E-RANK' };
   };
 
   const levelConfig = getLevelConfig();
 
-  const equipmentSlots = [
-    { id: 'head', y: 15 },
-    { id: 'chest', y: 40 },
-    { id: 'weapon', y: 55 },
-    { id: 'legs', y: 80 },
-  ];
-
-  const getStatLevelColor = (level: number) => {
-    if (level >= 20) return 'hsl(280 100% 70%)';
-    if (level >= 10) return 'hsl(200 100% 60%)';
-    return '#ffffff';
-  };
-
   return (
-    <div className="min-h-screen pb-24 bg-[#05070a]" style={{ color: '#fff' }}>
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 rounded-xl bg-blue-950/20 border border-blue-500/30">
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={cn(
-              "flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all",
-              activeTab === 'stats' 
-                ? "bg-blue-600/20 text-blue-400 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
-                : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            <div className="flex items-center justify-center gap-1">
-              <TrendingUp className="w-4 h-4" />
-              الإحصائيات
-            </div>
-          </button>
-          <button
-            onClick={() => setActiveTab('equipment')}
-            className={cn(
-              "flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all",
-              activeTab === 'equipment' 
-                ? "bg-blue-600/20 text-blue-400 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
-                : "text-slate-500 hover:text-slate-300"
-            )}
-          >
-            <div className="flex items-center justify-center gap-1">
-              <Shield className="w-4 h-4" />
-              المعدات
-            </div>
-          </button>
+    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Overlay from Market */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
+      </div>
+
+      {/* Header aligned with Market style */}
+      <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
+        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
+          Player Status
+        </h1>
+        <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
+          <Coins className="w-3.5 h-3.5 text-yellow-400" />
+          <span className="font-mono font-bold text-blue-100 drop-shadow-[0_0:10px_rgba(255,255,255,0.7)] text-sm">
+            {gameState.gold.toLocaleString()}
+          </span>
+        </div>
+      </header>
+
+      <main className="relative z-10 max-w-md mx-auto space-y-6">
+        {/* Navigation Tabs (System Style) */}
+        <div className="flex gap-2 mb-6">
+          {['stats', 'equipment'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={cn(
+                "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all",
+                activeTab === tab 
+                  ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" 
+                  : "bg-black/40 border-slate-700 text-slate-500"
+              )}
+            >
+              {tab === 'stats' ? 'Abilities' : 'Equipment'}
+            </button>
+          ))}
         </div>
 
         {activeTab === 'stats' && (
-          <div className="space-y-6 animate-fade-in">
-            {/* Level Header */}
-            <div 
-              className="p-4 rounded-2xl border-2"
-              style={{ 
-                background: 'linear-gradient(180deg, #0a0f18, #05070a)',
-                borderColor: levelConfig.color,
-                boxShadow: `0 0 30px ${levelConfig.glow}`
-              }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Crown className="w-6 h-6" style={{ color: levelConfig.color }} />
-                  <span className="font-bold text-lg tracking-tighter">الحالة الحالية</span>
+          <div className="space-y-8 animate-in fade-in duration-500">
+            
+            {/* Level Window - Matching Market Item Frame */}
+            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+              <div className="flex justify-center mb-6 mt-[-2.5rem]">
+                <div className="border border-slate-400/50 px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                  <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase italic">
+                    Class: <span className="text-blue-400">Shadow Monarch</span>
+                  </h2>
                 </div>
-                <div 
-                  className="px-4 py-1 rounded-sm font-black text-2xl italic"
-                  style={{ 
-                    borderLeft: `4px solid ${levelConfig.color}`,
-                    color: levelConfig.color,
-                    textShadow: `0 0 10px ${levelConfig.glow}`
-                  }}
-                >
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-4xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
                   LV. {totalLevel}
                 </div>
-              </div>
-              <div className="text-center text-xs font-bold tracking-[0.2em] opacity-80">
-                <span style={{ color: levelConfig.color }}>{levelConfig.tier}</span>
-              </div>
-            </div>
-
-            {/* Radar Chart */}
-            <div 
-              className="p-4 rounded-2xl border bg-[#0a0f18]"
-              style={{ 
-                borderColor: 'rgba(59, 130, 246, 0.2)'
-              }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-blue-400" />
-                <h3 className="font-bold text-blue-100">تحليل القدرات</h3>
-              </div>
-              <div className="flex justify-center">
-                {/* ملاحظة: تأكد ان RadarChart يستخدم الألوان الممرة له داخلياً */}
-                <RadarChart stats={radarStats} size={280} />
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid gap-4">
-              {stats.map((stat, index) => (
                 <div 
-                  key={stat.category}
-                  className="relative overflow-hidden rounded-lg transition-all border-l-4"
-                  style={{ 
-                    animationDelay: `${index * 0.1}s`,
-                    background: `linear-gradient(90deg, #0f172a, #05070a)`,
-                    borderColor: stat.color,
-                    boxShadow: `0 4px 20px rgba(0,0,0,0.5)`
-                  }}
+                  className="text-[10px] font-bold tracking-[0.4em] uppercase py-1 px-4 border-y border-white/20"
+                  style={{ color: levelConfig.color }}
                 >
-                  <div className="relative z-10 p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-10 h-10 rounded flex items-center justify-center"
-                          style={{ 
-                            background: `${stat.color}15`,
-                            border: `1px solid ${stat.color}30`,
-                          }}
-                        >
-                          <div style={{ color: stat.color }}>{stat.icon}</div>
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-white/90">{stat.name}</h3>
-                          <p className="text-[10px] text-blue-400/60 font-mono tracking-widest">{stat.xp} / NEXT LV</p>
-                        </div>
-                      </div>
-                      <div className="text-xl font-black italic" style={{ color: stat.color }}>
-                        {stat.level}
-                      </div>
-                    </div>
-                    
-                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
-                      <div 
-                        className="h-full transition-all duration-700"
-                        style={{ 
-                          width: `${stat.xpProgress}%`,
-                          background: `linear-gradient(90deg, transparent, ${stat.color}, #fff)`,
-                          boxShadow: `0 0 10px ${stat.color}`
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {levelConfig.tier}
                 </div>
-              ))}
-            </div>
-
-            {/* Gold Resources */}
-            <div 
-              className="p-4 rounded-xl border border-blue-500/20 bg-[#0a0f18] relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 blur-3xl rounded-full" />
-              <div className="text-center w-full relative z-10">
-                <div className="text-[10px] text-blue-400/60 mb-1 font-bold tracking-[0.3em]">رصيد النقاط</div>
-                <div className="text-3xl font-black text-white mb-3 tracking-tighter tabular-nums">
-                  {gameState.gold.toLocaleString()}
-                </div>
-                <button className="w-full max-w-[200px] text-[10px] bg-white text-black py-2 rounded-sm hover:bg-blue-400 transition-all font-black tracking-widest uppercase">
-                  استبدال النقاط +
-                </button>
               </div>
             </div>
-          </div>
-        )}
 
-        {activeTab === 'equipment' && (
-          <div className="animate-fade-in relative">
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-[4px] rounded-2xl">
-              <Lock className="w-8 h-8 text-blue-500 mb-2" />
-              <span className="text-xl font-black text-white tracking-widest italic">مغلق حالياً</span>
-              <p className="text-blue-400/50 text-[10px] font-bold">المعدات تتطلب مستوى أعلى</p>
-            </div>
+            {/* Analysis Grid (Radar + Small Stats) */}
+            <div className="grid grid-cols-1 gap-6">
+               {/* Radar Chart Window */}
+              <div className="bg-black/40 border border-blue-500/30 p-4 relative overflow-hidden">
+                <div className="flex items-center gap-2 mb-4 border-l-2 border-blue-400 pl-2">
+                  <Target className="w-4 h-4 text-blue-400" />
+                  <span className="text-[10px] font-bold tracking-widest text-blue-100">ABILITY ANALYSIS</span>
+                </div>
+                <div className="flex justify-center py-2">
+                   <RadarChart stats={radarStats} size={240} />
+                </div>
+              </div>
 
-            <div 
-              className="relative rounded-2xl overflow-hidden p-6 opacity-20 grayscale"
-              style={{
-                background: '#0a101d',
-                border: `1px solid ${levelConfig.color}40`,
-              }}
-            >
-              <div className="relative h-[400px] flex items-center justify-center">
-                 <CircleUser className="w-32 h-32 text-blue-900" />
-                 {equipmentSlots.map((slot, index) => (
-                  <div key={slot.id} className="absolute flex items-center gap-2" style={{ top: `${slot.y}%`, [index % 2 === 0 ? 'left' : 'right']: '10px' }}>
-                    <div className="w-12 h-12 rounded border border-blue-500/20 bg-black flex items-center justify-center">
-                      <Plus className="w-5 h-5 text-blue-900" />
+              {/* Individual Stats - Matching Market List Style */}
+              <div className="space-y-3">
+                {stats.map((stat) => (
+                  <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3 hover:border-blue-500/50 transition-colors">
+                    <div className="flex justify-between items-end mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="text-blue-400 opacity-80">{stat.icon}</div>
+                        <span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span>
+                      </div>
+                      <span className="text-lg font-black italic text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+                        {stat.level}
+                      </span>
+                    </div>
+                    {/* Progress Bar - System Blue */}
+                    <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-1000"
+                        style={{ width: `${stat.xpProgress}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -286,7 +185,19 @@ const Stats = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'equipment' && (
+          <div className="relative animate-in zoom-in-95 duration-300">
+            <div className="relative bg-black/60 border-2 border-slate-800 p-8 min-h-[400px] flex flex-col items-center justify-center grayscale opacity-60">
+               <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.1)_3px)] pointer-events-none" />
+               <Lock className="w-10 h-10 text-slate-600 mb-4" />
+               <h3 className="text-sm font-bold tracking-[0.3em] text-slate-500 uppercase">Access Denied</h3>
+               <p className="text-[9px] text-slate-700 mt-2">Required Level: 50</p>
+            </div>
+          </div>
+        )}
       </main>
+
       <BottomNav />
     </div>
   );
