@@ -17,127 +17,88 @@ const stats = [
   { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-blue-100' },
 ] as const;
 
-const getRankColor = (totalLevel: number) => {
-  // ألوان تعتمد على نظام Solo Leveling (توهج أزرق ورمادي ملكي)
-  if (totalLevel >= 50) return { border: 'border-blue-400', bg: 'bg-blue-900/20', glow: 'shadow-[0_0_20px_rgba(96,165,250,0.5)]', text: 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]' };
-  if (totalLevel >= 20) return { border: 'border-blue-500/50', bg: 'bg-blue-950/20', glow: 'shadow-blue-500/30', text: 'text-blue-100' };
-  return { border: 'border-slate-500/50', bg: 'bg-slate-900/20', glow: 'shadow-none', text: 'text-slate-100' };
-};
-
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
-  const rankColor = getRankColor(totalLevel);
   const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
   const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
 
   return (
     <>
-      <div className={cn(
-        "profile-card relative bg-black/80 border-2 transition-all duration-500", 
-        rankColor.border, 
-        rankColor.glow
-      )}>
-        {/* Corner Decorations - White/Blue accents */}
-        <div className="corner-decoration corner-tl border-blue-400" />
-        <div className="corner-decoration corner-tr border-blue-400" />
-        <div className="corner-decoration corner-bl border-blue-400" />
-        <div className="corner-decoration corner-br border-blue-400" />
+      {/* الكارد الخارجي - بنفسجي خفيف وعميق */}
+      <div className="relative p-[2px] bg-gradient-to-b from-purple-600/40 via-purple-900/20 to-purple-600/40 rounded-none border border-purple-500/30 shadow-[0_0_30px_rgba(88,28,135,0.3)]">
         
-        {/* Scan Line Effect */}
-        <div className="scan-line opacity-20" />
+        {/* الكارد الداخلي - شفاف وألوان الماركت الزرقاء */}
+        <div className="relative bg-[#020817]/90 backdrop-blur-xl p-6 border border-blue-500/20 overflow-hidden">
+          
+          {/* تأثير الخطوط التقنية الخلفية */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(59,130,246,0.1),rgba(147,51,234,0.1))] bg-[size:100%_2px,2px_100%]" />
 
-        {/* Status Header - Match Market Style */}
-        <div className="status-header bg-slate-900/90 border-b border-blue-500/30">
-          <h2 className="text-blue-400 tracking-[0.2em] font-bold drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]">STATUS</h2>
-        </div>
+          {/* الرأس - STATUS بدون خطوط فاصلة مشتتة */}
+          <div className="flex justify-center mb-8">
+            <div className="border border-blue-400/50 px-8 py-1 bg-blue-950/40 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+              <h2 className="text-sm font-black tracking-[0.4em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
+                STATUS
+              </h2>
+            </div>
+          </div>
 
-        <div className="p-6 relative z-10">
-          {/* Level and Name Section */}
-          <div className="flex items-start gap-6 mb-4">
-            <div className="text-center">
-              <div className={cn("text-5xl font-black italic tracking-tighter", rankColor.text)}>
+          {/* Level and Info Section */}
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-8 text-center md:text-left">
+            <div className="relative">
+              <div className="text-6xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] leading-none">
                 {totalLevel}
               </div>
-              <div className="text-[10px] text-blue-400/70 tracking-[0.2em] font-bold">LEVEL</div>
+              <div className="text-[10px] text-blue-400 font-bold tracking-widest mt-1">LEVEL</div>
             </div>
 
-            <div className="flex-1 pt-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] text-slate-500 font-bold">JOB:</span>
-                <span className="text-sm font-bold text-white uppercase italic">{totalLevel >= 100 ? gameState.playerJob : 'UNKNOWN'}</span>
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-3 justify-center md:justify-start">
+                <span className="text-[10px] text-slate-500 font-bold uppercase">Job:</span>
+                <span className="text-sm font-bold text-blue-100 italic">{totalLevel >= 100 ? gameState.playerJob : 'UNKNOWN'}</span>
               </div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] text-slate-500 font-bold">NAME:</span>
-                <span className="text-sm font-bold text-blue-50 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">{gameState.playerName}</span>
+              <div className="flex items-center gap-3 justify-center md:justify-start">
+                <span className="text-[10px] text-slate-500 font-bold uppercase">Name:</span>
+                <span className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">{gameState.playerName}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-500 font-bold">TITLE:</span>
-                <span className="text-xs font-bold text-blue-400 italic uppercase">{gameState.playerTitle}</span>
+              <div className="flex items-center gap-3 justify-center md:justify-start">
+                <span className="text-[10px] text-slate-500 font-bold uppercase">Title:</span>
+                <span className="text-xs font-bold text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)] uppercase italic">{gameState.playerTitle}</span>
               </div>
             </div>
 
-            <button 
-              onClick={() => setShowEditModal(true)}
-              className="p-2 rounded-none bg-blue-500/10 border border-blue-500/40 hover:bg-blue-500/20 transition-all"
-            >
-              <Edit className="w-4 h-4 text-blue-400" />
+            <button onClick={() => setShowEditModal(true)} className="absolute top-0 right-0 p-2 text-blue-400/50 hover:text-blue-400 transition-colors">
+              <Edit className="w-4 h-4" />
             </button>
           </div>
 
-          {/* HP and Energy Bars - High Contrast */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-red-500" />
-                  <span className="text-[10px] font-bold text-slate-400">HP</span>
-                </div>
-                <span className="text-[10px] font-mono text-red-400">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
+          {/* HP & MP Bars - Solo Leveling Style */}
+          <div className="space-y-4 mb-8">
+            <div className="relative">
+              <div className="flex justify-between items-end mb-1 px-1">
+                <span className="text-[10px] font-black text-red-500 italic">HP</span>
+                <span className="text-xs font-mono text-white">{Math.round(gameState.hp)} / {gameState.maxHp}</span>
               </div>
-              <div className="h-1.5 bg-red-950/30 border border-red-900/20">
-                <div className="h-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)] transition-all" style={{ width: `${hpPercentage}%` }} />
+              <div className="h-2 bg-red-950/40 border border-red-500/20 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-red-600 to-red-400 shadow-[0_0_10px_rgba(220,38,38,0.5)]" style={{ width: `${hpPercentage}%` }} />
               </div>
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-blue-400" />
-                  <span className="text-[10px] font-bold text-slate-400">MP</span>
-                </div>
-                <span className="text-[10px] font-mono text-blue-400">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
+
+            <div className="relative">
+              <div className="flex justify-between items-end mb-1 px-1">
+                <span className="text-[10px] font-black text-blue-500 italic">MP</span>
+                <span className="text-xs font-mono text-white">{Math.round(gameState.energy)} / {gameState.maxEnergy}</span>
               </div>
-              <div className="h-1.5 bg-blue-950/30 border border-blue-900/20">
-                <div className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all" style={{ width: `${energyPercentage}%` }} />
+              <div className="h-2 bg-blue-950/40 border border-blue-500/20 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${energyPercentage}%` }} />
               </div>
             </div>
           </div>
 
-          <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent mb-4" />
-
-          {/* Quick Stats Row - Market Theme */}
-          <div className="flex items-center justify-around mb-4 py-3 bg-blue-950/20 border border-blue-500/20">
-            <div className="text-center">
-              <Flame className="w-4 h-4 mx-auto mb-1 text-orange-500 filter drop-shadow-[0_0_5px_rgba(249,115,22,0.5)]" />
-              <div className="text-lg font-black text-white">{gameState.streakDays}</div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase">Streak</div>
-            </div>
-            <div className="w-px h-8 bg-blue-500/20" />
-            <div className="text-center">
-              <div className="text-lg font-black text-white">{todayQuests}/{totalQuests}</div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase">Quests</div>
-            </div>
-            <div className="w-px h-8 bg-blue-500/20" />
-            <div className="text-center">
-              <div className="text-lg font-black text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]">{gameState.gold?.toLocaleString() || 0}</div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase">Gold</div>
-            </div>
-          </div>
-
-          {/* Stats Grid - Using Cyan/Blue System Colors */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Stats Grid - Transparent Boxes with Blue Accents */}
+          <div className="grid grid-cols-2 gap-4">
             {stats.map((stat) => {
               const Icon = stat.icon;
               const level = gameState.levels[stat.key];
@@ -145,18 +106,18 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               const progress = getXpProgress(xp);
 
               return (
-                <div key={stat.key} className="relative group p-3 bg-black/40 border border-slate-700/50 hover:border-blue-500/50 transition-colors">
+                <div key={stat.key} className="bg-blue-500/5 border border-blue-500/20 p-3 relative group">
                   <div className="flex items-center gap-3">
-                    <Icon className={cn('w-4 h-4', stat.color)} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={cn('text-[10px] font-black tracking-tighter', stat.color)}>{stat.label}</span>
-                        <span className="text-xs font-bold text-white">{level}</span>
+                    <Icon className={cn('w-4 h-4 opacity-70', stat.color)} />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">{stat.label}</span>
+                        <span className="text-sm font-black text-white">{level}</span>
                       </div>
-                      <div className="h-1 bg-slate-800">
+                      <div className="h-1 bg-slate-800/50">
                         <div 
-                          className={cn('h-full shadow-[0_0_5px_rgba(96,165,250,0.3)] transition-all', stat.color.replace('text-', 'bg-'))} 
-                          style={{ width: `${progress}%` }} 
+                          className={cn('h-full transition-all duration-700 shadow-[0_0_8px]', stat.color.replace('text-', 'bg-'))} 
+                          style={{ width: `${progress}%`, boxShadow: '0 0 8px currentColor' }} 
                         />
                       </div>
                     </div>
@@ -165,6 +126,18 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               );
             })}
           </div>
+
+          {/* Footer Stats - Gold and Quests */}
+          <div className="mt-8 pt-4 border-t border-blue-500/20 flex justify-between items-center px-2">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span className="text-xs font-bold text-slate-300">{gameState.streakDays} DAYS</span>
+            </div>
+            <div className="bg-yellow-500/10 px-3 py-1 border border-yellow-500/20">
+              <span className="text-xs font-mono font-bold text-yellow-400">GOLD: {gameState.gold?.toLocaleString()}</span>
+            </div>
+          </div>
+
         </div>
       </div>
 
