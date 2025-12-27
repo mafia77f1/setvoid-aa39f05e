@@ -13,7 +13,6 @@ import {
   Crown,
   Plus,
   CircleUser,
-  Footprints,
   Zap,
   Target,
   Lock
@@ -25,7 +24,7 @@ const Stats = () => {
 
   const MAX_LEVEL = 100;
 
-  // تم تغيير جميع ألوان الإحصائيات إلى تدرجات الأزرق والأبيض
+  // ألوان Solo Leveling: الأزرق السماوي، الأزرق النيلي، والبنفسجي
   const stats = [
     { 
       category: 'strength' as const, 
@@ -34,7 +33,7 @@ const Stats = () => {
       xpProgress: getXpProgress(gameState.stats.strength),
       name: 'القوة',
       icon: <Dumbbell className="w-6 h-6" />,
-      color: 'hsl(200 100% 60%)' // أزرق ساطع
+      color: 'hsl(190 100% 50%)' // أزرق سماوي ساطع
     },
     { 
       category: 'mind' as const, 
@@ -43,7 +42,7 @@ const Stats = () => {
       xpProgress: getXpProgress(gameState.stats.mind),
       name: 'العقل',
       icon: <Brain className="w-6 h-6" />,
-      color: 'hsl(190 100% 50%)' // أزرق سماوي
+      color: 'hsl(210 100% 60%)' // أزرق نظام
     },
     { 
       category: 'spirit' as const, 
@@ -52,7 +51,7 @@ const Stats = () => {
       xpProgress: getXpProgress(gameState.stats.spirit),
       name: 'الروح',
       icon: <Heart className="w-6 h-6" />,
-      color: 'hsl(210 100% 70%)' // أزرق فاتح جداً
+      color: 'hsl(280 100% 65%)' // بنفسجي "ظل"
     },
     { 
       category: 'agility' as const, 
@@ -61,7 +60,7 @@ const Stats = () => {
       xpProgress: getXpProgress(gameState.stats.agility || 0),
       name: 'الرشاقة',
       icon: <Zap className="w-6 h-6" />,
-      color: 'hsl(185 100% 45%)' // أزرق مخضر
+      color: 'hsl(180 100% 45%)' // أزرق مخضر (Cyan)
     },
   ];
 
@@ -76,19 +75,19 @@ const Stats = () => {
   
   const getLevelConfig = () => {
     if (totalLevel >= 40) return { 
-      color: 'hsl(200 100% 60%)', // أزرق ساطع للفل العالي
-      glow: 'hsl(200 100% 60% / 0.6)',
-      tier: 'أزرق ملكي'
+      color: 'hsl(280 100% 70%)', // بنفسجي ملكي
+      glow: 'hsl(280 100% 60% / 0.8)',
+      tier: 'رتبة S'
     };
     if (totalLevel >= 20) return { 
-      color: 'hsl(190 100% 70%)', 
-      glow: 'hsl(190 100% 70% / 0.6)',
-      tier: 'أزرق فاتح'
+      color: 'hsl(200 100% 60%)', // أزرق ساطع
+      glow: 'hsl(200 100% 60% / 0.6)',
+      tier: 'رتبة B'
     };
     return { 
-      color: '#ffffff', // أبيض للفل الابتدائي
-      glow: 'rgba(255, 255, 255, 0.4)',
-      tier: 'أبيض'
+      color: 'hsl(0 0% 100%)', // أبيض نقي
+      glow: 'hsl(0 0% 100% / 0.4)',
+      tier: 'رتبة E'
     };
   };
 
@@ -102,23 +101,23 @@ const Stats = () => {
   ];
 
   const getStatLevelColor = (level: number) => {
-    if (level >= 20) return 'hsl(200 100% 60%)';
-    if (level >= 10) return 'hsl(190 100% 70%)';
+    if (level >= 20) return 'hsl(280 100% 70%)';
+    if (level >= 10) return 'hsl(200 100% 60%)';
     return '#ffffff';
   };
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 bg-[#05070a]" style={{ color: '#fff' }}>
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Tabs */}
-        <div className="flex gap-1 p-1 rounded-xl bg-card/50 border border-primary/20">
+        <div className="flex gap-1 p-1 rounded-xl bg-blue-950/20 border border-blue-500/30">
           <button
             onClick={() => setActiveTab('stats')}
             className={cn(
               "flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all",
               activeTab === 'stats' 
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/40" 
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-blue-600/20 text-blue-400 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
+                : "text-slate-500 hover:text-slate-300"
             )}
           >
             <div className="flex items-center justify-center gap-1">
@@ -131,8 +130,8 @@ const Stats = () => {
             className={cn(
               "flex-1 py-2 px-3 rounded-lg font-bold text-xs transition-all",
               activeTab === 'equipment' 
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/40" 
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-blue-600/20 text-blue-400 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
+                : "text-slate-500 hover:text-slate-300"
             )}
           >
             <div className="flex items-center justify-center gap-1">
@@ -148,46 +147,45 @@ const Stats = () => {
             <div 
               className="p-4 rounded-2xl border-2"
               style={{ 
-                background: 'linear-gradient(180deg, #020617, #000000)',
+                background: 'linear-gradient(180deg, #0a0f18, #05070a)',
                 borderColor: levelConfig.color,
-                boxShadow: `0 0 40px ${levelConfig.glow}`
+                boxShadow: `0 0 30px ${levelConfig.glow}`
               }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Crown className="w-6 h-6" style={{ color: levelConfig.color }} />
-                  <span className="font-bold text-lg text-white">المستوى الكلي</span>
+                  <span className="font-bold text-lg tracking-tighter">الحالة الحالية</span>
                 </div>
                 <div 
-                  className="px-4 py-2 rounded-lg font-bold text-xl"
+                  className="px-4 py-1 rounded-sm font-black text-2xl italic"
                   style={{ 
-                    backgroundColor: `${levelConfig.color}20`,
-                    border: `2px solid ${levelConfig.color}`,
+                    borderLeft: `4px solid ${levelConfig.color}`,
                     color: levelConfig.color,
-                    textShadow: `0 0 15px ${levelConfig.glow}`
+                    textShadow: `0 0 10px ${levelConfig.glow}`
                   }}
                 >
                   LV. {totalLevel}
                 </div>
               </div>
-              <div className="text-center text-sm text-muted-foreground">
-                الرتبة: <span style={{ color: levelConfig.color }}>{levelConfig.tier}</span>
+              <div className="text-center text-xs font-bold tracking-[0.2em] opacity-80">
+                <span style={{ color: levelConfig.color }}>{levelConfig.tier}</span>
               </div>
             </div>
 
             {/* Radar Chart */}
             <div 
-              className="p-4 rounded-2xl border"
+              className="p-4 rounded-2xl border bg-[#0a0f18]"
               style={{ 
-                background: 'linear-gradient(180deg, #020617, #000000)',
-                borderColor: 'rgba(59, 130, 246, 0.3)'
+                borderColor: 'rgba(59, 130, 246, 0.2)'
               }}
             >
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-blue-400" />
-                <h3 className="font-bold text-white">تحليل القوى</h3>
+                <h3 className="font-bold text-blue-100">تحليل القدرات</h3>
               </div>
               <div className="flex justify-center">
+                {/* ملاحظة: تأكد ان RadarChart يستخدم الألوان الممرة له داخلياً */}
                 <RadarChart stats={radarStats} size={280} />
               </div>
             </div>
@@ -197,42 +195,43 @@ const Stats = () => {
               {stats.map((stat, index) => (
                 <div 
                   key={stat.category}
-                  className="relative overflow-hidden rounded-xl transition-all hover:scale-[1.02] animate-fade-in"
+                  className="relative overflow-hidden rounded-lg transition-all border-l-4"
                   style={{ 
                     animationDelay: `${index * 0.1}s`,
-                    background: `linear-gradient(135deg, #0f172a, #020617)`,
-                    border: `2px solid ${getStatLevelColor(stat.level)}40`,
-                    boxShadow: `0 0 30px ${getStatLevelColor(stat.level)}15`
+                    background: `linear-gradient(90deg, #0f172a, #05070a)`,
+                    borderColor: stat.color,
+                    boxShadow: `0 4px 20px rgba(0,0,0,0.5)`
                   }}
                 >
                   <div className="relative z-10 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-12 h-12 rounded-lg flex items-center justify-center"
+                          className="w-10 h-10 rounded flex items-center justify-center"
                           style={{ 
-                            background: `linear-gradient(135deg, ${stat.color}30, ${stat.color}10)`,
-                            border: `1px solid ${stat.color}50`,
+                            background: `${stat.color}15`,
+                            border: `1px solid ${stat.color}30`,
                           }}
                         >
                           <div style={{ color: stat.color }}>{stat.icon}</div>
                         </div>
                         <div>
-                          <h3 className="font-bold text-white">{stat.name}</h3>
-                          <p className="text-xs text-blue-300/60">+{stat.xp} XP</p>
+                          <h3 className="font-bold text-white/90">{stat.name}</h3>
+                          <p className="text-[10px] text-blue-400/60 font-mono tracking-widest">{stat.xp} / NEXT LV</p>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold" style={{ color: getStatLevelColor(stat.level) }}>
-                        Lv.{stat.level}
+                      <div className="text-xl font-black italic" style={{ color: stat.color }}>
+                        {stat.level}
                       </div>
                     </div>
                     
-                    <div className="h-3 rounded-full bg-black/50 border border-blue-500/20 overflow-hidden">
+                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
                       <div 
-                        className="h-full rounded-full transition-all duration-500"
+                        className="h-full transition-all duration-700"
                         style={{ 
                           width: `${stat.xpProgress}%`,
-                          background: `linear-gradient(90deg, ${stat.color}, #ffffff)`,
+                          background: `linear-gradient(90deg, transparent, ${stat.color}, #fff)`,
+                          boxShadow: `0 0 10px ${stat.color}`
                         }}
                       />
                     </div>
@@ -241,19 +240,18 @@ const Stats = () => {
               ))}
             </div>
 
-            {/* Resources */}
+            {/* Gold Resources */}
             <div 
-              className="p-4 rounded-xl border flex flex-col items-center justify-center"
-              style={{ 
-                background: 'linear-gradient(135deg, #020617, #000000)',
-                borderColor: 'rgba(59, 130, 246, 0.3)'
-              }}
+              className="p-4 rounded-xl border border-blue-500/20 bg-[#0a0f18] relative overflow-hidden"
             >
-              <div className="text-center w-full">
-                <div className="text-sm text-blue-300/60 mb-1 uppercase tracking-widest">الرصيد الذهبي</div>
-                <div className="text-3xl font-bold text-white mb-3">{gameState.gold}</div>
-                <button className="w-full max-w-[200px] text-xs bg-blue-600/20 text-blue-400 border border-blue-400/40 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all font-black uppercase tracking-tighter">
-                  شحن رصيد +
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 blur-3xl rounded-full" />
+              <div className="text-center w-full relative z-10">
+                <div className="text-[10px] text-blue-400/60 mb-1 font-bold tracking-[0.3em]">رصيد النقاط</div>
+                <div className="text-3xl font-black text-white mb-3 tracking-tighter tabular-nums">
+                  {gameState.gold.toLocaleString()}
+                </div>
+                <button className="w-full max-w-[200px] text-[10px] bg-white text-black py-2 rounded-sm hover:bg-blue-400 transition-all font-black tracking-widest uppercase">
+                  استبدال النقاط +
                 </button>
               </div>
             </div>
@@ -262,25 +260,25 @@ const Stats = () => {
 
         {activeTab === 'equipment' && (
           <div className="animate-fade-in relative">
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] rounded-2xl">
-              <Lock className="w-10 h-10 text-blue-500 mb-2 opacity-80" />
-              <span className="text-2xl font-black text-blue-400 tracking-tighter italic">COMING SOON</span>
-              <p className="text-white/50 text-xs font-bold">سيتم فتح قسم المعدات في التحديث القادم</p>
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-[4px] rounded-2xl">
+              <Lock className="w-8 h-8 text-blue-500 mb-2" />
+              <span className="text-xl font-black text-white tracking-widest italic">مغلق حالياً</span>
+              <p className="text-blue-400/50 text-[10px] font-bold">المعدات تتطلب مستوى أعلى</p>
             </div>
 
             <div 
-              className="relative rounded-2xl overflow-hidden p-6 opacity-40 grayscale"
+              className="relative rounded-2xl overflow-hidden p-6 opacity-20 grayscale"
               style={{
-                background: 'linear-gradient(180deg, #020617, #000000)',
-                border: `2px solid ${levelConfig.color}`,
+                background: '#0a101d',
+                border: `1px solid ${levelConfig.color}40`,
               }}
             >
               <div className="relative h-[400px] flex items-center justify-center">
-                 <CircleUser className="w-32 h-32 text-blue-900/20" />
+                 <CircleUser className="w-32 h-32 text-blue-900" />
                  {equipmentSlots.map((slot, index) => (
                   <div key={slot.id} className="absolute flex items-center gap-2" style={{ top: `${slot.y}%`, [index % 2 === 0 ? 'left' : 'right']: '10px' }}>
-                    <div className="w-12 h-12 rounded-lg border-2 border-white/10 bg-black/60 flex items-center justify-center">
-                      <Plus className="w-5 h-5 text-blue-900/40" />
+                    <div className="w-12 h-12 rounded border border-blue-500/20 bg-black flex items-center justify-center">
+                      <Plus className="w-5 h-5 text-blue-900" />
                     </div>
                   </div>
                 ))}
