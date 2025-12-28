@@ -1,176 +1,158 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { Users, Key, AlertOctagon, Timer, ShieldAlert, Swords } from 'lucide-react';
+import { AlertTriangle, Skull, Sword, Box, Timer, Users, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
-  
-  // تعريف أنواع البوابات بناءً على طلبك
-  const [gates] = useState([
+
+  const gates = [
     { 
-      id: 'g-normal', 
-      rank: 'A', 
-      name: 'SHADOW FORTRESS', 
-      type: 'BLUE GATE', 
-      color: 'blue',
-      description: 'النوع الشائع - خطر كسر البوابة بعد 7 أيام',
-      timer: '168:00:00', // 7 أيام
-      features: ['RECRUIT_TEAM'],
-      mana: '94,000'
+      type: 'BLUE', rank: 'A', name: 'SHADOW FORTRESS', color: 'from-blue-600 via-blue-900 to-black', 
+      desc: 'بوابة عادية - خطر الكسر بعد 7 أيام', timer: '167:54:12', mana: '98,000', canRecruit: true 
     },
     { 
-      id: 'g-red', 
-      rank: 'S', 
-      name: 'FROZEN HELL', 
-      type: 'RED GATE', 
-      color: 'red',
-      description: 'المخرج مغلق - يجب قتل الزعيم للهروب',
-      warning: 'TIME DILATION ACTIVE',
-      mana: 'UNMEASURABLE'
+      type: 'RED', rank: 'S', name: 'ICE CITADEL', color: 'from-red-600 via-red-950 to-black', 
+      desc: 'بوابة حمراء - انحباس مكاني (المخرج مغلق)', timer: 'UNKNOWN', mana: 'ERR: OVER', isRed: true 
     },
     { 
-      id: 'g-instant', 
-      rank: 'B', 
-      name: 'LEVEL UP TRIALS', 
-      type: 'INSTANT DUNGEON', 
-      color: 'gold',
-      description: 'نظام خاص - مخصص لرفع المستوى فقط',
-      requires: 'C-RANK KEY',
-      mana: 'LOCKED BY SYSTEM'
+      type: 'INSTANT', rank: 'B', name: 'TRIAL OF THE WEAK', color: 'from-yellow-500 via-amber-950 to-black', 
+      desc: 'ديماس فوري - مخصص لرفع المستوى (XP)', key: 'C-RANK KEY', mana: 'SYSTEM ONLY', isInstant: true 
     },
     { 
-      id: 'g-double', 
-      rank: '??', 
-      name: 'THE CARTENON TEMPLE', 
-      type: 'DOUBLE DUNGEON', 
-      color: 'double',
-      description: 'خطر! بوابة مخفية داخل بوابة عادية',
-      warning: 'UNKNOWN ENTITY DETECTED',
-      mana: 'ERROR: OVERFLOW'
+      type: 'DOUBLE', rank: '???', name: 'CARTENON TEMPLE', color: 'from-gray-400 via-zinc-900 to-black', 
+      desc: 'بوابة مزدوجة - كيان مخفي داخل بوابة عادية', timer: 'NONE', mana: 'INFINITE', isDouble: true 
     }
-  ]);
+  ];
 
   return (
-    <div className="min-h-screen bg-[#020205] text-white pb-40 overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#020205] text-white font-serif selection:bg-purple-900 pb-40">
       
-      {/* Background FX */}
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,#0a0a1a_0%,#000_100%)] opacity-80" />
-      
-      <header className="relative z-20 pt-10 px-6">
-        <div className="flex justify-between items-start font-black italic">
-          <div>
-            <h1 className="text-4xl tracking-tighter text-white">GATE <span className="text-purple-600">RADAR</span></h1>
-            <p className="text-[10px] tracking-[0.4em] text-slate-500 uppercase font-bold">Shadow Monarch System V.2</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 p-2 backdrop-blur-md">
-            <span className="text-[10px] block text-slate-400">CURRENT KEYS</span>
-            <div className="flex items-center gap-1 text-yellow-500">
-              <Key size={14} /> <span className="text-lg font-black">03</span>
-            </div>
-          </div>
+      {/* تأثير المانا المظلمة في الخلفية */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1a1a2e_0%,#000_70%)]" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,1)]" />
+      </div>
+
+      <header className="relative z-20 pt-12 px-8 flex justify-between items-end border-b border-white/5 pb-4">
+        <div>
+          <h1 className="text-xs font-black tracking-[0.8em] text-purple-500 uppercase opacity-70">Detection System</h1>
+          <div className="text-4xl font-[1000] italic tracking-tighter">GATE <span className="text-white/20">RADAR</span></div>
+        </div>
+        <div className="text-right">
+          <div className="text-[10px] text-zinc-500 font-bold tracking-widest">CURRENT MANA</div>
+          <div className="text-xl font-black text-white italic">LEVEL <span className="text-purple-600">99</span></div>
         </div>
       </header>
 
-      <main className="relative z-10 px-4 mt-12 space-y-32">
-        {gates.map((gate) => (
-          <div key={gate.id} className="relative group max-w-sm mx-auto transition-all duration-700">
+      <main className="relative z-10 p-6 space-y-32">
+        {gates.map((gate, idx) => (
+          <div key={idx} className="relative group">
             
-            {/* بوابة الرتبة وتصنيف النوع */}
-            <div className="flex flex-col items-center mb-8">
-              <div className={cn(
-                "px-6 py-1 text-[11px] font-[1000] skew-x-[-20deg] border-2 mb-2",
-                gate.color === 'blue' && "border-blue-500 text-blue-400 bg-blue-500/10",
-                gate.color === 'red' && "border-red-600 text-red-500 bg-red-600/10 animate-pulse",
-                gate.color === 'gold' && "border-yellow-600 text-yellow-500 bg-yellow-600/10",
-                gate.color === 'double' && "border-white text-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-              )}>
-                {gate.type}
+            {/* عنوان البوابة (System Notification Style) */}
+            <div className="absolute -top-10 left-0 w-full flex justify-between items-center px-2">
+              <div className="flex items-center gap-2">
+                <div className={cn("w-2 h-2 rotate-45", gate.isRed ? "bg-red-600" : "bg-purple-600")} />
+                <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">{gate.type} GATE DETECTED</span>
               </div>
-              <h2 className="text-2xl font-black tracking-widest uppercase">{gate.name}</h2>
-              <p className="text-[9px] text-slate-400 mt-1 font-bold">{gate.description}</p>
+              <span className="text-[10px] font-mono text-zinc-600">ID: 000-{idx}</span>
             </div>
 
-            {/* الجبروت البصري - شكل البوابة */}
-            <div className="relative h-96 w-full flex items-center justify-center">
+            {/* الجسم الرئيسي للبوابة (The Monolith) */}
+            <div className="relative flex items-center justify-center h-[450px]">
               
-              {/* الرتبة الضخمة */}
-              <div className="absolute text-[15rem] font-[1000] italic leading-none opacity-5 group-hover:opacity-15 transition-opacity">
+              {/* الرتبة الخلفية (هيبة البوابة) */}
+              <div className="absolute z-0 text-[18rem] font-[1000] italic leading-none opacity-[0.03] group-hover:opacity-[0.07] transition-all duration-1000">
                 {gate.rank}
               </div>
 
-              {/* هيكل البوابة المطور */}
+              {/* تصميم البوابة (The Abyss) */}
               <div className={cn(
-                "relative w-60 h-full rounded-[48%_48%_30%_30%] border-4 transition-all duration-700 shadow-2xl",
-                gate.color === 'blue' && "border-blue-600 shadow-blue-900/40",
-                gate.color === 'red' && "border-red-700 shadow-red-900/60",
-                gate.color === 'gold' && "border-yellow-600 shadow-yellow-900/40",
-                gate.color === 'double' && "border-slate-400 shadow-[0_0_50px_rgba(255,255,255,0.3)]"
+                "relative w-64 h-full rounded-t-[100px] rounded-b-[20px] overflow-hidden border-t-2 border-x-2 transition-all duration-700",
+                "before:absolute before:inset-0 before:bg-gradient-to-b before:opacity-40",
+                gate.isRed ? "border-red-600 shadow-[0_-20px_50px_rgba(220,38,38,0.3)] shadow-red-900/20" : 
+                gate.isDouble ? "border-zinc-400 shadow-[0_-20px_50px_rgba(255,255,255,0.1)] shadow-white/10" :
+                "border-purple-600 shadow-[0_-20px_50px_rgba(147,51,234,0.2)] shadow-purple-900/20"
               )}>
-                
-                {/* الدوامة - Portal Heart */}
+                {/* الدوامة الداخلية */}
                 <div className={cn(
-                  "absolute inset-0 rounded-[inherit] overflow-hidden",
-                  "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_50%_50%,transparent_20%,#000_100%)]"
+                  "absolute inset-0 bg-gradient-to-b",
+                  gate.color
                 )}>
-                  <div className={cn(
-                    "absolute inset-[-100%] animate-[spin_10s_linear_infinite]",
-                    gate.color === 'blue' && "bg-[conic-gradient(from_0deg,#000,#2563eb,#000,#3b82f6,#000)]",
-                    gate.color === 'red' && "bg-[conic-gradient(from_0deg,#000,#dc2626,#000,#ef4444,#000)]",
-                    gate.color === 'gold' && "bg-[conic-gradient(from_0deg,#000,#ca8a04,#000,#facc15,#000)]",
-                    gate.color === 'double' && "bg-[conic-gradient(from_0deg,#000,#fff,#333,#fff,#000)]"
-                  )} />
+                  <div className="absolute inset-0 opacity-40 mix-blend-overlay bg-[url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwaWJpZjZxdXNpeXp6c3V6OXJ6OXJ6OXJ6OXJ6OXJ6OXJ6OXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxcaoxA2re/giphy.gif')] bg-cover bg-center" />
+                  
+                  {/* تأثير التمزق للبوابة المزدوجة */}
+                  {gate.isDouble && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-1 h-full bg-white/20 blur-xl animate-pulse" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,black_90%)]" />
+                    </div>
+                  )}
                 </div>
 
-                {/* تأثير البوابة المزدوجة (طبقة ثانية مخفية) */}
-                {gate.color === 'double' && (
-                  <div className="absolute inset-4 rounded-[inherit] border-2 border-dashed border-red-600/50 animate-[spin_5s_linear_infinite_reverse]" />
-                )}
+                {/* الضباب السحري المتحرك */}
+                <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
               </div>
 
-              {/* أزرار التفاعل */}
-              <div className="absolute -bottom-10 flex flex-col items-center gap-3 w-full">
-                <button className={cn(
-                  "px-10 py-4 font-black italic tracking-[0.5em] skew-x-[-15deg] transition-all hover:scale-105 active:scale-90",
-                  gate.color === 'blue' && "bg-blue-600 text-white",
-                  gate.color === 'red' && "bg-red-700 text-white shadow-[0_0_25px_rgba(220,38,38,0.5)]",
-                  gate.color === 'gold' && "bg-yellow-600 text-black",
-                  gate.color === 'double' && "bg-white text-black"
-                )}>
-                  {gate.color === 'gold' ? 'USE KEY' : 'ENTER'}
-                </button>
+              {/* بطاقة معلومات البوابة (The UI Overlay) */}
+              <div className="absolute -right-4 bottom-10 w-48 bg-black/80 border border-white/10 backdrop-blur-xl p-4 skew-x-[-12deg] shadow-2xl">
+                 <div className="skew-x-[12deg]">
+                    <h3 className="text-lg font-black italic tracking-tighter leading-none">{gate.name}</h3>
+                    <p className="text-[8px] text-zinc-500 mt-2 leading-relaxed font-bold">{gate.desc}</p>
+                    
+                    <div className="mt-4 space-y-2">
+                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                          <span className="text-[8px] text-zinc-500 italic uppercase">Rank</span>
+                          <span className={cn("text-xs font-black", gate.isRed ? "text-red-500" : "text-purple-500")}>{gate.rank}</span>
+                       </div>
+                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                          <span className="text-[8px] text-zinc-500 italic uppercase">Mana</span>
+                          <span className="text-xs font-black text-white">{gate.mana}</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
 
-                {/* خيار تجنيد الفريق للبوابات الزرقاء */}
-                {gate.features?.includes('RECRUIT_TEAM') && (
-                  <button className="flex items-center gap-2 text-blue-400 font-black text-[10px] tracking-widest hover:text-white transition-colors">
-                    <Users size={14} /> RECRUIT RAID TEAM
-                  </button>
-                )}
+              {/* أزرار الفعل (Action Prompts) */}
+              <div className="absolute -bottom-10 flex flex-col items-center gap-4">
+                 <button className={cn(
+                   "group relative px-14 py-4 overflow-hidden transition-all duration-300",
+                   gate.isRed ? "bg-red-700" : gate.isInstant ? "bg-amber-600" : "bg-white"
+                 )}>
+                   <div className="relative z-10 flex items-center gap-2 text-sm font-black italic tracking-[0.3em]">
+                      {gate.isInstant ? <Key size={16} className="text-black" /> : <Sword size={16} className={gate.isRed ? "text-white" : "text-black"} />}
+                      <span className={gate.isRed || gate.isInstant ? "text-white" : "text-black"}>
+                        {gate.isInstant ? 'USE SYSTEM KEY' : 'RAID COMMENCE'}
+                      </span>
+                   </div>
+                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+                 </button>
+
+                 {gate.canRecruit && (
+                   <button className="flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-blue-400 hover:text-white transition-all uppercase">
+                      <Users size={12} /> Recruit Extraction Team
+                   </button>
+                 )}
               </div>
             </div>
 
-            {/* قسم معلومات النظام أسفل البوابة */}
-            <div className="mt-20 grid grid-cols-2 gap-2">
-              <div className="bg-white/5 border border-white/10 p-3 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 mb-1 italic">
-                   <ShieldAlert size={10} /> MANA MEASUREMENT
-                </div>
-                <div className="text-sm font-black font-mono tracking-tighter">{gate.mana}</div>
-              </div>
-              <div className="bg-white/5 border border-white/10 p-3 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 mb-1 italic">
-                   <Timer size={10} /> {gate.timer ? 'DUNGEON BREAK' : 'STATUS'}
-                </div>
-                <div className={cn(
-                  "text-sm font-black font-mono",
-                  gate.color === 'red' ? "text-red-500" : "text-green-500"
-                )}>
-                  {gate.timer || gate.warning || 'ACTIVE'}
-                </div>
-              </div>
+            {/* عداد الخطر (System Warnings) */}
+            <div className="mt-20 flex justify-center gap-12 text-center font-black">
+               <div className="space-y-1">
+                  <div className="text-[8px] text-zinc-600 tracking-widest flex items-center gap-1"><Timer size={10}/> REMAINING TIME</div>
+                  <div className={cn("text-lg italic", gate.timer === 'UNKNOWN' ? "text-red-600 animate-pulse" : "text-white")}>
+                    {gate.timer}
+                  </div>
+               </div>
+               <div className="space-y-1">
+                  <div className="text-[8px] text-zinc-600 tracking-widest flex items-center gap-1"><AlertTriangle size={10}/> STATUS</div>
+                  <div className={cn("text-lg italic uppercase", gate.isRed ? "text-red-600" : "text-green-500")}>
+                    {gate.isRed ? 'LOCKED' : 'STABLE'}
+                  </div>
+               </div>
             </div>
-
           </div>
         ))}
       </main>
@@ -178,8 +160,11 @@ const Boss = () => {
       <BottomNav />
 
       <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .font-sans { font-family: 'Inter', sans-serif; }
+        @keyframes drift {
+          from { transform: translateY(0); }
+          to { transform: translateY(-20px); }
+        }
+        .animate-drift { animation: drift 3s ease-in-out infinite alternate; }
       `}</style>
     </div>
   );
