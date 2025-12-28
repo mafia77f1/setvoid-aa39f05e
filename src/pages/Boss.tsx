@@ -1,7 +1,6 @@
-
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { Radio, ChevronRight, Activity, Zap, ShieldAlert, Sparkles } from 'lucide-react';
+import { ChevronRight, Zap, LocateFixed, crosshair } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -9,130 +8,114 @@ const Boss = () => {
   const boss = gameState.currentBoss;
 
   const gates = [
-    { id: 'g0', rank: 'S', name: boss?.name || 'VOID MONARCH', color: 'black', difficulty: 'CALAMITY', energy: 'INFINITY', desc: 'THE ATMOSPHERE IS HEAVY. A PRESENCE THAT DEFIES THE LAWS OF THE SYSTEM.' },
-    { id: 'g1', rank: 'A', name: 'SHADOW FORTRESS', color: 'purple', difficulty: 'EXTREME', energy: '98,400 MP', desc: 'HIGH-LEVEL MAGICAL FLUCTUATIONS DETECTED. ELITE BOSS CONFIRMED.' },
-    { id: 'g3', rank: 'B', name: 'FROZEN LABYRINTH', color: 'blue', difficulty: 'HARD', energy: '22,000 MP', desc: 'STABLE DUNGEON ENVIRONMENT. RECOMMENDED FOR HIGH-TIER HUNTERS.' },
+    { id: 'g0', rank: 'S', name: boss?.name || 'MONARCH OF VOID', color: 'black', type: 'RED GATE', energy: 'LIMIT BRAKER', warning: 'IMMEDIATE DEATH PERIL' },
+    { id: 'g1', rank: 'A', name: 'SHADOW FORTRESS', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS' },
+    { id: 'g3', rank: 'B', name: 'ICE CITADEL', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-4 font-sans selection:bg-white/30 pb-32 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020205] text-white font-sans selection:bg-white/30 pb-32 overflow-x-hidden">
       
-      {/* Background FX */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(30,58,138,0.2),transparent_80%)]" />
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
+      {/* تأثير جزيئات المانا في الخلفية */}
+      <div className="fixed inset-0 pointer-events-none opacity-40">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(17,24,39,1),rgba(0,0,0,1))]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-pulse" />
       </div>
 
-      <header className="relative z-10 flex flex-col items-center pt-10 mb-20">
-        <h1 className="text-4xl font-[1000] tracking-[0.3em] uppercase italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
-          GATE <span className="text-purple-600">RAID</span>
-        </h1>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-          <p className="text-[10px] font-black text-purple-400 tracking-[0.5em] uppercase">Dimensional Rift Detected</p>
-          <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+      <header className="relative z-20 pt-12 pb-6 px-6 text-center">
+        <div className="inline-block relative">
+          <div className="absolute -inset-4 bg-purple-600/20 blur-3xl rounded-full" />
+          <h1 className="relative text-5xl font-[1000] italic tracking-tighter uppercase text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+            Dungeon <span className="text-purple-600">Gate</span>
+          </h1>
+          <div className="mt-2 flex items-center justify-center gap-4">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/50" />
+            <span className="text-[10px] font-black tracking-[0.6em] text-slate-400 uppercase">Detection Radar</span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/50" />
+          </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-md mx-auto space-y-32">
+      <main className="relative z-10 px-4 space-y-20">
         {gates.map((gate) => (
-          <div key={gate.id} className="relative pt-12">
+          <div key={gate.id} className="relative group max-w-sm mx-auto">
             
-            {/* البوابة العملاقة - تظهر فوق الكارد وتخرج منه */}
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 w-52 h-52 group cursor-pointer">
-              {/* هالة الطاقة المتفجرة حول البوابة */}
-              <div className={cn(
-                "absolute inset-0 rounded-full blur-[40px] animate-pulse opacity-60 transition-all duration-700 group-hover:blur-[60px] group-hover:scale-125",
-                gate.color === 'black' ? "bg-white/40" : gate.color === 'purple' ? "bg-purple-600/50" : "bg-blue-600/50"
-              )} />
+            {/* عنوان البوابة فوقها مباشرة */}
+            <div className="mb-6 flex flex-col items-center">
+               <span className={cn(
+                 "px-4 py-0.5 text-[10px] font-black tracking-[0.4em] skew-x-[-20deg] border-x-2 mb-2",
+                 gate.color === 'black' ? "border-white text-white" : gate.color === 'purple' ? "border-purple-500 text-purple-400" : "border-blue-500 text-blue-400"
+               )}>
+                 {gate.type}
+               </span>
+               <h2 className="text-2xl font-black tracking-tight uppercase group-hover:tracking-[0.1em] transition-all duration-500">
+                 {gate.name}
+               </h2>
+            </div>
+
+            {/* الجبروت البصري - شكل البوابة الضخم */}
+            <div className="relative h-[450px] w-full flex items-center justify-center perspective-1000">
               
-              {/* جسم البوابة الدائري الضخم */}
+              {/* الرتبة المعلقة بجانب البوابة */}
               <div className={cn(
-                "relative w-full h-full rounded-full border-8 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-500",
-                gate.color === 'black' ? "border-white shadow-[0_0_40px_rgba(255,255,255,0.3)]" : 
-                gate.color === 'purple' ? "border-purple-600 shadow-[0_0_40px_rgba(147,51,234,0.4)]" : 
-                "border-blue-600 shadow-[0_0_40px_rgba(37,99,235,0.4)]"
+                "absolute -left-4 top-1/2 -translate-y-1/2 z-30 text-7xl font-[1000] italic opacity-20 select-none group-hover:opacity-100 transition-opacity",
+                gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-900" : "text-blue-900"
               )}>
-                {/* الدوامة السحرية المتحركة */}
+                {gate.rank}
+              </div>
+
+              {/* هيكل البوابة الفعلي */}
+              <div className={cn(
+                "relative w-64 h-full rounded-[100%_100%_40%_40%] overflow-hidden border-4 transition-all duration-700 shadow-[0_0_100px_rgba(0,0,0,1)] group-hover:scale-105",
+                gate.color === 'black' ? "border-white shadow-[0_0_60px_rgba(255,255,255,0.2)]" : 
+                gate.color === 'purple' ? "border-purple-600 shadow-[0_0_60px_rgba(147,51,234,0.3)]" : 
+                "border-blue-600 shadow-[0_0_60px_rgba(37,99,235,0.3)]"
+              )}>
+                
+                {/* الدوامة السحرية المتحركة - Portal Heart */}
                 <div className={cn(
-                  "absolute inset-[-100%] animate-[spin_6s_linear_infinite] opacity-100",
+                  "absolute inset-[-100%] animate-[spin_15s_linear_infinite]",
                   gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#fff,#000,#888,#000)]" :
                   gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#1e1b4b,#a855f7,#4c1d95,#7c3aed,#1e1b4b)]" :
                   "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#1e3a8a,#2563eb,#172554)]"
                 )} />
+
+                {/* طبقة الضباب السحري */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,rgba(0,0,0,0.8)_90%)]" />
                 
-                {/* قلب الثقب الأسود */}
-                <div className="absolute inset-[10%] rounded-full bg-black flex items-center justify-center">
+                {/* نبض المركز */}
+                <div className="absolute inset-0 flex items-center justify-center">
                    <div className={cn(
-                     "w-full h-full rounded-full opacity-40 animate-pulse",
-                     gate.color === 'black' ? "bg-white/20" : gate.color === 'purple' ? "bg-purple-500/20" : "bg-blue-500/20"
+                     "w-1 h-full opacity-40 blur-md animate-[pulse_2s_infinite]",
+                     gate.color === 'black' ? "bg-white" : "bg-white/50"
                    )} />
                 </div>
               </div>
 
-              {/* رتبة البوابة - تطفو فوق البوابة نفسها */}
-              <div className={cn(
-                "absolute -top-2 -right-2 z-30 px-5 py-1 font-[1000] italic text-2xl border-2 shadow-2xl skew-x-[-15deg]",
-                gate.color === 'black' ? "bg-white text-black border-slate-300" : 
-                gate.color === 'purple' ? "bg-purple-600 text-white border-purple-300" : 
-                "bg-blue-600 text-white border-blue-300"
-              )}>
-                {gate.rank}
-              </div>
-            </div>
-
-            {/* كارد المعلومات - نظام الماركت */}
-            <div className="relative bg-[#050b1a] border-2 border-slate-200/90 pt-36 p-6 shadow-[0_20px_60px_rgba(0,0,0,1)]">
-              
-              {/* عنوان البوابة (Market Header Style) */}
-              <div className="flex justify-center mb-6">
-                <div className="bg-slate-900 px-8 py-1.5 border border-slate-500/50 relative">
-                   <h3 className="text-sm font-black tracking-[0.2em] text-white uppercase italic">
-                     {gate.name}
-                   </h3>
-                   <div className="absolute -top-1 -left-1 w-2 h-2 bg-white" />
-                   <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-white" />
-                </div>
-              </div>
-
-              {/* بيانات البوابة التقنية */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="border-l-2 border-slate-700 pl-3">
-                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Difficulty</p>
-                  <p className="text-xs font-black text-white italic">{gate.difficulty}</p>
-                </div>
-                <div className="border-r-2 border-slate-700 text-right pr-3">
-                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Mana Output</p>
-                  <p className="text-xs font-black text-white italic">{gate.energy}</p>
-                </div>
-              </div>
-
-              {/* الوصف القتالي */}
-              <div className="text-center mb-8 px-2">
-                <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic uppercase tracking-tighter">
-                  {gate.desc}
-                </p>
-              </div>
-
-              {/* زر الدخول (The Deployment Button) */}
+              {/* زر الدخول المدمج أسفل البوابة كقاعدة */}
               <button className={cn(
-                "w-full py-4 font-[1000] tracking-[0.5em] uppercase italic transition-all active:scale-95 group overflow-hidden relative",
-                gate.color === 'black' ? "bg-white text-black" : 
-                gate.color === 'purple' ? "bg-purple-600 text-white" : "bg-blue-600 text-white"
+                "absolute bottom-[-20px] z-30 px-10 py-4 font-black tracking-[0.5em] uppercase italic transition-all active:scale-90",
+                gate.color === 'black' ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.3)]" :
+                gate.color === 'purple' ? "bg-purple-600 text-white shadow-[0_10px_30px_rgba(147,51,234,0.4)]" :
+                "bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)]"
               )}>
-                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <div className="flex items-center justify-center gap-3">
-                  <Activity className="w-4 h-4" />
-                  ENTER GATE
-                  <ChevronRight className="w-4 h-4" />
-                </div>
+                ENTER
               </button>
             </div>
 
-            {/* أرجل تقنية للكارد لزيادة الجبروت */}
-            <div className="flex justify-between px-10 mt-[-2px]">
-              <div className="w-1 h-4 bg-slate-700" />
-              <div className="w-1 h-4 bg-slate-700" />
+            {/* بيانات الطاقة أسفل البوابة */}
+            <div className="mt-12 grid grid-cols-2 gap-4">
+              <div className="bg-white/5 border border-white/10 p-3 flex flex-col items-center">
+                <span className="text-[8px] font-black text-slate-500 uppercase italic">Mana Power</span>
+                <span className="text-sm font-bold tracking-widest">{gate.energy}</span>
+              </div>
+              <div className="bg-white/5 border border-white/10 p-3 flex flex-col items-center">
+                <span className="text-[8px] font-black text-slate-500 uppercase italic">System Scan</span>
+                <span className={cn(
+                  "text-[10px] font-black animate-pulse",
+                  gate.color === 'black' ? "text-red-500" : "text-green-500"
+                )}>{gate.warning}</span>
+              </div>
             </div>
           </div>
         ))}
@@ -140,10 +123,14 @@ const Boss = () => {
 
       <BottomNav />
 
+      {/* الأنيميشن المخصص للجبروت */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .perspective-1000 {
+          perspective: 1000px;
         }
       `}</style>
     </div>
