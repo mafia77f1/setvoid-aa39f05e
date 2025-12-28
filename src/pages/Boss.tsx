@@ -1,6 +1,6 @@
-import { useGameState } from '@/hooks/useGameState';
+Import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { ChevronRight, Zap, LocateFixed } from 'lucide-react';
+import { ChevronRight, Zap, LocateFixed, crosshair } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -53,8 +53,8 @@ const Boss = () => {
                </h2>
             </div>
 
-            {/* الجبروت البصري - شكل البوابة الدائري */}
-            <div className="relative h-[320px] w-full flex items-center justify-center perspective-1000">
+            {/* الجبروت البصري - شكل البوابة الضخم */}
+            <div className="relative h-[450px] w-full flex items-center justify-center perspective-1000">
               
               {/* الرتبة المعلقة بجانب البوابة */}
               <div className={cn(
@@ -64,9 +64,9 @@ const Boss = () => {
                 {gate.rank}
               </div>
 
-              {/* هيكل البوابة الفعلي - تم تعديله ليصبح دائرياً بالكامل */}
+              {/* هيكل البوابة الفعلي */}
               <div className={cn(
-                "relative w-64 h-64 rounded-full overflow-hidden border-4 transition-all duration-700 shadow-[0_0_100px_rgba(0,0,0,1)] group-hover:scale-110",
+                "relative w-64 h-full rounded-[100%_100%_40%_40%] overflow-hidden border-4 transition-all duration-700 shadow-[0_0_100px_rgba(0,0,0,1)] group-hover:scale-105",
                 gate.color === 'black' ? "border-white shadow-[0_0_60px_rgba(255,255,255,0.2)]" : 
                 gate.color === 'purple' ? "border-purple-600 shadow-[0_0_60px_rgba(147,51,234,0.3)]" : 
                 "border-blue-600 shadow-[0_0_60px_rgba(37,99,235,0.3)]"
@@ -74,16 +74,16 @@ const Boss = () => {
                 
                 {/* الدوامة السحرية المتحركة - Portal Heart */}
                 <div className={cn(
-                  "absolute inset-[-100%] animate-[spin_10s_linear_infinite]",
+                  "absolute inset-[-100%] animate-[spin_15s_linear_infinite]",
                   gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#fff,#000,#888,#000)]" :
                   gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#1e1b4b,#a855f7,#4c1d95,#7c3aed,#1e1b4b)]" :
                   "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#1e3a8a,#2563eb,#172554)]"
                 )} />
 
-                {/* طبقة الضباب السحري والمركز المضيء */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.8)_0%,transparent_70%,rgba(0,0,0,0.8)_100%)]" />
+                {/* طبقة الضباب السحري */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,rgba(0,0,0,0.8)_90%)]" />
                 
-                {/* نبض المركز العمودي */}
+                {/* نبض المركز */}
                 <div className="absolute inset-0 flex items-center justify-center">
                    <div className={cn(
                      "w-1 h-full opacity-40 blur-md animate-[pulse_2s_infinite]",
@@ -92,19 +92,19 @@ const Boss = () => {
                 </div>
               </div>
 
-              {/* زر الدخول المدمج أسفل البوابة */}
+              {/* زر الدخول المدمج أسفل البوابة كقاعدة */}
               <button className={cn(
-                "absolute bottom-[-10px] z-30 px-10 py-3 font-black tracking-[0.5em] uppercase italic transition-all active:scale-90 border-2",
-                gate.color === 'black' ? "bg-white text-black border-white shadow-[0_10px_30px_rgba(255,255,255,0.3)]" :
-                gate.color === 'purple' ? "bg-purple-600 text-white border-purple-400 shadow-[0_10px_30px_rgba(147,51,234,0.4)]" :
-                "bg-blue-600 text-white border-blue-400 shadow-[0_10px_30px_rgba(37,99,235,0.4)]"
+                "absolute bottom-[-20px] z-30 px-10 py-4 font-black tracking-[0.5em] uppercase italic transition-all active:scale-90",
+                gate.color === 'black' ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.3)]" :
+                gate.color === 'purple' ? "bg-purple-600 text-white shadow-[0_10px_30px_rgba(147,51,234,0.4)]" :
+                "bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)]"
               )}>
                 ENTER
               </button>
             </div>
 
             {/* بيانات الطاقة أسفل البوابة */}
-            <div className="mt-8 grid grid-cols-2 gap-4">
+            <div className="mt-12 grid grid-cols-2 gap-4">
               <div className="bg-white/5 border border-white/10 p-3 flex flex-col items-center">
                 <span className="text-[8px] font-black text-slate-500 uppercase italic">Mana Power</span>
                 <span className="text-sm font-bold tracking-widest">{gate.energy}</span>
@@ -123,6 +123,7 @@ const Boss = () => {
 
       <BottomNav />
 
+      {/* الأنيميشن المخصص للجبروت */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -137,3 +138,4 @@ const Boss = () => {
 };
 
 export default Boss;
+
