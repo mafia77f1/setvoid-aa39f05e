@@ -1,6 +1,6 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { Radio, ChevronRight, Activity, Zap, ShieldAlert, Sparkles } from 'lucide-react';
+import { Radio, ChevronRight, Activity, Zap, ShieldAlert, Sparkles, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -14,124 +14,130 @@ const Boss = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-4 font-sans selection:bg-white/30 pb-32 overflow-x-hidden">
+    <div className="min-h-screen bg-[#02040a] text-white p-4 font-sans selection:bg-white/30 pb-32 overflow-x-hidden">
       
-      {/* Background FX */}
+      {/* Background FX - نظام جزيئات مانا */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(30,58,138,0.2),transparent_80%)]" />
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(30,58,138,0.3),transparent_70%)]" />
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%),linear-gradient(90deg,rgba(255,255,255,0.02),transparent,rgba(255,255,255,0.02))] bg-[size:100%_4px,100%_100%]" />
       </div>
 
-      <header className="relative z-10 flex flex-col items-center pt-10 mb-20">
-        <h1 className="text-4xl font-[1000] tracking-[0.3em] uppercase italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
-          GATE <span className="text-purple-600">RAID</span>
+      <header className="relative z-10 flex flex-col items-center pt-10 mb-28">
+        <h1 className="text-5xl font-[1000] tracking-[0.4em] uppercase italic text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]">
+          GATE <span className="text-red-600 animate-pulse">RAID</span>
         </h1>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-          <p className="text-[10px] font-black text-purple-400 tracking-[0.5em] uppercase">Dimensional Rift Detected</p>
-          <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+        <div className="flex items-center gap-3 mt-4">
+          <div className="h-[2px] w-16 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_10px_#3b82f6]" />
+          <p className="text-[10px] font-black text-blue-400 tracking-[0.6em] uppercase">Dimensional Rupture Active</p>
+          <div className="h-[2px] w-16 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_10px_#3b82f6]" />
         </div>
       </header>
 
-      <main className="relative z-10 max-w-md mx-auto space-y-32">
+      <main className="relative z-10 max-w-md mx-auto space-y-48">
         {gates.map((gate) => (
-          <div key={gate.id} className="relative pt-12">
+          <div key={gate.id} className="relative pt-20">
             
-            {/* البوابة العملاقة - تظهر فوق الكارد وتخرج منه */}
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 w-52 h-52 group cursor-pointer">
-              {/* هالة الطاقة المتفجرة حول البوابة */}
+            {/* البوابة العملاقة - جبروت الأرض */}
+            <div className="absolute -top-28 left-1/2 -translate-x-1/2 z-30 w-64 h-64 group cursor-pointer">
+              
+              {/* هالة الرعب المحيطة بالبوابة */}
               <div className={cn(
-                "absolute inset-0 rounded-full blur-[40px] animate-pulse opacity-60 transition-all duration-700 group-hover:blur-[60px] group-hover:scale-125",
-                gate.color === 'black' ? "bg-white/40" : gate.color === 'purple' ? "bg-purple-600/50" : "bg-blue-600/50"
+                "absolute inset-[-20px] rounded-full blur-[60px] animate-pulse opacity-70 transition-all duration-1000 group-hover:blur-[80px] group-hover:scale-125",
+                gate.color === 'black' ? "bg-white/30" : gate.color === 'purple' ? "bg-purple-600/40" : "bg-blue-600/40"
               )} />
               
-              {/* جسم البوابة الدائري الضخم */}
+              {/* جسم البوابة الضخم جداً */}
               <div className={cn(
-                "relative w-full h-full rounded-full border-8 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-500",
-                gate.color === 'black' ? "border-white shadow-[0_0_40px_rgba(255,255,255,0.3)]" : 
-                gate.color === 'purple' ? "border-purple-600 shadow-[0_0_40px_rgba(147,51,234,0.4)]" : 
-                "border-blue-600 shadow-[0_0_40px_rgba(37,99,235,0.4)]"
+                "relative w-full h-full rounded-full border-[10px] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform duration-700",
+                gate.color === 'black' ? "border-white shadow-[0_0_60px_rgba(255,255,255,0.4)]" : 
+                gate.color === 'purple' ? "border-purple-600 shadow-[0_0_60px_rgba(147,51,234,0.5)]" : 
+                "border-blue-600 shadow-[0_0_60px_rgba(37,99,235,0.5)]"
               )}>
-                {/* الدوامة السحرية المتحركة */}
+                {/* دوامة المانا الجبارة */}
                 <div className={cn(
-                  "absolute inset-[-100%] animate-[spin_6s_linear_infinite] opacity-100",
-                  gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#fff,#000,#888,#000)]" :
-                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#1e1b4b,#a855f7,#4c1d95,#7c3aed,#1e1b4b)]" :
-                  "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#1e3a8a,#2563eb,#172554)]"
+                  "absolute inset-[-150%] animate-[spin_4s_linear_infinite] opacity-100 blur-[1px]",
+                  gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#fff,#000,#fff,#000)]" :
+                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#1e1b4b,#a855f7,#000,#7c3aed,#1e1b4b)]" :
+                  "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#000,#2563eb,#172554)]"
                 )} />
                 
-                {/* قلب الثقب الأسود */}
-                <div className="absolute inset-[10%] rounded-full bg-black flex items-center justify-center">
+                {/* مركز الثقب الأسود العميق */}
+                <div className="absolute inset-[8%] rounded-full bg-black flex items-center justify-center shadow-[inset_0_0_40px_rgba(0,0,0,1)]">
                    <div className={cn(
-                     "w-full h-full rounded-full opacity-40 animate-pulse",
+                     "w-full h-full rounded-full opacity-60 animate-ping duration-[3s]",
                      gate.color === 'black' ? "bg-white/20" : gate.color === 'purple' ? "bg-purple-500/20" : "bg-blue-500/20"
                    )} />
                 </div>
               </div>
 
-              {/* رتبة البوابة - تطفو فوق البوابة نفسها */}
+              {/* رتبة البوابة - ضخمة جداً ومرعبة */}
               <div className={cn(
-                "absolute -top-2 -right-2 z-30 px-5 py-1 font-[1000] italic text-2xl border-2 shadow-2xl skew-x-[-15deg]",
+                "absolute -top-4 -right-4 z-40 px-7 py-2 font-[1000] italic text-4xl border-4 shadow-[0_0_30px_rgba(0,0,0,0.8)] skew-x-[-15deg]",
                 gate.color === 'black' ? "bg-white text-black border-slate-300" : 
-                gate.color === 'purple' ? "bg-purple-600 text-white border-purple-300" : 
-                "bg-blue-600 text-white border-blue-300"
+                gate.color === 'purple' ? "bg-purple-600 text-white border-purple-400" : 
+                "bg-blue-600 text-white border-blue-400"
               )}>
                 {gate.rank}
               </div>
             </div>
 
-            {/* كارد المعلومات - نظام الماركت */}
-            <div className="relative bg-[#050b1a] border-2 border-slate-200/90 pt-36 p-6 shadow-[0_20px_60px_rgba(0,0,0,1)]">
+            {/* كارد المعلومات - نظام الماركت المتطور */}
+            <div className="relative bg-[#040813] border-2 border-white/80 pt-40 p-8 shadow-[0_30px_100px_rgba(0,0,0,1)]">
               
-              {/* عنوان البوابة (Market Header Style) */}
-              <div className="flex justify-center mb-6">
-                <div className="bg-slate-900 px-8 py-1.5 border border-slate-500/50 relative">
-                   <h3 className="text-sm font-black tracking-[0.2em] text-white uppercase italic">
+              {/* عنوان البوابة (Market Style) */}
+              <div className="flex justify-center mb-8">
+                <div className="bg-black/90 px-10 py-2 border-2 border-white relative shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                   <h3 className="text-lg font-black tracking-[0.3em] text-white uppercase italic drop-shadow-[0_0_8px_white]">
                      {gate.name}
                    </h3>
-                   <div className="absolute -top-1 -left-1 w-2 h-2 bg-white" />
-                   <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-white" />
+                   <div className="absolute -top-2 -left-2 w-4 h-4 bg-white rotate-45 border border-black" />
+                   <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-white rotate-45 border border-black" />
                 </div>
               </div>
 
-              {/* بيانات البوابة التقنية */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="border-l-2 border-slate-700 pl-3">
-                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Difficulty</p>
-                  <p className="text-xs font-black text-white italic">{gate.difficulty}</p>
+              {/* بيانات الطاقة - تحليل تقني */}
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="border-l-4 border-red-600 pl-4 bg-red-950/10 py-2">
+                  <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">THREAT LEVEL</p>
+                  <p className="text-sm font-[1000] text-white italic tracking-tighter uppercase">{gate.difficulty}</p>
                 </div>
-                <div className="border-r-2 border-slate-700 text-right pr-3">
-                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Mana Output</p>
-                  <p className="text-xs font-black text-white italic">{gate.energy}</p>
+                <div className="border-r-4 border-blue-600 text-right pr-4 bg-blue-950/10 py-2">
+                  <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest">MANA WAVE</p>
+                  <p className="text-sm font-[1000] text-white italic tracking-tighter uppercase">{gate.energy}</p>
                 </div>
               </div>
 
               {/* الوصف القتالي */}
-              <div className="text-center mb-8 px-2">
-                <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic uppercase tracking-tighter">
+              <div className="text-center mb-10 border-y border-white/10 py-4 relative">
+                <Sparkles className="absolute top-0 left-0 w-3 h-3 text-white/20" />
+                <p className="text-[11px] text-slate-300 font-bold leading-relaxed italic uppercase tracking-normal">
                   {gate.desc}
                 </p>
+                <Sparkles className="absolute bottom-0 right-0 w-3 h-3 text-white/20" />
               </div>
 
-              {/* زر الدخول (The Deployment Button) */}
+              {/* زر الدخول الجبار - أضخم وأقوى */}
               <button className={cn(
-                "w-full py-4 font-[1000] tracking-[0.5em] uppercase italic transition-all active:scale-95 group overflow-hidden relative",
-                gate.color === 'black' ? "bg-white text-black" : 
-                gate.color === 'purple' ? "bg-purple-600 text-white" : "bg-blue-600 text-white"
+                "w-full py-5 font-[1000] text-sm tracking-[0.6em] uppercase italic transition-all active:scale-95 group overflow-hidden relative border-t-2 border-white/20",
+                gate.color === 'black' ? "bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.2)]" : 
+                gate.color === 'purple' ? "bg-purple-700 text-white shadow-[0_0_30px_rgba(147,51,234,0.3)]" : 
+                "bg-blue-700 text-white shadow-[0_0_30px_rgba(37,99,235,0.3)]"
               )}>
-                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <div className="flex items-center justify-center gap-3">
-                  <Activity className="w-4 h-4" />
-                  ENTER GATE
-                  <ChevronRight className="w-4 h-4" />
+                {/* تأثير المسح الضوئي */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                <div className="flex items-center justify-center gap-4">
+                  <Flame className="w-5 h-5 fill-current" />
+                  INSTANTIATE RAID
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                 </div>
               </button>
             </div>
 
-            {/* أرجل تقنية للكارد لزيادة الجبروت */}
-            <div className="flex justify-between px-10 mt-[-2px]">
-              <div className="w-1 h-4 bg-slate-700" />
-              <div className="w-1 h-4 bg-slate-700" />
+            {/* أرجل تقنية (Mechanical Legs) */}
+            <div className="flex justify-between px-16 mt-[-2px]">
+              <div className="w-2 h-6 bg-white shadow-[0_0_10px_white]" />
+              <div className="w-2 h-6 bg-white shadow-[0_0_10px_white]" />
             </div>
           </div>
         ))}
@@ -139,7 +145,7 @@ const Boss = () => {
 
       <BottomNav />
 
-      <style>{`
+      <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
