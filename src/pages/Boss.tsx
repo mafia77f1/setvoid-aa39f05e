@@ -1,122 +1,146 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { Skull, Zap, AlertTriangle, Radio, ChevronRight, Flame } from 'lucide-react';
+import { Skull, Zap, Radio, ChevronRight, Activity, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
   const boss = gameState.currentBoss;
 
-  // تعريف بيانات البوابات حسب طلبك (الترتيب اللوني والرتب)
+  // البوابات مصنفة حسب طلبك بالضبط
   const gates = [
-    { id: 'gate-0', rank: '0', name: boss?.name || 'Void Monarch', color: 'black', label: 'EXTINCTION LEVEL', mana: '?????' },
-    { id: 'gate-1', rank: '1', name: 'Shadow Dungeon', color: 'purple', label: 'HIGH-RANK', mana: '95,400' },
-    { id: 'gate-2', rank: '3', name: 'Inferno Gate', color: 'purple', label: 'ELITE', mana: '72,100' },
-    { id: 'gate-3', rank: '4', name: 'Frozen Labyrinth', color: 'blue', label: 'NORMAL', mana: '24,000' },
-    { id: 'gate-4', rank: '5', name: 'Orc Fortress', color: 'blue', label: 'SCOUTING', mana: '8,200' },
+    { id: 'g0', rank: '0', name: boss?.name || 'Void Monarch', color: 'black', type: 'Calamity', energy: 'MAXIMUM', desc: 'A gate that leads to the eternal void. Success rate is 0.01%.' },
+    { id: 'g1', rank: '1', name: 'Shadow Labyrinth', color: 'purple', type: 'Elite', energy: '98,000', desc: 'High-level magic detected. Multiple boss-class monsters inside.' },
+    { id: 'g2', rank: '3', name: 'Inferno Raid', color: 'purple', type: 'Dungeon', energy: '65,000', desc: 'Volcanic environment. High fire resistance required.' },
+    { id: 'g3', rank: '4', name: 'Ice Citadel', color: 'blue', type: 'Normal', energy: '22,000', desc: 'A common gate for mid-tier hunters.' },
+    { id: 'g4', rank: '5', name: 'Goblin Nest', color: 'blue', type: 'Scouting', energy: '4,500', desc: 'Low level threat. Suitable for training.' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#020205] text-white p-4 pb-32 font-sans selection:bg-purple-500/30 overflow-x-hidden">
-      
-      {/* Background Overlay - Magic Grid */}
-      <div className="fixed inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-purple-500/30 pb-24 overflow-x-hidden">
+      {/* Background Overlay */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(88,28,235,0.1),transparent_70%)]" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,255,255,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[size:100%_4px,4px_100%]" />
+      </div>
 
-      <header className="relative z-10 pt-10 mb-12 flex flex-col items-center">
-        <div className="relative inline-block">
-          <h1 className="text-4xl font-[900] tracking-[0.2em] uppercase italic text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-400 to-slate-700">
-            Gate Radar
+      <header className="relative z-10 flex justify-between items-center mb-10 border-b-2 border-slate-700/50 pb-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tighter italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+            GATE RADAR
           </h1>
-          <div className="absolute -bottom-2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-purple-600 to-transparent"></div>
+          <p className="text-[9px] font-bold text-purple-500 tracking-[0.3em] uppercase opacity-80">System Detection Active</p>
         </div>
-        <div className="flex items-center gap-2 mt-4 text-purple-500">
-          <Radio className="w-3 h-3 animate-ping" />
-          <span className="text-[10px] font-bold tracking-[0.4em] uppercase">Searching for Mana Fluctuations...</span>
+        <div className="bg-purple-950/30 border border-purple-500/50 px-4 py-1.5 flex items-center gap-3">
+          <Radio className="w-4 h-4 text-purple-400 animate-pulse" />
+          <span className="font-mono font-black text-white text-xs tracking-widest italic">
+            {gates.length} GATES FOUND
+          </span>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-xl mx-auto space-y-12">
+      <main className="relative z-10 max-w-md mx-auto space-y-10">
         {gates.map((gate) => (
-          <div key={gate.id} className="group relative">
+          <div key={gate.id} className="relative group cursor-pointer active:scale-95 transition-transform duration-200">
+            {/* التوهج الخلفي عند الحوم */}
+            <div className={cn(
+              "absolute -inset-1 blur-md opacity-0 group-hover:opacity-40 transition duration-500",
+              gate.color === 'black' ? "bg-white" : gate.color === 'purple' ? "bg-purple-600" : "bg-blue-600"
+            )} />
             
-            {/* Rank Badge - Extreme Style */}
-            <div className={cn(
-              "absolute -top-4 left-4 z-20 px-4 py-1 font-black italic text-xs tracking-tighter border-2 skew-x-[-15deg] shadow-lg",
-              gate.color === 'black' ? "bg-white text-black border-slate-400" :
-              gate.color === 'purple' ? "bg-purple-600 text-white border-purple-400" :
-              "bg-blue-600 text-white border-blue-400"
-            )}>
-              RANK {gate.rank}
-            </div>
-
-            {/* The Gate Card */}
-            <div className={cn(
-              "relative h-44 w-full flex items-center rounded-sm border-r-4 transition-all duration-500 group-hover:scale-[1.03] overflow-hidden bg-black/80",
-              gate.color === 'black' ? "border-white shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]" :
-              gate.color === 'purple' ? "border-purple-600 shadow-[0_0_40px_-10px_rgba(147,51,234,0.3)]" :
-              "border-blue-600 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)]"
-            )}>
+            <div className="relative bg-black/80 border-2 border-slate-200/90 p-4 shadow-[0_0_25px_rgba(0,0,0,0.5)]">
               
-              {/* PORTAL SECTION (Left Side) */}
-              <div className="relative w-44 h-full flex-shrink-0 bg-black overflow-hidden group">
-                {/* Visual Vortex */}
+              {/* Header Badge - Market Style */}
+              <div className="flex justify-center mb-5 mt-[-1.5rem]">
                 <div className={cn(
-                  "absolute inset-0 animate-spin-slow opacity-70 scale-150 blur-sm",
-                  gate.color === 'black' ? "bg-[conic-gradient(from_0deg,transparent,#ffffff,transparent,#475569)]" :
-                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,transparent,#a855f7,transparent,#4c1d95)]" :
-                  "bg-[conic-gradient(from_0deg,transparent,#3b82f6,transparent,#1e3a8a)]"
-                )} style={{ animationDuration: '8s' }}></div>
-                
-                {/* Center of Portal */}
-                <div className="absolute inset-4 rounded-full bg-black shadow-inner flex items-center justify-center">
+                  "border border-slate-400/50 px-6 py-0.5 bg-slate-900/95 shadow-[0_0_15px_rgba(255,255,255,0.1)]",
+                  gate.color === 'black' ? "border-white" : ""
+                )}>
+                  <h2 className="text-[10px] font-black tracking-[0.2em] text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase italic">
+                    GATE TYPE: <span className={cn(
+                      gate.color === 'black' ? "text-white underline" : 
+                      gate.color === 'purple' ? "text-purple-400" : "text-blue-400"
+                    )}>{gate.type}</span>
+                  </h2>
+                </div>
+              </div>
+
+              {/* Main Info Row (Horizontal) */}
+              <div className="flex gap-4">
+                {/* Portal Icon Section */}
+                <div className={cn(
+                  "w-24 h-24 border border-slate-600 flex items-center justify-center relative flex-shrink-0 overflow-hidden",
+                  gate.color === 'black' ? "bg-slate-900 shadow-[inset_0_0_20px_white]" : "bg-black"
+                )}>
+                  {/* الدوامة المتحركة */}
+                  <div className={cn(
+                    "absolute inset-0 animate-spin-slow opacity-30 blur-[2px]",
+                    gate.color === 'black' ? "bg-[conic-gradient(from_0deg,transparent,white,transparent,white)]" :
+                    gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,transparent,#a855f7,transparent,#a855f7)]" :
+                    "bg-[conic-gradient(from_0deg,transparent,#3b82f6,transparent,#3b82f6)]"
+                  )} />
+                  
+                  <div className="z-10 relative">
                     {gate.color === 'black' ? (
-                        <AlertTriangle className="w-12 h-12 text-white animate-pulse" />
+                        <ShieldAlert className="w-10 h-10 text-white drop-shadow-[0_0_10px_white]" />
                     ) : (
-                        <Skull className={cn("w-12 h-12", gate.color === 'purple' ? "text-purple-400" : "text-blue-400")} />
+                        <Skull className={cn("w-10 h-10", gate.color === 'purple' ? "text-purple-400 shadow-purple-500" : "text-blue-400")} />
                     )}
-                </div>
-              </div>
+                  </div>
 
-              {/* DATA SECTION (Right Side) */}
-              <div className="flex-grow p-5 relative overflow-hidden">
-                {/* Background Text Overlay */}
-                <div className="absolute -right-2 -bottom-4 opacity-[0.03] rotate-[-12deg]">
-                  <Flame size={120} strokeWidth={4} />
+                  {/* Corners */}
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
                 </div>
 
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    <h2 className={cn(
-                      "text-[9px] font-black tracking-[0.3em] uppercase mb-1",
-                      gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-400" : "text-blue-400"
+                {/* Vertical Stats Section */}
+                <div className="flex-1 flex flex-col justify-between py-1">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-tighter italic">Rank</p>
+                    <p className={cn(
+                      "text-xl font-black italic drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                      gate.color === 'black' ? "text-white underline" : 
+                      gate.color === 'purple' ? "text-purple-400" : "text-blue-400"
                     )}>
-                      {gate.label} DETECTED
-                    </h2>
-                    <h3 className="text-xl font-black uppercase tracking-tight leading-tight group-hover:tracking-widest transition-all duration-700">
-                      {gate.name}
-                    </h3>
+                      {gate.rank === '0' ? '???' : gate.rank}
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-tighter italic">Mana</p>
+                    <p className="text-xs font-bold text-white tracking-widest uppercase">
+                        {gate.energy} <span className="text-[8px] text-slate-500">m.p</span>
+                    </p>
                   </div>
 
-                  <div className="flex items-end justify-between">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-3 h-3 text-yellow-500" />
-                            <span className="text-[10px] font-mono text-slate-400 tracking-tighter">MAGICAL ENERGY: {gate.mana}</span>
-                        </div>
-                        <div className="w-32 h-[3px] bg-slate-800 rounded-full overflow-hidden">
-                            <div 
-                                className={cn("h-full animate-pulse", gate.color === 'black' ? "bg-white" : gate.color === 'purple' ? "bg-purple-500" : "bg-blue-500")} 
-                                style={{ width: gate.rank === '0' ? '100%' : gate.rank === '1' ? '80%' : '40%' }}
-                            />
-                        </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-tighter italic">Status</p>
+                    <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        <p className="text-[9px] font-black text-green-500 uppercase">Open</p>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-slate-600 group-hover:text-white transition-all transform group-hover:translate-x-1" />
                   </div>
                 </div>
               </div>
 
-              {/* Scanline Animation */}
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/5 to-transparent h-10 w-full animate-[scan_2s_linear_infinite]"></div>
+              {/* Description Box */}
+              <div className="mt-4 bg-slate-950/50 p-2 border-l-2 border-slate-500">
+                <p className="text-[10px] text-slate-300 font-medium italic leading-relaxed uppercase tracking-tight">
+                  {gate.desc}
+                </p>
+              </div>
+
+              {/* Enter Button - Market Purchase Style */}
+              <button className={cn(
+                "w-full mt-4 py-3 flex items-center justify-center gap-4 transition-all active:scale-[0.98] border shadow-lg",
+                gate.color === 'black' ? "bg-white text-black font-black border-white hover:bg-slate-200 shadow-white/10" :
+                gate.color === 'purple' ? "bg-purple-900/20 text-purple-400 border-purple-500/50 hover:bg-purple-900/40" :
+                "bg-blue-900/20 text-blue-400 border-blue-500/50 hover:bg-blue-900/40"
+              )}>
+                <Activity className="w-4 h-4" />
+                <span className="text-[10px] font-black tracking-[0.4em] uppercase">Enter Dungeon</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         ))}
@@ -124,18 +148,13 @@ const Boss = () => {
 
       <BottomNav />
 
-      {/* Tailwind Style Enhancements */}
       <style>{`
-        @keyframes scan {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(400%); }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg) scale(2); }
+          to { transform: rotate(360deg) scale(2); }
         }
         .animate-spin-slow {
-          animation: spin 10s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg) scale(1.5); }
-          to { transform: rotate(360deg) scale(1.5); }
+          animation: spin-slow 12s linear infinite;
         }
       `}</style>
     </div>
