@@ -1,170 +1,141 @@
-import React from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { Skull, Zap, AlertOctagon, Flame, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion'; // تأكد من تثبيت framer-motion
+import { Skull, Zap, AlertTriangle, Radio, ChevronRight, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
   const boss = gameState.currentBoss;
 
-  // منطق الرتب بناءً على طلبك
-  const gateData = [
-    { id: 'void', rank: '0', name: boss?.name || 'MONARCH OF DARKNESS', color: 'black', description: 'CALAMITY CLASS GATE', mana: 'UNKNOWN' },
-    { id: 'p1', rank: '1', name: 'Shadow Fortress', color: 'purple', description: 'HIGH RANK DUNGEON', mana: '99,000' },
-    { id: 'p2', rank: '2', name: 'Demon King Lair', color: 'purple', description: 'ELITE RAID', mana: '75,000' },
-    { id: 'b1', rank: '3', name: 'Frozen Labyrinth', color: 'blue', description: 'NORMAL GATE', mana: '20,000' },
-    { id: 'b2', rank: '5', name: 'Orc Territory', color: 'blue', description: 'SCOUTING MISSION', mana: '5,000' },
+  // تعريف بيانات البوابات حسب طلبك (الترتيب اللوني والرتب)
+  const gates = [
+    { id: 'gate-0', rank: '0', name: boss?.name || 'Void Monarch', color: 'black', label: 'EXTINCTION LEVEL', mana: '?????' },
+    { id: 'gate-1', rank: '1', name: 'Shadow Dungeon', color: 'purple', label: 'HIGH-RANK', mana: '95,400' },
+    { id: 'gate-2', rank: '3', name: 'Inferno Gate', color: 'purple', label: 'ELITE', mana: '72,100' },
+    { id: 'gate-3', rank: '4', name: 'Frozen Labyrinth', color: 'blue', label: 'NORMAL', mana: '24,000' },
+    { id: 'gate-4', rank: '5', name: 'Orc Fortress', color: 'blue', label: 'SCOUTING', mana: '8,200' },
   ];
 
-  const getRankStyles = (color: string) => {
-    switch (color) {
-      case 'black':
-        return "from-gray-900 via-black to-purple-950 border-gray-500 shadow-[0_0_50px_rgba(0,0,0,1)] text-white";
-      case 'purple':
-        return "from-indigo-950 via-purple-900 to-black border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.4)] text-purple-100";
-      case 'blue':
-        return "from-blue-950 via-blue-900 to-black border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] text-blue-100";
-      default:
-        return "from-slate-900 to-black border-slate-500";
-    }
-  };
-
-  const getPortalAnimation = (color: string) => {
-    switch (color) {
-      case 'black': return "after:bg-[conic-gradient(from_0deg,transparent,white,transparent,white)]";
-      case 'purple': return "after:bg-[conic-gradient(from_0deg,transparent,#a855f7,transparent,#a855f7)]";
-      case 'blue': return "after:bg-[conic-gradient(from_0deg,transparent,#3b82f6,transparent,#3b82f6)]";
-      default: return "";
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#020205] text-white p-4 pb-32 font-sans overflow-x-hidden">
-      {/* Background Dark System Overlay */}
-      <div className="fixed inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
+    <div className="min-h-screen bg-[#020205] text-white p-4 pb-32 font-sans selection:bg-purple-500/30 overflow-x-hidden">
       
-      <header className="relative z-10 pt-8 mb-12 text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-block"
-        >
-          <h1 className="text-4xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-            WORLD GATES
+      {/* Background Overlay - Magic Grid */}
+      <div className="fixed inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+      <header className="relative z-10 pt-10 mb-12 flex flex-col items-center">
+        <div className="relative inline-block">
+          <h1 className="text-4xl font-[900] tracking-[0.2em] uppercase italic text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-400 to-slate-700">
+            Gate Radar
           </h1>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-purple-500" />
-            <span className="text-[10px] font-black tracking-[0.5em] text-purple-500 uppercase">Detection Active</span>
-            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-purple-500" />
-          </div>
-        </motion.div>
+          <div className="absolute -bottom-2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-purple-600 to-transparent"></div>
+        </div>
+        <div className="flex items-center gap-2 mt-4 text-purple-500">
+          <Radio className="w-3 h-3 animate-ping" />
+          <span className="text-[10px] font-bold tracking-[0.4em] uppercase">Searching for Mana Fluctuations...</span>
+        </div>
       </header>
 
-      <main className="relative z-10 max-w-xl mx-auto space-y-10">
-        {gateData.map((gate, index) => (
-          <motion.div
-            key={gate.id}
-            initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: index * 0.1, type: "spring" }}
-            className="relative"
-          >
-            {/* Gate Rank Banner */}
+      <main className="relative z-10 max-w-xl mx-auto space-y-12">
+        {gates.map((gate) => (
+          <div key={gate.id} className="group relative">
+            
+            {/* Rank Badge - Extreme Style */}
             <div className={cn(
-              "absolute -top-4 left-6 z-30 px-6 py-1 font-black text-sm italic tracking-widest border border-white/20 skew-x-[-20deg] shadow-2xl",
-              gate.color === 'black' ? "bg-white text-black" : 
-              gate.color === 'purple' ? "bg-purple-600 text-white" : "bg-blue-600 text-white"
+              "absolute -top-4 left-4 z-20 px-4 py-1 font-black italic text-xs tracking-tighter border-2 skew-x-[-15deg] shadow-lg",
+              gate.color === 'black' ? "bg-white text-black border-slate-400" :
+              gate.color === 'purple' ? "bg-purple-600 text-white border-purple-400" :
+              "bg-blue-600 text-white border-blue-400"
             )}>
               RANK {gate.rank}
             </div>
 
-            {/* MAIN GIGANTIC CARD */}
+            {/* The Gate Card */}
             <div className={cn(
-              "relative group flex items-center h-48 rounded-sm border-l-8 overflow-hidden transition-all duration-300 hover:scale-[1.02]",
-              getRankStyles(gate.color)
+              "relative h-44 w-full flex items-center rounded-sm border-r-4 transition-all duration-500 group-hover:scale-[1.03] overflow-hidden bg-black/80",
+              gate.color === 'black' ? "border-white shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]" :
+              gate.color === 'purple' ? "border-purple-600 shadow-[0_0_40px_-10px_rgba(147,51,234,0.3)]" :
+              "border-blue-600 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)]"
             )}>
               
-              {/* THE PORTAL (Visual Part) */}
-              <div className="relative w-40 h-full flex-shrink-0 bg-black flex items-center justify-center overflow-hidden">
-                {/* Spiral Portal Effect */}
+              {/* PORTAL SECTION (Left Side) */}
+              <div className="relative w-44 h-full flex-shrink-0 bg-black overflow-hidden group">
+                {/* Visual Vortex */}
                 <div className={cn(
-                  "absolute inset-0 opacity-80 animate-[spin_4s_linear_infinite] scale-150 blur-sm",
-                  getPortalAnimation(gate.color)
-                )} />
-                <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_30%,black_70%)]" />
+                  "absolute inset-0 animate-spin-slow opacity-70 scale-150 blur-sm",
+                  gate.color === 'black' ? "bg-[conic-gradient(from_0deg,transparent,#ffffff,transparent,#475569)]" :
+                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,transparent,#a855f7,transparent,#4c1d95)]" :
+                  "bg-[conic-gradient(from_0deg,transparent,#3b82f6,transparent,#1e3a8a)]"
+                )} style={{ animationDuration: '8s' }}></div>
                 
-                {/* Floating Icon */}
-                <motion.div 
-                  animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 3 }}
-                  className="z-10"
-                >
-                  {gate.color === 'black' ? (
-                    <AlertOctagon className="w-16 h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
-                  ) : (
-                    <Skull className={cn("w-14 h-14", gate.color === 'purple' ? "text-purple-400" : "text-blue-400")} />
-                  )}
-                </motion.div>
+                {/* Center of Portal */}
+                <div className="absolute inset-4 rounded-full bg-black shadow-inner flex items-center justify-center">
+                    {gate.color === 'black' ? (
+                        <AlertTriangle className="w-12 h-12 text-white animate-pulse" />
+                    ) : (
+                        <Skull className={cn("w-12 h-12", gate.color === 'purple' ? "text-purple-400" : "text-blue-400")} />
+                    )}
+                </div>
               </div>
 
-              {/* INFO PANEL */}
-              <div className="flex-grow p-6 relative">
-                <div className="absolute top-0 right-0 p-2 opacity-20">
-                    <Flame className="w-16 h-16" />
+              {/* DATA SECTION (Right Side) */}
+              <div className="flex-grow p-5 relative overflow-hidden">
+                {/* Background Text Overlay */}
+                <div className="absolute -right-2 -bottom-4 opacity-[0.03] rotate-[-12deg]">
+                  <Flame size={120} strokeWidth={4} />
                 </div>
-                
-                <h2 className="text-[10px] font-black tracking-[0.3em] opacity-60 mb-1 uppercase">
-                  {gate.description}
-                </h2>
-                <h3 className="text-2xl font-black tracking-tighter uppercase leading-none mb-4 group-hover:tracking-normal transition-all">
-                  {gate.name}
-                </h3>
 
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col h-full justify-between">
                   <div>
-                    <p className="text-[8px] font-bold opacity-50 uppercase">Mana Intensity</p>
-                    <p className={cn("text-xs font-black", gate.color === 'black' ? "text-red-500" : "text-white")}>
-                      {gate.mana} m.p
-                    </p>
+                    <h2 className={cn(
+                      "text-[9px] font-black tracking-[0.3em] uppercase mb-1",
+                      gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-400" : "text-blue-400"
+                    )}>
+                      {gate.label} DETECTED
+                    </h2>
+                    <h3 className="text-xl font-black uppercase tracking-tight leading-tight group-hover:tracking-widest transition-all duration-700">
+                      {gate.name}
+                    </h3>
                   </div>
-                  <div className="h-8 w-[1px] bg-white/10" />
-                  <div>
-                    <p className="text-[8px] font-bold opacity-50 uppercase">Status</p>
-                    <p className="text-xs font-black text-green-500 animate-pulse uppercase">Open</p>
+
+                  <div className="flex items-end justify-between">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-3 h-3 text-yellow-500" />
+                            <span className="text-[10px] font-mono text-slate-400 tracking-tighter">MAGICAL ENERGY: {gate.mana}</span>
+                        </div>
+                        <div className="w-32 h-[3px] bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                                className={cn("h-full animate-pulse", gate.color === 'black' ? "bg-white" : gate.color === 'purple' ? "bg-purple-500" : "bg-blue-500")} 
+                                style={{ width: gate.rank === '0' ? '100%' : gate.rank === '1' ? '80%' : '40%' }}
+                            />
+                        </div>
+                    </div>
+                    <ChevronRight className="w-6 h-6 text-slate-600 group-hover:text-white transition-all transform group-hover:translate-x-1" />
                   </div>
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="h-full w-12 flex items-center justify-center bg-black/40 group-hover:bg-white/10 transition-colors cursor-pointer">
-                <ChevronRight className="w-6 h-6 text-white" />
-              </div>
-
-              {/* Electric Glitch Effect for Black Gate */}
-              {gate.color === 'black' && (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
-                  <div className="absolute top-0 left-0 w-full h-[2px] bg-white animate-[bounce_2s_infinite]" />
-                </div>
-              )}
+              {/* Scanline Animation */}
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/5 to-transparent h-10 w-full animate-[scan_2s_linear_infinite]"></div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </main>
 
       <BottomNav />
 
-      {/* Custom Styles for Portal Spinning */}
-      <style jsx global>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+      {/* Tailwind Style Enhancements */}
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(400%); }
         }
-        .portal-glow {
-            filter: blur(20px);
-            mix-blend-mode: screen;
+        .animate-spin-slow {
+          animation: spin 10s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg) scale(1.5); }
+          to { transform: rotate(360deg) scale(1.5); }
         }
       `}</style>
     </div>
