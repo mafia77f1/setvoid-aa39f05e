@@ -1,121 +1,172 @@
+import React, { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { ChevronRight, Zap, LocateFixed, crosshair } from 'lucide-react';
+import { AlertTriangle, Info, ShieldAlert, Zap, Skull } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
-  const boss = gameState.currentBoss;
+  const [showWarning, setShowWarning] = useState(false);
+  const [selectedGate, setSelectedGate] = useState<any>(null);
 
   const gates = [
-    { id: 'g0', rank: 'S', name: boss?.name || 'MONARCH OF VOID', color: 'black', type: 'RED GATE', energy: 'LIMIT BRAKER', warning: 'IMMEDIATE DEATH PERIL' },
-    { id: 'g1', rank: 'A', name: 'SHADOW FORTRESS', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS' },
-    { id: 'g3', rank: 'B', name: 'ICE CITADEL', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE' },
+    { 
+      id: 'g-s', 
+      rank: 'S', 
+      name: 'THE VOID MONARCH', 
+      color: 'red', 
+      type: 'RED GATE', 
+      mana: 'UNMEASURABLE', 
+      desc: 'الأخطر على الإطلاق، تحتاج إلى تعاون أقوى صيادي الرتبة S لإغلاقها.' 
+    },
+    { 
+      id: 'g-a', 
+      rank: 'A', 
+      name: 'SHADOW FORTRESS', 
+      color: 'purple', 
+      type: 'ELITE DUNGEON', 
+      mana: '98,400', 
+      desc: 'بوابة عالية المستوى تتطلب فرقاً منظمة من النقابات الكبرى.' 
+    },
+    { 
+      id: 'g-b', 
+      rank: 'B', 
+      name: 'ICE CITADEL', 
+      color: 'blue', 
+      type: 'NORMAL GATE', 
+      mana: '22,000', 
+      desc: 'بوابة عالية المستوى تتطلب فرقاً منظمة من النقابات الكبرى.' 
+    },
+    { 
+      id: 'g-e', 
+      rank: 'E', 
+      name: 'STRAY GOBLIN DEN', 
+      color: 'green', 
+      type: 'LOW GATE', 
+      mana: '1,200', 
+      desc: 'بوابات منخفضة المستوى، كان يرتادها سونغ جين-وو في بداياته.' 
+    },
   ];
 
+  const handleGateClick = (gate: any) => {
+    setSelectedGate(gate);
+    setShowWarning(true);
+    // إخفاء التحذير تلقائياً بعد 4 ثوانٍ
+    setTimeout(() => setShowWarning(false), 4000);
+  };
+
   return (
-    <div className="min-h-screen bg-[#020205] text-white font-sans selection:bg-white/30 pb-32 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020205] text-white font-sans selection:bg-red-500/30 pb-40 overflow-x-hidden">
       
-      {/* تأثير جزيئات المانا في الخلفية */}
+      {/* تأثير المانا في الخلفية */}
       <div className="fixed inset-0 pointer-events-none opacity-40">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(17,24,39,1),rgba(0,0,0,1))]" />
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] animate-pulse" />
       </div>
 
-      <header className="relative z-20 pt-12 pb-6 px-6 text-center">
-        <div className="inline-block relative">
-          <div className="absolute -inset-4 bg-purple-600/20 blur-3xl rounded-full" />
-          <h1 className="relative text-5xl font-[1000] italic tracking-tighter uppercase text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-            Dungeon <span className="text-purple-600">Gate</span>
-          </h1>
-          <div className="mt-2 flex items-center justify-center gap-4">
-            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/50" />
-            <span className="text-[10px] font-black tracking-[0.6em] text-slate-400 uppercase">Detection Radar</span>
-            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/50" />
+      {/* نافذة تحذير النظام (System Alert Card) */}
+      {showWarning && (
+        <div className="fixed inset-x-6 top-1/4 z-[100] animate-in fade-in zoom-in duration-300">
+          <div className="bg-black/90 border-2 border-red-600 p-6 shadow-[0_0_50px_rgba(220,38,38,0.5)] backdrop-blur-xl transform -skew-x-6">
+            <div className="flex items-center gap-4 mb-4 border-b border-red-600/50 pb-2">
+              <div className="bg-red-600 p-1 animate-pulse">
+                <Skull size={24} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-red-600 font-[1000] italic tracking-tighter text-xl uppercase">System Warning</h3>
+                <p className="text-[10px] text-white/60 font-black tracking-widest uppercase">Danger Level: Extreme</p>
+              </div>
+            </div>
+            <p className="text-white font-black text-sm mb-4 leading-relaxed tracking-tight italic">
+              [تحذير: طاقة المانا المنبعثة من هذه البوابة تتجاوز قدراتك الحالية بمراحل. الدخول قد يؤدي إلى الموت المحتم.]
+            </p>
+            <div className="flex justify-end">
+              <span className="text-[10px] text-red-500 font-black animate-bounce tracking-[0.3em]">RECALIBRATING...</span>
+            </div>
           </div>
         </div>
+      )}
+
+      <header className="relative z-20 pt-16 pb-12 px-6 text-center">
+        <h1 className="text-5xl font-[1000] italic tracking-tighter uppercase">
+          Dungeon <span className="text-red-600 drop-shadow-[0_0_10px_rgba(220,38,38,0.5)]">Gates</span>
+        </h1>
+        <p className="text-[10px] font-black tracking-[0.5em] text-slate-500 mt-2">MANA MEASUREMENT SYSTEM</p>
       </header>
 
-      <main className="relative z-10 px-4 space-y-20">
+      <main className="relative z-10 px-6 space-y-48">
         {gates.map((gate) => (
           <div key={gate.id} className="relative group max-w-sm mx-auto">
             
-            {/* عنوان البوابة فوقها مباشرة */}
-            <div className="mb-6 flex flex-col items-center">
+            {/* معلومات البوابة العلوية */}
+            <div className="mb-6 text-center">
                <span className={cn(
-                 "px-4 py-0.5 text-[10px] font-black tracking-[0.4em] skew-x-[-20deg] border-x-2 mb-2",
-                 gate.color === 'black' ? "border-white text-white" : gate.color === 'purple' ? "border-purple-500 text-purple-400" : "border-blue-500 text-blue-400"
+                 "px-4 py-0.5 text-[10px] font-black tracking-[0.4em] border-x-2 mb-2 inline-block",
+                 gate.color === 'red' ? "border-red-600 text-red-500" : 
+                 gate.color === 'purple' ? "border-purple-600 text-purple-500" : "border-blue-600 text-blue-500"
                )}>
                  {gate.type}
                </span>
-               <h2 className="text-2xl font-black tracking-tight uppercase group-hover:tracking-[0.1em] transition-all duration-500">
+               <h2 className="text-2xl font-[1000] italic tracking-tight uppercase group-hover:scale-110 transition-transform duration-500">
                  {gate.name}
                </h2>
             </div>
 
-            {/* الجبروت البصري - شكل البوابة الضخم */}
-            <div className="relative h-[450px] w-full flex items-center justify-center perspective-1000">
-              
-              {/* الرتبة المعلقة بجانب البوابة */}
-              <div className={cn(
-                "absolute -left-4 top-1/2 -translate-y-1/2 z-30 text-7xl font-[1000] italic opacity-20 select-none group-hover:opacity-100 transition-opacity",
-                gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-900" : "text-blue-900"
-              )}>
-                {gate.rank}
+            {/* البوابة التفاعلية */}
+            <div 
+              onClick={() => handleGateClick(gate)}
+              className="relative h-[450px] w-full cursor-pointer group-hover:scale-105 transition-transform duration-700 active:scale-95"
+            >
+              {/* الرتبة الخلفية */}
+              <div className="absolute inset-0 flex items-center justify-center z-0">
+                <span className="text-[18rem] font-[1000] italic opacity-5 group-hover:opacity-20 transition-opacity">
+                  {gate.rank}
+                </span>
               </div>
 
-              {/* هيكل البوابة الفعلي */}
+              {/* هيكل الدوران (Vortex) */}
               <div className={cn(
-                "relative w-64 h-full rounded-[100%_100%_40%_40%] overflow-hidden border-4 transition-all duration-700 shadow-[0_0_100px_rgba(0,0,0,1)] group-hover:scale-105",
-                gate.color === 'black' ? "border-white shadow-[0_0_60px_rgba(255,255,255,0.2)]" : 
-                gate.color === 'purple' ? "border-purple-600 shadow-[0_0_60px_rgba(147,51,234,0.3)]" : 
-                "border-blue-600 shadow-[0_0_60px_rgba(37,99,235,0.3)]"
+                "relative w-64 h-full mx-auto rounded-[50%_50%_40%_40%] overflow-hidden border-4 shadow-2xl transition-all duration-500",
+                gate.color === 'red' ? "border-red-600 shadow-red-900/40" : 
+                gate.color === 'purple' ? "border-purple-600 shadow-purple-900/40" : "border-blue-600 shadow-blue-900/40"
               )}>
                 
-                {/* الدوامة السحرية المتحركة - Portal Heart */}
+                {/* طبقة الدوران السحري */}
                 <div className={cn(
-                  "absolute inset-[-100%] animate-[spin_15s_linear_infinite]",
-                  gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#fff,#000,#888,#000)]" :
-                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#1e1b4b,#a855f7,#4c1d95,#7c3aed,#1e1b4b)]" :
-                  "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#1e3a8a,#2563eb,#172554)]"
+                  "absolute inset-[-100%] animate-[spin_12s_linear_infinite]",
+                  gate.color === 'red' ? "bg-[conic-gradient(from_0deg,#000,#7f1d1d,#000,#ef4444,#000)]" :
+                  gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#000,#581c87,#000,#a855f7,#000)]" :
+                  "bg-[conic-gradient(from_0deg,#000,#1e3a8a,#000,#3b82f6,#000)]"
                 )} />
-
-                {/* طبقة الضباب السحري */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,rgba(0,0,0,0.8)_90%)]" />
+                
+                {/* تأثير الضباب والعمق */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,rgba(0,0,0,0.9)_90%)]" />
                 
                 {/* نبض المركز */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                   <div className={cn(
-                     "w-1 h-full opacity-40 blur-md animate-[pulse_2s_infinite]",
-                     gate.color === 'black' ? "bg-white" : "bg-white/50"
-                   )} />
+                  <div className="w-1 h-full bg-white/10 blur-xl animate-pulse" />
                 </div>
               </div>
-
-              {/* زر الدخول المدمج أسفل البوابة كقاعدة */}
-              <button className={cn(
-                "absolute bottom-[-20px] z-30 px-10 py-4 font-black tracking-[0.5em] uppercase italic transition-all active:scale-90",
-                gate.color === 'black' ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.3)]" :
-                gate.color === 'purple' ? "bg-purple-600 text-white shadow-[0_10px_30px_rgba(147,51,234,0.4)]" :
-                "bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.4)]"
-              )}>
-                ENTER
-              </button>
             </div>
 
-            {/* بيانات الطاقة أسفل البوابة */}
-            <div className="mt-12 grid grid-cols-2 gap-4">
-              <div className="bg-white/5 border border-white/10 p-3 flex flex-col items-center">
-                <span className="text-[8px] font-black text-slate-500 uppercase italic">Mana Power</span>
-                <span className="text-sm font-bold tracking-widest">{gate.energy}</span>
+            {/* تفاصيل الرتبة والمانا (أسفل البوابة) */}
+            <div className="mt-12 bg-white/5 border border-white/10 p-4 backdrop-blur-sm relative z-20">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center gap-1 text-[8px] font-black text-slate-500 italic uppercase">
+                    <ShieldAlert size={10} /> Mana Readout
+                  </div>
+                  <div className="text-xl font-black italic">{gate.mana} <span className="text-[10px] text-slate-500">MP</span></div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[8px] font-black text-slate-500 italic uppercase">Danger Rank</div>
+                  <div className={cn("text-xl font-[1000] italic", gate.color === 'red' ? "text-red-500" : "text-white")}>
+                    {gate.rank}
+                  </div>
+                </div>
               </div>
-              <div className="bg-white/5 border border-white/10 p-3 flex flex-col items-center">
-                <span className="text-[8px] font-black text-slate-500 uppercase italic">System Scan</span>
-                <span className={cn(
-                  "text-[10px] font-black animate-pulse",
-                  gate.color === 'black' ? "text-red-500" : "text-green-500"
-                )}>{gate.warning}</span>
-              </div>
+              <p className="text-[10px] leading-relaxed text-slate-400 font-bold border-t border-white/5 pt-3 italic">
+                {gate.desc}
+              </p>
             </div>
           </div>
         ))}
@@ -123,14 +174,10 @@ const Boss = () => {
 
       <BottomNav />
 
-      {/* الأنيميشن المخصص للجبروت */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
-        }
-        .perspective-1000 {
-          perspective: 1000px;
         }
       `}</style>
     </div>
@@ -138,5 +185,3 @@ const Boss = () => {
 };
 
 export default Boss;
-
-هذا كود من تطبيقي الي اريدو يكون مثل نظام سولو ليفلينج يعني مثل نظام البوابات التي ذكرتها وا كل شي ذكرتة اريدو هنا وا اريد منك تحسن الشكل ليصبح جبروت
