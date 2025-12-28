@@ -1,4 +1,4 @@
-Import { useGameState } from '@/hooks/useGameState';
+import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { ChevronRight, Zap, LocateFixed, crosshair } from 'lucide-react';
 import { cn } from '@/lib/utils';
