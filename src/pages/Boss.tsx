@@ -12,7 +12,7 @@ const Boss = () => {
     { id: 'g2', rank: 'B', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE' },
   ];
 
-  // رابط الـ GIF المباشر
+  // الرابط المباشر للـ GIF
   const portalGifUrl = "https://raw.githubusercontent.com/r-shadows/sedark-1/refs/heads/main/portal.gif";
 
   return (
