@@ -1,7 +1,6 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { AlertTriangle, Activity, ScanLine } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
@@ -14,9 +13,10 @@ const Boss = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white pb-40">
+    <div className="min-h-screen bg-black text-white pb-40 font-sans">
 
-      <header className="pt-16 pb-12 text-center">
+      {/* الهيدر */}
+      <header className="pt-16 pb-12 text-center relative z-10">
         <h1 className="text-5xl font-black italic">DUNGEON RECOGNITION</h1>
         <div className="mt-4 flex justify-center items-center gap-2 text-purple-500">
           <ScanLine className="w-4 h-4 animate-pulse" />
@@ -24,7 +24,8 @@ const Boss = () => {
         </div>
       </header>
 
-      <main className="space-y-40 px-6">
+      {/* البوابات */}
+      <main className="space-y-40 px-6 relative z-0">
         {gates.map((gate) => (
           <div key={gate.id} className="max-w-md mx-auto relative">
 
@@ -39,17 +40,17 @@ const Boss = () => {
             {/* ===== البوابة الجديدة ===== */}
             <div className="relative h-[520px] flex items-center justify-center">
 
-              {/* الهالة */}
+              {/* هالة خلفية */}
               <div className="absolute inset-0 blur-3xl bg-purple-800/20 rounded-full" />
 
-              {/* GIF نفسه */}
+              {/* GIF البوابة */}
               <img
                 src="/portal.gif"
                 alt="Dungeon Portal"
                 className="relative z-10 h-full object-contain"
               />
 
-              {/* رتبة */}
+              {/* رتبة البوابة */}
               <div className="absolute z-20 text-[14rem] font-black italic opacity-10">
                 {gate.rank}
               </div>
@@ -62,7 +63,7 @@ const Boss = () => {
               </button>
             </div>
 
-            {/* معلومات */}
+            {/* معلومات الطاقة والتحذيرات */}
             <div className="mt-20 flex justify-between px-4 font-bold">
               <div>
                 <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -81,6 +82,7 @@ const Boss = () => {
       </main>
 
       <BottomNav />
+
     </div>
   );
 };
