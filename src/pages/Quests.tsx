@@ -2,7 +2,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { QuestCardNew } from '@/components/QuestCardNew';
 import { BottomNav } from '@/components/BottomNav';
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, BookOpen, Target, CheckCircle2 } from 'lucide-react';
+import { Dumbbell, Brain, Heart, Zap, Target, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -21,16 +21,16 @@ const Quests = () => {
   const strengthQuests = gameState.quests.filter(q => q.category === 'strength');
   const mindQuests = gameState.quests.filter(q => q.category === 'mind');
   const spiritQuests = gameState.quests.filter(q => q.category === 'spirit');
-  const quranQuests = gameState.quests.filter(q => q.category === 'quran');
+  const agilityQuests = gameState.quests.filter(q => q.category === 'agility');
 
   const completedCount = gameState.quests.filter(q => q.completed).length;
   const totalCount = gameState.quests.length;
 
   const tabs = [
-    { id: 'strength', label: 'PHYSICAL', icon: Dumbbell },
-    { id: 'mind', label: 'MENTAL', icon: Brain },
-    { id: 'spirit', label: 'SPIRIT', icon: Heart },
-    { id: 'quran', label: 'QURAN', icon: BookOpen },
+    { id: 'strength', label: 'STR', icon: Dumbbell },
+    { id: 'mind', label: 'INT', icon: Brain },
+    { id: 'spirit', label: 'SPR', icon: Heart },
+    { id: 'agility', label: 'AGI', icon: Zap },
   ];
 
   const getActiveQuests = () => {
@@ -38,7 +38,7 @@ const Quests = () => {
       case 'strength': return strengthQuests;
       case 'mind': return mindQuests;
       case 'spirit': return spiritQuests;
-      case 'quran': return quranQuests;
+      case 'agility': return agilityQuests;
       default: return [];
     }
   };

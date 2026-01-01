@@ -26,7 +26,7 @@ const getRankColor = (totalLevel: number) => {
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
+  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
   const rankColor = getRankColor(totalLevel);

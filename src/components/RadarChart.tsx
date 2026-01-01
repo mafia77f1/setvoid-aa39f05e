@@ -5,7 +5,7 @@ interface RadarChartProps {
     strength: number;
     mind: number;
     spirit: number;
-    quran: number;
+    agility: number;
   };
   maxValue?: number;
   size?: number;
@@ -16,10 +16,10 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
   const radius = (size / 2) - 40;
   
   const labels = [
-    { key: 'strength', label: 'القوة', angle: -90 },
-    { key: 'mind', label: 'العقل', angle: 0 },
-    { key: 'spirit', label: 'الروح', angle: 90 },
-    { key: 'quran', label: 'القرآن', angle: 180 },
+    { key: 'strength', label: 'STR', angle: -90 },
+    { key: 'mind', label: 'INT', angle: 0 },
+    { key: 'spirit', label: 'SPR', angle: 90 },
+    { key: 'agility', label: 'AGI', angle: 180 },
   ];
 
   const getPoint = (angle: number, value: number, maxVal: number) => {
@@ -69,7 +69,6 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
         </filter>
       </defs>
 
-      {/* Background grid */}
       {gridLevels.map((level, i) => {
         const gridPoints = labels.map(({ angle }) => 
           getPoint(angle, maxValue * level, maxValue)
@@ -89,7 +88,6 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
         );
       })}
 
-      {/* Axis lines */}
       {labels.map(({ angle }, i) => {
         const endPoint = getPoint(angle, maxValue, maxValue);
         return (
@@ -105,7 +103,6 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
         );
       })}
 
-      {/* Data shape */}
       <path
         d={pathData}
         fill="url(#radarFill)"
@@ -115,7 +112,6 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
         className="transition-all duration-500"
       />
 
-      {/* Data points */}
       {statPoints.map((point, i) => (
         <circle
           key={i}
@@ -129,7 +125,6 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
         />
       ))}
 
-      {/* Labels */}
       {labels.map(({ label, angle }, i) => {
         const pos = getLabelPosition(angle);
         return (
@@ -139,10 +134,10 @@ export const RadarChart = ({ stats, maxValue = 100, size = 300 }: RadarChartProp
             y={pos.y}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="hsl(0 0% 85%)"
-            fontSize="14"
+            fill="hsl(200 100% 70%)"
+            fontSize="12"
             fontWeight="bold"
-            className="font-arabic"
+            className="font-mono"
           >
             {label}
           </text>

@@ -308,7 +308,7 @@ export const SoloLevelingQuestCard = ({
 
   // Get one quest from each category
   const getQuestsPerCategory = () => {
-    const categories: StatType[] = ['strength', 'mind', 'spirit', 'vitality'];
+    const categories: StatType[] = ['strength', 'mind', 'spirit', 'agility'];
     const selectedQuests: Quest[] = [];
     
     categories.forEach(category => {
