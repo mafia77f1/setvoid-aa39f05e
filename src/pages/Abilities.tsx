@@ -3,21 +3,21 @@ import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
-import { Zap, Lock, Dumbbell, Brain, Heart, BookOpen, Sparkles, Shield, Clock } from 'lucide-react';
-import { Ability } from '@/types/game';
+import { Zap, Lock, Dumbbell, Brain, Heart, Sparkles, Shield, Clock } from 'lucide-react';
+import { Ability, StatType } from '@/types/game';
 
 const categoryIcons = {
   strength: Dumbbell,
   mind: Brain,
   spirit: Heart,
-  quran: BookOpen,
+  agility: Zap,
 };
 
 const categoryColors = {
   strength: { color: 'text-strength', bg: 'bg-strength/20', border: 'border-strength/40' },
   mind: { color: 'text-mind', bg: 'bg-mind/20', border: 'border-mind/40' },
   spirit: { color: 'text-spirit', bg: 'bg-spirit/20', border: 'border-spirit/40' },
-  quran: { color: 'text-quran', bg: 'bg-quran/20', border: 'border-quran/40' },
+  agility: { color: 'text-quran', bg: 'bg-quran/20', border: 'border-quran/40' },
 };
 
 const Abilities = () => {
