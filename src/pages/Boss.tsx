@@ -7,8 +7,8 @@ const Boss = () => {
   const { gameState } = useGameState();
   const boss = gameState.currentBoss;
 
-  // استخدام الرابط الثابت لضمان عدم انتهاء الصلاحية
-  const portalImage = "https://raw.githubusercontent.com/r-shadows/sedark-1/main/portal.gif";
+  // استخدام رابط JSDelivr لضمان تشغيل الـ GIF من GitHub بدون حظر
+  const portalImage = "https://cdn.jsdelivr.net/gh/r-shadows/sedark-1@main/portal.gif";
 
   const gates = [
     { id: 'g0', rank: 'S', name: boss?.name || 'MONARCH OF VOID', color: 'black', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', glow: 'shadow-[0_0_100px_rgba(255,255,255,0.4)]', filter: 'brightness(1.1) contrast(1.2)' },
@@ -19,7 +19,7 @@ const Boss = () => {
   return (
     <div className="min-h-screen bg-[#050508] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
       
-      {/* خلفية النظام */}
+      {/* نظام الخلفية */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(30,20,80,0.2),transparent_75%)]" />
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
@@ -43,8 +43,8 @@ const Boss = () => {
         {gates.map((gate) => (
           <div key={gate.id} className="relative group max-w-md mx-auto">
             
-            {/* واجهة تحذير النظام */}
-            <div className="absolute -top-14 -left-2 z-40 bg-black/95 border-l-4 border-purple-600 p-4 backdrop-blur-xl transform -skew-x-12 border-t border-white/5 shadow-2xl">
+            {/* واجهة التحذير */}
+            <div className="absolute -top-14 -left-2 z-40 bg-black/95 border-l-4 border-purple-600 p-4 backdrop-blur-xl transform -skew-x-12 border-t border-white/5">
               <div className="flex items-center gap-2 mb-1">
                 <AlertTriangle className={cn("w-4 h-4 animate-pulse", gate.color === 'black' ? "text-red-500" : "text-purple-500")} />
                 <span className="text-[8px] font-black tracking-widest text-gray-500 uppercase">Warning: Entity Detected</span>
@@ -55,7 +55,6 @@ const Boss = () => {
             {/* البوابة */}
             <div className="relative h-[480px] w-full flex items-center justify-center">
               
-              {/* الرتبة الخلفية */}
               <div className={cn(
                 "absolute z-0 text-[22rem] font-[1000] italic leading-none select-none opacity-5 transition-all duration-1000 group-hover:opacity-15",
                 gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-600" : "text-blue-600"
@@ -63,7 +62,7 @@ const Boss = () => {
                 {gate.rank}
               </div>
 
-              {/* حاوية الـ GIF المستديرة */}
+              {/* حاوية البوابة المصلحة */}
               <div className={cn(
                 "relative z-20 w-72 h-[440px] transition-all duration-700 overflow-hidden",
                 "rounded-[50%_50%_45%_45%] border-[1px] border-white/20 bg-black",
@@ -71,18 +70,15 @@ const Boss = () => {
               )}>
                 <img 
                   src={portalImage} 
-                  alt="Dungeon Portal" 
-                  crossOrigin="anonymous"
-                  className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-125"
-                  style={{ filter: gate.filter }}
-                  onError={(e) => {
-                    // إذا فشل الرابط المباشر، جرب رابط GitHub Pages أو بديل
-                    console.log("Image load failed, attempting fallback...");
-                    e.currentTarget.src = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJid3R6bm9oZzR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxV3LxlH692/giphy.gif";
+                  alt="Portal" 
+                  className="w-full h-full object-cover"
+                  style={{ 
+                    filter: gate.filter,
+                    mixBlendMode: 'screen' // يحسن مظهر الـ GIF مع الخلفية السوداء
                   }}
+                  unoptimized="true" // لضمان عدم قيام Framework بتقليل جودة الـ GIF
                 />
                 
-                {/* تأثير مانا متصاعد */}
                 <div className="absolute inset-0 pointer-events-none z-30 opacity-30">
                    {[...Array(6)].map((_, i) => (
                      <div key={i} className="absolute bottom-0 left-1/2 w-[1px] h-40 bg-white blur-[2px] animate-rise" style={{animationDelay: `${i*0.5}s`, left: `${10 + i*16}%`}} />
@@ -90,23 +86,19 @@ const Boss = () => {
                 </div>
               </div>
 
-              {/* زر الدخول */}
               <button className="absolute -bottom-12 z-50 flex flex-col items-center group/btn active:scale-95 transition-all duration-300">
                 <div className={cn(
-                  "px-16 py-5 font-[1000] italic tracking-[0.7em] text-2xl skew-x-[-15deg] transition-all border-r-[6px] border-b-[6px] relative overflow-hidden",
+                  "px-16 py-5 font-[1000] italic tracking-[0.7em] text-2xl skew-x-[-15deg] transition-all border-r-[6px] border-b-[6px]",
                   gate.color === 'black' ? "bg-white text-black border-gray-400 hover:bg-red-600 hover:text-white" :
                   gate.color === 'purple' ? "bg-purple-600 text-white border-purple-900 hover:bg-purple-500" :
                   "bg-blue-600 text-white border-blue-900 hover:bg-blue-500"
                 )}>
                   ENTER
                 </div>
-                <div className="mt-4 h-1.5 w-40 bg-white/5 rounded-full overflow-hidden">
-                   <div className="h-full bg-white animate-[loading_2s_infinite]" />
-                </div>
               </button>
             </div>
 
-            {/* الإحصائيات */}
+            {/* البيانات السفلى */}
             <div className="mt-28 flex justify-between items-end px-4 font-black">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-slate-600 text-[10px] italic tracking-widest uppercase">
@@ -137,10 +129,6 @@ const Boss = () => {
           0% { transform: translateY(0); opacity: 0; }
           50% { opacity: 0.5; }
           100% { transform: translateY(-300px); opacity: 0; }
-        }
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
         }
         .animate-rise {
           animation: rise 3s infinite linear;
