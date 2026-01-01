@@ -62,25 +62,18 @@ const Boss = () => {
                 {gate.rank}
               </div>
 
-              {/* تأثير التمزق (The Rift) */}
+              {/* تأثير التمزق (The Rift) - تم استبداله بالصورة */}
               <div className={cn(
-                "relative w-72 h-full rounded-[45%_45%_40%_40%] transition-all duration-500 ease-out",
-                "before:absolute before:inset-[-15px] before:rounded-[inherit] before:bg-gradient-to-b before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse",
+                "relative w-72 h-full transition-all duration-500 ease-out overflow-hidden",
                 gate.glow
               )}>
                 
-                {/* الدوامة الداخلية */}
-                <div className={cn(
-                  "absolute inset-0 rounded-[inherit] overflow-hidden border-[1px] border-white/20 shadow-inner",
-                  "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_50%_50%,transparent_30%,black_100%)]"
-                )}>
-                  <div className={cn(
-                    "absolute inset-[-150%] animate-[spin_20s_linear_infinite]",
-                    gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#222,#000,#fff,#000)]" :
-                    gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#2e1065,#a855f7,#000,#7e22ce,#2e1065)]" :
-                    "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#000,#1d4ed8,#172554)]"
-                  )} />
-                </div>
+                {/* استدعاء الـ portal.gif */}
+                <img 
+                  src="/portal.gif" 
+                  alt="Dungeon Portal" 
+                  className="w-full h-full object-cover rounded-[45%_45%_40%_40%]"
+                />
 
                 {/* تأثير جزيئات المانا الصاعدة */}
                 <div className="absolute inset-0 pointer-events-none">
