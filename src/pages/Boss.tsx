@@ -12,6 +12,9 @@ const Boss = () => {
     { id: 'g2', rank: 'B', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE' },
   ];
 
+  // رابط الـ GIF المباشر
+  const portalGifUrl = "https://raw.githubusercontent.com/r-shadows/sedark-1/refs/heads/main/portal.gif";
+
   return (
     <div className="min-h-screen bg-black text-white pb-40 font-sans">
 
@@ -45,7 +48,7 @@ const Boss = () => {
 
               {/* GIF البوابة */}
               <img
-                src="/portal.gif"
+                src={portalGifUrl}
                 alt="Dungeon Portal"
                 className="relative z-10 h-full object-contain"
               />
