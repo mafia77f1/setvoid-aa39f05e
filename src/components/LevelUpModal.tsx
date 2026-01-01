@@ -15,8 +15,7 @@ const categoryNames: Record<StatType, string> = {
   strength: 'القوة',
   mind: 'العقل',
   spirit: 'الروح',
-  quran: 'القرآن',
-  vitality: 'الرشاقة',
+  agility: 'الرشاقة',
 };
 
 export const LevelUpModal = ({ show, newLevel, category, onDismiss }: LevelUpModalProps) => {

@@ -1,4 +1,4 @@
-export type StatType = 'strength' | 'mind' | 'spirit' | 'vitality' | 'quran';
+export type StatType = 'strength' | 'mind' | 'spirit' | 'agility';
 export type QuestDifficulty = 'easy' | 'medium' | 'hard' | 'legendary';
 export type PlayerRank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 
@@ -6,16 +6,14 @@ export interface PlayerStats {
   strength: number;
   mind: number;
   spirit: number;
-  vitality: number;
-  quran: number;
+  agility: number;
 }
 
 export interface PlayerLevels {
   strength: number;
   mind: number;
   spirit: number;
-  vitality: number;
-  quran: number;
+  agility: number;
 }
 
 export interface Quest {
@@ -33,6 +31,24 @@ export interface Quest {
   repsPerSet?: number; // Reps per set
   startedAt?: string; // When quest was started
   timerDuration?: number; // Timer duration in seconds
+  dayOfWeek?: number; // 0-6, Sunday to Saturday
+}
+
+export interface Gate {
+  id: string;
+  name: string;
+  rank: 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
+  requiredPower: number;
+  energyDensity: string;
+  danger: string;
+  color: string;
+  discovered: boolean;
+  completed: boolean;
+  rewards: {
+    xp: number;
+    gold: number;
+    shadowPoints: number;
+  };
 }
 
 export interface Boss {
@@ -91,6 +107,7 @@ export interface Achievement {
   progress: number;
   unlocked: boolean;
   icon: string;
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
 export interface GrandQuest {
@@ -110,8 +127,7 @@ export interface DailyStats {
   strength: number;
   mind: number;
   spirit: number;
-  vitality: number;
-  quran: number;
+  agility: number;
   questsCompleted: number;
 }
 
@@ -183,6 +199,7 @@ export interface GameState {
   prayerQuests: PrayerQuest[];
   shadowSoldiers: ShadowSoldier[];
   equipment: Equipment[];
+  gates: Gate[];
   
   // Progress
   dailyStats: DailyStats[];

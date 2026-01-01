@@ -1,64 +1,92 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment } from '@/types/game';
+import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment, Gate } from '@/types/game';
 
 const XP_PER_LEVEL = 100;
 
-const getInitialQuests = (): Quest[] => [
-  // Strength quests
-  { id: 's1', title: 'شرب 8 أكواب ماء', description: 'حافظ على ترطيب جسمك', category: 'strength', xpReward: 15, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 720 },
-  { id: 's2', title: '10,000 خطوة', description: 'امشِ 10 آلاف خطوة اليوم', category: 'strength', xpReward: 25, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 720 },
-  { id: 's3', title: 'تمارين رياضية', description: '30 دقيقة تمارين', category: 'strength', xpReward: 30, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 60 },
-  { id: 's4', title: 'نوم صحي', description: 'نم 7-8 ساعات', category: 'strength', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy' },
-  { id: 's5', title: '100 تمرين ضغط', description: 'أكمل 100 تمرين ضغط', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 120 },
-  { id: 's6', title: '100 تمرين قرفصاء', description: 'أكمل 100 تمرين قرفصاء', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 120 },
-  { id: 's7', title: 'صيام متقطع', description: 'صم 16 ساعة', category: 'strength', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard' },
+// Get day of week: 0=Sunday, 1=Monday... 6=Saturday
+const getDayOfWeek = () => new Date().getDay();
+
+// Daily rotating quests based on day of week
+const getRotatingQuests = (): Quest[] => {
+  const day = getDayOfWeek();
   
-  // Mind quests
-  { id: 'm1', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً مفيداً', category: 'mind', xpReward: 25, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 30 },
-  { id: 'm2', title: 'تعلم شيء جديد', description: 'تعلم مهارة أو معلومة', category: 'mind', xpReward: 30, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'm3', title: 'ترك السوشيال ميديا', description: 'لا تستخدم السوشيال اليوم', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard' },
-  { id: 'm4', title: 'كتابة هدف', description: 'اكتب هدفاً واضحاً', category: 'mind', xpReward: 15, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 15 },
-  { id: 'm5', title: 'حفظ 10 كلمات إنجليزية', description: 'احفظ 10 كلمات جديدة', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'm6', title: 'حل مسألة رياضية', description: 'حل مسألة تحدي ذهني', category: 'mind', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard' },
-  { id: 'm7', title: 'تأمل 15 دقيقة', description: 'تأمل وتركيز ذهني', category: 'mind', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 15 },
-  
-  // Spirit quests
-  { id: 'sp1', title: 'أذكار الصباح والمساء', description: 'اقرأ الأذكار كاملة', category: 'spirit', xpReward: 25, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'sp2', title: 'استغفار 100 مرة', description: 'استغفر الله 100 مرة', category: 'spirit', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy' },
-  { id: 'sp3', title: 'صدقة', description: 'تصدق ولو بالقليل', category: 'spirit', xpReward: 30, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'sp4', title: 'خلق حسن', description: 'ابتسم وأحسن للناس', category: 'spirit', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy' },
-  { id: 'sp5', title: 'صلة الرحم', description: 'تواصل مع أقاربك', category: 'spirit', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'sp6', title: 'قيام الليل', description: 'صلِّ ركعتين في الليل', category: 'spirit', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard' },
-  { id: 'sp7', title: 'الدعاء', description: 'ادعُ الله بصدق', category: 'spirit', xpReward: 15, completed: false, dailyReset: true, difficulty: 'easy' },
-  
-  // Quran quests
-  { id: 'q1', title: 'ورد القرآن اليومي', description: 'اقرأ جزءاً أو حزباً', category: 'quran', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'q2', title: 'حفظ آية', description: 'احفظ آية جديدة', category: 'quran', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard' },
-  { id: 'q3', title: 'تفسير آية', description: 'اقرأ تفسير آية', category: 'quran', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium' },
-  { id: 'q4', title: 'سورة الملك', description: 'اقرأ سورة الملك', category: 'quran', xpReward: 30, completed: false, dailyReset: true, difficulty: 'medium' },
-];
+  // STR - rotating muscle groups
+  const strQuests: Record<number, Quest> = {
+    0: { id: 'str_daily', title: 'تمرين صدر', description: '100 ضغط على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 0 },
+    1: { id: 'str_daily', title: 'تمرين كتف', description: '60 تمرين كتف على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 1 },
+    2: { id: 'str_daily', title: 'تمرين تراي', description: '60 تمرين تراي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 2 },
+    3: { id: 'str_daily', title: 'تمرين باي', description: '60 تمرين باي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 3 },
+    4: { id: 'str_daily', title: 'تمرين ظهر', description: '60 تمرين ظهر على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 12, dayOfWeek: 4 },
+    5: { id: 'str_daily', title: 'تمرين بطن', description: '100 تمرين بطن على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 20, dayOfWeek: 5 },
+    6: { id: 'str_daily', title: 'تمرين رجل', description: '100 سكوات على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 6 },
+  };
+
+  // INT - rotating mental quests
+  const intQuests: Record<number, Quest> = {
+    0: { id: 'int_daily', title: 'مراجعة أسبوع', description: 'راجع ما تعلمته هذا الأسبوع', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 0 },
+    1: { id: 'int_daily', title: 'لغز منطقي', description: 'حل لغز لتحسين المنطق', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 1 },
+    2: { id: 'int_daily', title: 'قراءة + تلخيص', description: '25 دقيقة قراءة مع تلخيص', category: 'mind', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 2 },
+    3: { id: 'int_daily', title: 'ألعاب الذاكرة', description: 'تمارين لرفع قوة الذاكرة', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 3 },
+    4: { id: 'int_daily', title: 'كلمة جديدة', description: 'تعلم كلمة جديدة وحفظها', category: 'mind', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 4 },
+    5: { id: 'int_daily', title: 'تمرين اليد غير المسيطرة', description: 'استخدم يدك الأخرى لتحفيز الدماغ', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 5 },
+    6: { id: 'int_daily', title: 'تأمل + مراجعة', description: '15 دقيقة تأمل وتركيز', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 6 },
+  };
+
+  // SPR - rotating spiritual quests
+  const sprQuests: Record<number, Quest> = {
+    0: { id: 'spr_daily', title: 'تسبيح 2000 مرة', description: '1000 سبحان الله + 1000 الحمد لله', category: 'spirit', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 0 },
+    1: { id: 'spr_daily', title: 'صيام الاثنين', description: 'صم يوم الاثنين أو سبح 25 مرة', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 1 },
+    2: { id: 'spr_daily', title: 'شكر 5 نعم', description: 'اكتب أو تفكر في 5 نعم', category: 'spirit', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 2 },
+    3: { id: 'spr_daily', title: 'ترك ذنب واحد', description: 'امتنع عن ذنب واحد اليوم', category: 'spirit', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 3 },
+    4: { id: 'spr_daily', title: 'صيام الخميس', description: 'صم أو اقرأ صفحة قرآن بتدبر', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 4 },
+    5: { id: 'spr_daily', title: 'صلاة الجمعة', description: 'صلاة الجمعة + 100 صلاة على النبي', category: 'spirit', xpReward: 80, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 5 },
+    6: { id: 'spr_daily', title: 'ذكر 1000 مرة', description: 'سبحان الله وبحمده 1000 مرة', category: 'spirit', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 6 },
+  };
+
+  // AGI - same quests daily (run + jump)
+  const agiQuests: Quest[] = [
+    { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: day },
+    { id: 'agi_jump', title: 'القفز 250 مرة', description: '5 مجاميع × 50 قفزة', category: 'agility', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 50, dayOfWeek: day },
+  ];
+
+  return [
+    strQuests[day],
+    intQuests[day],
+    sprQuests[day],
+    ...agiQuests,
+  ];
+};
 
 const getInitialAbilities = (): Ability[] => [
   { id: 'a1', name: 'قدرة الانضباط', description: 'تزيد تركيزك على المهام', requiredLevel: 3, category: 'mind', unlocked: false, level: 1, cooldownDays: 7, effect: 'مضاعفة XP للمهمة القادمة' },
   { id: 'a2', name: 'قدرة التركيز', description: 'تقلل التشتت الذهني', requiredLevel: 5, category: 'mind', unlocked: false, level: 1, cooldownDays: 7, effect: 'إكمال مهمة تلقائياً' },
   { id: 'a3', name: 'قدرة التغلب', description: 'تساعدك على هزيمة الزعماء', requiredLevel: 4, category: 'strength', unlocked: false, level: 1, cooldownDays: 7, effect: 'ضرر مضاعف للزعيم' },
   { id: 'a4', name: 'قدرة ضبط النفس', description: 'تزيد مقاومتك للإغراءات', requiredLevel: 6, category: 'spirit', unlocked: false, level: 1, cooldownDays: 7, effect: 'حماية من خسارة HP' },
-  { id: 'a5', name: 'قدرة الحفظ', description: 'تسهل حفظ القرآن', requiredLevel: 5, category: 'quran', unlocked: false, level: 1, cooldownDays: 7, effect: 'مضاعفة XP القرآن' },
+  { id: 'a5', name: 'قدرة السرعة', description: 'تزيد رشاقتك وسرعتك', requiredLevel: 5, category: 'agility', unlocked: false, level: 1, cooldownDays: 7, effect: 'مضاعفة XP الرشاقة' },
   { id: 'a6', name: 'قدرة الصبر', description: 'تزيد من تحملك', requiredLevel: 7, category: 'spirit', unlocked: false, level: 1, cooldownDays: 7, effect: 'تمديد وقت المهمات' },
-  { id: 'a7', name: 'كشف الخفي', description: 'تكشف HP الزعيم', requiredLevel: 2, category: 'quran', unlocked: false, level: 1, cooldownDays: 0, effect: 'كشف HP الزعيم' },
+  { id: 'a7', name: 'كشف البوابات', description: 'تكشف البوابات المخفية', requiredLevel: 2, category: 'agility', unlocked: false, level: 1, cooldownDays: 0, effect: 'كشف بوابة إضافية' },
   { id: 'a8', name: 'قدرة القوة', description: 'تزيد قوتك الجسدية', requiredLevel: 8, category: 'strength', unlocked: false, level: 1, cooldownDays: 7, effect: 'استعادة 50% طاقة' },
 ];
 
 const getInitialAchievements = (): Achievement[] => [
-  { id: 'ach1', name: 'البداية القوية', description: 'أكمل أول مهمة', requirement: 1, progress: 0, unlocked: false, icon: '🎯' },
-  { id: 'ach2', name: '7 أيام التزام', description: 'التزم لمدة أسبوع', requirement: 7, progress: 0, unlocked: false, icon: '🔥' },
-  { id: 'ach3', name: '30 يوم قوة', description: 'التزم لمدة شهر', requirement: 30, progress: 0, unlocked: false, icon: '💪' },
-  { id: 'ach4', name: 'قاهر الزعيم', description: 'اهزم أول زعيم', requirement: 1, progress: 0, unlocked: false, icon: '⚔️' },
-  { id: 'ach5', name: 'المنجز', description: 'أكمل 100 مهمة', requirement: 100, progress: 0, unlocked: false, icon: '🏆' },
-  { id: 'ach6', name: 'الهدف الكبير', description: 'أتم Grand Quest', requirement: 1, progress: 0, unlocked: false, icon: '👑' },
-  { id: 'ach7', name: 'المستوى 10', description: 'وصلت للمستوى 10', requirement: 10, progress: 0, unlocked: false, icon: '⭐' },
-  { id: 'ach8', name: 'المستوى 50', description: 'وصلت للمستوى 50', requirement: 50, progress: 0, unlocked: false, icon: '💎' },
-  { id: 'ach9', name: 'المستوى 100', description: 'وصلت للمستوى 100', requirement: 100, progress: 0, unlocked: false, icon: '🏅' },
+  { id: 'ach1', name: 'البداية القوية', description: 'أكمل أول مهمة', requirement: 1, progress: 0, unlocked: false, icon: '🎯', rarity: 'common' },
+  { id: 'ach2', name: '7 أيام التزام', description: 'التزم لمدة أسبوع', requirement: 7, progress: 0, unlocked: false, icon: '🔥', rarity: 'rare' },
+  { id: 'ach3', name: '30 يوم قوة', description: 'التزم لمدة شهر', requirement: 30, progress: 0, unlocked: false, icon: '💪', rarity: 'epic' },
+  { id: 'ach4', name: 'قاهر البوابة', description: 'أكمل أول بوابة', requirement: 1, progress: 0, unlocked: false, icon: '⚔️', rarity: 'rare' },
+  { id: 'ach5', name: 'المنجز', description: 'أكمل 100 مهمة', requirement: 100, progress: 0, unlocked: false, icon: '🏆', rarity: 'epic' },
+  { id: 'ach6', name: 'الهدف الكبير', description: 'أتم Grand Quest', requirement: 1, progress: 0, unlocked: false, icon: '👑', rarity: 'legendary' },
+  { id: 'ach7', name: 'المستوى 10', description: 'وصلت للمستوى 10', requirement: 10, progress: 0, unlocked: false, icon: '⭐', rarity: 'common' },
+  { id: 'ach8', name: 'المستوى 50', description: 'وصلت للمستوى 50', requirement: 50, progress: 0, unlocked: false, icon: '💎', rarity: 'epic' },
+  { id: 'ach9', name: 'المستوى 100', description: 'وصلت للمستوى 100', requirement: 100, progress: 0, unlocked: false, icon: '🏅', rarity: 'legendary' },
+];
+
+const getInitialGates = (): Gate[] => [
+  { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: 50, shadowPoints: 2 } },
+  { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: 150, shadowPoints: 5 } },
+  { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: 300, shadowPoints: 10 } },
+  { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: 600, shadowPoints: 20 } },
+  { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 1500, shadowPoints: 50 } },
+  { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 5000, shadowPoints: 200 } },
 ];
 
 const getInitialBoss = (): Boss => ({
@@ -67,7 +95,7 @@ const getInitialBoss = (): Boss => ({
   description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف لمدة 3 ساعات ويمنعك من القيام بمهامك!',
   maxHp: 100,
   currentHp: 100,
-  requiredQuests: ['s2', 's3', 'm1', 'sp1'],
+  requiredQuests: ['str_daily', 'int_daily', 'spr_daily', 'agi_run'],
   defeated: false,
   weekStartDate: new Date().toISOString().split('T')[0],
   level: 1,
@@ -107,11 +135,11 @@ const getDefaultState = (): GameState => ({
   gold: 0,
   shadowPoints: 0,
   
-  stats: { strength: 0, mind: 0, spirit: 0, quran: 0, vitality: 0 },
-  levels: { strength: 1, mind: 1, spirit: 1, quran: 1, vitality: 1 },
-  totalLevel: 5,
+  stats: { strength: 0, mind: 0, spirit: 0, agility: 0 },
+  levels: { strength: 1, mind: 1, spirit: 1, agility: 1 },
+  totalLevel: 4,
   
-  quests: getInitialQuests(),
+  quests: getRotatingQuests(),
   currentBoss: getInitialBoss(),
   abilities: getInitialAbilities(),
   achievements: getInitialAchievements(),
@@ -120,6 +148,7 @@ const getDefaultState = (): GameState => ({
   prayerQuests: getInitialPrayerQuests(),
   shadowSoldiers: getInitialShadowSoldiers(),
   equipment: [],
+  gates: getInitialGates(),
   
   dailyStats: [],
   totalQuestsCompleted: 0,
@@ -153,9 +182,8 @@ export const useGameState = () => {
       // Check if we need to reset daily quests
       const today = new Date().toISOString().split('T')[0];
       if (mergedState.lastActiveDate !== today) {
-        mergedState.quests = mergedState.quests.map((q: Quest) => 
-          q.dailyReset ? { ...q, completed: false } : q
-        );
+        // Get new rotating quests for today
+        mergedState.quests = getRotatingQuests();
         mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
           ({ ...p, completed: false })
         ) || getInitialPrayerQuests();
@@ -173,6 +201,11 @@ export const useGameState = () => {
         }
         
         mergedState.lastActiveDate = today;
+      }
+      
+      // Ensure gates exist
+      if (!mergedState.gates) {
+        mergedState.gates = getInitialGates();
       }
       
       return mergedState;
@@ -195,7 +228,7 @@ export const useGameState = () => {
   };
 
   const getTotalLevel = (levels: typeof gameState.levels): number => {
-    return levels.strength + levels.mind + levels.spirit + levels.quran + levels.vitality;
+    return levels.strength + levels.mind + levels.spirit + levels.agility;
   };
 
   const getRank = (totalLevel: number): string => {
@@ -231,7 +264,7 @@ export const useGameState = () => {
         q.id === questId ? { ...q, completed: true } : q
       );
 
-      // Update boss HP if quest is required - damage based on player level
+      // Update boss HP if quest is required
       let newBoss = prev.currentBoss;
       if (newBoss && newBoss.requiredQuests.includes(questId)) {
         const baseDamage = Math.floor(newBoss.maxHp / newBoss.requiredQuests.length);
@@ -291,11 +324,18 @@ export const useGameState = () => {
           strength: quest.category === 'strength' ? quest.xpReward : 0,
           mind: quest.category === 'mind' ? quest.xpReward : 0,
           spirit: quest.category === 'spirit' ? quest.xpReward : 0,
-          quran: quest.category === 'quran' ? quest.xpReward : 0,
-          vitality: quest.category === 'vitality' ? quest.xpReward : 0,
+          agility: quest.category === 'agility' ? quest.xpReward : 0,
           questsCompleted: 1,
         });
       }
+
+      // Update gates discovery based on power level
+      const newGates = prev.gates.map(gate => {
+        if (!gate.discovered && newTotalLevel >= gate.requiredPower * 0.5) {
+          return { ...gate, discovered: true };
+        }
+        return gate;
+      });
 
       // Gain gold and shadow points
       const goldGain = quest.difficulty === 'legendary' ? 50 : 
@@ -319,6 +359,7 @@ export const useGameState = () => {
         gold: prev.gold + goldGain,
         shadowPoints: (prev.shadowPoints || 0) + shadowGain,
         energy: Math.max(0, prev.energy - 5),
+        gates: newGates,
       };
     });
   }, []);
@@ -403,11 +444,9 @@ export const useGameState = () => {
 
   const resetBoss = useCallback(() => {
     const bosses: Boss[] = [
-      { id: 'boss1', name: 'زعيم الكسل', description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف!', maxHp: 100, currentHp: 100, requiredQuests: ['s2', 's3', 'm1', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 1, attackPower: 10 },
-      { id: 'boss2', name: 'زعيم السهر', description: 'يجبرك على السهر حتى الفجر بلا سبب!', maxHp: 120, currentHp: 120, requiredQuests: ['s4', 'm3', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 2, attackPower: 15 },
-      { id: 'boss3', name: 'زعيم التسويف', description: 'هل حقاً تظن أنك ستنهي هذا؟ لديك 10 دقائق لتضييعها!', maxHp: 150, currentHp: 150, requiredQuests: ['m1', 'm2', 'm4', 'sp1'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 3, attackPower: 20 },
-      { id: 'boss4', name: 'زعيم الإدمان الرقمي', description: 'شاشتك هي سجنك الحقيقي!', maxHp: 180, currentHp: 180, requiredQuests: ['m3', 'm7', 'sp4', 'sp7'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 4, attackPower: 25 },
-      { id: 'boss5', name: 'زعيم الغفلة', description: 'ينسيك ذكر الله ويشغلك بالدنيا!', maxHp: 200, currentHp: 200, requiredQuests: ['sp1', 'sp2', 'q1', 'q4'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 5, attackPower: 30 },
+      { id: 'boss1', name: 'زعيم الكسل', description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف!', maxHp: 100, currentHp: 100, requiredQuests: ['str_daily', 'int_daily', 'spr_daily', 'agi_run'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 1, attackPower: 10 },
+      { id: 'boss2', name: 'زعيم السهر', description: 'يجبرك على السهر حتى الفجر بلا سبب!', maxHp: 120, currentHp: 120, requiredQuests: ['str_daily', 'int_daily', 'spr_daily'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 2, attackPower: 15 },
+      { id: 'boss3', name: 'زعيم التسويف', description: 'هل حقاً تظن أنك ستنهي هذا؟', maxHp: 150, currentHp: 150, requiredQuests: ['int_daily', 'spr_daily', 'agi_run', 'agi_jump'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 3, attackPower: 20 },
     ];
     
     const randomBoss = bosses[Math.floor(Math.random() * bosses.length)];
@@ -447,7 +486,6 @@ export const useGameState = () => {
       
       const today = new Date().toISOString().split('T')[0];
       
-      // Check cooldown
       if (ability.lastUsed && ability.cooldownDays > 0) {
         const lastUsed = new Date(ability.lastUsed);
         const now = new Date();
@@ -515,8 +553,7 @@ export const useGameState = () => {
           strength: prev.stats.strength + xpPerStat,
           mind: prev.stats.mind + xpPerStat,
           spirit: prev.stats.spirit + xpPerStat,
-          quran: prev.stats.quran + xpPerStat,
-          vitality: prev.stats.vitality + xpPerStat,
+          agility: prev.stats.agility + xpPerStat,
         };
       }
 

@@ -10,16 +10,14 @@ const categoryLabels: Record<StatType, string> = {
   strength: 'PHYSICAL BODY',
   mind: 'MENTAL GROWTH',
   spirit: 'SPIRITUALITY',
-  quran: 'QURANIC STUDY',
-  vitality: 'AGILITY & FITNESS',
+  agility: 'AGILITY & FITNESS',
 };
 
 const suggestedTasks: Record<StatType, string[]> = {
   strength: ['30 Min Workout', '8 Cups of Water', '7 Hours Sleep', '5000 Steps'],
   mind: ['Read 30 Pages', 'Learn New Skill', 'No Social Media', 'Journaling'],
   spirit: ['Fajr on Time', 'Morning Athkar', 'Daily Charity', '100x Istighfar'],
-  quran: ['Read 1 Juz', 'Memorize 5 Ayahs', 'Review Hifz', 'Tadabbur Page'],
-  vitality: ['20 Min Run', 'Stretching', 'Speed Drills', 'Jump Rope'],
+  agility: ['20 Min Run', 'Stretching', 'Speed Drills', 'Jump Rope'],
 };
 
 const GrandQuest = () => {

@@ -69,8 +69,7 @@ export const DungeonBattleUI = ({
     strength: <Dumbbell className="w-5 h-5" />,
     mind: <Brain className="w-5 h-5" />,
     spirit: <Heart className="w-5 h-5" />,
-    quran: <BookOpen className="w-5 h-5" />,
-    vitality: <Zap className="w-5 h-5" />,
+    agility: <Zap className="w-5 h-5" />,
   };
 
   // Boss taunts
@@ -443,7 +442,7 @@ export const DungeonBattleUI = ({
                       quest.category === 'strength' && "bg-red-500/20 text-red-400",
                       quest.category === 'mind' && "bg-blue-500/20 text-blue-400",
                       quest.category === 'spirit' && "bg-purple-500/20 text-purple-400",
-                      quest.category === 'quran' && "bg-green-500/20 text-green-400"
+                      quest.category === 'agility' && "bg-yellow-500/20 text-yellow-400"
                     )}>
                       {categoryIcons[quest.category]}
                     </div>

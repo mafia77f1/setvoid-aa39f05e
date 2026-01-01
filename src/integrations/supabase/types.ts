@@ -14,45 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      ADS: {
+      Ads: {
         Row: {
-          app: string | null
+          ad_type: string
+          advertiser_id: string
+          budget: number | null
           clicks: number | null
           created_at: string
-          end_date: string | null
+          has_music: boolean
           id: number
-          image_url: string | null
+          image_url: string
           impressions: number | null
-          link: string | null
-          start_date: string | null
-          title: string | null
-          video_url: string | null
+          landing_url: string | null
+          name: string
+          status: string | null
+          target_app: string | null
+          video_with_music_url: string
+          video_without_music_url: string
         }
         Insert: {
-          app?: string | null
+          ad_type?: string
+          advertiser_id: string
+          budget?: number | null
           clicks?: number | null
           created_at?: string
-          end_date?: string | null
+          has_music?: boolean
           id?: number
-          image_url?: string | null
+          image_url: string
           impressions?: number | null
-          link?: string | null
-          start_date?: string | null
-          title?: string | null
-          video_url?: string | null
+          landing_url?: string | null
+          name: string
+          status?: string | null
+          target_app?: string | null
+          video_with_music_url: string
+          video_without_music_url: string
         }
         Update: {
-          app?: string | null
+          ad_type?: string
+          advertiser_id?: string
+          budget?: number | null
           clicks?: number | null
           created_at?: string
-          end_date?: string | null
+          has_music?: boolean
           id?: number
-          image_url?: string | null
+          image_url?: string
           impressions?: number | null
-          link?: string | null
-          start_date?: string | null
-          title?: string | null
-          video_url?: string | null
+          landing_url?: string | null
+          name?: string
+          status?: string | null
+          target_app?: string | null
+          video_with_music_url?: string
+          video_without_music_url?: string
         }
         Relationships: []
       }
