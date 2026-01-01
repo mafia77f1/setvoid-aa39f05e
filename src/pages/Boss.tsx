@@ -1,6 +1,6 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Activity, ScanLine } from 'lucide-react';
+import { ChevronRight, Zap, AlertTriangle, Activity, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -8,33 +8,17 @@ const Boss = () => {
   const boss = gameState.currentBoss;
 
   const gates = [
-    { 
-      id: 'g0', rank: 'S', name: boss?.name || 'MONARCH OF VOID', color: 'black', 
-      type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', 
-      glow: 'shadow-[0_0_100px_rgba(255,255,255,0.4)]', 
-      vortexClass: 'from-white via-gray-400 to-transparent' 
-    },
-    { 
-      id: 'g1', rank: 'A', name: 'SHADOW FORTRESS', color: 'purple', 
-      type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', 
-      glow: 'shadow-[0_0_80px_rgba(168,85,247,0.5)]', 
-      vortexClass: 'from-purple-600 via-purple-900 to-transparent' 
-    },
-    { 
-      id: 'g3', rank: 'B', name: 'ICE CITADEL', color: 'blue', 
-      type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', 
-      glow: 'shadow-[0_0_60px_rgba(59,130,246,0.4)]', 
-      vortexClass: 'from-blue-500 via-blue-800 to-transparent' 
-    },
+    { id: 'g0', rank: 'S', name: boss?.name || 'MONARCH OF VOID', color: 'black', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', glow: 'shadow-[0_0_100px_rgba(255,255,255,0.2)]' },
+    { id: 'g1', rank: 'A', name: 'SHADOW FORTRESS', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', glow: 'shadow-[0_0_80px_rgba(168,85,247,0.4)]' },
+    { id: 'g3', rank: 'B', name: 'ICE CITADEL', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', glow: 'shadow-[0_0_60px_rgba(59,130,246,0.3)]' },
   ];
 
   return (
     <div className="min-h-screen bg-[#050508] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
       
-      {/* تأثيرات الخلفية الجمالية */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(30,20,80,0.2),transparent_75%)]" />
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(30,20,80,0.15),transparent_70%)]" />
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%]" />
       </div>
 
@@ -42,117 +26,97 @@ const Boss = () => {
         <div className="inline-block relative group">
           <div className="absolute -inset-8 bg-purple-900/20 blur-[100px] rounded-full animate-pulse" />
           <h1 className="relative text-6xl font-[1000] italic tracking-tighter uppercase leading-none">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 font-black">DUNGEON</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">DUNGEON</span>
             <span className="block text-purple-600 drop-shadow-[0_0_15px_rgba(147,51,234,0.8)]">RECOGNITION</span>
           </h1>
-          <div className="mt-4 flex items-center justify-center gap-3 border-y border-purple-500/20 py-2">
+          <div className="mt-4 flex items-center justify-center gap-3">
             <ScanLine className="w-4 h-4 text-purple-500 animate-bounce" />
             <span className="text-[10px] font-black tracking-[0.8em] text-purple-200/50 uppercase">System Scanning Terrain...</span>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 px-6 space-y-48">
+      <main className="relative z-10 px-6 space-y-40">
         {gates.map((gate) => (
           <div key={gate.id} className="relative group max-w-md mx-auto">
             
-            {/* واجهة معلومات النظام العائمة */}
-            <div className="absolute -top-14 -left-2 z-40 bg-black/95 border-l-4 border-purple-600 p-4 backdrop-blur-xl transform -skew-x-12 border-t border-white/5 shadow-2xl">
-              <div className="flex items-center gap-2 mb-1">
-                <AlertTriangle className={cn("w-4 h-4 animate-pulse", gate.color === 'black' ? "text-red-500" : "text-purple-500")} />
-                <span className="text-[8px] font-black tracking-widest text-gray-500 uppercase">Warning: Entity Detected</span>
+            <div className="absolute -top-12 -left-4 z-40 bg-black/80 border-l-4 border-purple-600 p-3 backdrop-blur-md transform -skew-x-12 transition-transform group-hover:scale-110">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className={cn("w-4 h-4", gate.color === 'black' ? "text-red-500" : "text-purple-500")} />
+                <span className="text-[9px] font-black tracking-tighter text-gray-400">WARNING: HIGH-LEVEL ENTITY DETECTED</span>
               </div>
-              <div className="text-2xl font-[1000] italic tracking-tighter uppercase text-white leading-none">{gate.type}</div>
+              <div className="text-xl font-black italic tracking-tighter">{gate.type}</div>
             </div>
 
-            {/* هيكل البوابة المطور */}
-            <div className="relative h-[480px] w-full flex items-center justify-center">
+            <div className="relative h-[500px] w-full flex items-center justify-center">
               
-              {/* الرتبة العملاقة في الخلفية */}
               <div className={cn(
-                "absolute z-0 text-[22rem] font-[1000] italic leading-none select-none opacity-5 transition-all duration-1000 group-hover:opacity-15 group-hover:scale-110",
+                "absolute z-0 text-[18rem] font-[1000] italic leading-none select-none opacity-5 transition-all duration-700 group-hover:opacity-20 group-hover:scale-110",
                 gate.color === 'black' ? "text-white" : gate.color === 'purple' ? "text-purple-600" : "text-blue-600"
               )}>
                 {gate.rank}
               </div>
 
-              {/* حاوية الدوامة البرمجية (Vortex) */}
               <div className={cn(
-                "relative z-20 w-72 h-[440px] overflow-hidden transition-all duration-700",
-                "rounded-[50%_50%_45%_45%] border-[1px] border-white/20 bg-black shadow-2xl",
+                "relative w-72 h-full rounded-[45%_45%_40%_40%] transition-all duration-500 ease-out",
+                "before:absolute before:inset-[-15px] before:rounded-[inherit] before:bg-gradient-to-b before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse",
                 gate.glow
               )}>
                 
-                {/* تأثير الدوامة المتحرك بـ CSS */}
-                <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-                  {/* الدوران الأساسي */}
+                {/* ✅ GIF البوابة */}
+                <img
+                  src="/portal.gif"
+                  alt="Dungeon Gate"
+                  className="absolute inset-0 w-full h-full object-cover rounded-[inherit] opacity-90 mix-blend-screen"
+                />
+
+                <div className={cn(
+                  "absolute inset-0 rounded-[inherit] overflow-hidden border-[1px] border-white/20 shadow-inner",
+                  "after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_50%_50%,transparent_30%,black_100%)]"
+                )}>
                   <div className={cn(
-                    "absolute w-[200%] h-[200%] animate-[spin_4s_linear_infinite] opacity-30",
-                    "bg-[conic-gradient(from_0deg,transparent_0deg,#fff_180deg,transparent_360deg)]",
-                    gate.color === 'purple' && "bg-[conic-gradient(from_0deg,transparent_0deg,#a855f7_180deg,transparent_360deg)]",
-                    gate.color === 'blue' && "bg-[conic-gradient(from_0deg,transparent_0deg,#3b82f6_180deg,transparent_360deg)]"
-                  )} style={{ filter: 'blur(30px)' }} />
-                  
-                  {/* الدوران العكسي للعمق */}
-                  <div className="absolute w-[150%] h-[150%] animate-[spin_7s_linear_infinite_reverse] bg-[radial-gradient(ellipse_at_center,transparent_20%,#000_70%)] opacity-80" />
-                  
-                  {/* تدرج اللون العمودي */}
-                  <div className={cn(
-                    "absolute inset-0 bg-gradient-to-t opacity-40 animate-pulse",
-                    gate.vortexClass
+                    "absolute inset-[-150%] animate-[spin_20s_linear_infinite]",
+                    gate.color === 'black' ? "bg-[conic-gradient(from_0deg,#000,#222,#000,#fff,#000)]" :
+                    gate.color === 'purple' ? "bg-[conic-gradient(from_0deg,#2e1065,#a855f7,#000,#7e22ce,#2e1065)]" :
+                    "bg-[conic-gradient(from_0deg,#172554,#3b82f6,#000,#1d4ed8,#172554)]"
                   )} />
                 </div>
-                
-                {/* تأثير جزيئات المانا الصاعدة */}
-                <div className="absolute inset-0 pointer-events-none z-30 opacity-40">
-                   {[...Array(12)].map((_, i) => (
-                     <div 
-                        key={i} 
-                        className="absolute bottom-0 w-[1.5px] h-40 bg-white blur-[1.5px] animate-rise" 
-                        style={{ 
-                          animationDelay: `${i * 0.25}s`, 
-                          left: `${Math.random() * 100}%`,
-                          opacity: Math.random()
-                        }} 
-                      />
+
+                <div className="absolute inset-0 pointer-events-none">
+                   {[...Array(5)].map((_,i) => (
+                     <div key={i} className="absolute bottom-0 left-1/2 w-1 h-20 bg-white/20 blur-sm animate-rise opacity-0" style={{animationDelay: `${i*0.5}s`, left: `${20 + i*15}%`}} />
                    ))}
                 </div>
               </div>
 
-              {/* زر الدخول العائم */}
-              <button className="absolute -bottom-12 z-50 flex flex-col items-center group/btn active:scale-95 transition-all duration-300">
+              <button className={cn(
+                "absolute -bottom-8 z-50 flex flex-col items-center group/btn",
+                "transition-transform hover:scale-105 active:scale-95"
+              )}>
                 <div className={cn(
-                  "px-16 py-5 font-[1000] italic tracking-[0.7em] text-2xl skew-x-[-15deg] transition-all border-r-[6px] border-b-[6px] relative overflow-hidden shadow-2xl",
-                  gate.color === 'black' ? "bg-white text-black border-gray-400 hover:bg-red-600 hover:text-white" :
-                  gate.color === 'purple' ? "bg-purple-600 text-white border-purple-900 hover:bg-purple-400" :
-                  "bg-blue-600 text-white border-blue-900 hover:bg-blue-400"
+                  "px-12 py-5 font-[1000] italic tracking-[0.6em] text-xl skew-x-[-15deg] transition-all",
+                  gate.color === 'black' ? "bg-white text-black hover:bg-red-600 hover:text-white" :
+                  gate.color === 'purple' ? "bg-purple-600 text-white hover:bg-purple-400" :
+                  "bg-blue-600 text-white hover:bg-blue-400"
                 )}>
                   ENTER
-                  <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-500" />
                 </div>
-                <div className="mt-4 h-1.5 w-40 bg-white/10 rounded-full overflow-hidden border border-white/5">
-                   <div className="h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[loading_2s_infinite]" />
+                <div className="mt-2 h-1 w-full bg-white/20 overflow-hidden">
+                   <div className="h-full bg-white animate-[loading_2s_infinite]" />
                 </div>
               </button>
             </div>
 
-            {/* تفاصيل المقياس السفلي */}
-            <div className="mt-28 flex justify-between items-end px-4 font-black">
+            <div className="mt-20 flex justify-between items-end px-4 font-black">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-600 text-[10px] italic tracking-widest uppercase">
-                  <Activity className="w-3 h-3" /> Mana Resonance
+                <div className="flex items-center gap-2 text-slate-500 text-[10px] italic">
+                  <Activity className="w-3 h-3" /> WAVE FREQUENCY
                 </div>
-                <div className="text-4xl tracking-tighter text-white">
-                  {gate.energy} <span className="text-xs text-slate-500 font-bold">MP</span>
-                </div>
+                <div className="text-2xl tracking-tighter">{gate.energy} <span className="text-xs text-slate-600">MP</span></div>
               </div>
               <div className="text-right">
-                <div className="text-red-600 text-[11px] animate-pulse mb-2 font-black uppercase tracking-widest bg-red-950/30 px-2 py-0.5 rounded border border-red-900/50">
-                  {gate.warning}
-                </div>
-                <div className="text-sm border-r-4 border-red-600 pr-4 py-2 italic font-black uppercase tracking-tighter bg-gradient-to-l from-red-950/10 to-transparent">
-                  Ranked: {gate.rank}
-                </div>
+                <div className="text-red-500 text-[10px] animate-pulse mb-1">{gate.warning}</div>
+                <div className="text-sm border-r-2 border-red-600 pr-2">THREAT LEVEL: {gate.rank}</div>
               </div>
             </div>
 
@@ -164,16 +128,16 @@ const Boss = () => {
 
       <style>{`
         @keyframes rise {
-          0% { transform: translateY(0) scaleY(1); opacity: 0; }
-          20% { opacity: 1; }
-          100% { transform: translateY(-350px) scaleY(2); opacity: 0; }
+          0% { transform: translateY(0) scale(1); opacity: 0; }
+          50% { opacity: 0.5; }
+          100% { transform: translateY(-200px) scale(0); opacity: 0; }
         }
         @keyframes loading {
-          0% { transform: translateX(-150%); }
-          100% { transform: translateX(150%); }
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
         .animate-rise {
-          animation: rise 3.5s infinite ease-in;
+          animation: rise 3s infinite linear;
         }
       `}</style>
     </div>
