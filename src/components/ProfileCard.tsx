@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Edit, Shield, Zap } from 'lucide-react';
+import { Dumbbell, Brain, Heart, Flame, Edit, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
@@ -14,7 +14,7 @@ const stats = [
   { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
   { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
   { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
-  { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-quran' },
+  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-quran' },
 ] as const;
 
 const getRankColor = (totalLevel: number) => {

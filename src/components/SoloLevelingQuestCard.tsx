@@ -48,10 +48,10 @@ const categoryConfig = {
     color: 'hsl(270 70% 60%)',
     gradient: 'from-purple-500/20 to-purple-900/20',
   },
-  vitality: { 
+  agility: { 
     icon: Zap, 
     name: 'الرشاقة',
-    englishName: 'VITALITY',
+    englishName: 'AGILITY',
     color: 'hsl(150 60% 45%)',
     gradient: 'from-green-500/20 to-green-900/20',
   },
