@@ -1,6 +1,6 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Activity, ScanLine } from 'lucide-react';
+import { AlertTriangle, Activity, ScanLine, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -8,9 +8,9 @@ const Boss = () => {
   const boss = gameState.currentBoss;
 
   const gates = [
-    { id: 'g0', rank: 'S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)', glow: '0 0 40px rgba(220,38,38,0.4)' },
-    { id: 'g1', rank: 'A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)', glow: '0 0 40px rgba(168,85,247,0.4)' },
-    { id: 'g3', rank: 'B', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', aura: '0 0 80px rgba(59,130,246,0.6)', glow: '0 0 40px rgba(59,130,246,0.4)' },
+    { id: 'g0', rank: 'S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)' },
+    { id: 'g1', rank: 'A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)' },
+    { id: 'g3', rank: 'B', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', aura: '0 0 80px rgba(59,130,246,0.6)' },
   ];
 
   return (
@@ -22,81 +22,89 @@ const Boss = () => {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20" />
       </div>
 
-      <header className="relative z-20 pt-16 pb-12 px-6 text-center">
-        <div className="inline-block relative">
-          <div className="absolute -inset-4 bg-purple-600/20 blur-3xl rounded-full" />
-          <h1 className="relative text-4xl font-[1000] italic tracking-[0.2em] uppercase">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-white">GATE</span>
-            <span className="ml-4 text-purple-600">ANALYSIS</span>
-          </h1>
-        </div>
+      <header className="relative z-20 pt-16 pb-12 px-6 text-center border-b border-white/5">
+        <h1 className="relative text-3xl font-black italic tracking-[0.3em] uppercase">
+          <span className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Dungeon</span>
+          <span className="block text-xs text-blue-400 mt-2 tracking-[0.5em] font-bold">Gate Recognition System</span>
+        </h1>
       </header>
 
-      <main className="relative z-10 px-6 space-y-44">
+      <main className="relative z-10 px-6 space-y-48 mt-12">
         {gates.map((gate) => (
           <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
             
-            {/* معلومات الرتبة العائمة بجانب البوابة */}
-            <div className="absolute top-0 -right-4 z-30 bg-white text-black px-4 py-1 font-[1000] italic -skew-x-12 shadow-[4px_4px_0_rgba(0,0,0,1)]">
-              RANK {gate.rank}
-            </div>
-
-            {/* البوابة الدائرية (الكارد والصورة بمقاس واحد) */}
+            {/* البوابة الدائرية */}
             <div 
-              className="relative w-72 h-72 flex items-center justify-center transition-transform duration-500 group-hover:scale-110"
+              className="relative w-72 h-72 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 mb-[-2rem] z-20"
               style={{ filter: `drop-shadow(${gate.aura})` }}
             >
-              
-              {/* الحاوية الدائرية المقصوصة (The Portal Core) */}
               <div className={cn(
-                "relative w-full h-full rounded-full overflow-hidden border-2 z-10",
-                gate.color === 'red' ? "border-red-500/50" : "border-purple-500/50"
+                "relative w-full h-full rounded-full overflow-hidden border-2",
+                gate.color === 'red' ? "border-red-600/50" : "border-purple-600/50"
               )}>
-                {/* صورة الـ GIF */}
                 <img 
                   src="/portal.gif" 
-                  alt="Dungeon Portal" 
+                  alt="Portal" 
                   className="w-full h-full object-cover scale-110 mix-blend-screen brightness-125"
                 />
-                
-                {/* ظل داخلي للعمق */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_50%,black_100%)] opacity-80" />
               </div>
 
-              {/* حلقات الطاقة الخارجية (Aura Rings) */}
-              <div className={cn(
-                "absolute inset-[-10px] rounded-full border border-white/5 animate-[spin_10s_linear_infinite]",
-                "after:absolute after:inset-0 after:rounded-full after:border-t-2 after:border-white/20"
-              )} />
-              
-              <div className={cn(
-                "absolute inset-[-20px] rounded-full border border-white/5 animate-[spin_15s_linear_infinite_reverse]",
-                "after:absolute after:inset-0 after:rounded-full after:border-b-2 after:border-white/10"
-              )} />
-
-              {/* زر الدخول المدمج أسفل الدائرة مباشرة */}
-              <button className="absolute -bottom-4 z-40 transform transition-transform active:scale-90">
+              {/* زر الدخول المدمج */}
+              <button className="absolute -bottom-2 z-40 transform transition-transform active:scale-95">
                 <div className={cn(
-                  "px-8 py-3 font-black italic tracking-widest text-sm skew-x-[-20deg] border-l-4 border-white shadow-2xl",
-                  gate.color === 'red' ? "bg-red-600 text-white" :
-                  gate.color === 'purple' ? "bg-purple-600 text-white" :
-                  "bg-blue-600 text-white"
+                  "px-10 py-3 font-black italic tracking-widest text-xs skew-x-[-15deg] border-l-4 border-white shadow-2xl transition-all",
+                  gate.color === 'red' ? "bg-red-600 text-white" : "bg-purple-600 text-white"
                 )}>
-                  ENTER GATE
+                  ACCESS GATE
                 </div>
               </button>
             </div>
 
-            {/* تفاصيل الطاقة (أسفل البوابة مباشرة) */}
-            <div className="mt-14 text-center space-y-1">
-              <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-gray-500 uppercase">
-                <Activity className="w-3 h-3 text-white" /> Energy: {gate.energy} MP
+            {/* مقياس المانا (بالشكل المطلوب من كود المتجر) */}
+            <div className="relative w-full bg-black/60 border-2 border-slate-200/90 p-4 pt-10 shadow-[0_0_30px_rgba(0,0,0,0.5)] z-10">
+              
+              {/* ترويسة الرتبة - توهج ابيض قوي */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                  <h2 className="text-[10px] font-black tracking-[0.3em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
+                    RANK: <span className={gate.color === 'red' ? "text-red-500" : "text-blue-400"}>{gate.rank}</span>
+                  </h2>
+                </div>
               </div>
-              <div className={cn(
-                "text-sm font-black italic tracking-tight uppercase",
-                gate.color === 'red' ? "text-red-500" : "text-purple-500"
-              )}>
-                {gate.warning}
+
+              {/* شبكة معلومات النظام الحادة */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center border-b border-white/10 pb-1.5">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-3 h-3 text-yellow-400" />
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Energy Level</p>
+                  </div>
+                  <p className="text-sm font-mono font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic tracking-tighter">
+                    {gate.energy} <span className="text-[8px] opacity-50">MP</span>
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center border-b border-white/10 pb-1.5">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className={cn("w-3 h-3", gate.color === 'red' ? "text-red-500" : "text-blue-400")} />
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Status</p>
+                  </div>
+                  <p className={cn(
+                    "text-[10px] font-black uppercase italic tracking-tight",
+                    gate.color === 'red' ? "text-red-500 animate-pulse" : "text-blue-400"
+                  )}>
+                    {gate.warning}
+                  </p>
+                </div>
+
+                {/* الوصف التقني أسفل الكارد */}
+                <div className="mt-2 py-1 px-2 bg-white/5 border-l border-white/20">
+                  <p className="text-[8px] text-slate-400 font-medium italic leading-relaxed">
+                    System analysis detects high-density magical particles within the {gate.type} radius. 
+                    Exercise extreme caution during dimensional transition.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -105,13 +113,6 @@ const Boss = () => {
       </main>
 
       <BottomNav />
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };
