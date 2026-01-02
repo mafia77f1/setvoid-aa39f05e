@@ -9,19 +9,23 @@ const Boss = () => {
   const { gameState } = useGameState();
   const navigate = useNavigate();
   
+  // States للتحكم في النافذة
   const [selectedGate, setSelectedGate] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
 
+  // حساب قوة اللاعب
   const totalLevel = gameState.totalLevel || 10;
   const playerPower = totalLevel;
 
+  // البوابات مع إضافة البيانات المطلوبة للمودال الثاني
   const gates = [
     { id: 'g0', rank: 'S', name: 'بوابة S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 }, danger: 'CATACLYSMIC' },
     { id: 'g1', rank: 'A', name: 'بوابة A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)', requiredPower: 60, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 }, danger: 'EXTREME PERIL' },
     { id: 'g3', rank: 'B', name: 'بوابة B', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', aura: '0 0 80px rgba(59,130,246,0.6)', requiredPower: 35, timeLimit: '08:00:00', rewards: { xp: 1000, gold: 600 }, danger: 'MODERATE DANGER' },
   ];
 
+  // وظائف الكود الثاني
   const handleGateClick = (gate) => {
     setSelectedGate(gate);
     if (gate.requiredPower > playerPower) {
@@ -63,6 +67,7 @@ const Boss = () => {
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
+  // شاشة دخول الكود الثاني (Animation)
   if (isEntering) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
@@ -85,6 +90,7 @@ const Boss = () => {
   return (
     <div className="min-h-screen bg-[#020203] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
       
+      {/* خلفية النظام الثابتة */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(76,29,149,0.15),transparent_80%)]" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20" />
@@ -103,6 +109,7 @@ const Boss = () => {
           return (
             <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
               
+              {/* البوابة الدائرية */}
               <div 
                 onClick={() => handleGateClick(gate)}
                 className="relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-110 active:scale-90 z-20"
@@ -122,7 +129,11 @@ const Boss = () => {
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                   <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_50%,black_100%)] opacity-80" />
-                  {isLocked && <div className="absolute inset-0 flex items-center justify-center text-6xl font-black text-white/40">?</div>}
+                  {isLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-6xl font-black text-white/40 drop-shadow-2xl">?</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -130,11 +141,14 @@ const Boss = () => {
                 </div>
               </div>
 
+              {/* كارد المعلومات الأصلي */}
               <div className="relative w-full bg-black/60 border-2 border-slate-200/90 p-5 mt-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-10">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                     <h2 className="text-[10px] font-black tracking-[0.3em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
-                      RANK: <span className={cn(isLocked ? "text-slate-500" : (gate.color === 'red' ? "text-red-500" : "text-blue-400"))}>{isLocked ? "?" : gate.rank}</span>
+                      RANK: <span className={cn(isLocked ? "text-slate-500" : (gate.color === 'red' ? "text-red-500" : "text-blue-400"))}>
+                        {isLocked ? "?" : gate.rank}
+                      </span>
                     </h2>
                   </div>
                 </div>
@@ -157,15 +171,15 @@ const Boss = () => {
                     </div>
                     <p className={cn(
                       "text-xs font-black uppercase italic tracking-widest",
-                      isLocked ? "text-slate-600" : (gate.color === 'red' ? "text-red-500 animate-pulse" : "text-blue-400")
+                      isLocked ? "text-slate-500" : (gate.color === 'red' ? "text-red-500 animate-pulse" : "text-blue-400")
                     )}>
-                      {isLocked ? "UNKNOWN" : gate.warning}
+                      {isLocked ? "???" : gate.warning}
                     </p>
                   </div>
 
                   <div className="mt-2 py-2 px-3 bg-white/5 border-l-2 border-white/20">
                     <p className="text-[9px] text-slate-500 font-bold italic leading-relaxed uppercase tracking-tighter">
-                      {isLocked ? "Warning: Analyzing dimensional cracks requires higher mana levels." : "Dimensional crack confirmed. Tap the portal above to initiate transition sequence."}
+                      {isLocked ? "System: Inadequate power level to identify dimensional crack." : "Dimensional crack confirmed. Tap the portal above to initiate transition sequence."}
                     </p>
                   </div>
                 </div>
@@ -175,6 +189,7 @@ const Boss = () => {
         })}
       </main>
 
+      {/* مودال الكود الثاني */}
       {selectedGate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           {(() => {
@@ -199,7 +214,7 @@ const Boss = () => {
                   <div className="text-center mb-6">
                     <div className={cn(
                       "w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 bg-gradient-to-br text-white",
-                      isLocked ? "from-slate-700 to-slate-900 border-slate-600" : getGateColor(selectedGate.color)
+                      isLocked ? "from-slate-700 to-slate-900" : getGateColor(selectedGate.color)
                     )} style={{ boxShadow: !isLocked ? getGateGlow(selectedGate.color) : 'none' }}>
                       {isLocked ? "?" : selectedGate.rank}
                     </div>
@@ -251,7 +266,7 @@ const Boss = () => {
                         <div>
                           <h4 className="font-bold mb-1 uppercase text-xs">تحذير النظام!</h4>
                           <p className="text-[10px] leading-tight opacity-80">
-                            قوتك الحالية ({playerPower}) غير كافية لتحليل البيانات. الدخول قد يؤدي إلى الموت الفوري!
+                            قوتك الحالية غير كافية لتحليل محتوى البوابة. الدخول قد يكون انتحارياً!
                           </p>
                         </div>
                       </div>
