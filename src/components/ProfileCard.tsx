@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Edit, Shield, Zap } from 'lucide-react';
+import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
@@ -48,15 +48,10 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
         </div>
 
         <div className="p-6">
-          {/* تم تعديل هذا القسم لنقل اللفل لليسار وترتيب العناصر عمودياً */}
+          {/* تم نقل اللفل لليمين وحذف زر التعديل */}
           <div className="flex items-center gap-6 mb-4">
-            {/* اللفل على اليسار */}
-            <div className="text-center">
-              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
-            </div>
-
-            {/* الاسم، الرتبة، واللقب مرتبة تحت بعضها */}
+            
+            {/* القسم الأيسر: الاسم، الرتبة، واللقب */}
             <div className="flex-1 flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-primary/70">NAME:</span>
@@ -72,12 +67,11 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               </div>
             </div>
 
-            <button 
-              onClick={() => setShowEditModal(true)}
-              className="p-2 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-all"
-            >
-              <Edit className="w-4 h-4 text-primary" />
-            </button>
+            {/* اللفل على اليمين */}
+            <div className="text-center">
+              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
+              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -152,16 +146,6 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
           </div>
         </div>
       </div>
-
-      {onUpdateProfile && (
-        <EditProfileModal
-          show={showEditModal}
-          currentName={gameState.playerName}
-          currentTitle={gameState.playerTitle}
-          onSave={onUpdateProfile}
-          onClose={() => setShowEditModal(false)}
-        />
-      )}
     </>
   );
 };
