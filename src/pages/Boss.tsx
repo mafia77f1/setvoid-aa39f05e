@@ -34,9 +34,10 @@ const Boss = () => {
 
   const handleEnterGate = () => {
     setIsEntering(true);
+    // الانتظار لمدة 30 ثانية قبل الانتقال لصفحة القتال
     setTimeout(() => {
       navigate('/battle');
-    }, 30000); // 30 ثانية
+    }, 30000); 
   };
 
   const getGateColor = (color) => {
@@ -54,15 +55,17 @@ const Boss = () => {
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
-  // شاشة الدخول: تملأ الشاشة بالبوابة فقط وبدون أي كلام
+  // شاشة الدخول: تملأ الشاشة وتدور لمدة 30 ثانية بدون كلام
   if (isEntering) {
     return (
-      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
-        <img 
-          src="/portal.gif" 
-          alt="Portal Entry" 
-          className="w-full h-full object-cover mix-blend-screen scale-110"
-        />
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden">
+        <div className="relative w-[150%] h-[150%] flex-shrink-0 animate-[spin_20s_linear_infinite]">
+          <img 
+            src="/portal.gif" 
+            alt="Portal Entry" 
+            className="w-full h-full object-cover mix-blend-screen scale-125 brightness-125"
+          />
+        </div>
       </div>
     );
   }
@@ -113,7 +116,7 @@ const Boss = () => {
                   <div className="flex justify-between items-center border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
                       <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                      <p className="text-[10px] text-slate-400 uppercase font-black">Energy Density</p>
+                      <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Energy Density</p>
                     </div>
                     <p className="text-base font-mono font-bold text-white italic">
                       {isHidden ? "???,???" : gate.energy} <span className="text-[9px] opacity-40">MP</span>
@@ -123,7 +126,7 @@ const Boss = () => {
                   <div className="flex justify-between items-center border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className={cn("w-3.5 h-3.5", gate.color === 'red' ? "text-red-500" : "text-blue-400")} />
-                      <p className="text-[10px] text-slate-400 uppercase font-black">Danger Level</p>
+                      <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Danger Level</p>
                     </div>
                     <p className={cn("text-xs font-black uppercase italic tracking-widest", gate.color === 'red' ? "text-red-500" : "text-blue-400")}>
                       {isHidden ? "???,???" : gate.warning}
@@ -164,6 +167,20 @@ const Boss = () => {
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
                   <span className="text-sm text-slate-300">الوقت المتاح</span>
                   <span className="font-bold">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
+                  <span className="text-sm text-slate-300">القوة المطلوبة</span>
+                  <span className={cn("font-bold", playerPower >= selectedGate.requiredPower ? "text-green-500" : "text-red-500")}>
+                    {selectedGate.requiredPower} (أنت: {playerPower})
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
+                <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
+                <div className="flex justify-around text-sm text-slate-200">
+                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.xp} XP`}</span>
+                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.gold} G`}</span>
                 </div>
               </div>
               
