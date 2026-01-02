@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, Zap, Flame, Shield } from 'lucide-react';
+import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
+import { EditProfileModal } from './EditProfileModal';
 
 interface ProfileCardProps {
   gameState: GameState;
@@ -10,10 +11,10 @@ interface ProfileCardProps {
 }
 
 const stats = [
-  { key: 'strength', label: 'القوة', icon: Dumbbell, color: 'text-strength' },
-  { key: 'mind', label: 'الذكاء', icon: Brain, color: 'text-mind' },
-  { key: 'spirit', label: 'الروح', icon: Heart, color: 'text-spirit' },
-  { key: 'agility', label: 'الرشاقة', icon: Zap, color: 'text-blue-400' }, // تم التغيير إلى الرشاقة
+  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
+  { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
+  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
+  { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-quran' },
 ] as const;
 
 const getRankColor = (totalLevel: number) => {
@@ -23,9 +24,9 @@ const getRankColor = (totalLevel: number) => {
   return { border: 'border-primary', bg: 'bg-primary/10', glow: 'shadow-primary/50', text: 'text-primary', rankName: 'C' };
 };
 
-export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
-  // حساب المستوى الإجمالي بناءً على الخصائص الجديدة
-  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + (gameState.levels.agility || 0));
+export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
+  const [showEditModal, setShowEditModal] = useState(false);
+  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
   const rankColor = getRankColor(totalLevel);
@@ -34,7 +35,7 @@ export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
 
   return (
     <>
-      <div className={cn("profile-card text-right", rankColor.border, totalLevel >= 50 && "shadow-2xl")} dir="rtl">
+      <div className={cn("profile-card", rankColor.border, totalLevel >= 50 && "shadow-2xl")}>
         <div className="corner-decoration corner-tl" />
         <div className="corner-decoration corner-tr" />
         <div className="corner-decoration corner-bl" />
@@ -43,32 +44,33 @@ export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
         <div className="scan-line" />
 
         <div className="status-header">
-          <h2>الحالة</h2>
+          <h2>STATUS</h2>
         </div>
 
         <div className="p-6">
+          {/* تم نقل اللفل لليمين وحذف زر التعديل */}
           <div className="flex items-center gap-6 mb-4">
             
-            {/* القسم الأيمن (سابقاً الأيسر): الاسم، الرتبة، واللقب */}
+            {/* القسم الأيسر: الاسم، الرتبة، واللقب */}
             <div className="flex-1 flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">الاسم:</span>
+                <span className="text-xs text-primary/70">NAME:</span>
                 <span className="font-semibold">{gameState.playerName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">الرتبة:</span>
+                <span className="text-xs text-primary/70">RANK:</span>
                 <span className={cn("font-bold", rankColor.text)}>{rankColor.rankName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">اللقب:</span>
+                <span className="text-xs text-primary/70">TITLE:</span>
                 <span className="text-sm text-primary">{gameState.playerTitle}</span>
               </div>
             </div>
 
-            {/* اللفل على اليسار (ليكون في الجهة المقابلة للنصوص العربية) */}
+            {/* اللفل على اليمين */}
             <div className="text-center">
               <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-xs text-muted-foreground tracking-widest">المستوى</div>
+              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
             </div>
           </div>
 
@@ -77,7 +79,7 @@ export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1">
                   <Shield className="w-4 h-4 text-destructive" />
-                  <span className="text-xs">الصحة</span>
+                  <span className="text-xs">HP</span>
                 </div>
                 <span className="text-xs font-bold">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
               </div>
@@ -89,7 +91,7 @@ export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1">
                   <Zap className="w-4 h-4 text-secondary" />
-                  <span className="text-xs">الطاقة</span>
+                  <span className="text-xs">ENERGY</span>
                 </div>
                 <span className="text-xs font-bold">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
               </div>
@@ -122,8 +124,8 @@ export const ProfileCard = ({ gameState, getXpProgress }: ProfileCardProps) => {
           <div className="grid grid-cols-2 gap-3">
             {stats.map((stat) => {
               const Icon = stat.icon;
-              const level = gameState.levels[stat.key] || 1;
-              const xp = gameState.stats[stat.key] || 0;
+              const level = gameState.levels[stat.key];
+              const xp = gameState.stats[stat.key];
               const progress = getXpProgress(xp);
 
               return (
