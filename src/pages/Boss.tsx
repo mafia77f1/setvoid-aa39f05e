@@ -34,7 +34,7 @@ const Boss = () => {
 
   const handleEnterGate = () => {
     setIsEntering(true);
-    // الانتظار لمدة 30 ثانية قبل الانتقال لصفحة القتال
+    // الانتظار لمدة 30 ثانية قبل الانتقال
     setTimeout(() => {
       navigate('/battle');
     }, 30000); 
@@ -55,15 +55,15 @@ const Boss = () => {
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
-  // شاشة الدخول: تملأ الشاشة وتدور لمدة 30 ثانية بدون كلام
+  // شاشة الدخول المعدلة: صورة البوابة فقط بملء الشاشة مع دوران لمدة 30 ثانية
   if (isEntering) {
     return (
-      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden">
-        <div className="relative w-[150%] h-[150%] flex-shrink-0 animate-[spin_20s_linear_infinite]">
+      <div className="fixed inset-0 z-[150] bg-black flex items-center justify-center overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center">
           <img 
             src="/portal.gif" 
-            alt="Portal Entry" 
-            className="w-full h-full object-cover mix-blend-screen scale-125 brightness-125"
+            alt="Portal Transition" 
+            className="w-full h-full object-cover mix-blend-screen scale-150 animate-[spin_20s_linear_infinite]"
           />
         </div>
       </div>
@@ -149,7 +149,7 @@ const Boss = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className={cn("relative w-full max-w-md rounded-2xl border-2 overflow-hidden bg-[#0c0c0e]", getGateBorderColor(selectedGate.color))} style={{ boxShadow: getGateGlow(selectedGate.color) }}>
             <div className="relative z-10 p-6">
-              <button onClick={() => { setSelectedGate(null); setShowWarning(false); }} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white"><X className="w-4 h-4" /></button>
+              <button onClick={() => { setSelectedGate(null); setShowWarning(false); }} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"><X className="w-4 h-4" /></button>
               
               <div className="text-center mb-6">
                 <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.color))}>
@@ -161,15 +161,15 @@ const Boss = () => {
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span className="text-sm text-slate-300">كثافة الطاقة</span>
+                  <span className="flex items-center gap-2 text-sm text-slate-300">كثافة الطاقة</span>
                   <span className="font-bold">{playerPower < selectedGate.requiredPower ? "???,???" : `${selectedGate.energy} MP`}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span className="text-sm text-slate-300">الوقت المتاح</span>
+                  <span className="flex items-center gap-2 text-sm text-slate-300">الوقت المتاح</span>
                   <span className="font-bold">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span className="text-sm text-slate-300">القوة المطلوبة</span>
+                  <span className="flex items-center gap-2 text-sm text-slate-300">القوة المطلوبة</span>
                   <span className={cn("font-bold", playerPower >= selectedGate.requiredPower ? "text-green-500" : "text-red-500")}>
                     {selectedGate.requiredPower} (أنت: {playerPower})
                   </span>
@@ -180,7 +180,7 @@ const Boss = () => {
                 <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
                 <div className="flex justify-around text-sm text-slate-200">
                   <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.xp} XP`}</span>
-                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.gold} G`}</span>
+                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.gold} ذهب`}</span>
                 </div>
               </div>
               
