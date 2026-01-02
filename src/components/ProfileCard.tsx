@@ -14,7 +14,7 @@ const stats = [
   { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
   { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
   { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
-  { key: 'quran', label: 'QRN', icon: BookOpen, color: 'text-quran' },
+  { key: 'quran', label: 'AGI', icon: BookOpen, color: 'text-agility' },
 ] as const;
 
 const getRankColor = (totalLevel: number) => {
