@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Activity, ScanLine, Zap, Radio, Target, Clock, Skull, ChevronRight, X } from 'lucide-react';
+import { AlertTriangle, Zap, Target, Clock, X, Shield, Radio, Skull, ChevronRight, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
@@ -14,16 +14,16 @@ const Boss = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
 
-  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility);
+  const totalLevel = gameState.totalLevel || ((gameState.levels?.strength || 1) + (gameState.levels?.mind || 1) + (gameState.levels?.spirit || 1) + (gameState.levels?.agility || 1));
   const playerPower = totalLevel;
 
   const gates = [
-    { id: 'gate_e', rank: 'E', name: 'بوابة E', color: 'gray', energy: '1,200', danger: 'MINIMAL THREAT', requiredPower: 5, timeLimit: '24:00:00', rewards: { xp: 100, gold: 50 } },
-    { id: 'gate_d', rank: 'D', name: 'بوابة D', color: 'green', energy: '5,400', danger: 'LOW THREAT', requiredPower: 10, timeLimit: '18:00:00', rewards: { xp: 250, gold: 150 } },
-    { id: 'gate_c', rank: 'C', name: 'بوابة C', color: 'blue', energy: '12,000', danger: 'MODERATE DANGER', requiredPower: 20, timeLimit: '12:00:00', rewards: { xp: 500, gold: 300 } },
-    { id: 'gate_b', rank: 'B', name: 'بوابة B', color: 'purple', energy: '28,000', danger: 'HIGH DANGER', requiredPower: 35, timeLimit: '08:00:00', rewards: { xp: 1000, gold: 600 } },
-    { id: 'gate_a', rank: 'A', name: 'بوابة A', color: 'orange', energy: '65,000', danger: 'EXTREME PERIL', requiredPower: 60, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 } },
-    { id: 'gate_s', rank: 'S', name: 'بوابة S', color: 'red', energy: 'UNMEASURABLE', danger: 'CATACLYSMIC', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 } },
+    { id: 'gate_e', rank: 'E', name: 'بوابة E', color: 'gray', energy: '1,200', danger: 'MINIMAL THREAT', requiredPower: 5, timeLimit: '24:00:00', rewards: { xp: 100, gold: 50 }, aura: '0 0 30px rgba(156,163,175,0.4)' },
+    { id: 'gate_d', rank: 'D', name: 'بوابة D', color: 'green', energy: '5,400', danger: 'LOW THREAT', requiredPower: 10, timeLimit: '18:00:00', rewards: { xp: 250, gold: 150 }, aura: '0 0 40px rgba(34,197,94,0.5)' },
+    { id: 'gate_c', rank: 'C', name: 'بوابة C', color: 'blue', energy: '12,000', danger: 'MODERATE DANGER', requiredPower: 20, timeLimit: '12:00:00', rewards: { xp: 500, gold: 300 }, aura: '0 0 50px rgba(59,130,246,0.5)' },
+    { id: 'gate_b', rank: 'B', name: 'بوابة B', color: 'purple', energy: '28,000', danger: 'HIGH DANGER', requiredPower: 35, timeLimit: '08:00:00', rewards: { xp: 1000, gold: 600 }, aura: '0 0 60px rgba(168,85,247,0.6)' },
+    { id: 'gate_a', rank: 'A', name: 'بوابة A', color: 'orange', energy: '65,000', danger: 'EXTREME PERIL', requiredPower: 60, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 }, aura: '0 0 70px rgba(251,146,60,0.6)' },
+    { id: 'gate_s', rank: 'S', name: 'بوابة S', color: 'red', energy: 'UNMEASURABLE', danger: 'CATACLYSMIC', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 }, aura: '0 0 80px rgba(220,38,38,0.7)' },
   ];
 
   // Radar animation
