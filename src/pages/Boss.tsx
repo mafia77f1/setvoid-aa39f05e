@@ -1,15 +1,13 @@
-import { useState } from 'react'; // إضافة useState للتحكم في الظهور
+import { useState } from 'react'; // أضفنا useState للتحكم في إظهار الكارد
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Activity, ScanLine, Zap } from 'lucide-react';
+import { AlertTriangle, Zap, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Boss = () => {
   const { gameState } = useGameState();
-  const boss = gameState.currentBoss;
-  
-  // حالة لتخزين رقم البوابة التي تم الضغط عليها لإظهار الكارد الخاص بها
-  const [selectedGate, setSelectedGate] = useState(null);
+  // حالة لتخزين معرف البوابة التي تم الضغط عليها
+  const [activeGate, setActiveGate] = useState(null);
 
   const gates = [
     { id: 'g0', rank: 'S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)' },
@@ -18,20 +16,18 @@ const Boss = () => {
   ];
 
   const handleGateClick = (gateId) => {
-    // إذا ضغط على نفس البوابة يتم إغلاق الكارد، وإذا بوابة أخرى يفتح الكارد الخاص بها
-    setSelectedGate(selectedGate === gateId ? null : gateId);
-    console.log("Gate Tapped:", gateId);
+    // إذا ضغط المستخدم على نفس البوابة المفتوحة، نقوم بإغلاقها، وإلا نفتح الجديدة
+    setActiveGate(activeGate === gateId ? null : gateId);
+    console.log("Gate Selected:", gateId);
   };
 
   return (
     <div className="min-h-screen bg-[#020203] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
       
-      {/* خلفية النظام الثابتة مع تأثير الرادار البصري */}
+      {/* خلفية النظام الثابتة */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(76,29,149,0.15),transparent_80%)]" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20" />
-        {/* خط المسح الضوئي (الرادار) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent h-20 w-full animate-scan" />
       </div>
 
       <header className="relative z-20 pt-16 pb-12 px-6 text-center border-b border-white/5">
@@ -39,51 +35,56 @@ const Boss = () => {
           <span className="text-white drop-shadow-[0_0_100px_rgba(255,255,255,0.5)]">Dungeon</span>
           <span className="block text-xs text-blue-400 mt-2 tracking-[0.5em] font-bold uppercase opacity-70">Gate Recognition System</span>
         </h1>
-        {/* أيقونة الرادار النشط في الهيدر */}
-        <div className="flex justify-center mt-4 gap-4 opacity-50">
-           <ScanLine className="w-4 h-4 text-blue-400 animate-pulse" />
-           <Activity className="w-4 h-4 text-blue-400" />
-        </div>
       </header>
 
-      <main className="relative z-10 px-6 space-y-40 mt-16">
+      <main className="relative z-10 px-6 space-y-20 mt-16">
         {gates.map((gate) => (
           <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
             
-            {/* البوابة الدائرية */}
+            {/* البوابة الدائرية (عند الضغط تظهر المعلومات) */}
             <div 
               onClick={() => handleGateClick(gate.id)}
-              className="relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-110 active:scale-90 z-20"
+              className={cn(
+                "relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-105 active:scale-95 z-20",
+                activeGate === gate.id ? "scale-110" : "scale-100 opacity-80 hover:opacity-100"
+              )}
               style={{ filter: `drop-shadow(${gate.aura})` }}
             >
               <div className={cn(
-                "relative w-full h-full rounded-full overflow-hidden border-2 transition-colors",
-                gate.color === 'red' ? "border-red-600/50 group-hover:border-red-500" : "border-purple-600/50 group-hover:border-purple-500"
+                "relative w-full h-full rounded-full overflow-hidden border-2 transition-all duration-500",
+                gate.color === 'red' ? "border-red-600/50" : "border-purple-600/50",
+                activeGate === gate.id && "border-white ring-4 ring-white/20"
               )}>
                 <img 
                   src="/portal.gif" 
                   alt="Portal" 
                   className="w-full h-full object-cover scale-110 mix-blend-screen brightness-125 transition-all group-hover:brightness-150"
                 />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_50%,black_100%)] opacity-80" />
               </div>
 
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-[10px] font-black tracking-[0.5em] uppercase text-white drop-shadow-2xl">
-                  {selectedGate === gate.id ? "System Active" : "Analyze Gate"}
-                </span>
-              </div>
+              {/* نص إرشادي يختفي عند الفتح */}
+              {!activeGate && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center animate-pulse">
+                  <span className="text-[10px] font-black tracking-[0.4em] uppercase text-white shadow-black drop-shadow-lg">Analyze Gate</span>
+                  <ChevronDown className="w-4 h-4 mt-1 opacity-50" />
+                </div>
+              )}
             </div>
 
-            {/* كارد المعلومات - يظهر فقط إذا كانت هذه البوابة هي المختارة (selectedGate) */}
-            {selectedGate === gate.id && (
-              <div className="relative w-full bg-black/60 border-2 border-slate-200/90 p-5 mt-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-10 animate-in fade-in zoom-in duration-300">
+            {/* كارد المعلومات - يظهر فقط إذا كانت هذه البوابة هي النشطة */}
+            <div className={cn(
+              "relative w-full transition-all duration-500 origin-top overflow-hidden z-10",
+              activeGate === gate.id 
+                ? "max-h-[500px] opacity-100 mt-8 translate-y-0" 
+                : "max-h-0 opacity-0 mt-0 -translate-y-10"
+            )}>
+              <div className="bg-black/80 border-2 border-slate-200/90 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-md">
                 
                 {/* ترويسة الرتبة */}
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                    <h2 className="text-[10px] font-black tracking-[0.3em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
+                    <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase">
                       RANK: <span className={gate.color === 'red' ? "text-red-500" : "text-blue-400"}>{gate.rank}</span>
                     </h2>
                   </div>
@@ -96,7 +97,7 @@ const Boss = () => {
                       <Zap className="w-3.5 h-3.5 text-yellow-400" />
                       <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Energy Density</p>
                     </div>
-                    <p className="text-base font-mono font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic">
+                    <p className="text-base font-mono font-bold text-white italic">
                       {gate.energy} <span className="text-[9px] opacity-40">MP</span>
                     </p>
                   </div>
@@ -114,19 +115,21 @@ const Boss = () => {
                     </p>
                   </div>
 
-                  {/* ملاحظة تقنية */}
-                  <div className="mt-2 py-2 px-3 bg-white/5 border-l-2 border-white/20">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Activity className="w-3 h-3 text-blue-400 animate-pulse" />
-                      <span className="text-[8px] text-blue-400 font-bold uppercase">Scanning...</span>
-                    </div>
-                    <p className="text-[9px] text-slate-500 font-bold italic leading-relaxed uppercase tracking-tighter">
-                      Dimensional crack confirmed. Tap again to hide or initiate transition sequence.
+                  {/* زر الدخول النهائي */}
+                  <button 
+                    className="w-full py-3 mt-2 bg-white/5 border border-white/20 hover:bg-white/10 transition-colors group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation(); // لمنع إغلاق الكارد عند الضغط على الزر
+                      console.log("Proceeding to:", gate.id);
+                    }}
+                  >
+                    <p className="text-[10px] text-white font-black italic uppercase tracking-[0.2em] group-hover/btn:text-blue-400">
+                      Initiate Transition Sequence
                     </p>
-                  </div>
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
 
           </div>
         ))}
