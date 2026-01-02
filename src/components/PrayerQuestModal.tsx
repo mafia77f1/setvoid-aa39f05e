@@ -1,7 +1,7 @@
 import { PrayerQuest } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Heart, Clock, Check, X, ShieldAlert, Zap } from 'lucide-react';
+import { Check, X, AlertOctagon, Zap, Shield } from 'lucide-react';
 
 interface PrayerQuestModalProps {
   prayer: PrayerQuest;
@@ -20,120 +20,118 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-500"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-[10px] animate-in fade-in duration-300"
       onClick={onClose}
     >
-      {/* Container الرئيسي بتصميم الـ System Window */}
+      {/* النافذة الرئيسية بتصميم سولو ليفلينج الحاد */}
       <div 
-        className={cn(
-          "relative max-w-md w-full mx-auto overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.4)]",
-          "border-t-2 border-b-2 border-white/20 bg-[#0a0a0c]",
-          "animate-in zoom-in-95 duration-300"
-        )}
+        className="relative w-full max-w-lg mx-auto bg-[#05070a]/95 border-l-[6px] border-r-[6px] border-cyan-500 shadow-[0_0_100px_rgba(6,182,212,0.3)] animate-in slide-in-from-bottom-10"
         onClick={e => e.stopPropagation()}
       >
-        {/* الخلفية بنقشة "النظام" */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
-        
-        {/* الإطار الفضي الجانبي */}
-        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-600 via-white to-purple-600" />
-        <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-purple-600 via-white to-purple-600" />
+        {/* الخطوط العلوية والسفلية الفضية */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,1)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,1)]" />
 
-        <div className="relative z-10 p-8">
-          {/* Header: [QUEST: DAILY PRAYER] */}
-          <div className="flex justify-between items-center mb-10 border-b border-white/10 pb-4">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-purple-400 fill-purple-400" />
-              <h2 className="text-xl font-black italic tracking-tighter text-white uppercase">
-                Quest: <span className="text-purple-500 underline decoration-white/30 decoration-double underline-offset-4">Daily Prayer</span>
+        <div className="p-8">
+          {/* Header - [QUEST: DAILY QUEST] */}
+          <div className="flex justify-between items-start mb-12">
+            <div>
+              <h2 className="text-cyan-400 font-black italic text-3xl tracking-[0.2em] drop-shadow-[0_0_10px_rgba(34,211,238,0.8)] uppercase">
+                Quest Info
               </h2>
+              <p className="text-white/40 text-xs font-bold tracking-[0.4em] uppercase mt-1">Daily Quest: Spirit Strengthening</p>
             </div>
-            <div className="bg-white/10 px-3 py-1 skew-x-[-20deg] border border-white/30">
-              <span className="text-xs font-black text-white italic tracking-widest">RANK S</span>
-            </div>
-          </div>
-
-          {/* اسم الصلاة بتوهج فضي وبنفسجي */}
-          <div className="text-center mb-10 group">
-            <div className="relative inline-block">
-              <div className="absolute -inset-4 bg-purple-600/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-              <h3 className="relative text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
-                {prayer.arabicName}
-              </h3>
-              <div className="h-1 w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent mt-2" />
+            <div className="flex flex-col items-end">
+              <span className="text-white font-black italic text-4xl leading-none">S</span>
+              <span className="text-cyan-500 text-[10px] font-bold tracking-widest uppercase mt-1">Rank</span>
             </div>
           </div>
 
-          {/* تفاصيل المهمة (System Info) */}
-          <div className="space-y-4 mb-10">
-            {/* الوقت */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border-l-4 border-purple-500 shadow-inner">
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-purple-400" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Time Limit</span>
+          {/* اسم المهمة - كبير جداً وبارز */}
+          <div className="relative mb-16 px-4 py-6 border-y border-white/10 bg-gradient-to-r from-cyan-500/5 via-transparent to-cyan-500/5">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,1)]" />
+            <h3 className="text-center text-5xl md:text-6xl font-black italic text-white tracking-tighter uppercase drop-shadow-[4px_4px_0px_rgba(6,182,212,0.5)]">
+              {prayer.arabicName}
+            </h3>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,1)]" />
+          </div>
+
+          {/* المتطلبات والمكافآت */}
+          <div className="grid grid-cols-2 gap-6 mb-12">
+            <div className="space-y-2">
+              <p className="text-cyan-500/60 text-[10px] font-black tracking-widest uppercase">Goal Status</p>
+              <div className="flex items-center gap-3 text-white">
+                <Shield className="w-5 h-5 text-cyan-400" />
+                <span className="text-xl font-bold italic">01 / 01</span>
               </div>
-              <span className="text-lg font-mono font-black text-white">45:00:00</span>
             </div>
-
-            {/* المكافأة */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border-l-4 border-white shadow-inner">
-              <div className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-yellow-400" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Rewards</span>
+            <div className="space-y-2">
+              <p className="text-cyan-500/60 text-[10px] font-black tracking-widest uppercase">Clear Reward</p>
+              <div className="flex items-center gap-3 text-white">
+                <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <span className="text-xl font-bold italic">+{prayer.xpReward} XP</span>
               </div>
-              <span className="text-lg font-black text-purple-400">+{prayer.xpReward} <span className="text-xs text-white">EXP</span></span>
             </div>
           </div>
 
-          {/* التحذير (Penalty Warning) */}
-          <div className="flex items-start gap-4 p-4 border border-red-900/50 bg-red-950/20 mb-10">
-            <ShieldAlert className="w-6 h-6 text-red-600 flex-shrink-0" />
-            <p className="text-[10px] leading-tight font-bold text-red-500 uppercase tracking-widest italic">
-              Warning: Failure to complete the daily quest will result in a penalty. Prayer is the foundation of faith.
+          {/* نص التحذير بتنسيق النظام */}
+          <div className="mb-12 p-4 bg-red-950/20 border-l-2 border-red-500/50">
+            <div className="flex items-center gap-2 mb-1 text-red-500">
+              <AlertOctagon className="w-4 h-4" />
+              <span className="text-[10px] font-black tracking-widest uppercase">Warning</span>
+            </div>
+            <p className="text-xs text-white/70 font-medium italic">
+              "Failure to complete this quest will result in a penalty. The path to the monarch requires absolute discipline."
             </p>
           </div>
 
-          {/* الأزرار (Buttons) */}
-          <div className="flex gap-4">
+          {/* أزرار النظام - حادة ولامعة */}
+          <div className="flex flex-col gap-4">
             <button
               onClick={handleComplete}
               disabled={prayer.completed}
               className={cn(
-                "flex-[2] py-5 relative group transition-all active:scale-95",
+                "group relative w-full h-16 transition-all duration-300 overflow-hidden skew-x-[-15deg]",
                 prayer.completed 
-                ? "bg-slate-800 text-slate-500" 
-                : "bg-white text-black hover:bg-purple-500 hover:text-white"
+                ? "bg-zinc-800 border border-zinc-700 cursor-not-allowed" 
+                : "bg-cyan-500 border border-cyan-300 hover:bg-white"
               )}
             >
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-purple-500 group-hover:border-white" />
-              <div className="flex items-center justify-center gap-3 font-black italic uppercase tracking-tighter text-xl">
-                {prayer.completed ? (
-                  <>COMPLETED</>
-                ) : (
-                  <>
-                    <Check className="w-6 h-6 stroke-[4px]" />
-                    Accept Reward
-                  </>
-                )}
+              <div className="flex items-center justify-center gap-3 skew-x-[15deg] transition-colors">
+                <Check className={cn("w-6 h-6 stroke-[3px]", prayer.completed ? "text-zinc-600" : "text-black group-hover:text-cyan-600")} />
+                <span className={cn("text-xl font-black italic uppercase tracking-widest", prayer.completed ? "text-zinc-600" : "text-black group-hover:text-cyan-600")}>
+                  {prayer.completed ? "Quest Cleared" : "Complete Quest"}
+                </span>
               </div>
+              
+              {/* تأثير اللمعان عند التمرير */}
+              {!prayer.completed && (
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-[shimmer_0.5s_infinite]" />
+              )}
             </button>
 
             <button
               onClick={() => { playClick(); onClose(); }}
-              className="flex-1 py-5 border-2 border-white/20 text-white font-black italic uppercase tracking-tighter hover:bg-white/10 transition-all active:scale-95"
+              className="group w-full h-12 bg-transparent border border-white/20 skew-x-[-15deg] hover:bg-white/5 transition-all"
             >
-              Close
+              <div className="flex items-center justify-center gap-2 skew-x-[15deg]">
+                <X className="w-4 h-4 text-white/40 group-hover:text-white" />
+                <span className="text-sm font-bold text-white/40 uppercase tracking-widest group-hover:text-white">Close Window</span>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* تذييل النافذة (System Footer) */}
-        <div className="bg-purple-900/20 py-2 px-8 flex justify-between items-center">
-          <div className="h-1 w-1/3 bg-white/10" />
-          <span className="text-[8px] text-purple-400 font-black tracking-[0.5em]">SYSTEM INTERFACE V1.0</span>
-          <div className="h-1 w-1/3 bg-white/10" />
-        </div>
+        {/* تفاصيل زخرفية جانبية */}
+        <div className="absolute top-4 right-[-20px] w-10 h-[1px] bg-cyan-500/50 rotate-45" />
+        <div className="absolute bottom-4 left-[-20px] w-10 h-[1px] bg-cyan-500/50 rotate-45" />
       </div>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 };
