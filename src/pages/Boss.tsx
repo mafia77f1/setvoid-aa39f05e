@@ -13,11 +13,9 @@ const Boss = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
 
-  // حساب قوة اللاعب (تأكد من وجود القيمة في الـ state)
   const totalLevel = gameState.totalLevel || 10;
   const playerPower = totalLevel;
 
-  // جميع رتب سولو ليفلينج
   const gates = [
     { id: 'g0', rank: 'S', name: 'بوابة S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 }, danger: 'CATACLYSMIC' },
     { id: 'g1', rank: 'A', name: 'بوابة A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)', requiredPower: 80, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 }, danger: 'EXTREME PERIL' },
@@ -73,8 +71,8 @@ const Boss = () => {
           }} />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center animate-pulse">
-              <div className="text-2xl font-bold text-white mb-2 uppercase tracking-widest">Entering Gate</div>
-              <div className="text-sm text-primary/80 italic">DIMENSIONAL TRANSITION IN PROGRESS</div>
+              <div className="text-2xl font-bold text-white mb-2 uppercase">Entering Gate</div>
+              <div className="text-xs text-primary/80 italic">ANALYZING DIMENSIONAL COORDS</div>
             </div>
           </div>
         </div>
@@ -83,7 +81,7 @@ const Boss = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#020203] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020203] text-white font-sans pb-40 overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(76,29,149,0.15),transparent_80%)]" />
       </div>
@@ -101,6 +99,7 @@ const Boss = () => {
           return (
             <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
               
+              {/* البوابة الدائرية (بدون نصوص أو تغيير في الشكل) */}
               <div 
                 onClick={() => handleGateClick(gate)}
                 className="relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-105 active:scale-95 z-20"
@@ -108,22 +107,19 @@ const Boss = () => {
               >
                 <div className={cn(
                   "relative w-full h-full rounded-full overflow-hidden border-2 transition-all",
-                  isLocked ? "border-white/10 grayscale" : getGateBorderColor(gate.color)
+                  getGateBorderColor(gate.color)
                 )}>
                   <img src="/portal.gif" alt="Portal" className="w-full h-full object-cover scale-110 mix-blend-screen brightness-125 transition-all group-hover:brightness-150" />
-                  <div className="absolute inset-0 bg-black/40" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl font-black text-white drop-shadow-2xl">{isLocked ? "?" : gate.rank}</span>
+                  <div className="absolute inset-0 bg-black/20" />
                 </div>
               </div>
 
-              {/* الكارد السفلي مع تطبيق منطق التشفير */}
+              {/* كارد المعلومات */}
               <div className="relative w-full bg-black/60 border-2 border-slate-200/90 p-5 mt-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-10">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <div className="border border-slate-400/50 px-6 py-1 bg-slate-900">
                     <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase">
-                      RANK: <span className={isLocked ? "text-white/30" : (gate.color === 'red' ? "text-red-500" : "text-blue-400")}>
+                      RANK: <span className={gate.color === 'red' ? "text-red-500" : "text-blue-400"}>
                         {isLocked ? "?" : gate.rank}
                       </span>
                     </h2>
@@ -137,23 +133,23 @@ const Boss = () => {
                       <p className="text-[10px] text-slate-400 uppercase font-black">Energy Density</p>
                     </div>
                     <p className="text-base font-mono font-bold text-white italic">
-                      {isLocked ? "???,???" : gate.energy} <span className="text-[9px] opacity-40">MP</span>
+                      {isLocked ? "???" : gate.energy} <span className="text-[9px] opacity-40">MP</span>
                     </p>
                   </div>
 
                   <div className="flex justify-between items-center border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className={cn("w-3.5 h-3.5", isLocked ? "text-white/20" : (gate.color === 'red' ? "text-red-500" : "text-blue-400"))} />
+                      <AlertTriangle className={cn("w-3.5 h-3.5", gate.color === 'red' ? "text-red-500" : "text-blue-400")} />
                       <p className="text-[10px] text-slate-400 uppercase font-black">Danger Level</p>
                     </div>
-                    <p className={cn("text-xs font-black uppercase italic tracking-widest", isLocked ? "text-white/20" : "text-blue-400")}>
-                      {isLocked ? "UNDEFINED ERROR" : gate.warning}
+                    <p className={cn("text-xs font-black uppercase italic tracking-widest", gate.color === 'red' ? "text-red-500" : "text-blue-400")}>
+                      {isLocked ? "???" : gate.warning}
                     </p>
                   </div>
 
                   <div className="mt-2 py-2 px-3 bg-white/5 border-l-2 border-white/20">
                     <p className="text-[9px] text-slate-500 font-bold italic uppercase tracking-tighter">
-                      {isLocked ? "SYSTEM STATUS: UNKNOWN. POWER LEVEL INSUFFICIENT FOR ANALYSIS." : "Dimensional crack confirmed. Tap the portal above to initiate transition."}
+                      {isLocked ? "??? ??? ??? ??? ??? ??? ??? ??? ???" : "Dimensional crack confirmed. Tap the portal above to initiate transition."}
                     </p>
                   </div>
                 </div>
@@ -181,11 +177,11 @@ const Boss = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
                   <span className="flex items-center gap-2 text-sm text-slate-300"><Zap className="w-4 h-4 text-primary" />كثافة الطاقة</span>
-                  <span className="font-bold text-white">{playerPower < selectedGate.requiredPower ? "??? MP" : `${selectedGate.energy} MP`}</span>
+                  <span className="font-bold text-white">{playerPower < selectedGate.requiredPower ? "???" : selectedGate.energy}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
                   <span className="flex items-center gap-2 text-sm text-slate-300"><Clock className="w-4 h-4 text-purple-400" />الوقت المتاح</span>
-                  <span className="font-bold text-white">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
+                  <span className="font-bold text-white">{playerPower < selectedGate.requiredPower ? "???" : selectedGate.timeLimit}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
                   <span className="flex items-center gap-2 text-sm text-slate-300"><Target className="w-4 h-4 text-green-500" />القوة المطلوبة</span>
@@ -202,7 +198,7 @@ const Boss = () => {
                     <div>
                       <h4 className="font-bold mb-1 uppercase text-xs">تحذير النظام!</h4>
                       <p className="text-[10px] leading-tight opacity-80 uppercase tracking-tighter">
-                        WARNING: PLAYER POWER LEVEL IS INSUFFICIENT. DATA IS OBSCURED FOR SAFETY. PROCEEDING WILL RESULT IN CERTAIN DEATH.
+                        WARNING: PLAYER POWER LEVEL IS INSUFFICIENT. DATA IS OBSCURED FOR SAFETY.
                       </p>
                     </div>
                   </div>
@@ -214,7 +210,7 @@ const Boss = () => {
                 className={cn("w-full py-4 rounded-xl font-bold text-lg transition-all text-white bg-gradient-to-r", getGateColor(selectedGate.color))}
               >
                 <span className="flex items-center justify-center gap-2">
-                  {playerPower < selectedGate.requiredPower ? <><Skull className="w-5 h-5" /> دخول مجهول</> : <><Activity className="w-5 h-5" /> دخول البوابة</>}
+                  {playerPower < selectedGate.requiredPower ? <><Skull className="w-5 h-5" /> ??? ??? ???</> : <><Activity className="w-5 h-5" /> دخول البوابة</>}
                 </span>
               </button>
             </div>
