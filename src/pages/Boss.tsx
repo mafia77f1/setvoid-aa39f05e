@@ -34,10 +34,9 @@ const Boss = () => {
 
   const handleEnterGate = () => {
     setIsEntering(true);
-    // الانتظار لمدة 30 ثانية قبل الانتقال
     setTimeout(() => {
       navigate('/battle');
-    }, 30000); 
+    }, 30000); // 30 ثانية
   };
 
   const getGateColor = (color) => {
@@ -55,39 +54,15 @@ const Boss = () => {
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
-  // شاشة الدخول المعدلة (30 ثانية مع صورة البوابة)
+  // شاشة الدخول: تملأ الشاشة بالبوابة فقط وبدون أي كلام
   if (isEntering) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black overflow-hidden">
-        <div className="relative w-full h-full flex items-center justify-center">
-          {/* تأثير التوهج الخلفي */}
-          <div className={cn(
-            "absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 animate-pulse",
-            selectedGate?.color === 'red' ? "bg-red-600" : "bg-blue-600"
-          )} />
-          
-          {/* صورة البوابة الأساسية مكبرة */}
-          <div className="relative w-96 h-96 md:w-[500px] md:h-[500px] animate-[spin_10s_linear_infinite]">
-            <img 
-              src="/portal.gif" 
-              alt="Entering Portal" 
-              className="w-full h-full object-cover rounded-full mix-blend-screen scale-125 brightness-150"
-            />
-          </div>
-
-          {/* نصوص التحميل */}
-          <div className="absolute bottom-20 flex flex-col items-center gap-4">
-            <div className="flex gap-2">
-               <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-               <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-               <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-            </div>
-            <p className="text-white font-black italic tracking-[0.4em] uppercase text-xl animate-pulse">
-              Dimensional Synchronization...
-            </p>
-            <p className="text-blue-400 font-mono text-xs opacity-60">KEEP STABLE MANA FLOW - 30s REMAINING</p>
-          </div>
-        </div>
+      <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+        <img 
+          src="/portal.gif" 
+          alt="Portal Entry" 
+          className="w-full h-full object-cover mix-blend-screen scale-110"
+        />
       </div>
     );
   }
