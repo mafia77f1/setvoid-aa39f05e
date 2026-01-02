@@ -18,10 +18,10 @@ const stats = [
 ] as const;
 
 const getRankColor = (totalLevel: number) => {
-  if (totalLevel >= 50) return { border: 'border-foreground', bg: 'bg-foreground/10', glow: 'shadow-foreground/50', text: 'text-foreground' };
-  if (totalLevel >= 20) return { border: 'border-spirit', bg: 'bg-spirit/10', glow: 'shadow-spirit/50', text: 'text-spirit' };
-  if (totalLevel >= 10) return { border: 'border-mind', bg: 'bg-mind/10', glow: 'shadow-mind/50', text: 'text-mind' };
-  return { border: 'border-primary', bg: 'bg-primary/10', glow: 'shadow-primary/50', text: 'text-primary' };
+  if (totalLevel >= 50) return { border: 'border-foreground', bg: 'bg-foreground/10', glow: 'shadow-foreground/50', text: 'text-foreground', rankName: 'S' };
+  if (totalLevel >= 20) return { border: 'border-spirit', bg: 'bg-spirit/10', glow: 'shadow-spirit/50', text: 'text-spirit', rankName: 'A' };
+  if (totalLevel >= 10) return { border: 'border-mind', bg: 'bg-mind/10', glow: 'shadow-mind/50', text: 'text-mind', rankName: 'B' };
+  return { border: 'border-primary', bg: 'bg-primary/10', glow: 'shadow-primary/50', text: 'text-primary', rankName: 'C' };
 };
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
@@ -36,36 +36,35 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
   return (
     <>
       <div className={cn("profile-card", rankColor.border, totalLevel >= 50 && "shadow-2xl")}>
-        {/* Corner Decorations */}
         <div className="corner-decoration corner-tl" />
         <div className="corner-decoration corner-tr" />
         <div className="corner-decoration corner-bl" />
         <div className="corner-decoration corner-br" />
         
-        {/* Scan Line Effect */}
         <div className="scan-line" />
 
-        {/* Status Header */}
         <div className="status-header">
           <h2>STATUS</h2>
         </div>
 
         <div className="p-6">
-          {/* Level and Name Section */}
-          <div className="flex items-start gap-6 mb-4">
+          {/* تم تعديل هذا القسم لنقل اللفل لليسار وترتيب العناصر عمودياً */}
+          <div className="flex items-center gap-6 mb-4">
+            {/* اللفل على اليسار */}
             <div className="text-center">
               <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
               <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
             </div>
 
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs text-primary/70">JOB:</span>
-                <span className="font-semibold">{totalLevel >= 100 ? gameState.playerJob : 'غير معروف'}</span>
-              </div>
-              <div className="flex items-center gap-2 mb-1">
+            {/* الاسم، الرتبة، واللقب مرتبة تحت بعضها */}
+            <div className="flex-1 flex flex-col gap-1">
+              <div className="flex items-center gap-2">
                 <span className="text-xs text-primary/70">NAME:</span>
                 <span className="font-semibold">{gameState.playerName}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-primary/70">RANK:</span>
+                <span className={cn("font-bold", rankColor.text)}>{rankColor.rankName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-primary/70">TITLE:</span>
@@ -81,7 +80,6 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             </button>
           </div>
 
-          {/* HP and Energy Bars */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -111,7 +109,6 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
 
           <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-4" />
 
-          {/* Quick Stats Row */}
           <div className="flex items-center justify-around mb-4 py-3 rounded-lg bg-card/50 border border-primary/20">
             <div className="text-center">
               <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
@@ -130,7 +127,6 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             </div>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3">
             {stats.map((stat) => {
               const Icon = stat.icon;
