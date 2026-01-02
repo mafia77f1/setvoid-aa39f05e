@@ -21,18 +21,17 @@ export const DailyQuestCard = ({ category, onTaskComplete, timeRemaining, xpRewa
   const [isExpanded, setIsExpanded] = useState(true);
   const [dailyQuests, setDailyQuests] = useState<any[]>([]);
 
-  const config = categoryConfig[category] || categoryConfig.strength;
-  const dayIndex = new Date().getDay(); // 0 (الأحد) إلى 6 (السبت)
+  // تأكد من وجود config لتجنب خطأ undefined
+  const config = categoryConfig[category as keyof typeof categoryConfig] || categoryConfig.strength;
+  const dayIndex = new Date().getDay(); 
 
   useEffect(() => {
     const generateQuests = () => {
-      // 1. القوة (STR) - ترتيب: رجل، صدر، كتف، تراي، باي، ظهر، بطن
       const strengthRoutine = ['أرجل', 'صدر', 'كتف', 'تراي', 'باي', 'ظهر', 'بطن'];
       
-      // 2. العقل (INT) - المهام اليومية
       const mindRoutine = [
-        { title: 'مراجعة أسبوع وتقييم التقدم', desc: 'تقييم تقدمك' }, // الأحد
-        { title: 'لغز منطقي', desc: 'تحسين المنطق' }, // الاثنين
+        { title: 'مراجعة أسبوع وتقييم التقدم', desc: 'تقييم تقدمك' },
+        { title: 'لغز منطقي', desc: 'تحسين المنطق' },
         { title: 'قراءة + تلخيص', desc: 'فهم + تحليل' },
         { title: 'ألعاب الذاكرة', desc: 'رفع قوة الذاكرة' },
         { title: 'تعلم كلمة جديدة', desc: 'تحسين اللغة' },
@@ -40,9 +39,8 @@ export const DailyQuestCard = ({ category, onTaskComplete, timeRemaining, xpRewa
         { title: 'تأمل + مراجعة', desc: 'تركيز + استرخاء' }
       ];
 
-      // 3. الروح (SPR) - المهام الروحية
       const spiritRoutine = [
-        { title: '1000 سبحان الله + 1000 الحمد لله', desc: 'تنقية الروح' }, // الأحد
+        { title: '1000 سبحان الله + 1000 الحمد لله', desc: 'تنقية الروح' },
         { title: 'صوم الاثنين أو (ذكر الله 25 مرة)', desc: 'تزكية' },
         { title: 'شكر 5 نعم (كتابة أو تفكير)', desc: 'امتنان' },
         { title: 'ترك ذنب واحد اليوم', desc: 'جهاد النفس' },
@@ -53,17 +51,18 @@ export const DailyQuestCard = ({ category, onTaskComplete, timeRemaining, xpRewa
 
       let tasks: any[] = [];
 
+      // منطق اختيار المهام حسب التصنيف
       if (category === 'strength') {
-        tasks = [{ id: 'str-daily', title: `تمرين ${strengthRoutine[dayIndex]}`, goal: '100 ضغط (5 مجاميع × 20)', completed: false }];
-      } else if (category === 'agility') {
+        tasks = [{ id: `str-${dayIndex}`, title: `تمرين ${strengthRoutine[dayIndex]}`, goal: '100 ضغط (5 مجاميع)', completed: false }];
+      } else if (category === 'agility' || (category as string) === 'quran') { // دعم التحويل من quran لـ agility
         tasks = [
-          { id: 'agi-1', title: 'الركض المستمر', goal: '15 دقيقة', completed: false },
-          { id: 'agi-2', title: 'قفز (5 مجاميع)', goal: 'كل مجموعة 50 قفزة', completed: false }
+          { id: `agi-1-${dayIndex}`, title: 'الركض المستمر', goal: '15 دقيقة', completed: false },
+          { id: `agi-2-${dayIndex}`, title: 'قفز (5 مجاميع)', goal: '50 قفزة لكل مجموعة', completed: false }
         ];
       } else if (category === 'mind') {
-        tasks = [{ id: 'mid-1', title: mindRoutine[dayIndex].title, goal: mindRoutine[dayIndex].desc, completed: false }];
+        tasks = [{ id: `mid-${dayIndex}`, title: mindRoutine[dayIndex].title, goal: mindRoutine[dayIndex].desc, completed: false }];
       } else if (category === 'spirit') {
-        tasks = [{ id: 'spr-1', title: spiritRoutine[dayIndex].title, goal: spiritRoutine[dayIndex].desc, completed: false }];
+        tasks = [{ id: `spr-${dayIndex}`, title: spiritRoutine[dayIndex].title, goal: spiritRoutine[dayIndex].desc, completed: false }];
       }
       
       setDailyQuests(tasks);
@@ -77,10 +76,9 @@ export const DailyQuestCard = ({ category, onTaskComplete, timeRemaining, xpRewa
       "relative mb-6 overflow-hidden rounded-lg border-2 border-blue-500/30 bg-black/90 shadow-[0_0_20px_rgba(0,149,255,0.2)]",
       !isExpanded && "h-16"
     )}>
-      {/* Scanline Effect - تأثير الخطوط المتحركة */}
+      {/* Scanline Effect */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
 
-      {/* Header - الرأس */}
       <div 
         className="relative flex cursor-pointer items-center justify-between border-b border-blue-500/40 bg-blue-900/20 px-4 py-3"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -101,70 +99,52 @@ export const DailyQuestCard = ({ category, onTaskComplete, timeRemaining, xpRewa
       </div>
 
       {isExpanded && (
-        <div className="relative p-5 animate-in fade-in slide-in-from-top-2 duration-500">
-          {/* Main Quest Content */}
-          <div className="mb-6 space-y-2 text-right">
-            <p className="text-blue-200 text-xs font-bold leading-relaxed tracking-tighter">
-              [لقد وصلت مهمة يومية جديدة]
-            </p>
-            <h2 className="text-2xl font-black text-white tracking-tighter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+        <div className="relative p-5 text-right" dir="rtl">
+          <div className="mb-6 space-y-2">
+            <p className="text-blue-200 text-xs font-bold leading-relaxed">[مهمة يومية جديدة]</p>
+            <h2 className="text-2xl font-black text-white tracking-tighter">
               مهمة الاستعداد: <span className={config.color}>{config.name}</span>
             </h2>
           </div>
 
-          {/* Goal Box - صندوق الأهداف (مثل سولو ليفلينج) */}
           <div className="mb-6 rounded-sm border border-blue-500/20 bg-blue-900/10 p-4 relative">
-             {/* الزوايا المزخرفة */}
              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-blue-400" />
              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-blue-400" />
             
-            <h3 className="mb-3 text-center text-xs font-bold text-blue-300 tracking-[0.3em] uppercase underline decoration-blue-500/50 underline-offset-8">
-              الأهداف المطلوبة
-            </h3>
+            <h3 className="mb-3 text-center text-xs font-bold text-blue-300 tracking-[0.3em] uppercase underline decoration-blue-500/50 underline-offset-8">الأهداف</h3>
             
             <div className="space-y-3">
               {dailyQuests.map((quest) => (
-                <div 
-                  key={quest.id}
-                  className="group flex items-center justify-between rounded border border-white/5 bg-white/5 p-3 transition-all hover:bg-blue-500/10"
-                >
+                <div key={quest.id} className="group flex items-center justify-between rounded border border-white/5 bg-white/5 p-3 hover:bg-blue-500/10">
                    <button 
                     onClick={() => onTaskComplete(quest.id)}
-                    className={cn(
-                        "h-5 w-5 rounded-sm border border-blue-400 flex items-center justify-center transition-colors",
-                        quest.completed ? "bg-blue-400 text-black" : "text-blue-400 hover:bg-blue-400/20"
-                    )}
+                    className="h-5 w-5 rounded-sm border border-blue-400 flex items-center justify-center text-blue-400 hover:bg-blue-400 transition-colors"
                   >
                     {quest.completed ? "✓" : ""}
                   </button>
                   <div className="text-right">
-                    <p className={cn("text-sm font-bold transition-all", quest.completed ? "text-gray-500 line-through" : "text-white")}>
-                        {quest.title}
-                    </p>
-                    <p className="text-[10px] text-blue-300/70 italic">{quest.goal}</p>
+                    <p className="text-sm font-bold text-white">{quest.title}</p>
+                    <p className="text-[10px] text-blue-300/70">{quest.goal}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Warning Section - التحذير */}
           <div className="mb-4 flex items-center gap-3 rounded border border-red-900/30 bg-red-950/20 p-3">
             <ShieldAlert className="h-5 w-5 text-red-600 shrink-0" />
-            <p className="text-[10px] leading-tight text-red-200/70 text-right">
-              تحذير: سيؤدي عدم إكمال المهمة اليومية إلى فرض <span className="text-red-500 font-bold underline">عقوبة (Penalty)</span> فور انتهاء الوقت.
+            <p className="text-[10px] leading-tight text-red-200/70">
+              تحذير: الفشل سيؤدي إلى <span className="text-red-500 font-bold underline">عقوبة</span> فورية.
             </p>
           </div>
 
-          {/* Rewards - المكافآت */}
           <div className="flex items-center justify-between rounded-sm border border-white/10 bg-white/5 px-4 py-2">
              <div className="text-right">
-              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Rewards</p>
+              <p className="text-[10px] text-slate-400 uppercase font-bold">Rewards</p>
               <p className="text-sm font-black text-blue-400">+{xpReward} XP</p>
             </div>
-            <div className="h-8 w-px bg-white/10" />
             <div className="text-right">
-              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Category</p>
+              <p className="text-[10px] text-slate-400 uppercase font-bold">Category</p>
               <p className="text-sm font-black text-white">{config.label}</p>
             </div>
           </div>
