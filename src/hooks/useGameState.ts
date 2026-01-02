@@ -43,17 +43,43 @@ const getRotatingQuests = (): Quest[] => {
     6: { id: 'spr_daily', title: 'ذكر 1000 مرة', description: 'سبحان الله وبحمده 1000 مرة', category: 'spirit', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 6 },
   };
 
-  // AGI - same quests daily (run + jump)
-  const agiQuests: Quest[] = [
-    { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: day },
-    { id: 'agi_jump', title: 'القفز 250 مرة', description: '5 مجاميع × 50 قفزة', category: 'agility', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 50, dayOfWeek: day },
-  ];
+  // AGI - rotating agility quests based on day
+  const agiQuests: Record<number, Quest[]> = {
+    0: [
+      { id: 'agi_run', title: 'الركض 20 دقيقة', description: 'اركض لمدة 20 دقيقة متواصلة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 20, dayOfWeek: 0 },
+      { id: 'agi_stretch', title: 'تمارين الإطالة', description: '15 دقيقة تمارين إطالة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 15, dayOfWeek: 0 },
+    ],
+    1: [
+      { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 1 },
+      { id: 'agi_jump', title: 'القفز 250 مرة', description: '5 مجاميع × 50 قفزة', category: 'agility', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 50, dayOfWeek: 1 },
+    ],
+    2: [
+      { id: 'agi_sprint', title: 'سباق السرعة', description: '10 جولات سباق 100 متر', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', sets: 10, dayOfWeek: 2 },
+      { id: 'agi_agility', title: 'تمارين الرشاقة', description: 'تمارين تغيير الاتجاه', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 2 },
+    ],
+    3: [
+      { id: 'agi_jump', title: 'القفز 300 مرة', description: '6 مجاميع × 50 قفزة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 6, repsPerSet: 50, dayOfWeek: 3 },
+      { id: 'agi_burpee', title: 'بيربي 50 مرة', description: '5 مجاميع × 10 بيربي', category: 'agility', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', sets: 5, repsPerSet: 10, dayOfWeek: 3 },
+    ],
+    4: [
+      { id: 'agi_run', title: 'الركض 25 دقيقة', description: 'اركض لمدة 25 دقيقة', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 4 },
+      { id: 'agi_stairs', title: 'صعود الدرج', description: '10 مرات صعود ونزول', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', sets: 10, dayOfWeek: 4 },
+    ],
+    5: [
+      { id: 'agi_hiit', title: 'تمرين HIIT', description: '20 دقيقة تمرين عالي الكثافة', category: 'agility', xpReward: 65, completed: false, dailyReset: true, difficulty: 'legendary', timeLimit: 20, dayOfWeek: 5 },
+      { id: 'agi_jump', title: 'قفز الحبل 500', description: '500 قفزة بالحبل', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', repsPerSet: 500, dayOfWeek: 5 },
+    ],
+    6: [
+      { id: 'agi_walk', title: 'المشي السريع', description: '30 دقيقة مشي سريع', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 30, dayOfWeek: 6 },
+      { id: 'agi_yoga', title: 'يوغا الاستشفاء', description: '20 دقيقة يوغا خفيفة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 20, dayOfWeek: 6 },
+    ],
+  };
 
   return [
     strQuests[day],
     intQuests[day],
     sprQuests[day],
-    ...agiQuests,
+    ...agiQuests[day],
   ];
 };
 
