@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, Zap, Edit, Star, Flame } from 'lucide-react';
+import { Dumbbell, Brain, Heart, BookOpen, Flame, Edit } from 'lucide-react';
 import { GameState } from '@/types/game';
-import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
 
 interface ProfileCardProps {
@@ -11,124 +10,145 @@ interface ProfileCardProps {
 }
 
 const stats = [
-  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-blue-400', bgColor: 'bg-blue-500' },
-  { key: 'mind', label: 'INT', icon: Brain, color: 'text-blue-300', bgColor: 'bg-blue-400' },
-  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-slate-200', bgColor: 'bg-slate-300' },
-  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-blue-200', bgColor: 'bg-blue-300' },
+  { key: 'strength', label: 'STR', icon: Dumbbell },
+  { key: 'mind', label: 'INT', icon: Brain },
+  { key: 'spirit', label: 'SPR', icon: Heart },
+  { key: 'quran', label: 'QRN', icon: BookOpen },
 ] as const;
-
-const getRankInfo = (totalLevel: number) => {
-  const base = { textColor: 'text-blue-100', glow: '0 0 15px rgba(255,255,255,0.2)' };
-  if (totalLevel >= 100) return { ...base, rank: 'S' };
-  if (totalLevel >= 50) return { ...base, rank: 'A' };
-  if (totalLevel >= 20) return { ...base, rank: 'B' };
-  if (totalLevel >= 10) return { ...base, rank: 'C' };
-  return { ...base, rank: 'E' };
-};
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  
-  const totalLevel = gameState.totalLevel || 100; // مثال كما في الصورة
-  const rankInfo = getRankInfo(totalLevel);
-  const hpPercentage = Math.min(100, Math.max(0, ((gameState.hp || 0) / (gameState.maxHp || 100)) * 100));
-  const energyPercentage = Math.min(100, Math.max(0, ((gameState.energy || 0) / (gameState.maxEnergy || 100)) * 100));
+  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
+  const todayQuests = gameState.quests.filter(q => q.completed).length;
+  const totalQuests = gameState.quests.length;
+  const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
+  const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
 
   return (
     <>
-      <div className="relative rounded-xl overflow-hidden border border-blue-500/30 bg-black/40 p-1 shadow-2xl">
-        {/* Background with Blur */}
-        <div 
-          className="absolute inset-0 z-0 opacity-40 blur-sm"
-          style={{ 
-            backgroundImage: `url('/SystemBackground.jpg')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
-
-        {/* Header: STATUS */}
-        <div className="relative z-10 border-b border-blue-500/40 py-2 mb-6">
-          <h2 className="text-center text-xl font-bold tracking-[0.5em] text-blue-100 drop-shadow-md">STATUS</h2>
+      {/* الكارد: خلفية بنفسجية + حدود زرقاء */}
+      <div className="relative bg-[#2e1065] border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+        
+        {/* Status Header - نص أبيض وخلفية زرقاء داكنة للعنوان */}
+        <div className="flex justify-center mt-[-0.75rem] relative z-10">
+          <div className="border border-blue-400 px-6 py-0.5 bg-[#1e3a8a] shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+            <h2 className="text-sm font-bold tracking-[0.2em] text-white uppercase">
+              STATUS
+            </h2>
+          </div>
         </div>
 
-        <div className="relative z-10 px-6 pb-6">
-          {/* Top Section: Level, Name, Title */}
-          <div className="flex items-center gap-8 mb-8">
-            {/* Big Level */}
-            <div className="flex flex-col items-center">
-              <span className="text-6xl font-black text-white leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+        <div className="p-6 pt-8">
+          {/* Level and Name Section */}
+          <div className="flex items-start gap-6 mb-6">
+            <div className="text-center">
+              <div className="text-5xl font-black italic tracking-tighter text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
                 {totalLevel}
-              </span>
-              <span className="text-xs font-bold text-blue-200 tracking-widest mt-1">LEVEL</span>
+              </div>
+              <div className="text-[10px] text-blue-300 font-black tracking-widest uppercase">Level</div>
             </div>
 
-            {/* Job (Name) & Title */}
             <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-blue-300 text-[10px] font-bold uppercase">NAME:</span>
-                <span className="text-white font-bold text-lg flex items-center gap-2">
-                  {gameState.playerName || 'Shadow Monarch'}
-                  <button onClick={() => setShowEditModal(true)} className="opacity-50 hover:opacity-100 transition-opacity">
-                    <Edit className="w-3 h-3" />
-                  </button>
+              <div className="flex items-center justify-between border-b border-blue-500/30 pb-1">
+                <span className="text-[9px] text-blue-200 font-bold uppercase">Job:</span>
+                <span className="text-xs font-bold text-white uppercase italic">
+                  {totalLevel >= 100 ? gameState.playerJob : 'UNKNOWN'}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-blue-300 text-[10px] font-bold uppercase">TITLE:</span>
-                <span className="text-white text-xs font-medium tracking-wide">
-                  {gameState.playerTitle || 'The One Who Overcame Adversity'}
+              <div className="flex items-center justify-between border-b border-blue-500/30 pb-1">
+                <span className="text-[9px] text-blue-200 font-bold uppercase">Name:</span>
+                <span className="text-xs font-bold text-white uppercase">
+                  {gameState.playerName}
                 </span>
+              </div>
+              <div className="flex items-center justify-between border-b border-blue-500/30 pb-1">
+                <span className="text-[9px] text-blue-200 font-bold uppercase">Title:</span>
+                <span className="text-xs font-bold text-white uppercase italic">
+                  {gameState.playerTitle}
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowEditModal(true)}
+              className="p-1.5 border border-blue-400 bg-blue-900/30 hover:bg-blue-800/50 transition-all"
+            >
+              <Edit className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+
+          {/* HP and MP Bars - أصبحت بيضاء كما طلبت */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="space-y-1">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] font-black text-white italic">HP</span>
+                <span className="text-[10px] font-mono text-white">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
+              </div>
+              <div className="h-2 bg-black/40 border border-blue-900/50 overflow-hidden">
+                <div className="h-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)] transition-all" style={{ width: `${hpPercentage}%` }} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] font-black text-white italic">MP</span>
+                <span className="text-[10px] font-mono text-white">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
+              </div>
+              <div className="h-2 bg-black/40 border border-blue-900/50 overflow-hidden">
+                <div className="h-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)] transition-all" style={{ width: `${energyPercentage}%` }} />
               </div>
             </div>
           </div>
 
-          {/* Status Bar Container (HP, MP, Rank) */}
-          <div className="border border-blue-500/30 bg-blue-900/20 p-4 rounded-sm flex items-end justify-between gap-4">
-            <div className="flex-1 space-y-4">
-              {/* HP Bar */}
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-black text-white w-4">HP</span>
-                <div className="flex-1 h-2 bg-slate-800 rounded-full border border-blue-400/20 overflow-hidden">
-                  <div className="h-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]" style={{ width: `${hpPercentage}%` }} />
-                </div>
-                <span className="text-[9px] font-mono text-blue-100">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
-              </div>
-              {/* MP Bar */}
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-black text-white w-4">MP</span>
-                <div className="flex-1 h-2 bg-slate-800 rounded-full border border-blue-400/20 overflow-hidden">
-                  <div className="h-full bg-slate-300 shadow-[0_0_8px_rgba(255,255,255,0.4)]" style={{ width: `${energyPercentage}%` }} />
-                </div>
-                <span className="text-[9px] font-mono text-blue-100">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
-              </div>
+          {/* Quick Stats Row - خلفية داكنة داخل البنفسجي */}
+          <div className="flex items-center justify-around mb-6 py-3 bg-black/20 border border-blue-500/20">
+            <div className="text-center">
+              <Flame className="w-4 h-4 mx-auto mb-1 text-white" />
+              <div className="text-sm font-bold text-white font-mono">{gameState.streakDays}</div>
+              <div className="text-[8px] text-blue-200 uppercase font-bold tracking-tighter">Streak</div>
             </div>
-
-            {/* Rank - Positioned like the Circle in image */}
-            <div className="flex flex-col items-center justify-center border-l border-blue-500/30 pl-4">
-              <div className="text-[10px] text-blue-300 font-bold mb-1 uppercase">Rank</div>
-              <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center text-xl font-black text-white bg-blue-500/20">
-                {rankInfo.rank}
+            <div className="w-px h-8 bg-blue-500/20" />
+            <div className="text-center">
+              <div className="text-sm font-bold text-white font-mono">{todayQuests}/{totalQuests}</div>
+              <div className="text-[8px] text-blue-200 uppercase font-bold tracking-tighter">Quests</div>
+            </div>
+            <div className="w-px h-8 bg-blue-500/20" />
+            <div className="text-center">
+              <div className="text-sm font-bold text-white font-mono">
+                {gameState.gold?.toLocaleString() || 0}
               </div>
+              <div className="text-[8px] text-blue-200 uppercase font-bold tracking-tighter">Gold</div>
             </div>
           </div>
 
-          {/* Stats Grid - Same as before but styled to match */}
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            {stats.map((stat) => (
-              <div key={stat.key} className="flex items-center gap-2 p-2 bg-white/5 border border-white/10 rounded-sm">
-                <stat.icon className={cn("w-3 h-3", stat.color)} />
-                <div className="flex-1">
-                  <div className="flex justify-between text-[9px] font-bold text-slate-300 mb-1">
-                    <span>{stat.label}</span>
-                    <span>{gameState.levels?.[stat.key] || 1}</span>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => {
+              const Icon = stat.icon;
+              const level = gameState.levels[stat.key];
+              const xp = gameState.stats[stat.key];
+              const progress = getXpProgress(xp);
+
+              return (
+                <div key={stat.key} className="p-3 bg-black/10 border border-blue-500/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-3.5 h-3.5 text-white" />
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                        {stat.label}
+                      </span>
+                    </div>
+                    <span className="text-xs font-bold text-white font-mono">{level}</span>
                   </div>
-                  <div className="h-1 bg-black/40 rounded-full overflow-hidden">
-                    <div className={cn("h-full transition-all", stat.bgColor)} style={{ width: `${getXpProgress(gameState.stats?.[stat.key] || 0)}%` }} />
+                  {/* شريط التقدم باللون الأبيض المتوهج */}
+                  <div className="h-1.5 bg-black/40 border border-blue-900/30 overflow-hidden">
+                    <div 
+                      className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-all duration-1000" 
+                      style={{ width: `${progress}%` }} 
+                    />
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
