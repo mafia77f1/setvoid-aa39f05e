@@ -11,25 +11,26 @@ interface ProfileCardProps {
 }
 
 const stats = [
-  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength', bgColor: 'bg-strength' },
-  { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind', bgColor: 'bg-mind' },
-  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit', bgColor: 'bg-spirit' },
-  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-quran', bgColor: 'bg-quran' },
+  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-blue-400', bgColor: 'bg-blue-500' },
+  { key: 'mind', label: 'INT', icon: Brain, color: 'text-blue-300', bgColor: 'bg-blue-400' },
+  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-slate-200', bgColor: 'bg-slate-300' },
+  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-blue-200', bgColor: 'bg-blue-300' },
 ] as const;
 
 const getRankInfo = (totalLevel: number) => {
-  if (totalLevel >= 100) return { rank: 'S', color: 'from-red-500 to-orange-500', border: 'border-red-500', glow: '0 0 60px rgba(239, 68, 68, 0.6)', textColor: 'text-red-400' };
-  if (totalLevel >= 50) return { rank: 'A', color: 'from-purple-500 to-pink-500', border: 'border-purple-500', glow: '0 0 50px rgba(168, 85, 247, 0.5)', textColor: 'text-purple-400' };
-  if (totalLevel >= 20) return { rank: 'B', color: 'from-blue-500 to-cyan-500', border: 'border-blue-500', glow: '0 0 40px rgba(59, 130, 246, 0.4)', textColor: 'text-blue-400' };
-  if (totalLevel >= 10) return { rank: 'C', color: 'from-green-500 to-emerald-500', border: 'border-green-500', glow: '0 0 30px rgba(34, 197, 94, 0.3)', textColor: 'text-green-400' };
-  if (totalLevel >= 5) return { rank: 'D', color: 'from-yellow-500 to-amber-500', border: 'border-yellow-500', glow: '0 0 25px rgba(234, 179, 8, 0.3)', textColor: 'text-yellow-400' };
-  return { rank: 'E', color: 'from-gray-400 to-gray-500', border: 'border-gray-400', glow: '0 0 20px rgba(156, 163, 175, 0.2)', textColor: 'text-gray-400' };
+  // تم توحيد الألوان لتناسب اللون الأزرق والفضي
+  const baseStyle = { border: 'border-blue-200/50', glow: '0 0 20px rgba(191, 219, 254, 0.3)', textColor: 'text-white' };
+  if (totalLevel >= 100) return { ...baseStyle, rank: 'S', color: 'from-blue-600 to-slate-100' };
+  if (totalLevel >= 50) return { ...baseStyle, rank: 'A', color: 'from-blue-500 to-slate-200' };
+  if (totalLevel >= 20) return { ...baseStyle, rank: 'B', color: 'from-blue-400 to-slate-300' };
+  if (totalLevel >= 10) return { ...baseStyle, rank: 'C', color: 'from-blue-300 to-slate-400' };
+  if (totalLevel >= 5) return { ...baseStyle, rank: 'D', color: 'from-blue-200 to-slate-500' };
+  return { ...baseStyle, rank: 'E', color: 'from-slate-400 to-slate-600' };
 };
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   
-  // Calculate total level safely
   const totalLevel = gameState.totalLevel || 
     ((gameState.levels?.strength || 1) + (gameState.levels?.mind || 1) + (gameState.levels?.spirit || 1) + (gameState.levels?.agility || 1));
   
@@ -42,141 +43,118 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
   return (
     <>
       <div 
-        className={cn("relative rounded-2xl overflow-hidden", rankInfo.border)}
+        className={cn("relative rounded-2xl overflow-hidden border-2", rankInfo.border)}
         style={{ 
-          background: 'linear-gradient(180deg, hsl(260 35% 10% / 0.95), hsl(260 40% 5% / 0.95))',
-          borderWidth: '2px',
+          backgroundImage: `url('/SystemBackground.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           boxShadow: rankInfo.glow
         }}
       >
-        {/* Animated Background Effect */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/10 to-transparent" />
-        </div>
+        {/* Overlay to ensure readability with the blue/silver theme */}
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" />
 
-        {/* Corner Decorations */}
-        <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-primary/60" />
-        <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-primary/60" />
-        <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-primary/60" />
-        <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-primary/60" />
-        
         {/* Scan Line Effect */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-[scan_3s_linear_infinite]" 
-               style={{ animation: 'scan 3s linear infinite' }} />
+          <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent animate-[scan_3s_linear_infinite]" />
         </div>
 
-        {/* Status Header - Solo Leveling Style */}
-        <div className="relative py-4 px-6 text-center border-b border-primary/30 bg-gradient-to-b from-primary/15 to-transparent">
+        {/* Status Header */}
+        <div className="relative py-3 px-6 text-center border-b border-white/20 bg-blue-900/40">
           <div className="flex items-center justify-center gap-2">
-            <Star className="w-4 h-4 text-primary animate-pulse" />
-            <h2 className="text-xl font-bold tracking-[0.3em] text-primary glow-text">STATUS</h2>
-            <Star className="w-4 h-4 text-primary animate-pulse" />
+            <Star className="w-4 h-4 text-blue-200 animate-pulse" />
+            <h2 className="text-lg font-bold tracking-[0.3em] text-white">STATUS</h2>
+            <Star className="w-4 h-4 text-blue-200 animate-pulse" />
           </div>
         </div>
 
         <div className="relative z-10 p-5">
-          {/* Top Section - Level & Rank */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Level Display */}
+          {/* Top Section - Reordered as requested */}
+          <div className="flex items-start gap-6 mb-6">
+            {/* Level on the Left */}
             <div className="text-center">
-              <div className={cn("text-5xl font-black glow-text", rankInfo.textColor)}>
+              <div className="text-5xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                 {totalLevel}
               </div>
-              <div className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mt-1">LEVEL</div>
+              <div className="text-[10px] text-blue-200 tracking-[0.2em] uppercase">LEVEL</div>
             </div>
 
-            {/* Rank Badge */}
-            <div 
-              className={cn(
-                "w-20 h-20 rounded-xl flex items-center justify-center text-3xl font-black bg-gradient-to-br",
-                rankInfo.color
-              )}
-              style={{ boxShadow: rankInfo.glow }}
-            >
-              {rankInfo.rank}
-            </div>
-
-            {/* Edit Button */}
-            <button 
-              onClick={() => setShowEditModal(true)}
-              className="p-3 rounded-xl bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-all hover:scale-105"
-            >
-              <Edit className="w-5 h-5 text-primary" />
-            </button>
-          </div>
-
-          {/* Player Info */}
-          <div className="mb-4 p-3 rounded-xl bg-card/50 border border-primary/20">
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Crown className="w-4 h-4 text-secondary" />
-                <span className="text-muted-foreground text-xs">NAME:</span>
+            {/* Info in the Middle/Right */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h3 className="text-2xl font-bold text-white uppercase tracking-tight">
+                  {gameState.playerName || 'المحارب'}
+                </h3>
+                <button 
+                  onClick={() => setShowEditModal(true)}
+                  className="p-1.5 rounded-md bg-white/10 border border-white/20 hover:bg-white/20 transition-all"
+                >
+                  <Edit className="w-3.5 h-3.5 text-white" />
+                </button>
               </div>
-              <div className="font-bold text-right">{gameState.playerName || 'المحارب'}</div>
               
-              <div className="flex items-center gap-2">
-                <Sword className="w-4 h-4 text-primary" />
-                <span className="text-muted-foreground text-xs">TITLE:</span>
+              {/* Rank directly under name */}
+              <div className={cn(
+                "mt-1 text-xl font-black bg-gradient-to-r bg-clip-text text-transparent w-fit",
+                rankInfo.color
+              )}>
+                RANK: {rankInfo.rank}
               </div>
-              <div className="text-primary text-right text-xs">{gameState.playerTitle || 'محارب'}</div>
+
+              {/* Title under Rank */}
+              <div className="flex items-center gap-2 mt-1 text-slate-300">
+                <Sword className="w-3 h-3" />
+                <span className="text-xs font-medium uppercase tracking-widest">
+                  {gameState.playerTitle || 'محارب'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* HP and Energy Bars */}
+          {/* HP and Energy Bars - Blue/Silver themed */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1">
-                  <Shield className="w-4 h-4 text-destructive" />
-                  <span className="text-xs font-bold">HP</span>
-                </div>
-                <span className="text-xs font-mono">{Math.round(gameState.hp || 0)}/{gameState.maxHp || 100}</span>
+                <span className="text-xs font-bold text-white">HP</span>
+                <span className="text-xs font-mono text-white">{Math.round(gameState.hp || 0)}/{gameState.maxHp || 100}</span>
               </div>
-              <div className="h-3 rounded-full overflow-hidden bg-muted/30 border border-destructive/30">
+              <div className="h-2 rounded-full overflow-hidden bg-slate-800 border border-white/10">
                 <div 
-                  className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-500"
-                  style={{ width: `${hpPercentage}%`, boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }} 
+                  className="h-full bg-gradient-to-r from-blue-400 to-white transition-all duration-500"
+                  style={{ width: `${hpPercentage}%` }} 
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1">
-                  <Zap className="w-4 h-4 text-secondary" />
-                  <span className="text-xs font-bold">MP</span>
-                </div>
-                <span className="text-xs font-mono">{Math.round(gameState.energy || 0)}/{gameState.maxEnergy || 100}</span>
+                <span className="text-xs font-bold text-white">MP</span>
+                <span className="text-xs font-mono text-white">{Math.round(gameState.energy || 0)}/{gameState.maxEnergy || 100}</span>
               </div>
-              <div className="h-3 rounded-full overflow-hidden bg-muted/30 border border-secondary/30">
+              <div className="h-2 rounded-full overflow-hidden bg-slate-800 border border-white/10">
                 <div 
-                  className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500"
-                  style={{ width: `${energyPercentage}%`, boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)' }} 
+                  className="h-full bg-gradient-to-r from-slate-400 to-blue-200 transition-all duration-500"
+                  style={{ width: `${energyPercentage}%` }} 
                 />
               </div>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent mb-4" />
-
           {/* Quick Stats Row */}
-          <div className="flex items-center justify-around mb-4 py-3 rounded-xl bg-card/30 border border-primary/20">
+          <div className="flex items-center justify-around mb-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
             <div className="text-center">
-              <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-              <div className="text-lg font-bold">{gameState.streakDays || 0}</div>
-              <div className="text-[9px] text-muted-foreground">أيام متتالية</div>
+              <Flame className="w-4 h-4 mx-auto mb-1 text-blue-300" />
+              <div className="text-lg font-bold text-white">{gameState.streakDays || 0}</div>
+              <div className="text-[9px] text-slate-300">أيام متتالية</div>
             </div>
-            <div className="w-px h-10 bg-primary/30" />
+            <div className="w-px h-8 bg-white/20" />
             <div className="text-center">
-              <div className="text-lg font-bold">{todayQuests}/{totalQuests}</div>
-              <div className="text-[9px] text-muted-foreground">مهمات اليوم</div>
+              <div className="text-lg font-bold text-white">{todayQuests}/{totalQuests}</div>
+              <div className="text-[9px] text-slate-300">مهمات اليوم</div>
             </div>
-            <div className="w-px h-10 bg-primary/30" />
+            <div className="w-px h-8 bg-white/20" />
             <div className="text-center">
-              <div className="text-lg font-bold text-secondary">{gameState.gold || 0}</div>
-              <div className="text-[9px] text-muted-foreground">ذهب</div>
+              <div className="text-lg font-bold text-blue-200">{gameState.gold || 0}</div>
+              <div className="text-[9px] text-slate-300">ذهب</div>
             </div>
           </div>
 
@@ -191,20 +169,20 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               return (
                 <div 
                   key={stat.key} 
-                  className="flex items-center gap-2 p-2.5 rounded-lg bg-card/30 border border-primary/10 hover:border-primary/30 transition-all"
+                  className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 border border-white/5 hover:border-blue-400/30 transition-all"
                 >
-                  <div className={cn("p-1.5 rounded-lg", stat.bgColor + '/20')}>
+                  <div className={cn("p-1.5 rounded-lg bg-white/10")}>
                     <Icon className={cn('w-4 h-4', stat.color)} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn('text-xs font-bold', stat.color)}>{stat.label}</span>
-                      <span className="text-sm font-bold">{level}</span>
+                      <span className="text-[10px] font-bold text-slate-300">{stat.label}</span>
+                      <span className="text-xs font-bold text-white">{level}</span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden bg-muted/30">
+                    <div className="h-1 rounded-full overflow-hidden bg-slate-800">
                       <div 
-                        className={cn('h-full rounded-full transition-all duration-500', stat.bgColor)} 
-                        style={{ width: `${progress}%`, boxShadow: '0 0 8px currentColor' }} 
+                        className={cn('h-full transition-all duration-500', stat.bgColor)} 
+                        style={{ width: `${progress}%` }} 
                       />
                     </div>
                   </div>
