@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, CheckCircle2 } from 'lucide-react';
+import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, CheckCircle2, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -11,12 +11,13 @@ const Market = () => {
   const { playPurchase } = useSoundEffects();
   
   const [isScanning, setIsScanning] = useState(false);
-  const [isClosing, setIsClosing] = useState(false); 
+  const [isClosingScan, setIsClosingScan] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
-  
-  // حالة كارد نجاح الشراء
-  const [showPurchaseSuccess, setShowPurchaseSuccess] = useState(false);
+
+  // حالة كارد الشراء
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [isClosingPurchase, setIsClosingPurchase] = useState(false);
   const [purchasedItem, setPurchasedItem] = useState(null);
 
   const SOLO_ITEMS = [
@@ -33,22 +34,31 @@ const Market = () => {
     return playerRankLevel >= item.rankLevel;
   };
 
+  // دوال الإغلاق بتأثير الطول للطول
+  const closeScan = () => {
+    setIsClosingScan(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setIsClosingScan(false);
+      setScanResult('idle');
+      setActiveItem(null);
+    }, 400);
+  };
+
+  const closePurchase = () => {
+    setIsClosingPurchase(true);
+    setTimeout(() => {
+      setShowPurchaseModal(false);
+      setIsClosingPurchase(false);
+      setPurchasedItem(null);
+    }, 400);
+  };
+
   const startSystemScan = (item) => {
     setActiveItem(item);
     setIsScanning(true);
-    setIsClosing(false);
     setScanResult('searching');
     setTimeout(() => setScanResult('failed'), 3000);
-  };
-
-  const closeScanModal = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setIsClosing(false);
-      setScanResult('idle');
-      setActiveItem(null);
-    }, 500);
   };
 
   const handlePurchase = (item) => {
@@ -60,9 +70,8 @@ const Market = () => {
     if (gameState.gold >= item.price) {
       purchaseItem(item.id);
       playPurchase();
-      // تفعيل كارد النجاح
       setPurchasedItem(item);
-      setShowPurchaseSuccess(true);
+      setShowPurchaseModal(true);
     } else {
       toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
     }
@@ -75,50 +84,47 @@ const Market = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* كارد نجاح الشراء الجديد (بنفس التصميم العام) */}
-      {showPurchaseSuccess && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative bg-[#050b18] border-2 border-white shadow-[0_0_30px_rgba(255,255,255,0.2)] p-6 max-w-sm w-full font-mono animate-[unfoldVertical_0.3s_ease-out_forwards]">
+      {/* كارد الشراء الجديد بنفس لغة تصميم المتجر */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className={cn(
+            "relative bg-[#050b18] border-2 border-white p-6 max-w-sm w-full font-mono overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.15)]",
+            isClosingPurchase ? "animate-[foldVertical_0.4s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
+          )}>
             <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-blue-500" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-blue-500" />
             
             <div className="text-center space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/50 flex items-center justify-center rounded-full animate-pulse">
-                  <CheckCircle2 className="w-10 h-10 text-blue-400" />
+                <div className="w-14 h-14 bg-white/5 border border-white/20 flex items-center justify-center rounded-sm">
+                  <Sparkles className="w-8 h-8 text-blue-400 animate-pulse" />
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <h2 className="text-white text-lg font-bold tracking-widest uppercase italic">Purchase Complete</h2>
-                <p className="text-[10px] text-slate-400 uppercase tracking-tighter">The item has been added to your inventory.</p>
+              <div>
+                <h2 className="text-white text-lg font-bold tracking-widest uppercase italic">Item Acquired</h2>
+                <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2" />
               </div>
-
-              <div className="border border-white/10 p-4 bg-white/5 flex items-center gap-4">
-                <span className="text-3xl">{purchasedItem?.icon}</span>
+              <div className="bg-white/5 border border-white/10 p-4 flex items-center gap-4">
+                <span className="text-4xl">{purchasedItem?.icon}</span>
                 <div className="text-left">
-                  <p className="text-xs font-bold text-blue-100 uppercase">{purchasedItem?.name}</p>
-                  <p className="text-[8px] text-slate-500 uppercase">{purchasedItem?.category}</p>
+                  <p className="text-xs font-bold text-white uppercase tracking-wider">{purchasedItem?.name}</p>
+                  <p className="text-[8px] text-blue-400 font-bold uppercase tracking-widest mt-1">{purchasedItem?.category}</p>
                 </div>
               </div>
-
-              <button 
-                onClick={() => setShowPurchaseSuccess(false)}
-                className="w-full py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-              >
-                Confirm Acquisition
+              <button onClick={closePurchase} className="w-full py-2 bg-white text-black text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-slate-200 transition-all">
+                Close Record
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* System Modal Analysis */}
+      {/* كارد تحليل النظام */}
       {isScanning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className={cn(
             "relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.4)] p-6 max-w-sm w-full font-mono overflow-hidden",
-            isClosing ? "animate-[foldVertical_0.5s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
+            isClosingScan ? "animate-[foldVertical_0.4s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
           )}>
             <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
@@ -131,64 +137,47 @@ const Market = () => {
               {scanResult === 'searching' ? (
                 <div className="py-10 flex flex-col items-center gap-4">
                   <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
-                  <p className="text-[10px] text-blue-200 animate-pulse tracking-[0.3em] uppercase italic">Bypassing Encryption...</p>
+                  <p className="text-[10px] text-blue-200 animate-pulse uppercase tracking-widest">Bypassing Encryption...</p>
                 </div>
               ) : (
                 <div className="py-2 flex flex-col items-start gap-4 animate-in fade-in duration-500 w-full">
-                  {(() => {
-                    const playerLevel = gameState.level || 1;
-                    const requiredLevel = (activeItem?.rankLevel || 0) * 10;
-                    const levelDiff = requiredLevel - playerLevel;
-                    const powerLevels = { 'S': '80%', 'SS': '92%', 'EX': '100%' };
-                    const itemPower = powerLevels[activeItem?.difficulty] || '60%';
+                  <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
+                    <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-red-500/50" /></div>
+                    <div className="mb-3 border-b border-blue-500/30 pb-2">
+                      <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM:</span>
+                      <span className="text-sm font-bold text-white tracking-wider uppercase">REDACTED_LOG</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><span className="text-[9px] text-blue-400 block mb-1">RANK:</span><span className="text-xs font-bold text-red-400">{activeItem?.difficulty}</span></div>
+                      <div><span className="text-[9px] text-blue-400 block mb-1">CAT:</span><span className="text-xs font-bold text-white uppercase italic">Unknown</span></div>
+                    </div>
+                  </div>
 
-                    return (
-                      <div className="w-full space-y-4">
-                        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-                          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-red-500/50" /></div>
-                          <div className="mb-3 border-b border-blue-500/30 pb-2">
-                            <span className="text-[9px] text-blue-400 block mb-1 uppercase">Data Stream:</span>
-                            <span className="text-sm font-bold text-white tracking-wider uppercase italic">
-                              {(levelDiff <= 15) ? activeItem?.name : "REDACTED"}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div><span className="text-[9px] text-blue-400 block mb-1">DIFF:</span><span className="text-xs font-bold text-red-400">{activeItem?.difficulty}</span></div>
-                            <div><span className="text-[9px] text-blue-400 block mb-1">CAT:</span><span className="text-xs font-bold text-white uppercase italic">Classified</span></div>
-                          </div>
-                        </div>
-
-                        {/* قسم التحليل المكتشف */}
-                        <div className="w-full border border-red-900/40 p-3 bg-red-950/10 space-y-3">
-                          <div className="flex items-center gap-2 border-b border-red-900/20 pb-1">
-                            <Zap className="w-3 h-3 text-red-500" />
-                            <span className="text-[8px] font-bold text-red-400 uppercase">Structural Power Analysis</span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 border border-red-500/20 flex items-center justify-center bg-black/40">
-                              <span className="text-2xl filter blur-[2px] opacity-40">{activeItem?.icon}</span>
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex justify-between text-[7px] text-slate-400 uppercase">
-                                <span>Output:</span>
-                                <span className="text-red-500 font-bold tracking-widest">{itemPower}</span>
-                              </div>
-                              <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                                <div className="h-full bg-red-600 shadow-[0_0_8px_red]" style={{ width: itemPower }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button 
-                          onClick={closeScanModal}
-                          className="w-full py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all active:scale-95"
-                        >
-                          <X className="w-3 h-3 inline-block mr-1" /> Terminate Log
-                        </button>
+                  {/* معلومات القوة والشكل */}
+                  <div className="w-full border border-red-900/40 p-3 bg-red-950/10 space-y-3">
+                    <div className="flex items-center gap-2 border-b border-red-900/20 pb-1">
+                      <Zap className="w-3 h-3 text-red-500" />
+                      <span className="text-[8px] font-bold text-red-400 uppercase">Structural Power Analysis</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 border border-red-500/20 flex items-center justify-center bg-black/40 relative">
+                        <span className="text-2xl filter blur-[3px] opacity-30">{activeItem?.icon}</span>
                       </div>
-                    );
-                  })()}
+                      <div className="flex-1 space-y-1">
+                        <div className="flex justify-between text-[7px] text-slate-400 uppercase">
+                          <span>Output Density:</span>
+                          <span className="text-red-500 font-bold">Incalculable</span>
+                        </div>
+                        <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-red-600 animate-pulse" style={{ width: '90%' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button onClick={closeScan} className="w-full py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all">
+                    <X className="w-3 h-3 inline-block mr-1" /> Terminate Log
+                  </button>
                 </div>
               )}
             </div>
@@ -196,6 +185,7 @@ const Market = () => {
         </div>
       )}
 
+      {/* الجزء الأصلي للمتجر بدون تغيير */}
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
         <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">System Store</h1>
         <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
@@ -224,11 +214,11 @@ const Market = () => {
                       <span className="text-4xl filter grayscale brightness-200 opacity-90">{item.icon}</span>
                     </div>
                     <div className="flex-1 space-y-2">
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                      <div className="flex justify-between border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
                         <p className="text-xs font-bold text-white italic uppercase">{isLocked ? '?' : item.difficulty}</p>
                       </div>
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                      <div className="flex justify-between border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
                         <p className="text-xs font-bold text-white italic uppercase">{isLocked ? '???' : item.category}</p>
                       </div>
@@ -240,13 +230,7 @@ const Market = () => {
                     </p>
                   </div>
                   <div className="text-center px-1"><p className="text-[10px] text-slate-300 italic leading-tight">{isLocked ? '?' : item.description}</p></div>
-                  <button
-                    onClick={() => handlePurchase(item)}
-                    className={cn(
-                      "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
-                      isLocked ? "bg-slate-900/50 border-slate-700 text-slate-500" : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
-                    )}
-                  >
+                  <button onClick={() => handlePurchase(item)} className={cn("w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all border", isLocked ? "bg-slate-900/50 border-slate-700 text-slate-500" : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20")}>
                     {isLocked ? 'not found' : 'Purchase Item'}
                   </button>
                 </div>
@@ -259,8 +243,14 @@ const Market = () => {
       <BottomNav />
 
       <style jsx>{`
-        @keyframes unfoldVertical { 0% { transform: scaleY(0); } 100% { transform: scaleY(1); } }
-        @keyframes foldVertical { 0% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(0); opacity: 0; } }
+        @keyframes unfoldVertical {
+          0% { transform: scaleY(0); }
+          100% { transform: scaleY(1); }
+        }
+        @keyframes foldVertical {
+          0% { transform: scaleY(1); opacity: 1; }
+          100% { transform: scaleY(0); opacity: 0; }
+        }
       `}</style>
     </div>
   );
