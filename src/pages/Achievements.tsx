@@ -9,6 +9,52 @@ const Achievements = () => {
   const unlockedAchievements = gameState.achievements.filter(a => a.unlocked);
   const lockedAchievements = gameState.achievements.filter(a => !a.unlocked);
 
+  // دالة لتحديد ألوان الرتبة (Rank Colors)
+  const getRankStyles = (rarity) => {
+    switch (rarity?.toUpperCase()) {
+      case 'S':
+        return {
+          border: 'border-yellow-500/80',
+          text: 'text-yellow-400',
+          glow: 'shadow-[0_0_25px_rgba(234,179,8,0.4)]',
+          bg: 'bg-yellow-500/5',
+          label: 'S-RANK'
+        };
+      case 'A':
+        return {
+          border: 'border-red-600/80',
+          text: 'text-red-500',
+          glow: 'shadow-[0_0_20px_rgba(220,38,38,0.3)]',
+          bg: 'bg-red-600/5',
+          label: 'A-RANK'
+        };
+      case 'B':
+        return {
+          border: 'border-purple-500/80',
+          text: 'text-purple-400',
+          glow: 'shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+          bg: 'bg-purple-500/5',
+          label: 'B-RANK'
+        };
+      case 'C':
+        return {
+          border: 'border-blue-500/80',
+          text: 'text-blue-400',
+          glow: 'shadow-[0_0_15px_rgba(59,130,246,0.3)]',
+          bg: 'bg-blue-500/5',
+          label: 'C-RANK'
+        };
+      default: // الرتب الضعيفة E, D
+        return {
+          border: 'border-slate-500/40',
+          text: 'text-slate-400',
+          glow: 'shadow-none',
+          bg: 'bg-transparent',
+          label: rarity ? `${rarity}-RANK` : 'E-RANK'
+        };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
       {/* خلفية النظام التقنية */}
@@ -30,93 +76,120 @@ const Achievements = () => {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-16">
-        {[...unlockedAchievements, ...lockedAchievements].map((achievement) => (
-          <div key={achievement.id} className={cn(
-            "relative group transition-all duration-500",
-            !achievement.unlocked && "opacity-60 grayscale"
-          )}>
-            {/* التوهج الخلفي */}
-            <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
-            
-            <div className="relative bg-black/60 border-2 border-slate-200/90 p-5 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+        {[...unlockedAchievements, ...lockedAchievements].map((achievement) => {
+          const rankStyle = getRankStyles(achievement.rarity);
+          
+          return (
+            <div key={achievement.id} className={cn(
+              "relative group transition-all duration-500",
+              !achievement.unlocked && "opacity-60 grayscale"
+            )}>
+              {/* التوهج الخلفي بناءً على الرتبة */}
+              <div className={cn(
+                "absolute -inset-0.5 blur-md opacity-0 group-hover:opacity-100 transition duration-500",
+                achievement.unlocked ? rankStyle.glow.replace('shadow-', 'bg-') : "bg-blue-500/20"
+              )} />
               
-              {/* ترويسة الكارد */}
-              <div className="flex justify-center mb-6 mt-[-1.8rem]">
-                <div className={cn(
-                  "border px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]",
-                  achievement.unlocked ? "border-slate-400/80" : "border-slate-700/50"
-                )}>
-                  <h2 className="text-[10px] font-black tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase italic">
-                    {achievement.unlocked ? "Mission Cleared" : "Data Restricted"}
-                  </h2>
+              <div className={cn(
+                "relative bg-black/80 border-2 p-5 transition-colors duration-500",
+                achievement.unlocked ? rankStyle.border : "border-slate-800",
+                achievement.unlocked ? rankStyle.glow : ""
+              )}>
+                
+                {/* ترويسة الكارد */}
+                <div className="flex justify-center mb-6 mt-[-1.8rem]">
+                  <div className={cn(
+                    "border px-6 py-1 bg-slate-900/90",
+                    achievement.unlocked ? rankStyle.border : "border-slate-700/50"
+                  )}>
+                    <h2 className={cn(
+                      "text-[10px] font-black tracking-widest uppercase italic",
+                      achievement.unlocked ? rankStyle.text : "text-slate-500"
+                    )}>
+                      {achievement.unlocked ? "Mission Cleared" : "Data Restricted"}
+                    </h2>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-5">
-                  {/* مربع صورة الإنجاز - تم حذف الكلام والإيموجي منه */}
-                  <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0 overflow-hidden">
-                    {achievement.unlocked ? (
-                      <img 
-                        src="/AchievementIcon.png" 
-                        alt="Achievement Icon" 
-                        className="w-full h-full object-cover shadow-[inset_0_0_15px_rgba(255,255,255,0.2)]"
-                      />
-                    ) : (
-                      <div className="relative flex items-center justify-center w-full h-full bg-slate-900/50">
-                        <Lock className="w-8 h-8 text-slate-700" />
+                <div className="flex flex-col gap-5">
+                  <div className="flex items-center gap-5">
+                    {/* مربع صورة الإنجاز */}
+                    <div className={cn(
+                      "w-24 h-24 border flex items-center justify-center bg-black/40 relative flex-shrink-0 overflow-hidden",
+                      achievement.unlocked ? rankStyle.border : "border-slate-700"
+                    )}>
+                      {achievement.unlocked ? (
                         <img 
                           src="/AchievementIcon.png" 
-                          alt="Locked" 
-                          className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
+                          alt="Achievement Icon" 
+                          className="w-full h-full object-cover"
                         />
+                      ) : (
+                        <div className="relative flex items-center justify-center w-full h-full bg-slate-900/50">
+                          <Lock className="w-8 h-8 text-slate-700" />
+                          <img 
+                            src="/AchievementIcon.png" 
+                            alt="Locked" 
+                            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
+                          />
+                        </div>
+                      )}
+                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/70" />
+                      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/70" />
+                    </div>
+
+                    {/* معلومات الإنجاز - الاسم ثم الرتبة */}
+                    <div className="flex-1 space-y-1">
+                      <div className="relative">
+                        <p className="text-[8px] text-slate-500 font-black uppercase tracking-[0.2em] mb-1">Achievement Name</p>
+                        <h3 className={cn(
+                          "text-base font-black italic uppercase tracking-tight leading-tight",
+                          achievement.unlocked ? "text-white" : "text-slate-600"
+                        )}>
+                          {achievement.unlocked ? achievement.name : "????? ????"}
+                        </h3>
                       </div>
-                    )}
-                    {/* زوايا الـ UI التقنية */}
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/70" />
-                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/70" />
-                  </div>
-
-                  {/* معلومات الإنجاز */}
-                  <div className="flex-1 space-y-3">
-                    <div className="relative">
-                      <p className="text-[8px] text-blue-400 font-black uppercase tracking-[0.2em] mb-1">Title</p>
-                      <h3 className="text-sm font-black text-white italic uppercase tracking-tight leading-none drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
-                        {achievement.unlocked ? achievement.name : "????? ????"}
-                      </h3>
-                    </div>
-                    
-                    <div className="h-[1px] bg-gradient-to-r from-blue-500/40 to-transparent w-full" />
-                    
-                    <div className="flex justify-between items-center">
-                      <p className="text-[9px] text-slate-500 uppercase font-bold">Rarity:</p>
-                      <p className="text-[10px] font-bold text-blue-300 italic uppercase">S-Rank</p>
+                      
+                      <div className={cn(
+                        "h-[2px] w-full bg-gradient-to-r from-transparent via-current to-transparent opacity-30",
+                        achievement.unlocked ? rankStyle.text : "text-slate-800"
+                      )} />
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] text-slate-500 uppercase font-bold">Rank:</span>
+                        <span className={cn(
+                          "text-xs font-black italic uppercase tracking-wider",
+                          achievement.unlocked ? rankStyle.text : "text-slate-700"
+                        )}>
+                          {achievement.unlocked ? rankStyle.label : "Locked"}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* الوصف */}
-                <div className="py-3 border-y border-slate-800/50 bg-white/[0.02] px-4">
-                  <p className="text-[11px] text-slate-300 italic leading-relaxed text-center">
-                    {achievement.unlocked 
-                      ? achievement.description 
-                      : "The system has hidden the details for this trial."}
-                  </p>
-                </div>
+                  {/* الوصف */}
+                  <div className="py-3 border-y border-slate-800/50 bg-white/[0.02] px-4">
+                    <p className="text-[11px] text-slate-300 italic leading-relaxed text-center">
+                      {achievement.unlocked 
+                        ? achievement.description 
+                        : "The system has hidden the details for this trial."}
+                    </p>
+                  </div>
 
-                {/* زر الحالة */}
-                <div className={cn(
-                  "w-full py-1.5 border text-center text-[9px] font-black tracking-[0.4em] uppercase shadow-lg",
-                  achievement.unlocked 
-                    ? "bg-blue-600/10 border-blue-400/50 text-blue-200" 
-                    : "bg-black/40 border-slate-900 text-slate-700"
-                )}>
-                  {achievement.unlocked ? "Claimed" : "Locked"}
+                  {/* زر الحالة */}
+                  <div className={cn(
+                    "w-full py-1.5 border text-center text-[9px] font-black tracking-[0.4em] uppercase transition-all duration-500",
+                    achievement.unlocked 
+                      ? `${rankStyle.border} ${rankStyle.bg} ${rankStyle.text}` 
+                      : "bg-black/40 border-slate-900 text-slate-700"
+                  )}>
+                    {achievement.unlocked ? "Claimed" : "Locked"}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </main>
 
       <BottomNav />
