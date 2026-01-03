@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, AlertTriangle, X } from 'lucide-react';
+import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +11,7 @@ const Market = () => {
   const { playPurchase } = useSoundEffects();
   
   const [isScanning, setIsScanning] = useState(false);
+  const [isClosing, setIsClosing] = useState(false); // لإدارة أنيميشن الإغلاق
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
 
@@ -81,11 +82,22 @@ const Market = () => {
   const startSystemScan = (item) => {
     setActiveItem(item);
     setIsScanning(true);
+    setIsClosing(false);
     setScanResult('searching');
     setTimeout(() => {
       setScanResult('failed');
-      // تمت إزالة التايم آوت الذي يغلق الكارد تلقائياً
     }, 3000);
+  };
+
+  // دالة الإغلاق بالأنيميشن المطلوب
+  const closeScanModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setIsClosing(false);
+      setScanResult('idle');
+      setActiveItem(null);
+    }, 500); // وقت الأنيميشن
   };
 
   const handlePurchase = (item) => {
@@ -110,94 +122,121 @@ const Market = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Modal - Improved Design */}
+      {/* System Modal */}
       {isScanning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 max-w-sm w-full transition-all animate-[unfoldVertical_0.4s_ease-out_forwards]">
+          <div className={cn(
+            "relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.4)] p-6 max-w-sm w-full font-mono overflow-hidden",
+            isClosing ? "animate-[foldVertical_0.5s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
+          )}>
+            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
             
-            {/* Header Mirroring the Main Card Style */}
-            <div className="flex justify-center mb-6 mt-[-2rem]">
-              <div className="border border-red-500/50 px-4 py-1 bg-slate-900/95 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                <h2 className="text-xs font-bold tracking-[0.2em] text-red-400 uppercase italic">
-                   System Analysis
-                </h2>
-              </div>
-            </div>
-
-            {scanResult === 'searching' ? (
-              <div className="py-12 flex flex-col items-center gap-4">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-                <p className="text-[10px] text-blue-300 animate-pulse tracking-widest uppercase font-mono">Decoding Encrypted Data...</p>
-              </div>
-            ) : (
-              <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                {/* Information Block - Styled like the Item Card */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 border border-red-500/30 flex items-center justify-center bg-red-950/10 relative">
-                       <AlertTriangle className="w-10 h-10 text-red-500/40" />
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      {(() => {
-                        const playerLevel = gameState.level || 1;
-                        const requiredLevel = (activeItem?.rankLevel || 0) * 10;
-                        const levelDiff = requiredLevel - playerLevel;
-
-                        const revealText = (text, diff) => {
-                          if (diff <= 5) return text;
-                          if (diff <= 15) return text.substring(0, 3) + "...";
-                          return "??? ???";
-                        };
-
-                        return (
-                          <>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Name:</p>
-                              <p className="text-xs font-bold text-white uppercase italic">
-                                {revealText(activeItem?.name, levelDiff)}
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
-                              <p className="text-xs font-bold text-red-500 italic">
-                                {levelDiff <= 10 ? activeItem?.difficulty : '??'}
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
-                              <p className="text-xs font-bold text-white uppercase italic">
-                                {revealText(activeItem?.category, levelDiff)}
-                              </p>
-                            </div>
-                          </>
-                        );
-                      })()}
+            <div className="text-center space-y-4">
+              <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic">
+                {scanResult === 'searching' ? 'Analyzing Data...' : '[Access Denied]'}
+              </h2>
+              
+              {scanResult === 'searching' ? (
+                <div className="py-10 flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                       <span className="text-[8px] animate-pulse text-blue-300">SCN</span>
                     </div>
                   </div>
-
-                  {/* Warning Section */}
-                  <div className="py-3 border-t border-slate-700/50 bg-red-950/20 px-2 text-center">
-                    <p className="text-[10px] text-red-400 font-bold uppercase tracking-tighter">
-                      Access Denied: Level { (activeItem?.rankLevel || 0) * 10 } Required
-                    </p>
-                  </div>
+                  <p className="text-[10px] text-blue-200 animate-pulse tracking-[0.3em] uppercase">Bypassing Encryption...</p>
                 </div>
+              ) : (
+                <div className="py-2 flex flex-col items-start gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500 w-full">
+                  {(() => {
+                    const playerLevel = gameState.level || 1;
+                    const requiredLevel = (activeItem?.rankLevel || 0) * 10;
+                    const levelDiff = requiredLevel - playerLevel;
 
-                {/* Manual Close Button */}
-                <button
-                  onClick={() => {
-                    setIsScanning(false);
-                    setScanResult('idle');
-                    setActiveItem(null);
-                  }}
-                  className="w-full py-2 bg-red-500/10 border border-red-500/40 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
-                >
-                  <X className="w-3 h-3" />
-                  Close System Log
-                </button>
-              </div>
-            )}
+                    const revealText = (text, diff) => {
+                      if (diff <= 5) return text;
+                      if (diff <= 15) return text.substring(0, 3) + ".".repeat(text.length - 3);
+                      if (diff <= 30) return text[0] + "?".repeat(text.length - 1);
+                      return "UNKNOWN DATA";
+                    };
+
+                    // حساب قوة الشريط بناءً على صعوبة العنصر
+                    const powerLevels = { 'S': '80%', 'SS': '92%', 'EX': '100%' };
+                    const itemPower = powerLevels[activeItem?.difficulty] || '60%';
+
+                    return (
+                      <div className="w-full space-y-4">
+                        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
+                          <div className="absolute top-0 right-0 p-1">
+                            <ShieldAlert className="w-4 h-4 text-red-500/50" />
+                          </div>
+                          
+                          <div className="mb-3 border-b border-blue-500/30 pb-2">
+                            <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
+                            <span className="text-sm font-bold text-white tracking-wider">
+                              {revealText(activeItem?.name || "???", levelDiff)}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-[9px] text-blue-400 block mb-1">DIFFICULTY:</span>
+                              <span className="text-xs font-bold text-red-400">
+                                {levelDiff <= 15 ? activeItem?.difficulty : '??'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] text-blue-400 block mb-1">CATEGORY:</span>
+                              <span className="text-xs font-bold text-white uppercase">
+                                {revealText(activeItem?.category || "???", levelDiff)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* قسم القوة والشكل المكتشف الجديد */}
+                        <div className="w-full border border-red-900/40 p-3 bg-red-950/10 space-y-3">
+                          <div className="flex items-center gap-2 border-b border-red-900/20 pb-1">
+                            <Zap className="w-3 h-3 text-red-500" />
+                            <span className="text-[8px] font-bold text-red-400 uppercase">Structural Power Analysis</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 border border-red-500/20 flex items-center justify-center bg-black/40">
+                              <span className="text-2xl filter blur-[2px] opacity-40">{activeItem?.icon}</span>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex justify-between text-[7px] text-slate-400 uppercase">
+                                <span>Mana Output:</span>
+                                <span className="text-red-500 font-bold tracking-widest">{itemPower}</span>
+                              </div>
+                              <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                                <div className="h-full bg-red-600 shadow-[0_0_8px_red]" style={{ width: itemPower }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-left bg-red-950/20 border border-red-900/50 p-3">
+                          <p className="text-[10px] text-red-400 leading-relaxed font-bold uppercase tracking-tighter">
+                            Warning: Player level [{playerLevel}] is insufficient to decrypt this entry. 
+                            Minimum level required: {requiredLevel}.
+                          </p>
+                        </div>
+
+                        {/* زر الإغلاق اليدوي */}
+                        <button 
+                          onClick={closeScanModal}
+                          className="w-full py-2 mt-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all active:scale-95"
+                        >
+                          <X className="w-3 h-3 inline-block mr-1" /> Terminate Connection
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -290,6 +329,10 @@ const Market = () => {
         @keyframes unfoldVertical {
           0% { transform: scaleY(0); }
           100% { transform: scaleY(1); }
+        }
+        @keyframes foldVertical {
+          0% { transform: scaleY(1); opacity: 1; }
+          100% { transform: scaleY(0); opacity: 0; }
         }
       `}</style>
     </div>
