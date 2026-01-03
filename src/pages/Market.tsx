@@ -10,11 +10,9 @@ const Market = () => {
   const { gameState, purchaseItem } = useGameState();
   const { playPurchase } = useSoundEffects();
   
-  // حالات النظام للبحث
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
 
-  // مصفوفة العناصر بالترتيب المطلوب
   const SOLO_ITEMS = [
     { 
       id: 'hp_potion', 
@@ -108,28 +106,31 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* خلفية تقنية مع تأثير الضباب الأزرق */}
+      {/* خلفية تقنية */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* مودال البحث بالنظام */}
+      {/* نافذة البحث بانميشن الفتح */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.4)] p-6 max-w-sm w-full font-mono">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono animate-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-out">
+            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
+            
             <div className="text-center space-y-4">
-              <h2 className="text-blue-400 text-lg font-bold tracking-tighter">SYSTEM SCANNING...</h2>
+              <h2 className="text-blue-400 text-lg font-bold tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">SYSTEM SCANNING...</h2>
               {scanResult === 'searching' ? (
                 <div className="py-8 flex flex-col items-center gap-4">
                   <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-                  <p className="text-xs text-blue-200 animate-pulse">جاري محاولة فك تشفير بيانات العنصر...</p>
+                  <p className="text-xs text-blue-200 animate-pulse tracking-widest">DECRYPTING DATA...</p>
                 </div>
               ) : (
-                <div className="py-8 flex flex-col items-center gap-4 animate-in zoom-in">
+                <div className="py-8 flex flex-col items-center gap-4 animate-in zoom-in duration-300">
                   <AlertTriangle className="w-12 h-12 text-red-500" />
-                  <p className="text-sm text-red-400 font-bold">[خطأ في الوصول]</p>
-                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase">المستوى غير كافٍ</p>
+                  <p className="text-sm text-red-400 font-bold drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">[ACCESS DENIED]</p>
+                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase">Your level is too low to see this item.</p>
                 </div>
               )}
             </div>
@@ -154,11 +155,9 @@ const Market = () => {
           const isLocked = !canSeeItem(item);
           return (
             <div key={item.id} className="relative group">
-              {/* تأثير التوهج عند التحويم */}
               <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
               
               <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
-                {/* ترويسة العنصر - توهج ابيض قوي */}
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
@@ -169,13 +168,10 @@ const Market = () => {
 
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    {/* أيقونة العنصر - بدون لون مع توهج */}
                     <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
                       <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
                         {item.icon}
                       </span>
-                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white" />
-                      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white" />
                     </div>
 
                     <div className="flex-1 space-y-2">
@@ -194,7 +190,6 @@ const Market = () => {
                     </div>
                   </div>
 
-                  {/* السعر - توهج مركزي قوي */}
                   <div className="py-2 border-t border-slate-700/50">
                     <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
                       Gold: {isLocked ? '???,???' : item.price.toLocaleString()}
@@ -207,13 +202,12 @@ const Market = () => {
                     </p>
                   </div>
 
-                  {/* زر الشراء */}
                   <button
                     onClick={() => handlePurchase(item)}
                     className={cn(
                       "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
                       isLocked 
-                        ? "bg-slate-900/50 border-slate-700 text-slate-500 cursor-help" 
+                        ? "bg-slate-900/50 border-slate-700 text-slate-500" 
                         : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
                     )}
                   >
