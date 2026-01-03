@@ -14,7 +14,6 @@ const Market = () => {
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [targetItemName, setTargetItemName] = useState('');
 
-  // --- مصفوفة العناصر المنظمة ---
   const SOLO_ITEMS = [
     { 
       id: 'hp_potion', 
@@ -22,7 +21,7 @@ const Market = () => {
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
-      icon: '', 
+      icon: '🧪', 
       description: 'تعيد 50% من نقاط الصحة الحالية للمستخدم.',
       rankLevel: 0,
       isBasic: true 
@@ -33,19 +32,18 @@ const Market = () => {
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
-      icon: '', 
+      icon: '🧪', 
       description: 'تعيد 50% من نقاط المانا الحالية للمستخدم.',
       rankLevel: 0,
       isBasic: true 
     },
-    // العناصر المخفية الثلاثة
     { 
       id: 'hidden_1', 
       name: '???', 
       category: '???', 
       difficulty: '?', 
       price: 1500000, 
-      icon: '', 
+      icon: '🧪', 
       description: '???',
       rankLevel: 99, 
       isBasic: false 
@@ -56,7 +54,7 @@ const Market = () => {
       category: '???', 
       difficulty: '?', 
       price: 5000000, 
-      icon: '', 
+      icon: '🧪', 
       description: '???',
       rankLevel: 99, 
       isBasic: false 
@@ -67,7 +65,7 @@ const Market = () => {
       category: '???', 
       difficulty: '?', 
       price: 99999999, 
-      icon: '', 
+      icon: '🧪', 
       description: '???',
       rankLevel: 99, 
       isBasic: false 
@@ -172,8 +170,8 @@ const Market = () => {
           const isLocked = !canSeeItem(item);
 
           return (
-            <div key={item.id} className="relative group">
-              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+            <div key={item.id} className="relative group cursor-pointer transition-all active:brightness-125 active:scale-[0.99]">
+              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] group-active:shadow-[0_0_30px_rgba(59,130,246,0.4)] group-active:border-blue-500 transition-all">
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white uppercase">
@@ -186,11 +184,10 @@ const Market = () => {
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
                       <span className={cn(
-                        "text-4xl transition-all duration-300 font-mono text-blue-500/20",
+                        "text-4xl transition-all duration-300 grayscale brightness-[2] opacity-40",
                         isLocked ? "opacity-20" : "opacity-40"
                       )}>
-                        {/* تمت إزالة الأيقونات كما طلبت */}
-                        {isLocked ? '?' : 'ITEM'}
+                        {item.icon}
                       </span>
                     </div>
 
@@ -219,7 +216,10 @@ const Market = () => {
                   </div>
 
                   <button
-                    onClick={() => handlePurchase(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePurchase(item);
+                    }}
                     className={cn(
                       "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border",
                       isLocked 
