@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, AlertTriangle, X } from 'lucide-react';
+import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Activity, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -84,7 +84,7 @@ const Market = () => {
     setScanResult('searching');
     setTimeout(() => {
       setScanResult('failed');
-      // تمت إزالة التايم آوت الذي يغلق الكارد تلقائياً
+      // تمت إزالة التايم آوت التلقائي للإغلاق بناءً على طلبك
     }, 3000);
   };
 
@@ -110,15 +110,14 @@ const Market = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Modal - Improved Design */}
+      {/* System Modal with Solo Leveling UI */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 max-w-sm w-full transition-all animate-[unfoldVertical_0.4s_ease-out_forwards]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
+          <div className="relative bg-black/80 border-2 border-blue-500/60 shadow-[0_0_50px_rgba(59,130,246,0.3)] p-6 max-w-sm w-full font-mono overflow-hidden animate-[unfoldVertical_0.4s_ease-out_forwards]">
             
-            {/* Header Mirroring the Main Card Style */}
             <div className="flex justify-center mb-6 mt-[-2rem]">
-              <div className="border border-red-500/50 px-4 py-1 bg-slate-900/95 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                <h2 className="text-xs font-bold tracking-[0.2em] text-red-400 uppercase italic">
+              <div className="border border-blue-500/50 px-6 py-1 bg-[#050b18] shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <h2 className="text-xs font-bold tracking-[0.3em] text-blue-400 uppercase italic">
                    System Analysis
                 </h2>
               </div>
@@ -126,76 +125,93 @@ const Market = () => {
 
             {scanResult === 'searching' ? (
               <div className="py-12 flex flex-col items-center gap-4">
-                <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-                <p className="text-[10px] text-blue-300 animate-pulse tracking-widest uppercase font-mono">Decoding Encrypted Data...</p>
+                <div className="relative w-16 h-16">
+                  <Loader2 className="w-full h-full text-blue-500 animate-spin" />
+                  <Activity className="absolute inset-0 m-auto w-6 h-6 text-blue-300 animate-pulse" />
+                </div>
+                <p className="text-[10px] text-blue-200 animate-pulse tracking-[0.3em] uppercase">Bypassing System Locks...</p>
               </div>
             ) : (
-              <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                {/* Information Block - Styled like the Item Card */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 border border-red-500/30 flex items-center justify-center bg-red-950/10 relative">
-                       <AlertTriangle className="w-10 h-10 text-red-500/40" />
-                    </div>
+              <div className="space-y-4 animate-in fade-in duration-500">
+                {(() => {
+                  const playerLevel = gameState.level || 1;
+                  const requiredLevel = (activeItem?.rankLevel || 0) * 10;
+                  const levelDiff = requiredLevel - playerLevel;
 
-                    <div className="flex-1 space-y-3">
-                      {(() => {
-                        const playerLevel = gameState.level || 1;
-                        const requiredLevel = (activeItem?.rankLevel || 0) * 10;
-                        const levelDiff = requiredLevel - playerLevel;
+                  const revealText = (text, diff) => {
+                    if (diff <= 5) return text;
+                    if (diff <= 15) return text.substring(0, 3) + ".".repeat(5);
+                    return "????????";
+                  };
 
-                        const revealText = (text, diff) => {
-                          if (diff <= 5) return text;
-                          if (diff <= 15) return text.substring(0, 3) + "...";
-                          return "??? ???";
-                        };
+                  return (
+                    <>
+                      <div className="border border-white/10 p-4 bg-blue-950/10 space-y-3 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-1 opacity-20"><Lock className="w-4 h-4" /></div>
+                        
+                        <div className="border-b border-blue-500/20 pb-2">
+                          <p className="text-[8px] text-blue-400 uppercase mb-1">Detected Object:</p>
+                          <p className="text-sm font-bold text-white tracking-tighter uppercase italic">
+                            {revealText(activeItem?.name || "", levelDiff)}
+                          </p>
+                        </div>
 
-                        return (
-                          <>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Name:</p>
-                              <p className="text-xs font-bold text-white uppercase italic">
-                                {revealText(activeItem?.name, levelDiff)}
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
-                              <p className="text-xs font-bold text-red-500 italic">
-                                {levelDiff <= 10 ? activeItem?.difficulty : '??'}
-                              </p>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                              <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
-                              <p className="text-xs font-bold text-white uppercase italic">
-                                {revealText(activeItem?.category, levelDiff)}
-                              </p>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-[8px] text-blue-400 uppercase">Rank:</p>
+                            <p className="text-xs font-bold text-red-500 uppercase italic">
+                              {levelDiff <= 15 ? activeItem?.difficulty : '??'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[8px] text-blue-400 uppercase">Category:</p>
+                            <p className="text-xs font-bold text-white uppercase italic">
+                              {revealText(activeItem?.category || "", levelDiff)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Warning Section */}
-                  <div className="py-3 border-t border-slate-700/50 bg-red-950/20 px-2 text-center">
-                    <p className="text-[10px] text-red-400 font-bold uppercase tracking-tighter">
-                      Access Denied: Level { (activeItem?.rankLevel || 0) * 10 } Required
-                    </p>
-                  </div>
-                </div>
+                      {/* Solo Leveling Style Power Estimation */}
+                      <div className="border border-red-500/30 p-4 bg-red-950/10 relative">
+                        <div className="flex items-center gap-2 mb-2">
+                           <ShieldAlert className="w-4 h-4 text-red-500" />
+                           <p className="text-[9px] font-bold text-red-400 uppercase tracking-widest">Estimated Power</p>
+                        </div>
+                        <div className="space-y-2">
+                           <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.8)]" 
+                                style={{ width: `${Math.max(10, 100 - levelDiff * 2)}%` }} 
+                              />
+                           </div>
+                           <p className="text-[10px] text-slate-300 italic leading-relaxed">
+                              {levelDiff > 10 
+                                ? "Analysis failed. The entity's power far exceeds the current user's perception capabilities." 
+                                : "Warning: Approaching lethal power levels. Extreme caution is advised during interaction."}
+                           </p>
+                        </div>
+                      </div>
 
-                {/* Manual Close Button */}
-                <button
-                  onClick={() => {
-                    setIsScanning(false);
-                    setScanResult('idle');
-                    setActiveItem(null);
-                  }}
-                  className="w-full py-2 bg-red-500/10 border border-red-500/40 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
-                >
-                  <X className="w-3 h-3" />
-                  Close System Log
-                </button>
+                      <div className="bg-red-600/10 border border-red-600/40 p-2 text-center">
+                         <p className="text-[10px] text-red-500 font-bold animate-pulse">
+                            [SYSTEM ERROR: INSUFFICIENT LEVEL - {playerLevel}/{requiredLevel}]
+                         </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setIsScanning(false);
+                          setScanResult('idle');
+                          setActiveItem(null);
+                        }}
+                        className="w-full py-2 bg-blue-600/10 border border-blue-500/40 text-blue-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        <X className="w-3 h-3" /> Close Protocol
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>
