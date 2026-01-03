@@ -16,23 +16,23 @@ const Market = () => {
   const SOLO_ITEMS = [
     { 
       id: 'hp_potion', 
-      name: 'جرعة استعادة الحياة 50%', 
+      name: 'HP Recovery Potion', 
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
       icon: '🧪', 
-      description: 'تعيد 50% من نقاط الصحة الحالية للمستخدم.',
+      description: 'Restores 50% of the user\'s current health.',
       rankLevel: 0,
       isBasic: true 
     },
     { 
       id: 'mp_potion', 
-      name: 'جرعة استعادة الطاقة 50%', 
+      name: 'MP Recovery Potion', 
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
       icon: '🧪', 
-      description: 'تعيد 50% من نقاط المانا الحالية للمستخدم.',
+      description: 'Restores 50% of the user\'s current mana.',
       rankLevel: 0,
       isBasic: true 
     },
@@ -106,31 +106,34 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* خلفية تقنية */}
+      {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* نافذة البحث بانميشن الفتح */}
+      {/* System Modal with Unfolding Animation */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono animate-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-out">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono overflow-hidden animate-[unfold_0.4s_ease-out_forwards]">
             <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
             
-            <div className="text-center space-y-4">
-              <h2 className="text-blue-400 text-lg font-bold tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">SYSTEM SCANNING...</h2>
+            <div className="text-center space-y-4 whitespace-nowrap">
+              <h2 className="text-blue-400 text-lg font-bold tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] uppercase">
+                System Scanning...
+              </h2>
+              
               {scanResult === 'searching' ? (
                 <div className="py-8 flex flex-col items-center gap-4">
                   <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-                  <p className="text-xs text-blue-200 animate-pulse tracking-widest">DECRYPTING DATA...</p>
+                  <p className="text-xs text-blue-200 animate-pulse tracking-widest uppercase">Decrypting Data...</p>
                 </div>
               ) : (
-                <div className="py-8 flex flex-col items-center gap-4 animate-in zoom-in duration-300">
+                <div className="py-8 flex flex-col items-center gap-4 animate-in fade-in duration-500">
                   <AlertTriangle className="w-12 h-12 text-red-500" />
-                  <p className="text-sm text-red-400 font-bold drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">[ACCESS DENIED]</p>
-                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase">Your level is too low to see this item.</p>
+                  <p className="text-sm text-red-400 font-bold drop-shadow-[0_0_10px_rgba(239,68,68,0.5)] uppercase">[Access Denied]</p>
+                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase">Current Level Insufficient</p>
                 </div>
               )}
             </div>
@@ -221,6 +224,13 @@ const Market = () => {
       </main>
 
       <BottomNav />
+
+      <style jsx>{`
+        @keyframes unfold {
+          0% { transform: scaleX(0); }
+          100% { transform: scaleX(1); }
+        }
+      `}</style>
     </div>
   );
 };
