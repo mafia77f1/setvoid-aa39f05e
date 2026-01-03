@@ -1,145 +1,153 @@
 import { useGameState } from '@/hooks/useGameState';
-import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { AchievementBadge } from '@/components/AchievementBadge';
 import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { Coins, ShoppingBag, Package, Info } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { Trophy, Target, Lock, Crown, Zap, Swords } from 'lucide-react';
 
-const Market = () => {
-  const { gameState, purchaseItem, useItem } = useGameState();
-  const { playPurchase } = useSoundEffects();
-
-  const SOLO_ITEMS = [
-    { 
-      id: '1', 
-      name: 'Leather Pouch', 
-      category: 'Miscellaneous', 
-      difficulty: 'None', 
-      price: 1500000, 
-      icon: '💰',
-      description: 'A pouch for carrying money. If you open it, you will get gold.' 
-    },
-    { 
-      id: '2', 
-      name: "Kasaka's Venom", 
-      category: 'Elixir', 
-      difficulty: 'A', 
-      price: 50000, 
-      icon: '🧪',
-      description: 'A purified poison from the Great Serpent. Grants permanent defense buff.' 
-    }
-  ];
-
-  const handlePurchase = (itemId: string, price: number, name: string) => {
-    if (gameState.gold >= price) {
-      purchaseItem(itemId);
-      playPurchase();
-      toast({
-        title: 'System: SUCCESS',
-        description: `Acquired ${name}`,
-      });
-    } else {
-      toast({
-        title: 'System: WARNING',
-        description: 'Insufficient Gold',
-        variant: 'destructive',
-      });
-    }
-  };
+const Achievements = () => {
+  const { gameState } = useGameState();
+  
+  const unlockedAchievements = gameState.achievements.filter(a => a.unlocked);
+  const lockedAchievements = gameState.achievements.filter(a => !a.unlocked);
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* خلفية تقنية مع تأثير الضباب الأزرق */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
+    <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-blue-500/30 pb-24 overflow-x-hidden">
+      
+      {/* تأثيرات الخلفية العميقة - Gate Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(30,64,175,0.3),transparent_60%)]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        {/* خطوط الـ Scanline المتحركة */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[size:100%_4px,4px_100%]" />
       </div>
 
-      <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
-        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
-          System Store
-        </h1>
-        <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
-          <Coins className="w-3.5 h-3.5 text-yellow-400" />
-          {/* توهج الذهب */}
-          <span className="font-mono font-bold text-blue-100 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] text-sm">
-            {gameState.gold.toLocaleString()}
-          </span>
+      <header className="relative z-10 pt-10 pb-6 px-4 text-center">
+        <div className="inline-block relative">
+          <div className="absolute inset-0 blur-2xl bg-blue-600/20 rounded-full animate-pulse" />
+          <h1 className="relative text-4xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-200 to-blue-500 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+            Achievements
+          </h1>
+        </div>
+        
+        {/* شريط التقدم العلوي - Player Rank Style */}
+        <div className="mt-4 max-w-[250px] mx-auto">
+          <div className="flex justify-between text-[10px] font-bold text-blue-400 mb-1 uppercase tracking-widest">
+            <span>Completion Rate</span>
+            <span>{Math.round((unlockedAchievements.length / gameState.achievements.length) * 100)}%</span>
+          </div>
+          <div className="h-1 w-full bg-blue-950 border border-blue-500/30 rounded-full overflow-hidden p-[1px]">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+              style={{ width: `${(unlockedAchievements.length / gameState.achievements.length) * 100}%` }}
+            />
+          </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-md mx-auto space-y-12">
-        {SOLO_ITEMS.map((item) => (
-          <div key={item.id} className="relative group">
-            <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
-            
-            <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
-              {/* ترويسة العنصر - توهج ابيض قوي */}
-              <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                  <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
-                    ITEM: <span className="text-blue-100">{item.name}</span>
-                  </h2>
-                </div>
-              </div>
-
-              {/* شبكة المعلومات مصغرة للجوال */}
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  {/* أيقونة العنصر مصغرة */}
-                  <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                    <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
-                      {item.icon}
-                    </span>
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white" />
-                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white" />
-                  </div>
-
-                  {/* البيانات الجانبية */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                      <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
-                      <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">{item.difficulty}</p>
-                    </div>
-                    <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                      <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
-                      <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">{item.category}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* السعر - توهج مركزي قوي */}
-                <div className="py-2 border-t border-slate-700/50">
-                  <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
-                    Gold: {item.price.toLocaleString()}
-                  </p>
-                </div>
-
-                {/* الوصف */}
-                <div className="text-center px-1">
-                  <p className="text-[10px] text-slate-300 italic leading-tight">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* زر الشراء */}
-                <button
-                  onClick={() => handlePurchase(item.id, item.price, item.name)}
-                  disabled={gameState.gold < item.price}
-                  className="w-full mt-2 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.98] disabled:opacity-20 drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]"
-                >
-                  Purchase Item
-                </button>
-              </div>
+      <main className="relative z-10 px-4 space-y-10">
+        
+        {/* قسم الإنجازات المحققة - بأسلوب بطاقات المهام المكتملة */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-1 bg-blue-500/20 border border-blue-500/50">
+              <Swords className="w-4 h-4 text-blue-400" />
             </div>
+            <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-blue-100 italic">Unlocked Titles</h2>
+            <div className="flex-1 h-[1px] bg-gradient-to-r from-blue-500/50 to-transparent" />
           </div>
-        ))}
+
+          <div className="grid grid-cols-1 gap-6">
+            {unlockedAchievements.map((achievement) => (
+              <div key={achievement.id} className="relative group">
+                {/* الإطار الخارجي المضيء */}
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-blue-600/50 via-cyan-400/50 to-blue-600/50 opacity-100 blur-[2px]" />
+                
+                <div className="relative bg-[#050b18] border border-white/20 p-4 shadow-2xl">
+                  {/* زوايا كلاسيكية للنظام */}
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-blue-400" />
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-blue-400" />
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-16 h-16 bg-blue-900/20 border border-blue-500/40 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-500/10 transition-colors">
+                        <AchievementBadge achievement={achievement} />
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] bg-[length:250%_250%] animate-[shimmer_3s_infinite]" />
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-3 h-3 text-yellow-400 fill-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
+                        <h3 className="text-sm font-bold text-white uppercase tracking-tight group-hover:text-blue-300 transition-colors">
+                          {achievement.name}
+                        </h3>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-tight italic">
+                        {achievement.description || "System reward for overcoming the trials."}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[9px] font-black text-blue-500/60 uppercase block">Status</span>
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">Cleared</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* قسم الإنجازات المغلقة - بأسلوب غامض وداكن */}
+        <section className="pb-10">
+          <div className="flex items-center gap-3 mb-6 opacity-50">
+            <Lock className="w-4 h-4 text-slate-500" />
+            <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-slate-500 italic">Locked Trials</h2>
+            <div className="flex-1 h-[1px] bg-slate-800" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {lockedAchievements.map((achievement) => (
+              <div key={achievement.id} className="relative bg-black/40 border border-slate-800 p-3 group grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden">
+                <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px]" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center space-y-2">
+                  <div className="w-10 h-10 flex items-center justify-center opacity-30">
+                     <AchievementBadge achievement={achievement} />
+                  </div>
+                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter line-clamp-1">
+                    ???
+                  </h3>
+                  <div className="px-2 py-[2px] bg-slate-800/50 border border-slate-700 rounded-full">
+                    <span className="text-[8px] text-slate-400 font-mono">Hidden Reward</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
       </main>
 
+      {/* رسالة تذييل النظام */}
+      <div className="fixed bottom-20 left-0 w-full px-6 pointer-events-none z-20">
+        <div className="bg-blue-600/5 backdrop-blur-md border-y border-blue-500/20 py-2">
+           <p className="text-[9px] text-center text-blue-400/60 font-mono animate-pulse">
+             [ ATTENTION: UNLOCKING MORE TITLES WILL INCREASE YOUR PLAYER RANK ]
+           </p>
+        </div>
+      </div>
+
       <BottomNav />
+
+      {/* Keyframe Animations for CSS */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes shimmer {
+          0% { background-position: -200% -200%; }
+          100% { background-position: 200% 200%; }
+        }
+      `}} />
     </div>
   );
 };
 
-export default Market;
+export default Achievements;
