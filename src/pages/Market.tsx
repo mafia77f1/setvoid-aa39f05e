@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, CheckCircle2, Sparkles } from 'lucide-react';
+import { Coins, Loader2, ShieldAlert, X, Zap, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -11,14 +11,10 @@ const Market = () => {
   const { playPurchase } = useSoundEffects();
   
   const [isScanning, setIsScanning] = useState(false);
-  const [isClosingScan, setIsClosingScan] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
-
-  // حالة كارد الشراء
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [isClosingPurchase, setIsClosingPurchase] = useState(false);
-  const [purchasedItem, setPurchasedItem] = useState(null);
 
   const SOLO_ITEMS = [
     { id: 'hp_potion', name: 'HP Recovery Potion 50%', category: 'Elixir', difficulty: 'C', price: 500, icon: '🧪', description: 'Restores 50% of the user\'s current health.', rankLevel: 0, isBasic: true },
@@ -28,50 +24,51 @@ const Market = () => {
     { id: 'hidden_3', name: 'Absolute Power Source', category: 'Origin', difficulty: 'EX', price: 99999999, icon: '🧪', description: 'The core of the system itself.', rankLevel: 10, isBasic: false },
   ];
 
+  // دالة لتحديد لون العنصر بناءً على قوته
+  const getRankColor = (difficulty) => {
+    switch (difficulty) {
+      case 'S': return 'text-yellow-400 border-yellow-500 shadow-yellow-500/20';
+      case 'SS': return 'text-purple-400 border-purple-500 shadow-purple-500/20';
+      case 'EX': return 'text-red-500 border-red-600 shadow-red-600/40 animate-pulse';
+      default: return 'text-blue-400 border-blue-500 shadow-blue-500/20';
+    }
+  };
+
   const canSeeItem = (item) => {
     if (item.isBasic) return true;
     const playerRankLevel = Math.floor((gameState.level || 1) / 10); 
     return playerRankLevel >= item.rankLevel;
   };
 
-  // دوال الإغلاق بتأثير الطول للطول
-  const closeScan = () => {
-    setIsClosingScan(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setIsClosingScan(false);
-      setScanResult('idle');
-      setActiveItem(null);
-    }, 400);
-  };
-
-  const closePurchase = () => {
-    setIsClosingPurchase(true);
-    setTimeout(() => {
-      setShowPurchaseModal(false);
-      setIsClosingPurchase(false);
-      setPurchasedItem(null);
-    }, 400);
-  };
-
-  const startSystemScan = (item) => {
-    setActiveItem(item);
-    setIsScanning(true);
-    setScanResult('searching');
-    setTimeout(() => setScanResult('failed'), 3000);
-  };
-
-  const handlePurchase = (item) => {
-    const isLocked = !canSeeItem(item);
-    if (isLocked) {
-      startSystemScan(item);
+  const handleOpenConfirm = (item) => {
+    if (!canSeeItem(item)) {
+      setActiveItem(item);
+      setIsScanning(true);
+      setScanResult('searching');
+      setTimeout(() => setScanResult('failed'), 2000);
       return;
     }
-    if (gameState.gold >= item.price) {
-      purchaseItem(item.id);
+    setActiveItem(item);
+    setShowConfirm(true);
+  };
+
+  const closeModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setShowConfirm(false);
+      setIsClosing(false);
+      setActiveItem(null);
+      setScanResult('idle');
+    }, 400);
+  };
+
+  const executePurchase = () => {
+    if (gameState.gold >= activeItem.price) {
+      purchaseItem(activeItem.id);
       playPurchase();
-      setPurchasedItem(item);
-      setShowPurchaseModal(true);
+      toast({ title: 'System: SUCCESS', description: `Acquired ${activeItem.name}` });
+      closeModal();
     } else {
       toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
     }
@@ -79,159 +76,146 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* كارد الشراء الجديد بنفس لغة تصميم المتجر */}
-      {showPurchaseModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className={cn(
-            "relative bg-[#050b18] border-2 border-white p-6 max-w-sm w-full font-mono overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.15)]",
-            isClosingPurchase ? "animate-[foldVertical_0.4s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
-          )}>
-            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-blue-500" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-blue-500" />
-            
-            <div className="text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="w-14 h-14 bg-white/5 border border-white/20 flex items-center justify-center rounded-sm">
-                  <Sparkles className="w-8 h-8 text-blue-400 animate-pulse" />
-                </div>
-              </div>
-              <div>
-                <h2 className="text-white text-lg font-bold tracking-widest uppercase italic">Item Acquired</h2>
-                <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2" />
-              </div>
-              <div className="bg-white/5 border border-white/10 p-4 flex items-center gap-4">
-                <span className="text-4xl">{purchasedItem?.icon}</span>
-                <div className="text-left">
-                  <p className="text-xs font-bold text-white uppercase tracking-wider">{purchasedItem?.name}</p>
-                  <p className="text-[8px] text-blue-400 font-bold uppercase tracking-widest mt-1">{purchasedItem?.category}</p>
-                </div>
-              </div>
-              <button onClick={closePurchase} className="w-full py-2 bg-white text-black text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-slate-200 transition-all">
-                Close Record
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* كارد تحليل النظام */}
-      {isScanning && (
+      {/* Confirmation & Scan Modals */}
+      {(isScanning || showConfirm) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className={cn(
-            "relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.4)] p-6 max-w-sm w-full font-mono overflow-hidden",
-            isClosingScan ? "animate-[foldVertical_0.4s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
+            "relative bg-[#050b18] border-2 p-6 max-w-sm w-full font-mono overflow-hidden",
+            activeItem ? getRankColor(activeItem.difficulty) : "border-blue-500",
+            isClosing ? "animate-[foldVertical_0.4s_ease-in_forwards]" : "animate-[unfoldVertical_0.4s_ease-out_forwards]"
           )}>
+            {/* Corner Accents */}
             <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
-            
-            <div className="text-center space-y-4">
-              <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic">
-                {scanResult === 'searching' ? 'Analyzing Data...' : '[Access Denied]'}
-              </h2>
-              
-              {scanResult === 'searching' ? (
-                <div className="py-10 flex flex-col items-center gap-4">
-                  <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
-                  <p className="text-[10px] text-blue-200 animate-pulse uppercase tracking-widest">Bypassing Encryption...</p>
+
+            {showConfirm ? (
+              <div className="space-y-6">
+                <div className="text-center border-b border-white/10 pb-2">
+                  <h2 className="text-lg font-bold tracking-widest uppercase italic">Confirm Purchase</h2>
                 </div>
-              ) : (
-                <div className="py-2 flex flex-col items-start gap-4 animate-in fade-in duration-500 w-full">
-                  <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-                    <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-red-500/50" /></div>
-                    <div className="mb-3 border-b border-blue-500/30 pb-2">
-                      <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM:</span>
-                      <span className="text-sm font-bold text-white tracking-wider uppercase">REDACTED_LOG</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div><span className="text-[9px] text-blue-400 block mb-1">RANK:</span><span className="text-xs font-bold text-red-400">{activeItem?.difficulty}</span></div>
-                      <div><span className="text-[9px] text-blue-400 block mb-1">CAT:</span><span className="text-xs font-bold text-white uppercase italic">Unknown</span></div>
-                    </div>
-                  </div>
 
-                  {/* معلومات القوة والشكل */}
-                  <div className="w-full border border-red-900/40 p-3 bg-red-950/10 space-y-3">
-                    <div className="flex items-center gap-2 border-b border-red-900/20 pb-1">
-                      <Zap className="w-3 h-3 text-red-500" />
-                      <span className="text-[8px] font-bold text-red-400 uppercase">Structural Power Analysis</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 border border-red-500/20 flex items-center justify-center bg-black/40 relative">
-                        <span className="text-2xl filter blur-[3px] opacity-30">{activeItem?.icon}</span>
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex justify-between text-[7px] text-slate-400 uppercase">
-                          <span>Output Density:</span>
-                          <span className="text-red-500 font-bold">Incalculable</span>
-                        </div>
-                        <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-red-600 animate-pulse" style={{ width: '90%' }} />
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex flex-col items-center gap-4 py-2">
+                  <div className="w-24 h-24 border border-white/20 bg-white/5 flex items-center justify-center relative">
+                    <span className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">{activeItem.icon}</span>
                   </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold uppercase tracking-tight">{activeItem.name}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 italic leading-relaxed">{activeItem.description}</p>
+                  </div>
+                </div>
 
-                  <button onClick={closeScan} className="w-full py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all">
-                    <X className="w-3 h-3 inline-block mr-1" /> Terminate Log
+                <div className="bg-white/5 border border-white/10 p-3 flex justify-between items-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400">Total Price:</span>
+                  <div className="flex items-center gap-1 text-yellow-400 font-bold">
+                    <Coins className="w-3 h-3" />
+                    <span>{activeItem.price.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={closeModal} className="py-2 border border-white/20 text-[10px] uppercase font-bold hover:bg-white/5 transition-all">
+                    Cancel
+                  </button>
+                  <button onClick={executePurchase} className="py-2 bg-blue-600 border border-blue-400 text-[10px] uppercase font-bold hover:bg-blue-500 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                    <CheckCircle2 className="w-3 h-3" /> Confirm
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              /* Scanning/Denied View (Original Style) */
+              <div className="text-center space-y-4">
+                 <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic">
+                    {scanResult === 'searching' ? 'Analyzing Data...' : '[Access Denied]'}
+                 </h2>
+                 {scanResult === 'searching' ? (
+                   <div className="py-10 flex flex-col items-center gap-4">
+                     <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+                     <p className="text-[10px] text-blue-200 animate-pulse tracking-[0.3em] uppercase">Bypassing Encryption...</p>
+                   </div>
+                 ) : (
+                   <div className="py-2 flex flex-col items-center gap-6 w-full">
+                      <div className="w-full border border-red-900/40 p-3 bg-red-950/10 text-left">
+                        <p className="text-[10px] text-red-400 leading-relaxed font-bold uppercase">
+                           Level Insufficient. Required: {activeItem.rankLevel * 10}
+                        </p>
+                      </div>
+                      <button onClick={closeModal} className="w-full py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest">
+                        <X className="w-3 h-3 inline-block mr-1" /> Terminate Connection
+                      </button>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* الجزء الأصلي للمتجر بدون تغيير */}
+      {/* Header */}
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
-        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">System Store</h1>
+        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
+          System Store
+        </h1>
         <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
           <Coins className="w-3.5 h-3.5 text-yellow-400" />
           <span className="font-mono font-bold text-blue-100 text-sm">{gameState.gold.toLocaleString()}</span>
         </div>
       </header>
 
+      {/* Main List */}
       <main className="relative z-10 max-w-md mx-auto space-y-12">
         {SOLO_ITEMS.map((item) => {
           const isLocked = !canSeeItem(item);
           return (
             <div key={item.id} className="relative group">
-              <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
-              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
+              <div className={cn(
+                "relative bg-black/60 border-2 p-4 shadow-lg transition-all active:scale-[0.98]",
+                isLocked ? "border-slate-700 opacity-70" : getRankColor(item.difficulty)
+              )}>
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                    <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">
+                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90">
+                    <h2 className="text-xs font-bold tracking-widest text-white uppercase">
                       ITEM: <span className="text-blue-100">{isLocked ? '???' : item.name}</span>
                     </h2>
                   </div>
                 </div>
+
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                      <span className="text-4xl filter grayscale brightness-200 opacity-90">{item.icon}</span>
+                    <div className="w-20 h-20 border border-slate-500/30 flex items-center justify-center bg-black/40 relative">
+                      <span className={cn("text-3xl", isLocked && "filter blur-md grayscale")}>
+                        {item.icon}
+                      </span>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
-                        <p className="text-xs font-bold text-white italic uppercase">{isLocked ? '?' : item.difficulty}</p>
+
+                    <div className="flex-1 space-y-2 font-mono">
+                      <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                        <span className="text-[8px] text-slate-500 uppercase">Rank</span>
+                        <span className="text-xs font-bold italic">{isLocked ? '?' : item.difficulty}</span>
                       </div>
-                      <div className="flex justify-between border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
-                        <p className="text-xs font-bold text-white italic uppercase">{isLocked ? '???' : item.category}</p>
+                      <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                        <span className="text-[8px] text-slate-500 uppercase">Cost</span>
+                        <span className="text-xs font-bold text-yellow-400">
+                          {isLocked ? '???' : item.price.toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className="py-2 border-t border-slate-700/50">
-                    <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
-                      Gold: {isLocked ? '???,???' : item.price.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="text-center px-1"><p className="text-[10px] text-slate-300 italic leading-tight">{isLocked ? '?' : item.description}</p></div>
-                  <button onClick={() => handlePurchase(item)} className={cn("w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all border", isLocked ? "bg-slate-900/50 border-slate-700 text-slate-500" : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20")}>
-                    {isLocked ? 'not found' : 'Purchase Item'}
+
+                  <button
+                    onClick={() => handleOpenConfirm(item)}
+                    className={cn(
+                      "w-full py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all border",
+                      isLocked 
+                        ? "bg-slate-900/50 border-slate-700 text-slate-500 cursor-not-allowed" 
+                        : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/30"
+                    )}
+                  >
+                    {isLocked ? 'Access Locked' : 'Purchase Item'}
                   </button>
                 </div>
               </div>
