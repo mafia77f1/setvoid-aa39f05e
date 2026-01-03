@@ -111,28 +111,45 @@ const Market = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Modal with Vertical Unfold Animation */}
+      {/* Improved System Modal with Longer Vertical Unfold Animation */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono overflow-hidden animate-[unfoldVertical_0.4s_ease-out_forwards]">
-            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="relative bg-[#050b18] border-2 border-blue-500/60 shadow-[0_0_50px_rgba(59,130,246,0.4)] p-8 max-w-sm w-full font-mono overflow-hidden animate-[unfoldVertical_0.8s_cubic-bezier(0.16,1,0.3,1)_forwards]">
+            {/* Scanline Effect inside Modal */}
+            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[size:100%_4px] opacity-20" />
             
-            <div className="text-center space-y-4">
-              <h2 className="text-blue-400 text-lg font-bold tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] uppercase">
-                System Scanning...
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-blue-400" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-blue-400" />
+            
+            <div className="relative z-10 text-center space-y-6">
+              <h2 className="text-blue-400 text-xl font-bold tracking-[0.2em] drop-shadow-[0_0_12px_rgba(59,130,246,0.8)] uppercase">
+                System Scan
               </h2>
               
               {scanResult === 'searching' ? (
-                <div className="py-8 flex flex-col items-center gap-4">
-                  <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
-                  <p className="text-xs text-blue-200 animate-pulse tracking-widest uppercase">Decrypting Data...</p>
+                <div className="py-10 flex flex-col items-center gap-6">
+                  <div className="relative">
+                    <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 blur-md bg-blue-500/20 animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-blue-200 animate-pulse tracking-[0.3em] uppercase italic">Decrypting...</p>
+                    <div className="w-48 h-1 bg-blue-900 overflow-hidden">
+                      <div className="h-full bg-blue-400 animate-[loading_5s_linear]" />
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <div className="py-8 flex flex-col items-center gap-4 animate-in fade-in duration-500">
-                  <AlertTriangle className="w-12 h-12 text-red-500" />
-                  <p className="text-sm text-red-400 font-bold drop-shadow-[0_0_10px_rgba(239,68,68,0.5)] uppercase">[Access Denied]</p>
-                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase">Current Level Insufficient</p>
+                <div className="py-10 flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-700">
+                  <div className="p-4 border-2 border-red-500/50 rounded-full bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                    <AlertTriangle className="w-14 h-14 text-red-500" />
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <p className="text-lg text-red-500 font-black drop-shadow-[0_0_15px_rgba(239,68,68,0.8)] uppercase tracking-tighter">[ Access Denied ]</p>
+                    <p className="text-[9px] text-slate-400 leading-relaxed uppercase font-bold tracking-widest italic mt-2">
+                      User authority level is insufficient to perceive this object.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -158,7 +175,6 @@ const Market = () => {
           return (
             <div key={item.id} className="relative group">
               <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
-              
               <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
@@ -226,8 +242,13 @@ const Market = () => {
 
       <style jsx>{`
         @keyframes unfoldVertical {
-          0% { transform: scaleY(0); }
-          100% { transform: scaleY(1); }
+          0% { transform: scaleY(0); opacity: 0; }
+          40% { opacity: 1; }
+          100% { transform: scaleY(1); opacity: 1; }
+        }
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(0%); }
         }
       `}</style>
     </div>
