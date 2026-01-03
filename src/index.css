@@ -573,4 +573,29 @@
   .animate-ability-activate {
     animation: ability-activate 0.6s ease-out;
   }
+
+  /* Scan Line Animation */
+  @keyframes scan-line {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  .animate-scan-line {
+    animation: scan-line 4s linear infinite;
+  }
+
+  /* Agility color */
+  .text-agility {
+    color: hsl(150 60% 45%);
+  }
+  
+  .bg-agility {
+    background-color: hsl(150 60% 45%);
+  }
+  
+  .border-l-agility {
+    border-left-color: hsl(150 60% 45%);
+  }
 }
