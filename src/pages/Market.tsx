@@ -16,7 +16,7 @@ const Market = () => {
   const SOLO_ITEMS = [
     { 
       id: 'hp_potion', 
-      name: 'HP Recovery Potion', 
+      name: 'HP Recovery Potion 50%', 
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
@@ -27,7 +27,7 @@ const Market = () => {
     },
     { 
       id: 'mp_potion', 
-      name: 'MP Recovery Potion', 
+      name: 'MP Recovery Potion 50%', 
       category: 'Elixir', 
       difficulty: 'C', 
       price: 500, 
@@ -106,20 +106,19 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Modal with Unfolding Animation */}
+      {/* System Modal with Vertical Unfold Animation */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300">
-          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono overflow-hidden animate-[unfold_0.4s_ease-out_forwards]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative bg-[#050b18] border-2 border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] p-6 max-w-sm w-full font-mono overflow-hidden animate-[unfoldVertical_0.4s_ease-out_forwards]">
             <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-white" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-white" />
             
-            <div className="text-center space-y-4 whitespace-nowrap">
+            <div className="text-center space-y-4">
               <h2 className="text-blue-400 text-lg font-bold tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] uppercase">
                 System Scanning...
               </h2>
@@ -226,9 +225,9 @@ const Market = () => {
       <BottomNav />
 
       <style jsx>{`
-        @keyframes unfold {
-          0% { transform: scaleX(0); }
-          100% { transform: scaleX(1); }
+        @keyframes unfoldVertical {
+          0% { transform: scaleY(0); }
+          100% { transform: scaleY(1); }
         }
       `}</style>
     </div>
