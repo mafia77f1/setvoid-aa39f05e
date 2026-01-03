@@ -1,5 +1,5 @@
 import { Quest } from '@/types/game';
-import { Check, Circle, Dumbbell, Brain, Heart, BookOpen } from 'lucide-react';
+import { Check, Circle, Dumbbell, Brain, Heart, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuestCardNewProps {
@@ -11,7 +11,7 @@ const categoryConfig = {
   strength: { icon: Dumbbell, color: 'text-strength', borderColor: 'border-l-strength', bgColor: 'bg-strength/10' },
   mind: { icon: Brain, color: 'text-mind', borderColor: 'border-l-mind', bgColor: 'bg-mind/10' },
   spirit: { icon: Heart, color: 'text-spirit', borderColor: 'border-l-spirit', bgColor: 'bg-spirit/10' },
-  quran: { icon: BookOpen, color: 'text-quran', borderColor: 'border-l-quran', bgColor: 'bg-quran/10' },
+  agility: { icon: Zap, color: 'text-agility', borderColor: 'border-l-agility', bgColor: 'bg-agility/10' },
 };
 
 export const QuestCardNew = ({ quest, onComplete }: QuestCardNewProps) => {

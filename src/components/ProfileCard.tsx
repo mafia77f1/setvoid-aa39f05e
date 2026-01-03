@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, BookOpen, Flame, User, Edit, Shield, Zap } from 'lucide-react';
+import { Dumbbell, Brain, Heart, Flame, Edit, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
@@ -14,7 +14,7 @@ const stats = [
   { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
   { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
   { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
-  { key: 'quran', label: 'AGI', icon: BookOpen, color: 'text-agility' },
+  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-agility' },
 ] as const;
 
 const getRankColor = (totalLevel: number) => {
@@ -26,7 +26,7 @@ const getRankColor = (totalLevel: number) => {
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.quran);
+  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility);
   const todayQuests = gameState.quests.filter(q => q.completed).length;
   const totalQuests = gameState.quests.length;
   const rankColor = getRankColor(totalLevel);
