@@ -1,55 +1,75 @@
+import React, { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { Coins, ShoppingBag, Package, Info } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 const Market = () => {
-  const { gameState, purchaseItem, useItem } = useGameState();
+  const { gameState, purchaseItem } = useGameState();
   const { playPurchase } = useSoundEffects();
+  const [scanningId, setScanningId] = useState<string | null>(null);
 
-  // مصفوفة العناصر الكاملة
   const SOLO_ITEMS = [
-    { id: '1', name: 'Leather Pouch', category: 'Miscellaneous', difficulty: 'None', price: 1500000, icon: '💰', description: 'A pouch for carrying money. If you open it, you will get gold.', rankLevel: 0 },
-    { id: '2', name: "Kasaka's Venom", category: 'Elixir', difficulty: 'A', price: 50000, icon: '🧪', description: 'A purified poison from the Great Serpent. Grants permanent defense buff.', rankLevel: 4 },
-    { id: '3', name: "Knight Killer", category: 'Dagger', difficulty: 'B', price: 250000, icon: '🗡️', description: 'A sturdy dagger designed to pierce through heavy armor.', rankLevel: 3 },
-    { id: '4', name: "Baruka's Dagger", category: 'Dagger', difficulty: 'A', price: 750000, icon: '⚔️', description: 'A dagger used by the Warlord Baruka. Greatly increases Agility.', rankLevel: 4 },
-    { id: '5', name: "Orb of Avarice", category: 'Magic Tool', difficulty: 'A', price: 1200000, icon: '🔮', description: 'A red orb that doubles magic damage.', rankLevel: 4 },
-    { id: '6', name: "Demon King's Dagger", category: 'Dagger', difficulty: 'S', price: 5000000, icon: '🔥', description: 'Daggers obtained from Baran. They carry the power of lightning.', rankLevel: 5 },
-    { id: '7', name: "Kamish's Wrath", category: 'Dagger', difficulty: 'SS', price: 99000000, icon: '🐲', description: 'The ultimate weapon crafted from the strongest dragon’s tooth.', rankLevel: 6 },
-    { id: '8', name: "Healing Potion", category: 'Consumable', difficulty: 'E', price: 2000, icon: '🥤', description: 'Standard potion that restores a small amount of health.', rankLevel: 1 },
-    { id: '9', name: "Holy Water of Life", category: 'Elixir', difficulty: 'S', price: 10000000, icon: '✨', description: 'A mystical medicine that can cure any disease.', rankLevel: 5 },
-    { id: '10', name: "Black Knight Armor", category: 'Armor', difficulty: 'B', price: 450000, icon: '🛡️', description: 'Heavy armor set providing high physical damage reduction.', rankLevel: 3 },
-    { id: '11', name: "Demon Castle Key", category: 'Key', difficulty: 'S', price: 100000, icon: '🔑', description: 'Access key to the highest floor of the Demon Castle.', rankLevel: 5 }
+    { 
+      id: 'hp_pot', 
+      name: 'HP Potion 50%', 
+      category: 'Consumable', 
+      difficulty: 'None', 
+      price: 10000, 
+      icon: '🥤',
+      description: 'Instantly restores 50% of your health.',
+      rankLevel: 0,
+      isBasic: true 
+    },
+    { 
+      id: 'mp_pot', 
+      name: 'Mana Potion 50%', 
+      category: 'Consumable', 
+      difficulty: 'None', 
+      price: 10000, 
+      icon: '🧪',
+      description: 'Instantly restores 50% of your mana.',
+      rankLevel: 0,
+      isBasic: true 
+    },
+    { id: '1', name: 'Leather Pouch', category: 'Miscellaneous', difficulty: 'None', price: 1500000, icon: '💰', description: 'A pouch for carrying money.', rankLevel: 0 },
+    { id: '2', name: "Kasaka's Venom", category: 'Elixir', difficulty: 'A', price: 50000, icon: '🧪', description: 'Grants permanent defense buff.', rankLevel: 4 },
+    { id: '3', name: "Knight Killer", category: 'Dagger', difficulty: 'B', price: 250000, icon: '🗡️', description: 'Effective against knights.', rankLevel: 3 },
+    { id: '7', name: "Kamish's Wrath", category: 'Dagger', difficulty: 'SS', price: 99000000, icon: '🐲', description: 'Ultimate weapon crafted from a dragon.', rankLevel: 6 },
   ];
 
-  // دالة لتحديد ما إذا كان اللاعب مؤهلاً لرؤية العنصر
-  // هنا نفترض أن مستوى اللاعب (gameState.level) يحدد ما يراه. يمكنك تغيير المنطق حسب حاجتك
-  const canSeeItem = (itemRankLevel: number) => {
-    // إذا كان مستوى اللاعب أقل من رتبة العنصر بمرتين مثلاً، يظهر كـ ؟
-    // يمكنك تعديل الرقم (10) ليتناسب مع نظام المستويات في تطبيقك
+  const canSeeItem = (item: any) => {
+    if (item.isBasic) return true;
     const playerRankLevel = Math.floor(gameState.level / 10); 
-    return playerRankLevel >= itemRankLevel;
+    return playerRankLevel >= item.rankLevel;
   };
 
-  const handlePurchase = (itemId: string, price: number, name: string, isLocked: boolean) => {
+  const handlePurchase = (item: any) => {
+    const isLocked = !canSeeItem(item);
+
     if (isLocked) {
-      toast({
-        title: 'SYSTEM ERROR',
-        description: 'Your level is too low to identify this item.',
-        variant: 'destructive',
-      });
+      setScanningId(item.id);
+      
+      // انميشن البحث بالنظام لمدة 5 ثواني
+      setTimeout(() => {
+        setScanningId(null);
+        toast({
+          title: 'SYSTEM NOTICE',
+          description: '[ACCESS DENIED] Your current mana waves are too weak to decrypt this item’s data. Grow stronger, Player.',
+          variant: 'destructive',
+          className: 'bg-black border-red-900 text-red-500 font-mono italic',
+        });
+      }, 5000);
       return;
     }
 
-    if (gameState.gold >= price) {
-      purchaseItem(itemId);
+    if (gameState.gold >= item.price) {
+      purchaseItem(item.id);
       playPurchase();
       toast({
         title: 'System: SUCCESS',
-        description: `Acquired ${name}`,
+        description: `Acquired ${item.name}`,
       });
     } else {
       toast({
@@ -81,13 +101,18 @@ const Market = () => {
 
       <main className="relative z-10 max-w-md mx-auto space-y-12">
         {SOLO_ITEMS.map((item) => {
-          const isLocked = !canSeeItem(item.rankLevel);
+          const isLocked = !canSeeItem(item);
+          const isScanning = scanningId === item.id;
 
           return (
             <div key={item.id} className="relative group">
               <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
               
-              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+              <div className={cn(
+                "relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all duration-500",
+                isScanning && "animate-pulse border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+              )}>
+                {/* ترويسة العنصر */}
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
@@ -102,6 +127,11 @@ const Market = () => {
                       <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
                         {isLocked ? '?' : item.icon}
                       </span>
+                      {isScanning && (
+                        <div className="absolute inset-0 bg-blue-500/20 animate-[ping_1.5s_infinite] flex items-center justify-center text-[10px] font-mono">
+                          SCANNING...
+                        </div>
+                      )}
                       <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white" />
                       <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white" />
                     </div>
@@ -129,17 +159,17 @@ const Market = () => {
                   </div>
 
                   <div className="text-center px-1">
-                    <p className="text-[10px] text-slate-300 italic leading-tight">
-                      {isLocked ? 'Requirements not met. Level up to see item details.' : item.description}
+                    <p className="text-[10px] text-slate-300 italic leading-tight min-h-[20px]">
+                      {isScanning ? 'System is searching for item data...' : (isLocked ? '?' : item.description)}
                     </p>
                   </div>
 
                   <button
-                    onClick={() => handlePurchase(item.id, item.price, item.name, isLocked)}
-                    disabled={isLocked || gameState.gold < item.price}
-                    className="w-full mt-2 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.98] disabled:opacity-20 drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]"
+                    onClick={() => handlePurchase(item)}
+                    disabled={isScanning || (!isLocked && gameState.gold < item.price)}
+                    className="w-full mt-2 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.98] disabled:opacity-50"
                   >
-                    {isLocked ? 'Locked' : 'Purchase Item'}
+                    {isScanning ? 'Searching...' : (isLocked ? 'not found' : 'Purchase Item')}
                   </button>
                 </div>
               </div>
