@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, ShieldAlert } from 'lucide-react';
+import { Coins, ShieldAlert, Activity, Cpu } from 'lucide-react'; // استبدال Loader بـ Cpu و Activity
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,7 @@ const Market = () => {
   
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
+  const [targetItemName, setTargetItemName] = useState('');
 
   const SOLO_ITEMS = [
     { 
@@ -19,7 +20,7 @@ const Market = () => {
       name: 'HP Potion 50%', 
       category: 'General', 
       difficulty: 'E', 
-      price: 1000, 
+      price: 500, 
       icon: '🧪', 
       description: 'Restores 50% of the user\'s maximum HP.',
       rankLevel: 0,
@@ -30,16 +31,16 @@ const Market = () => {
       name: 'MP Potion 50%', 
       category: 'General', 
       difficulty: 'E', 
-      price: 1000, 
+      price: 500, 
       icon: '🧪', 
       description: 'Restores 50% of the user\'s maximum MP.',
       rankLevel: 0,
       isBasic: true 
     },
-    { id: '1', name: 'Leather Pouch', category: 'Misc', difficulty: 'None', price: 1500000, icon: '💰', description: 'A pouch for carrying money.', rankLevel: 2 },
+    { id: '1', name: 'Leather Pouch', category: 'Miscellaneous', difficulty: 'None', price: 1500000, icon: '💰', description: 'A pouch for carrying money.', rankLevel: 2 },
     { id: '2', name: "Kasaka's Venom", category: 'Elixir', difficulty: 'A', price: 50000, icon: '🧪', description: 'Grants permanent defense buff.', rankLevel: 4 },
     { id: '3', name: "Knight Killer", category: 'Dagger', difficulty: 'B', price: 250000, icon: '🗡️', description: 'Effective against knights.', rankLevel: 3 },
-    { id: '7', name: "Kamish's Wrath", category: 'Dagger', difficulty: 'SS', price: 99000000, icon: '🐲', description: 'The ultimate weapon.', rankLevel: 7 },
+    { id: '7', name: "Kamish's Wrath", category: 'Dagger', difficulty: 'SS', price: 99000000, icon: '🐲', description: 'Ultimate weapon.', rankLevel: 7 },
   ];
 
   const canSeeItem = (item: any) => {
@@ -48,7 +49,8 @@ const Market = () => {
     return playerRankLevel >= item.rankLevel;
   };
 
-  const startSystemScan = () => {
+  const startSystemScan = (name: string) => {
+    setTargetItemName(name);
     setIsScanning(true);
     setScanResult('searching');
 
@@ -62,73 +64,78 @@ const Market = () => {
   };
 
   const handlePurchase = (item: any) => {
-    if (!canSeeItem(item)) {
-      startSystemScan();
+    const isLocked = !canSeeItem(item);
+    if (isLocked) {
+      startSystemScan('???');
       return;
     }
-
     if (gameState.gold >= item.price) {
       purchaseItem(item.id);
       playPurchase();
-      toast({ title: 'SUCCESS', description: `Acquired ${item.name}` });
+      toast({ title: 'System: SUCCESS', description: `Acquired ${item.name}` });
     } else {
-      toast({ title: 'WARNING', description: 'Insufficient Gold', variant: 'destructive' });
+      toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
     }
   };
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Scan Modal - Styled like the cards */}
+      {/* كارد البحث المطور (System Scanning UI) */}
       {isScanning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm animate-in fade-in duration-500">
-          <div className="relative bg-black border-2 border-slate-200 p-6 max-w-sm w-full shadow-[0_0_40px_rgba(59,130,246,0.3)]">
-            {/* Design Corner Accents */}
-            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-500">
+          <div className="relative bg-black border border-blue-500/50 p-8 max-w-sm w-full shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+            {/* Corner Markers */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white shadow-[0_0_10px_#fff]" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white shadow-[0_0_10px_#fff]" />
             
-            <div className="flex justify-center mb-6 mt-[-2.5rem]">
-              <div className="border border-slate-400 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-                <h2 className="text-xs font-black tracking-[0.2em] text-white drop-shadow-[0_0_10px_#fff] uppercase">
-                  SYSTEM ANALYZER
-                </h2>
+            <div className="text-center space-y-6">
+              <div className="flex items-center justify-between border-b border-blue-500/30 pb-2 mb-2">
+                <span className="text-[10px] font-mono text-blue-400 tracking-widest uppercase animate-pulse">Analyzing Signature...</span>
+                <Activity className="w-3 h-3 text-blue-500" />
               </div>
-            </div>
 
-            {scanResult === 'searching' ? (
-              <div className="space-y-6 text-center py-4">
-                <div className="relative flex justify-center">
-                  <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-8 h-8 border border-white/30 rounded-full animate-ping" />
+              {scanResult === 'searching' ? (
+                <div className="py-6 space-y-6">
+                  {/* الرادار البديل للدائرة */}
+                  <div className="relative h-24 flex items-center justify-center">
+                    <div className="absolute inset-0 border border-blue-500/20 rounded-full scale-110 animate-ping" />
+                    <div className="absolute inset-0 border border-blue-400/10 rounded-full scale-150 animate-[ping_3s_infinite]" />
+                    <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent absolute animate-[scan_2s_ease-in-out_infinite]" />
+                    <Cpu className="w-12 h-12 text-blue-400 drop-shadow-[0_0_15px_#60a5fa] animate-pulse" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-mono text-white tracking-[0.2em] drop-shadow-[0_0_8px_#fff]">DECIPHERING DATA</p>
+                    <div className="w-full bg-blue-950/50 h-1 border border-blue-500/20 overflow-hidden relative">
+                       <div className="bg-blue-400 h-full shadow-[0_0_10px_#60a5fa] animate-[progress_5s_linear]" />
+                    </div>
                   </div>
                 </div>
-                <p className="text-[10px] font-mono text-blue-300 animate-pulse tracking-widest uppercase">
-                  Decoding Item Mana Signature...
-                </p>
-                <div className="w-full bg-blue-950 h-1.5 border border-blue-900 overflow-hidden">
-                  <div className="h-full bg-blue-400 shadow-[0_0_10px_#60a5fa] animate-[progress_5s_linear]" />
+              ) : (
+                <div className="py-6 space-y-6 animate-in zoom-in duration-300">
+                  <div className="flex justify-center">
+                    <div className="p-4 bg-red-500/10 border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                      <ShieldAlert className="w-12 h-12 text-red-500" />
+                    </div>
+                  </div>
+                  <h2 className="text-xl font-black text-red-500 italic drop-shadow-[0_0_10px_#ef4444] uppercase">Access Denied</h2>
+                  <p className="text-[10px] text-slate-300 leading-relaxed uppercase font-bold tracking-tight">
+                    Information hidden. Your current mana waves are too weak to perceive this object.
+                  </p>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-6 text-center py-4 animate-in zoom-in duration-300">
-                <div className="flex justify-center">
-                  <ShieldAlert className="w-16 h-16 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
-                </div>
-                <h3 className="text-xl font-black text-red-500 italic drop-shadow-[0_0_10px_#ef4444]">ACCESS DENIED</h3>
-                <p className="text-[10px] text-slate-300 font-bold leading-relaxed uppercase italic">
-                  Analysis Failed. Your current mana waves are too weak to decrypt this item's data.
-                </p>
-                <button onClick={() => setIsScanning(false)} className="w-full py-2 border border-slate-700 bg-slate-900 text-[10px] uppercase hover:bg-slate-800 transition-colors tracking-widest">
-                  Close Dialog
-                </button>
-              </div>
-            )}
+              )}
+              
+              <button 
+                onClick={() => setIsScanning(false)}
+                className="w-full py-2 bg-blue-950/20 border border-blue-500/30 text-[10px] text-blue-400 hover:bg-blue-500/10 transition-all uppercase tracking-widest font-bold"
+              >
+                Exit System
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -151,18 +158,9 @@ const Market = () => {
 
           return (
             <div key={item.id} className="relative group">
-              <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
-              
-              <div className={cn(
-                "relative bg-black/60 border-2 p-4 transition-all duration-500",
-                isLocked ? "border-slate-800" : "border-slate-200/90 shadow-[0_0_20px_rgba(30,58,138,0.3)]"
-              )}>
-                {/* Item Label with Intense White Glow */}
+              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className={cn(
-                    "border px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]",
-                    isLocked ? "border-slate-700" : "border-slate-400/50"
-                  )}>
+                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
                       ITEM: <span className="text-blue-100">{isLocked ? '???' : item.name}</span>
                     </h2>
@@ -171,58 +169,46 @@ const Market = () => {
 
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    {/* Item Icon */}
                     <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
                       <span className={cn(
-                        "text-4xl transition-all duration-700",
-                        isLocked ? "grayscale brightness-50 blur-sm opacity-20" : "filter brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+                        "text-4xl transition-all duration-300",
+                        isLocked ? "grayscale brightness-50 opacity-40 blur-sm" : "filter brightness-200 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
                       )}>
                         {item.icon}
                       </span>
-                      {isLocked && <span className="absolute text-xl font-bold text-slate-700">?</span>}
-                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white" />
-                      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white" />
                     </div>
 
-                    {/* Stats */}
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Diff:</p>
-                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
-                          {isLocked ? '?' : item.difficulty}
-                        </p>
+                        <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
+                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">{isLocked ? '?' : item.difficulty}</p>
                       </div>
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Cat:</p>
-                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
-                          {isLocked ? '???' : item.category}
-                        </p>
+                        <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
+                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">{isLocked ? '???' : item.category}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Price with Central Glow */}
                   <div className="py-2 border-t border-slate-700/50">
                     <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
                       Gold: {isLocked ? '???,???' : item.price.toLocaleString()}
                     </p>
                   </div>
 
-                  {/* Description */}
                   <div className="text-center px-1">
-                    <p className="text-[10px] text-slate-300 italic uppercase tracking-tighter leading-tight">
+                    <p className="text-[10px] text-slate-300 italic leading-tight">
                       {isLocked ? '?' : item.description}
                     </p>
                   </div>
 
-                  {/* Action Button */}
                   <button
                     onClick={() => handlePurchase(item)}
                     className={cn(
-                      "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.98] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
+                      "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
                       isLocked 
-                        ? "bg-slate-900 border-slate-800 text-slate-600" 
-                        : "bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/40 text-blue-300"
+                        ? "bg-slate-900/50 border-slate-700 text-slate-500" 
+                        : "bg-blue-500/10 border-blue-500/40 text-blue-300"
                     )}
                   >
                     {isLocked ? 'not found' : 'Purchase Item'}
@@ -240,6 +226,11 @@ const Market = () => {
         @keyframes progress {
           from { width: 0%; }
           to { width: 100%; }
+        }
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          50% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
         }
       `}</style>
     </div>
