@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { AlphaNoticeModal } from '@/components/AlphaNoticeModal';
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const [step, setStep] = useState<'welcome' | 'name' | 'loading'>('welcome');
+  const [step, setStep] = useState<'welcome' | 'name' | 'loading' | 'alpha'>('welcome');
   const [playerName, setPlayerName] = useState('');
 
   const handleAccept = () => {
@@ -25,9 +26,13 @@ const Onboarding = () => {
       setStep('loading');
       setTimeout(() => {
         completeOnboarding(playerName.trim());
-        navigate('/');
+        setStep('alpha');
       }, 2500);
     }
+  };
+
+  const handleAlphaDismiss = () => {
+    navigate('/');
   };
 
   return (
@@ -132,6 +137,9 @@ const Onboarding = () => {
           animation: modal-appear 0.4s ease-out;
         }
       `}</style>
+
+      {/* Alpha Notice Modal */}
+      <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
 };

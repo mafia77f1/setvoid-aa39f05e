@@ -29,9 +29,13 @@ export interface Quest {
   condition?: string;
   sets?: number; // For exercise quests - number of sets
   repsPerSet?: number; // Reps per set
-  startedAt?: string; // When quest was started
+  startedAt?: string; // When quest was started (ISO string)
   timerDuration?: number; // Timer duration in seconds
   dayOfWeek?: number; // 0-6, Sunday to Saturday
+  isMainQuest?: boolean; // true = main quest, false = side quest
+  requiredTime?: number; // Required time in minutes to complete
+  timeProgress?: number; // Progress in seconds (saved even when app closes)
+  goldReward?: number; // Gold reward
 }
 
 export interface Gate {
