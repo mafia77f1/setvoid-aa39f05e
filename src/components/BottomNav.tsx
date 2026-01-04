@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { path: '/', icon: User, label: 'الشخصية', description: 'ملفك الشخصي' },
   { path: '/quests', icon: Scroll, label: 'المهمات', description: 'المهمات اليومية' },
-  { path: '/boss', icon: Swords, label: 'الزعيم', description: 'قتال الزعيم' },
+  { path: '/gates', icon: Swords, label: 'البوابات', description: 'البوابات' },
   { path: '/stats', icon: BarChart3, label: 'القوى', description: 'إحصائياتك' },
   { path: '/grand-quest', icon: Target, label: 'الهدف', description: 'أهدافك الكبرى' },
 ];

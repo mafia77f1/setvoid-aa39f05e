@@ -1,198 +1,89 @@
-import { useState } from 'react';
-import { useGameState } from '@/hooks/useGameState';
-import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { cn } from '@/lib/utils';
-import { Zap, Lock, Dumbbell, Brain, Heart, Sparkles, Shield, Clock } from 'lucide-react';
-import { Ability, StatType } from '@/types/game';
-
-const categoryIcons = {
-  strength: Dumbbell,
-  mind: Brain,
-  spirit: Heart,
-  agility: Zap,
-};
-
-const categoryColors = {
-  strength: { color: 'text-strength', bg: 'bg-strength/20', border: 'border-strength/40' },
-  mind: { color: 'text-mind', bg: 'bg-mind/20', border: 'border-mind/40' },
-  spirit: { color: 'text-spirit', bg: 'bg-spirit/20', border: 'border-spirit/40' },
-  agility: { color: 'text-quran', bg: 'bg-quran/20', border: 'border-quran/40' },
-};
+import { Lock, Zap, Sparkles } from 'lucide-react';
 
 const Abilities = () => {
-  const { gameState, useAbility } = useGameState();
-  const { playUseAbility } = useSoundEffects();
-  const [activatingAbility, setActivatingAbility] = useState<string | null>(null);
-  
-  const unlockedAbilities = gameState.abilities.filter(a => a.unlocked);
-  const lockedAbilities = gameState.abilities.filter(a => !a.unlocked);
-
-  const handleUseAbility = (ability: Ability) => {
-    if (!ability.unlocked || ability.id === 'a7') return;
-    
-    setActivatingAbility(ability.id);
-    playUseAbility();
-    
-    // Animate ability activation
-    setTimeout(() => {
-      useAbility(ability.id);
-      setActivatingAbility(null);
-    }, 800);
-  };
-
-  const AbilityCard = ({ ability }: { ability: Ability }) => {
-    const Icon = categoryIcons[ability.category];
-    const colors = categoryColors[ability.category];
-    const isActivating = activatingAbility === ability.id;
-
-    return (
-      <div
-        className={cn(
-          "relative rounded-xl overflow-hidden transition-all duration-300",
-          ability.unlocked ? colors.bg : "bg-muted/10",
-          ability.unlocked ? colors.border : "border-muted/30",
-          "border-2",
-          isActivating && "animate-ability-activate"
-        )}
-      >
-        {/* Activation Effect Overlay */}
-        {isActivating && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
-            <div className="relative">
-              <Sparkles className={cn("w-16 h-16 animate-spin", colors.color)} />
-              <div className={cn("absolute inset-0 blur-xl", colors.bg, "animate-pulse")} />
-            </div>
-          </div>
-        )}
-
-        {/* Lock Overlay */}
-        {!ability.unlocked && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="text-center">
-              <Lock className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <span className="text-xs text-muted-foreground">
-                المستوى {ability.requiredLevel} مطلوب
-              </span>
-            </div>
-          </div>
-        )}
-
-        <div className="p-4">
-          {/* Icon & Level */}
-          <div className="flex items-start justify-between mb-3">
-            <div className={cn(
-              "w-14 h-14 rounded-xl flex items-center justify-center",
-              ability.unlocked ? colors.bg : "bg-muted/20",
-              "border",
-              ability.unlocked ? colors.border : "border-muted/30"
-            )}>
-              <Icon className={cn("w-7 h-7", ability.unlocked ? colors.color : "text-muted-foreground")} />
-            </div>
-            {ability.unlocked && (
-              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", colors.bg, colors.color)}>
-                Lv.{Math.floor(ability.level)}
-              </span>
-            )}
-          </div>
-
-          {/* Name & Description */}
-          <h4 className={cn(
-            "font-bold mb-1",
-            ability.unlocked ? "text-foreground" : "text-muted-foreground"
-          )}>
-            {ability.name}
-          </h4>
-          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-            {ability.description}
-          </p>
-
-          {/* Effect */}
-          <div className={cn(
-            "text-xs p-2 rounded-lg mb-3",
-            ability.unlocked ? "bg-primary/10 text-primary" : "bg-muted/20 text-muted-foreground"
-          )}>
-            <Sparkles className="w-3 h-3 inline-block mr-1" />
-            {ability.effect}
-          </div>
-
-          {/* Cooldown & Use Button */}
-          {ability.unlocked && ability.id !== 'a7' && (
-            <button
-              onClick={() => handleUseAbility(ability)}
-              disabled={isActivating}
-              className={cn(
-                "w-full py-2 px-4 rounded-lg font-bold text-sm transition-all",
-                "bg-gradient-to-r from-primary to-primary/80",
-                "border border-primary/50",
-                "hover:from-primary/90 hover:to-primary/70",
-                "active:scale-[0.98]",
-                "flex items-center justify-center gap-2"
-              )}
-            >
-              <Zap className="w-4 h-4" />
-              استخدام القدرة
-            </button>
-          )}
-
-          {ability.unlocked && ability.cooldownDays > 0 && (
-            <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span>مهلة: {ability.cooldownDays} أيام</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen pb-24">
-      <header className="relative px-4 py-6 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 border border-primary/40">
-          <Zap className="w-5 h-5 text-primary" />
-          <h1 className="text-xl font-bold text-primary">القدرات</h1>
+    <div className="min-h-screen bg-[#020817] text-white p-4 font-sans pb-24">
+      {/* Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent_70%)]" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
+      </div>
+
+      <header className="relative z-10 text-center mb-8 border-b border-purple-500/30 pb-4">
+        <div className="flex items-center justify-center gap-3">
+          <Zap className="w-6 h-6 text-purple-500" />
+          <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+            القدرات
+          </h1>
+          <Zap className="w-6 h-6 text-purple-500" />
         </div>
-        <p className="text-sm text-muted-foreground mt-2">اكتسب قدرات جديدة مع تقدمك</p>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Unlocked Abilities */}
-        {unlockedAbilities.length > 0 && (
-          <section className="system-panel p-4">
-            <h3 className="mb-4 text-lg font-semibold text-secondary flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              القدرات المكتسبة ({unlockedAbilities.length})
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {unlockedAbilities.map(ability => (
-                <AbilityCard key={ability.id} ability={ability} />
-              ))}
-            </div>
-          </section>
-        )}
+      <main className="relative z-10 max-w-md mx-auto">
+        {/* Locked Content */}
+        <div className="relative bg-black/60 border-2 border-purple-500/30 p-8 text-center overflow-hidden">
+          {/* Decorative corners */}
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-purple-500/50" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-purple-500/50" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-purple-500/50" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-purple-500/50" />
 
-        {/* Locked Abilities */}
-        <section className="system-panel p-4">
-          <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
-            <Lock className="w-5 h-5 text-muted-foreground" />
-            القدرات المقفلة ({lockedAbilities.length})
-          </h3>
-          <div className="grid grid-cols-1 gap-4">
-            {lockedAbilities.map(ability => (
-              <AbilityCard key={ability.id} ability={ability} />
-            ))}
+          {/* Lock Icon */}
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/40 flex items-center justify-center shadow-[0_0_40px_rgba(168,85,247,0.3)]">
+            <Lock className="w-12 h-12 text-purple-400" />
           </div>
-        </section>
 
-        {unlockedAbilities.length === 0 && (
-          <div className="mt-6 system-panel p-6 text-center">
-            <Shield className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">
-              ارفع مستوياتك لتفتح قدرات جديدة!
+          {/* Title */}
+          <h2 className="text-2xl font-black uppercase tracking-[0.2em] text-purple-400 mb-4 drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]">
+            مقفل
+          </h2>
+
+          {/* Description */}
+          <div className="space-y-4 text-right" dir="rtl">
+            <p className="text-slate-300 text-sm leading-relaxed">
+              نظام القدرات غير متاح حالياً في هذه النسخة التجريبية.
             </p>
+            
+            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                <span className="text-purple-400 font-bold text-sm">قريباً</span>
+                <Sparkles className="w-4 h-4 text-purple-400" />
+              </div>
+              <p className="text-xs text-purple-300">
+                سيتم إطلاق نظام القدرات الكامل في النسخة الرسمية
+              </p>
+            </div>
+
+            <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+                Expected Release: Official Version 1.0
+              </p>
+            </div>
           </div>
-        )}
+
+          {/* Scan line effect */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(168,85,247,0.02)_50%)] bg-[length:100%_4px]" />
+          </div>
+        </div>
+
+        {/* Feature Preview Cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          {['القوة', 'العقل', 'الروح', 'الرشاقة'].map((category) => (
+            <div 
+              key={category}
+              className="relative p-4 bg-black/40 border border-slate-700/50 rounded-lg opacity-40"
+            >
+              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-800/50 border border-slate-700/30 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-slate-600" />
+              </div>
+              <p className="text-xs text-center text-slate-600 font-bold">{category}</p>
+              <p className="text-[8px] text-center text-slate-700 mt-1">??? قدرات</p>
+            </div>
+          ))}
+        </div>
       </main>
 
       <BottomNav />

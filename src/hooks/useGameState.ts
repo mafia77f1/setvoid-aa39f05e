@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment, Gate } from '@/types/game';
 
-const XP_PER_LEVEL = 100;
+const MAX_LEVEL = 50; // الحد الأقصى للمستوى في نسخة Alpha
+const BASE_XP_PER_LEVEL = 100;
 
 // Get day of week: 0=Sunday, 1=Monday... 6=Saturday
 const getDayOfWeek = () => new Date().getDay();
@@ -75,11 +76,35 @@ const getRotatingQuests = (): Quest[] => {
     ],
   };
 
+  // Main quests (one per category)
+  const mainQuests = [
+    { ...strQuests[day], isMainQuest: true },
+    { ...intQuests[day], isMainQuest: true },
+    { ...sprQuests[day], isMainQuest: true },
+    { ...agiQuests[day][0], isMainQuest: true },
+  ];
+
+  return mainQuests;
+};
+
+// Side quests - different from main quests, with time-based completion
+const getSideQuests = (): Quest[] => {
+  const day = getDayOfWeek();
+  
+  const sideQuests: Quest[] = [
+    { id: 'side_read', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً لمدة 30 دقيقة متواصلة', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 30, goldReward: 20 },
+    { id: 'side_walk', title: 'المشي 20 دقيقة', description: 'امش لمدة 20 دقيقة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 20, goldReward: 15 },
+    { id: 'side_meditate', title: 'التأمل 15 دقيقة', description: 'تأمل واسترخ لمدة 15 دقيقة', category: 'spirit', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 15, goldReward: 20 },
+    { id: 'side_stretch', title: 'تمارين إطالة', description: 'قم بتمارين إطالة لمدة 10 دقائق', category: 'strength', xpReward: 25, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 10, goldReward: 10 },
+    { id: 'side_water', title: 'شرب 8 أكواب ماء', description: 'اشرب 8 أكواب ماء على مدار اليوم', category: 'spirit', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 60, goldReward: 15 },
+  ];
+
+  // Rotate side quests based on day
+  const startIndex = day % sideQuests.length;
   return [
-    strQuests[day],
-    intQuests[day],
-    sprQuests[day],
-    ...agiQuests[day],
+    sideQuests[startIndex],
+    sideQuests[(startIndex + 1) % sideQuests.length],
+    sideQuests[(startIndex + 2) % sideQuests.length],
   ];
 };
 
@@ -165,7 +190,7 @@ const getDefaultState = (): GameState => ({
   levels: { strength: 1, mind: 1, spirit: 1, agility: 1 },
   totalLevel: 4,
   
-  quests: getRotatingQuests(),
+  quests: [...getRotatingQuests(), ...getSideQuests()],
   currentBoss: getInitialBoss(),
   abilities: getInitialAbilities(),
   achievements: getInitialAchievements(),
@@ -208,8 +233,8 @@ export const useGameState = () => {
       // Check if we need to reset daily quests
       const today = new Date().toISOString().split('T')[0];
       if (mergedState.lastActiveDate !== today) {
-        // Get new rotating quests for today
-        mergedState.quests = getRotatingQuests();
+        // Get new rotating quests for today (main + side)
+        mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
         mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
           ({ ...p, completed: false })
         ) || getInitialPrayerQuests();
@@ -245,12 +270,44 @@ export const useGameState = () => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
   }, [gameState]);
 
+  // حساب XP المطلوب للمستوى التالي (يزداد مع المستوى)
+  const getXpRequiredForLevel = (level: number): number => {
+    if (level < 10) return BASE_XP_PER_LEVEL;
+    if (level < 20) return BASE_XP_PER_LEVEL * 1.5;
+    if (level < 30) return BASE_XP_PER_LEVEL * 2.5;
+    if (level < 40) return BASE_XP_PER_LEVEL * 4;
+    return BASE_XP_PER_LEVEL * 6; // 20-50 صعب جداً
+  };
+
   const calculateLevel = (xp: number): number => {
-    return Math.floor(xp / XP_PER_LEVEL) + 1;
+    let level = 1;
+    let totalXpRequired = 0;
+    
+    while (level < MAX_LEVEL) {
+      const xpForThisLevel = getXpRequiredForLevel(level);
+      if (xp < totalXpRequired + xpForThisLevel) break;
+      totalXpRequired += xpForThisLevel;
+      level++;
+    }
+    
+    return Math.min(level, MAX_LEVEL);
   };
 
   const getXpProgress = (xp: number): number => {
-    return (xp % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+    let level = 1;
+    let totalXpRequired = 0;
+    
+    while (level < MAX_LEVEL) {
+      const xpForThisLevel = getXpRequiredForLevel(level);
+      if (xp < totalXpRequired + xpForThisLevel) {
+        const xpInCurrentLevel = xp - totalXpRequired;
+        return (xpInCurrentLevel / xpForThisLevel) * 100;
+      }
+      totalXpRequired += xpForThisLevel;
+      level++;
+    }
+    
+    return 100; // Max level reached
   };
 
   const getTotalLevel = (levels: typeof gameState.levels): number => {
@@ -634,6 +691,82 @@ export const useGameState = () => {
     setLevelUpInfo(null);
   }, []);
 
+  // Start a side quest timer
+  const startSideQuest = useCallback((questId: string) => {
+    setGameState(prev => {
+      const newQuests = prev.quests.map(q => {
+        if (q.id === questId && !q.startedAt) {
+          return { ...q, startedAt: new Date().toISOString(), timeProgress: 0 };
+        }
+        return q;
+      });
+      return { ...prev, quests: newQuests };
+    });
+  }, []);
+
+  // Update time progress for side quests (called periodically)
+  const updateSideQuestProgress = useCallback((questId: string, progress: number) => {
+    setGameState(prev => {
+      const newQuests = prev.quests.map(q => {
+        if (q.id === questId) {
+          return { ...q, timeProgress: progress };
+        }
+        return q;
+      });
+      return { ...prev, quests: newQuests };
+    });
+  }, []);
+
+  // Claim completed side quest
+  const claimSideQuest = useCallback((questId: string) => {
+    setGameState(prev => {
+      const quest = prev.quests.find(q => q.id === questId);
+      if (!quest || quest.completed) return prev;
+
+      const newStats = { ...prev.stats };
+      newStats[quest.category] += quest.xpReward;
+
+      const newLevels = { ...prev.levels };
+      const oldLevel = newLevels[quest.category];
+      newLevels[quest.category] = Math.min(calculateLevel(newStats[quest.category]), MAX_LEVEL);
+      const newTotalLevel = Math.min(getTotalLevel(newLevels), MAX_LEVEL * 4);
+
+      // Check for level up (only if not at max)
+      if (newLevels[quest.category] > oldLevel && newLevels[quest.category] < MAX_LEVEL) {
+        setTimeout(() => {
+          setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category });
+        }, 100);
+      }
+
+      const newQuests = prev.quests.map(q =>
+        q.id === questId ? { ...q, completed: true } : q
+      );
+
+      return {
+        ...prev,
+        stats: newStats,
+        levels: newLevels,
+        totalLevel: newTotalLevel,
+        quests: newQuests,
+        gold: prev.gold + (quest.goldReward || 10),
+        totalQuestsCompleted: prev.totalQuestsCompleted + 1,
+      };
+    });
+  }, [calculateLevel, getTotalLevel]);
+
+  // Close/dismiss side quest without claiming
+  const closeSideQuest = useCallback((questId: string) => {
+    setGameState(prev => {
+      const newQuests = prev.quests.map(q => {
+        if (q.id === questId) {
+          return { ...q, startedAt: undefined, timeProgress: 0 };
+        }
+        return q;
+      });
+      return { ...prev, quests: newQuests };
+    });
+  }, []);
+
   return {
     gameState,
     levelUpInfo,
@@ -661,5 +794,9 @@ export const useGameState = () => {
     calculateLevel,
     getTotalLevel,
     getRank,
+    startSideQuest,
+    updateSideQuestProgress,
+    claimSideQuest,
+    closeSideQuest,
   };
 };
