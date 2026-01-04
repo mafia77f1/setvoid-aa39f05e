@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // أضفنا useEffect
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
@@ -12,18 +12,51 @@ const Boss = () => {
   const [selectedGate, setSelectedGate] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
+  // حالة جديدة لتخزين البوابات التي ستظهر للمستخدم
+  const [activeGates, setActiveGates] = useState([]);
 
   const totalLevel = gameState.totalLevel || 10;
   const playerPower = totalLevel;
 
-  const gates = [
-    { id: 'g0', rank: 'S', name: 'بوابة S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 }, danger: 'CATACLYSMIC' },
-    { id: 'g1', rank: 'A', name: 'بوابة A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)', requiredPower: 80, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 }, danger: 'EXTREME PERIL' },
-    { id: 'g2', rank: 'B', name: 'بوابة B', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', aura: '0 0 80px rgba(59,130,246,0.6)', requiredPower: 50, timeLimit: '08:00:00', rewards: { xp: 1000, gold: 600 }, danger: 'MODERATE DANGER' },
-    { id: 'g3', rank: 'C', name: 'بوابة C', color: 'blue', type: 'NORMAL GATE', energy: '12,500', warning: 'STABLE READINGS', aura: '0 0 60px rgba(59,130,246,0.4)', requiredPower: 30, timeLimit: '12:00:00', rewards: { xp: 600, gold: 400 }, danger: 'LOW DANGER' },
-    { id: 'g4', rank: 'D', name: 'بوابة D', color: 'blue', type: 'NORMAL GATE', energy: '4,200', warning: 'WEAK READINGS', aura: '0 0 50px rgba(59,130,246,0.3)', requiredPower: 15, timeLimit: '24:00:00', rewards: { xp: 300, gold: 200 }, danger: 'MINIMAL DANGER' },
-    { id: 'g5', rank: 'E', name: 'بوابة E', color: 'blue', type: 'NORMAL GATE', energy: '1,100', warning: 'VERY WEAK', aura: '0 0 40px rgba(59,130,246,0.2)', requiredPower: 5, timeLimit: '48:00:00', rewards: { xp: 100, gold: 50 }, danger: 'SAFE' },
+  // قاعدة البيانات الأساسية للبوابات
+  const allPossibleGates = [
+    { id: 'g0', rank: 'S', name: 'بوابة S', color: 'red', type: 'RED GATE', energy: 'UNMEASURABLE', warning: 'IMMEDIATE DEATH PERIL', aura: '0 0 80px rgba(220,38,38,0.6)', requiredPower: 100, timeLimit: '02:00:00', rewards: { xp: 10000, gold: 5000 }, danger: 'CATACLYSMIC', weight: 2 },
+    { id: 'g1', rank: 'A', name: 'بوابة A', color: 'purple', type: 'ELITE DUNGEON', energy: '98,400', warning: 'HIGH MANA READINGS', aura: '0 0 80px rgba(168,85,247,0.6)', requiredPower: 80, timeLimit: '04:00:00', rewards: { xp: 2500, gold: 1500 }, danger: 'EXTREME PERIL', weight: 2 },
+    { id: 'g2', rank: 'B', name: 'بوابة B', color: 'blue', type: 'NORMAL GATE', energy: '22,000', warning: 'STABLE ENTRANCE', aura: '0 0 80px rgba(59,130,246,0.6)', requiredPower: 50, timeLimit: '08:00:00', rewards: { xp: 1000, gold: 600 }, danger: 'MODERATE DANGER', weight: 15 },
+    { id: 'g3', rank: 'C', name: 'بوابة C', color: 'blue', type: 'NORMAL GATE', energy: '12,500', warning: 'STABLE READINGS', aura: '0 0 60px rgba(59,130,246,0.4)', requiredPower: 30, timeLimit: '12:00:00', rewards: { xp: 600, gold: 400 }, danger: 'LOW DANGER', weight: 25 },
+    { id: 'g4', rank: 'D', name: 'بوابة D', color: 'blue', type: 'NORMAL GATE', energy: '4,200', warning: 'WEAK READINGS', aura: '0 0 50px rgba(59,130,246,0.3)', requiredPower: 15, timeLimit: '24:00:00', rewards: { xp: 300, gold: 200 }, danger: 'MINIMAL DANGER', weight: 30 },
+    { id: 'g5', rank: 'E', name: 'بوابة E', color: 'blue', type: 'NORMAL GATE', energy: '1,100', warning: 'VERY WEAK', aura: '0 0 40px rgba(59,130,246,0.2)', requiredPower: 5, timeLimit: '48:00:00', rewards: { xp: 100, gold: 50 }, danger: 'SAFE', weight: 26 },
   ];
+
+  // منطق اختيار البوابات العشوائية
+  useEffect(() => {
+    const generateGates = () => {
+      // تحديد عدد البوابات (من 1 إلى 3)
+      const count = Math.floor(Math.random() * 3) + 1;
+      const selected = [];
+
+      for (let i = 0; i < count; i++) {
+        const roll = Math.random() * 100;
+        let chosenGate;
+
+        if (roll <= 2) { // 2% لـ S
+          chosenGate = allPossibleGates[0];
+        } else if (roll <= 4) { // 2% لـ A (تراكمي)
+          chosenGate = allPossibleGates[1];
+        } else {
+          // باقي البوابات تظهر عشوائياً
+          const normalGates = allPossibleGates.slice(2);
+          chosenGate = normalGates[Math.floor(Math.random() * normalGates.length)];
+        }
+        
+        // إضافة معرف فريد لكل نسخة لتجنب مشاكل الـ Keys في React
+        selected.push({ ...chosenGate, instanceId: `${chosenGate.id}-${i}-${Date.now()}` });
+      }
+      setActiveGates(selected);
+    };
+
+    generateGates();
+  }, []); // تعمل عند فتح الصفحة
 
   const handleGateClick = (gate) => {
     setSelectedGate(gate);
@@ -34,7 +67,6 @@ const Boss = () => {
 
   const handleEnterGate = () => {
     setIsEntering(true);
-    // الانتظار لمدة 30 ثانية قبل الانتقال
     setTimeout(() => {
       navigate('/battle');
     }, 30000); 
@@ -55,7 +87,6 @@ const Boss = () => {
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
-  // شاشة الدخول المعدلة: صورة البوابة فقط بملء الشاشة مع دوران لمدة 30 ثانية
   if (isEntering) {
     return (
       <div className="fixed inset-0 z-[150] bg-black flex items-center justify-center overflow-hidden">
@@ -84,10 +115,10 @@ const Boss = () => {
       </header>
 
       <main className="relative z-10 px-6 space-y-40 mt-16">
-        {gates.map((gate) => {
+        {activeGates.map((gate) => {
           const isHidden = playerPower < gate.requiredPower;
           return (
-            <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
+            <div key={gate.instanceId} className="relative group flex flex-col items-center max-w-sm mx-auto">
               <div 
                 onClick={() => handleGateClick(gate)}
                 className="relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-110 active:scale-90 z-20"
