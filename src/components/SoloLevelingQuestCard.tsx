@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { 
-  AlertTriangle, 
   Dumbbell, 
   Brain, 
   Heart, 
@@ -16,7 +15,8 @@ import {
   CheckCircle,
   Timer,
   Crown,
-  Target
+  Target,
+  Pause
 } from 'lucide-react';
 import { StatType, Quest } from '@/types/game';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ interface SoloLevelingQuestCardProps {
   quests: Quest[];
   onTaskComplete: (taskId: string) => void;
   onStartQuest: (questId: string) => void;
+  onUpdateQuestProgress?: (questId: string, timeProgress: number) => void;
   timeRemaining?: string;
 }
 
@@ -63,45 +64,49 @@ interface QuestModalProps {
   onClose: () => void;
   onStart: () => void;
   onComplete: () => void;
+  onUpdateProgress?: (timeProgress: number) => void;
 }
 
-const QuestModal = ({ quest, onClose, onStart, onComplete }: QuestModalProps) => {
-  const [countdown, setCountdown] = useState<number | null>(null);
+const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: QuestModalProps) => {
+  const [timeProgress, setTimeProgress] = useState<number>(quest.timeProgress || 0);
   const [isRunning, setIsRunning] = useState(false);
   const config = categoryConfig[quest.category];
   const diffConfig = difficultyConfig[quest.difficulty];
   const Icon = config.icon;
 
-  useEffect(() => {
-    if (quest.startedAt && quest.timerDuration) {
-      const startTime = new Date(quest.startedAt).getTime();
-      const endTime = startTime + (quest.timerDuration * 1000);
-      const now = Date.now();
-      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
-      
-      if (remaining > 0) {
-        setCountdown(remaining);
-        setIsRunning(true);
-      }
-    }
-  }, [quest.startedAt, quest.timerDuration]);
+  const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
+  const isCompleted = timeProgress >= requiredTimeInSeconds;
 
+  // استمرار العداد إذا كانت المهمة قد بدأت
   useEffect(() => {
-    if (!isRunning || countdown === null) return;
+    if (quest.startedAt && !quest.completed && !isCompleted) {
+      setIsRunning(true);
+    }
+  }, [quest.startedAt, quest.completed, isCompleted]);
+
+  // عداد الوقت
+  useEffect(() => {
+    if (!isRunning || isCompleted) return;
 
     const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 0) {
-          clearInterval(timer);
-          setIsRunning(false);
-          return 0;
+      setTimeProgress(prev => {
+        const newProgress = prev + 1;
+        // حفظ التقدم كل 5 ثواني
+        if (newProgress % 5 === 0 && onUpdateProgress) {
+          onUpdateProgress(newProgress);
         }
-        return prev - 1;
+        if (newProgress >= requiredTimeInSeconds) {
+          setIsRunning(false);
+          if (onUpdateProgress) {
+            onUpdateProgress(newProgress);
+          }
+        }
+        return newProgress;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isRunning]);
+  }, [isRunning, requiredTimeInSeconds, onUpdateProgress, isCompleted]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -111,13 +116,12 @@ const QuestModal = ({ quest, onClose, onStart, onComplete }: QuestModalProps) =>
 
   const handleStart = () => {
     onStart();
-    if (quest.timeLimit) {
-      setCountdown(quest.timeLimit * 60);
-      setIsRunning(true);
-    }
+    setIsRunning(true);
   };
 
-  const canComplete = countdown === 0 || !quest.timeLimit || quest.startedAt;
+  const progressPercentage = requiredTimeInSeconds > 0 
+    ? Math.min((timeProgress / requiredTimeInSeconds) * 100, 100) 
+    : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -187,22 +191,36 @@ const QuestModal = ({ quest, onClose, onStart, onComplete }: QuestModalProps) =>
               )}
             </div>
 
-            {/* Timer */}
-            <div className="flex items-center justify-between p-4 rounded-sm bg-black/40 border border-white/5">
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-slate-400" />
-                <span className="text-xs text-slate-400">TIME</span>
+            {/* Time Progress - نظام الوقت الجديد */}
+            {quest.requiredTime && (
+              <div className="p-4 rounded-sm bg-black/40 border border-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Timer className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs text-slate-400">PROGRESS</span>
+                  </div>
+                  <span className="text-sm font-bold text-white">
+                    {formatTime(timeProgress)} / {formatTime(requiredTimeInSeconds)}
+                  </span>
+                </div>
+                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full transition-all duration-300",
+                      isCompleted 
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-400" 
+                        : "bg-gradient-to-r from-white to-slate-300"
+                    )}
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                {isRunning && !isCompleted && (
+                  <p className="text-[10px] text-slate-500 text-center mt-2 animate-pulse">
+                    الوقت يعمل حتى لو أغلقت التطبيق...
+                  </p>
+                )}
               </div>
-              {isRunning && countdown !== null ? (
-                <span className="text-2xl font-mono font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
-                  {formatTime(countdown)}
-                </span>
-              ) : (
-                <span className="text-sm text-slate-300 font-medium">
-                  {quest.timeLimit ? `${quest.timeLimit} MIN` : 'ALL DAY'}
-                </span>
-              )}
-            </div>
+            )}
 
             {/* Reward */}
             <div className="flex items-center justify-between p-4 rounded-sm bg-gradient-to-r from-white/5 to-transparent border border-white/10">
@@ -231,7 +249,7 @@ const QuestModal = ({ quest, onClose, onStart, onComplete }: QuestModalProps) =>
                       onClick={onClose}
                       className="flex-1 py-4 rounded-sm bg-slate-800/50 border border-slate-600/50 text-slate-400 font-bold hover:bg-slate-800/80 transition-all tracking-wider"
                     >
-                      DECLINE
+                      CLOSE
                     </button>
                     <button
                       onClick={handleStart}
@@ -244,16 +262,16 @@ const QuestModal = ({ quest, onClose, onStart, onComplete }: QuestModalProps) =>
                 ) : (
                   <button
                     onClick={onComplete}
-                    disabled={!canComplete}
+                    disabled={!isCompleted}
                     className={cn(
                       "flex-1 py-4 rounded-sm font-black transition-all flex items-center justify-center gap-2 tracking-wider",
-                      canComplete
-                        ? "bg-gradient-to-r from-white to-slate-200 text-black shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                      isCompleted
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.3)]"
                         : "bg-slate-800/50 border border-slate-600/50 text-slate-500 cursor-not-allowed"
                     )}
                   >
                     <CheckCircle className="w-5 h-5" />
-                    {canComplete ? 'COMPLETE' : 'WAIT...'}
+                    {isCompleted ? 'CLAIM' : `${Math.ceil((requiredTimeInSeconds - timeProgress) / 60)}m LEFT`}
                   </button>
                 )}
               </>
@@ -269,6 +287,7 @@ export const SoloLevelingQuestCard = ({
   quests, 
   onTaskComplete,
   onStartQuest,
+  onUpdateQuestProgress,
   timeRemaining 
 }: SoloLevelingQuestCardProps) => {
   const navigate = useNavigate();
@@ -276,12 +295,22 @@ export const SoloLevelingQuestCard = ({
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
 
+  // تحديث المهمة المختارة عند تغير قائمة المهمات
+  useEffect(() => {
+    if (selectedQuest) {
+      const updatedQuest = quests.find(q => q.id === selectedQuest.id);
+      if (updatedQuest) {
+        setSelectedQuest(updatedQuest);
+      }
+    }
+  }, [quests]);
+
   const getQuestsPerCategory = () => {
     const categories: StatType[] = ['strength', 'mind', 'spirit', 'agility'];
     const selectedQuests: Quest[] = [];
     
     categories.forEach(category => {
-      const categoryQuests = quests.filter(q => q.category === category && q.dailyReset);
+      const categoryQuests = quests.filter(q => q.category === category && q.dailyReset && q.isMainQuest !== false);
       if (categoryQuests.length > 0) {
         const incompleteQuest = categoryQuests.find(q => !q.completed) || categoryQuests[0];
         selectedQuests.push(incompleteQuest);
@@ -316,6 +345,12 @@ export const SoloLevelingQuestCard = ({
     if (selectedQuest) {
       onTaskComplete(selectedQuest.id);
       setSelectedQuest(null);
+    }
+  };
+
+  const handleUpdateProgress = (timeProgress: number) => {
+    if (selectedQuest && onUpdateQuestProgress) {
+      onUpdateQuestProgress(selectedQuest.id, timeProgress);
     }
   };
 
@@ -579,6 +614,7 @@ export const SoloLevelingQuestCard = ({
           onClose={() => setSelectedQuest(null)}
           onStart={handleStartQuest}
           onComplete={handleCompleteQuest}
+          onUpdateProgress={handleUpdateProgress}
         />
       )}
     </>

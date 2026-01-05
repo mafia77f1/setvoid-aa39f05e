@@ -17,18 +17,26 @@ const stats = [
   { key: 'agility', label: 'AGI', icon: Zap, color: 'text-agility' },
 ] as const;
 
+// نظام الرتب: E, D, C, B, A (S مقفولة في هذا الإصدار)
 const getRankColor = (totalLevel: number) => {
-  if (totalLevel >= 50) return { border: 'border-foreground', bg: 'bg-foreground/10', glow: 'shadow-foreground/50', text: 'text-foreground', rankName: 'S' };
-  if (totalLevel >= 20) return { border: 'border-spirit', bg: 'bg-spirit/10', glow: 'shadow-spirit/50', text: 'text-spirit', rankName: 'A' };
-  if (totalLevel >= 10) return { border: 'border-mind', bg: 'bg-mind/10', glow: 'shadow-mind/50', text: 'text-mind', rankName: 'B' };
-  return { border: 'border-primary', bg: 'bg-primary/10', glow: 'shadow-primary/50', text: 'text-primary', rankName: 'C' };
+  if (totalLevel >= 50) return { border: 'border-orange-400', bg: 'bg-orange-400/10', glow: 'shadow-orange-400/50', text: 'text-orange-400', rankName: 'A' };
+  if (totalLevel >= 35) return { border: 'border-purple-400', bg: 'bg-purple-400/10', glow: 'shadow-purple-400/50', text: 'text-purple-400', rankName: 'B' };
+  if (totalLevel >= 20) return { border: 'border-blue-400', bg: 'bg-blue-400/10', glow: 'shadow-blue-400/50', text: 'text-blue-400', rankName: 'C' };
+  if (totalLevel >= 10) return { border: 'border-green-400', bg: 'bg-green-400/10', glow: 'shadow-green-400/50', text: 'text-green-400', rankName: 'D' };
+  return { border: 'border-gray-400', bg: 'bg-gray-400/10', glow: 'shadow-gray-400/50', text: 'text-gray-400', rankName: 'E' };
 };
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  const totalLevel = gameState.totalLevel || (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility);
-  const todayQuests = gameState.quests.filter(q => q.completed).length;
-  const totalQuests = gameState.quests.length;
+  // حساب المستوى الكلي - أقصى مستوى فردي من بين الأربعة
+  const totalLevel = Math.max(
+    gameState.levels.strength,
+    gameState.levels.mind,
+    gameState.levels.spirit,
+    gameState.levels.agility
+  );
+  const todayQuests = gameState.quests.filter(q => q.completed && q.isMainQuest !== false).length;
+  const totalQuests = gameState.quests.filter(q => q.isMainQuest !== false).length;
   const rankColor = getRankColor(totalLevel);
   const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
   const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;

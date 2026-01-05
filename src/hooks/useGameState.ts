@@ -7,81 +7,74 @@ const BASE_XP_PER_LEVEL = 100;
 // Get day of week: 0=Sunday, 1=Monday... 6=Saturday
 const getDayOfWeek = () => new Date().getDay();
 
-// Daily rotating quests based on day of week
+// Daily rotating quests based on day of week - with requiredTime for time-based progress
 const getRotatingQuests = (): Quest[] => {
   const day = getDayOfWeek();
   
-  // STR - rotating muscle groups
+  // STR - rotating muscle groups with requiredTime
   const strQuests: Record<number, Quest> = {
-    0: { id: 'str_daily', title: 'تمرين صدر', description: '100 ضغط على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 0 },
-    1: { id: 'str_daily', title: 'تمرين كتف', description: '60 تمرين كتف على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 1 },
-    2: { id: 'str_daily', title: 'تمرين تراي', description: '60 تمرين تراي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 2 },
-    3: { id: 'str_daily', title: 'تمرين باي', description: '60 تمرين باي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 3 },
-    4: { id: 'str_daily', title: 'تمرين ظهر', description: '60 تمرين ظهر على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 12, dayOfWeek: 4 },
-    5: { id: 'str_daily', title: 'تمرين بطن', description: '100 تمرين بطن على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 20, dayOfWeek: 5 },
-    6: { id: 'str_daily', title: 'تمرين رجل', description: '100 سكوات على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 6 },
+    0: { id: 'str_daily', title: 'تمرين صدر', description: '100 ضغط على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 0, requiredTime: 25, isMainQuest: true },
+    1: { id: 'str_daily', title: 'تمرين كتف', description: '60 تمرين كتف على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 1, requiredTime: 20, isMainQuest: true },
+    2: { id: 'str_daily', title: 'تمرين تراي', description: '60 تمرين تراي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 2, requiredTime: 20, isMainQuest: true },
+    3: { id: 'str_daily', title: 'تمرين باي', description: '60 تمرين باي على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 3, requiredTime: 20, isMainQuest: true },
+    4: { id: 'str_daily', title: 'تمرين ظهر', description: '60 تمرين ظهر على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 12, dayOfWeek: 4, requiredTime: 25, isMainQuest: true },
+    5: { id: 'str_daily', title: 'تمرين بطن', description: '100 تمرين بطن على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 20, dayOfWeek: 5, requiredTime: 20, isMainQuest: true },
+    6: { id: 'str_daily', title: 'تمرين رجل', description: '100 سكوات على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 6, requiredTime: 25, isMainQuest: true },
   };
 
-  // INT - rotating mental quests
+  // INT - rotating mental quests with requiredTime
   const intQuests: Record<number, Quest> = {
-    0: { id: 'int_daily', title: 'مراجعة أسبوع', description: 'راجع ما تعلمته هذا الأسبوع', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 0 },
-    1: { id: 'int_daily', title: 'لغز منطقي', description: 'حل لغز لتحسين المنطق', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 1 },
-    2: { id: 'int_daily', title: 'قراءة + تلخيص', description: '25 دقيقة قراءة مع تلخيص', category: 'mind', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 2 },
-    3: { id: 'int_daily', title: 'ألعاب الذاكرة', description: 'تمارين لرفع قوة الذاكرة', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 3 },
-    4: { id: 'int_daily', title: 'كلمة جديدة', description: 'تعلم كلمة جديدة وحفظها', category: 'mind', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 4 },
-    5: { id: 'int_daily', title: 'تمرين اليد غير المسيطرة', description: 'استخدم يدك الأخرى لتحفيز الدماغ', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 5 },
-    6: { id: 'int_daily', title: 'تأمل + مراجعة', description: '15 دقيقة تأمل وتركيز', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 6 },
+    0: { id: 'int_daily', title: 'مراجعة أسبوع', description: 'راجع ما تعلمته هذا الأسبوع', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 0, requiredTime: 15, isMainQuest: true },
+    1: { id: 'int_daily', title: 'لغز منطقي', description: 'حل لغز لتحسين المنطق', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 1, requiredTime: 20, isMainQuest: true },
+    2: { id: 'int_daily', title: 'قراءة + تلخيص', description: '25 دقيقة قراءة مع تلخيص', category: 'mind', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 2, requiredTime: 25, isMainQuest: true },
+    3: { id: 'int_daily', title: 'ألعاب الذاكرة', description: 'تمارين لرفع قوة الذاكرة', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 3, requiredTime: 15, isMainQuest: true },
+    4: { id: 'int_daily', title: 'كلمة جديدة', description: 'تعلم كلمة جديدة وحفظها', category: 'mind', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 4, requiredTime: 10, isMainQuest: true },
+    5: { id: 'int_daily', title: 'تمرين اليد غير المسيطرة', description: 'استخدم يدك الأخرى لتحفيز الدماغ', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 5, requiredTime: 20, isMainQuest: true },
+    6: { id: 'int_daily', title: 'تأمل + مراجعة', description: '15 دقيقة تأمل وتركيز', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 6, requiredTime: 15, isMainQuest: true },
   };
 
-  // SPR - rotating spiritual quests
+  // SPR - rotating spiritual quests with requiredTime
   const sprQuests: Record<number, Quest> = {
-    0: { id: 'spr_daily', title: 'تسبيح 2000 مرة', description: '1000 سبحان الله + 1000 الحمد لله', category: 'spirit', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 0 },
-    1: { id: 'spr_daily', title: 'صيام الاثنين', description: 'صم يوم الاثنين أو سبح 25 مرة', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 1 },
-    2: { id: 'spr_daily', title: 'شكر 5 نعم', description: 'اكتب أو تفكر في 5 نعم', category: 'spirit', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 2 },
-    3: { id: 'spr_daily', title: 'ترك ذنب واحد', description: 'امتنع عن ذنب واحد اليوم', category: 'spirit', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 3 },
-    4: { id: 'spr_daily', title: 'صيام الخميس', description: 'صم أو اقرأ صفحة قرآن بتدبر', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 4 },
-    5: { id: 'spr_daily', title: 'صلاة الجمعة', description: 'صلاة الجمعة + 100 صلاة على النبي', category: 'spirit', xpReward: 80, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 5 },
-    6: { id: 'spr_daily', title: 'ذكر 1000 مرة', description: 'سبحان الله وبحمده 1000 مرة', category: 'spirit', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 6 },
+    0: { id: 'spr_daily', title: 'تسبيح 2000 مرة', description: '1000 سبحان الله + 1000 الحمد لله', category: 'spirit', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 0, requiredTime: 30, isMainQuest: true },
+    1: { id: 'spr_daily', title: 'صيام الاثنين', description: 'صم يوم الاثنين أو سبح 25 مرة', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 1, requiredTime: 60, isMainQuest: true },
+    2: { id: 'spr_daily', title: 'شكر 5 نعم', description: 'اكتب أو تفكر في 5 نعم', category: 'spirit', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', dayOfWeek: 2, requiredTime: 10, isMainQuest: true },
+    3: { id: 'spr_daily', title: 'ترك ذنب واحد', description: 'امتنع عن ذنب واحد اليوم', category: 'spirit', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 3, requiredTime: 30, isMainQuest: true },
+    4: { id: 'spr_daily', title: 'صيام الخميس', description: 'صم أو اقرأ صفحة قرآن بتدبر', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 4, requiredTime: 60, isMainQuest: true },
+    5: { id: 'spr_daily', title: 'صلاة الجمعة', description: 'صلاة الجمعة + 100 صلاة على النبي', category: 'spirit', xpReward: 80, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 5, requiredTime: 45, isMainQuest: true },
+    6: { id: 'spr_daily', title: 'ذكر 1000 مرة', description: 'سبحان الله وبحمده 1000 مرة', category: 'spirit', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 6, requiredTime: 25, isMainQuest: true },
   };
 
-  // AGI - rotating agility quests based on day
+  // AGI - rotating agility quests with requiredTime
   const agiQuests: Record<number, Quest[]> = {
     0: [
-      { id: 'agi_run', title: 'الركض 20 دقيقة', description: 'اركض لمدة 20 دقيقة متواصلة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 20, dayOfWeek: 0 },
-      { id: 'agi_stretch', title: 'تمارين الإطالة', description: '15 دقيقة تمارين إطالة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 15, dayOfWeek: 0 },
+      { id: 'agi_run', title: 'الركض 20 دقيقة', description: 'اركض لمدة 20 دقيقة متواصلة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 20, dayOfWeek: 0, requiredTime: 20, isMainQuest: true },
     ],
     1: [
-      { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 1 },
-      { id: 'agi_jump', title: 'القفز 250 مرة', description: '5 مجاميع × 50 قفزة', category: 'agility', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 50, dayOfWeek: 1 },
+      { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 1, requiredTime: 15, isMainQuest: true },
     ],
     2: [
-      { id: 'agi_sprint', title: 'سباق السرعة', description: '10 جولات سباق 100 متر', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', sets: 10, dayOfWeek: 2 },
-      { id: 'agi_agility', title: 'تمارين الرشاقة', description: 'تمارين تغيير الاتجاه', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 2 },
+      { id: 'agi_sprint', title: 'سباق السرعة', description: '10 جولات سباق 100 متر', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', sets: 10, dayOfWeek: 2, requiredTime: 25, isMainQuest: true },
     ],
     3: [
-      { id: 'agi_jump', title: 'القفز 300 مرة', description: '6 مجاميع × 50 قفزة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 6, repsPerSet: 50, dayOfWeek: 3 },
-      { id: 'agi_burpee', title: 'بيربي 50 مرة', description: '5 مجاميع × 10 بيربي', category: 'agility', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', sets: 5, repsPerSet: 10, dayOfWeek: 3 },
+      { id: 'agi_jump', title: 'القفز 300 مرة', description: '6 مجاميع × 50 قفزة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 6, repsPerSet: 50, dayOfWeek: 3, requiredTime: 20, isMainQuest: true },
     ],
     4: [
-      { id: 'agi_run', title: 'الركض 25 دقيقة', description: 'اركض لمدة 25 دقيقة', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 4 },
-      { id: 'agi_stairs', title: 'صعود الدرج', description: '10 مرات صعود ونزول', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', sets: 10, dayOfWeek: 4 },
+      { id: 'agi_run', title: 'الركض 25 دقيقة', description: 'اركض لمدة 25 دقيقة', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 4, requiredTime: 25, isMainQuest: true },
     ],
     5: [
-      { id: 'agi_hiit', title: 'تمرين HIIT', description: '20 دقيقة تمرين عالي الكثافة', category: 'agility', xpReward: 65, completed: false, dailyReset: true, difficulty: 'legendary', timeLimit: 20, dayOfWeek: 5 },
-      { id: 'agi_jump', title: 'قفز الحبل 500', description: '500 قفزة بالحبل', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', repsPerSet: 500, dayOfWeek: 5 },
+      { id: 'agi_hiit', title: 'تمرين HIIT', description: '20 دقيقة تمرين عالي الكثافة', category: 'agility', xpReward: 65, completed: false, dailyReset: true, difficulty: 'legendary', timeLimit: 20, dayOfWeek: 5, requiredTime: 20, isMainQuest: true },
     ],
     6: [
-      { id: 'agi_walk', title: 'المشي السريع', description: '30 دقيقة مشي سريع', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 30, dayOfWeek: 6 },
-      { id: 'agi_yoga', title: 'يوغا الاستشفاء', description: '20 دقيقة يوغا خفيفة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 20, dayOfWeek: 6 },
+      { id: 'agi_walk', title: 'المشي السريع', description: '30 دقيقة مشي سريع', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 30, dayOfWeek: 6, requiredTime: 30, isMainQuest: true },
     ],
   };
 
   // Main quests (one per category)
   const mainQuests = [
-    { ...strQuests[day], isMainQuest: true },
-    { ...intQuests[day], isMainQuest: true },
-    { ...sprQuests[day], isMainQuest: true },
-    { ...agiQuests[day][0], isMainQuest: true },
+    strQuests[day],
+    intQuests[day],
+    sprQuests[day],
+    agiQuests[day][0],
   ];
 
   return mainQuests;
@@ -188,7 +181,7 @@ const getDefaultState = (): GameState => ({
   
   stats: { strength: 0, mind: 0, spirit: 0, agility: 0 },
   levels: { strength: 1, mind: 1, spirit: 1, agility: 1 },
-  totalLevel: 4,
+  totalLevel: 1, // يبدأ المستخدم بمستوى 1
   
   quests: [...getRotatingQuests(), ...getSideQuests()],
   currentBoss: getInitialBoss(),
@@ -270,13 +263,15 @@ export const useGameState = () => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
   }, [gameState]);
 
-  // حساب XP المطلوب للمستوى التالي (يزداد مع المستوى)
+  // حساب XP المطلوب للمستوى التالي (يزداد بشكل كبير مع المستوى - صعب جداً 20-50)
   const getXpRequiredForLevel = (level: number): number => {
-    if (level < 10) return BASE_XP_PER_LEVEL;
-    if (level < 20) return BASE_XP_PER_LEVEL * 1.5;
-    if (level < 30) return BASE_XP_PER_LEVEL * 2.5;
-    if (level < 40) return BASE_XP_PER_LEVEL * 4;
-    return BASE_XP_PER_LEVEL * 6; // 20-50 صعب جداً
+    if (level < 5) return BASE_XP_PER_LEVEL; // 100
+    if (level < 10) return BASE_XP_PER_LEVEL * 1.5; // 150
+    if (level < 15) return BASE_XP_PER_LEVEL * 2; // 200
+    if (level < 20) return BASE_XP_PER_LEVEL * 3; // 300
+    if (level < 30) return BASE_XP_PER_LEVEL * 5; // 500 - صعب
+    if (level < 40) return BASE_XP_PER_LEVEL * 8; // 800 - صعب جداً
+    return BASE_XP_PER_LEVEL * 12; // 1200 - صعب جداً جداً (40-50)
   };
 
   const calculateLevel = (xp: number): number => {
@@ -310,16 +305,17 @@ export const useGameState = () => {
     return 100; // Max level reached
   };
 
+  // حساب المستوى الكلي - أقصى مستوى فردي من بين الأربعة
   const getTotalLevel = (levels: typeof gameState.levels): number => {
-    return levels.strength + levels.mind + levels.spirit + levels.agility;
+    return Math.max(levels.strength, levels.mind, levels.spirit, levels.agility);
   };
 
+  // نظام الرتب: E, D, C, B, A (S مقفولة)
   const getRank = (totalLevel: number): string => {
-    if (totalLevel >= 100) return 'S';
-    if (totalLevel >= 50) return 'A';
-    if (totalLevel >= 20) return 'B';
-    if (totalLevel >= 10) return 'C';
-    if (totalLevel >= 5) return 'D';
+    if (totalLevel >= 50) return 'A'; // S مقفولة في هذا الإصدار
+    if (totalLevel >= 35) return 'B';
+    if (totalLevel >= 20) return 'C';
+    if (totalLevel >= 10) return 'D';
     return 'E';
   };
 
@@ -752,7 +748,7 @@ export const useGameState = () => {
         totalQuestsCompleted: prev.totalQuestsCompleted + 1,
       };
     });
-  }, [calculateLevel, getTotalLevel]);
+  }, []);
 
   // Close/dismiss side quest without claiming
   const closeSideQuest = useCallback((questId: string) => {
