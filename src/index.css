@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
     --background: 260 30% 4%;
     --foreground: 260 10% 95%;
-    
+
     --card: 260 30% 8%;
     --card-foreground: 260 10% 95%;
 

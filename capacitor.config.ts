@@ -1,14 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.highest.setvoid',
-  appName: 'setvoid',
+  appId: 'com.leveluplife.app',
+  appName: 'Level Up Life',
   webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  },
   plugins: {
-    LocalNotifications: {
-      smallIcon: 'ic_stat_icon_config_sample',
-      iconColor: '#2d8a6e',
-      sound: 'beep.wav'
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#000000',
+      showSpinner: false
     }
   }
 };
