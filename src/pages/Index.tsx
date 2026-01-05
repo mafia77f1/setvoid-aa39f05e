@@ -13,7 +13,7 @@ import { ChevronLeft, Zap, Trophy, Skull, Sparkles, ShoppingBag, Target } from '
 import { cn } from '@/lib/utils';
 import { StatType } from '@/types/game';
 
-const MAX_TOTAL_LEVEL = 200; // 50 per stat * 4 stats
+
 
 const Index = () => {
   const { 
@@ -24,7 +24,9 @@ const Index = () => {
     completeQuest, 
     updatePlayerInfo,
     completePrayerQuest,
-    useAbility
+    useAbility,
+    startSideQuest,
+    updateSideQuestProgress
   } = useGameState();
   const { playQuestComplete, playUseAbility } = useSoundEffects();
   const [activePrayerQuest, setActivePrayerQuest] = useState<string | null>(null);
@@ -32,12 +34,19 @@ const Index = () => {
   const [systemMessage, setSystemMessage] = useState<string | null>(null);
   const [showMaxLevelModal, setShowMaxLevelModal] = useState(false);
 
-  // Check for max level
+  // Check for max level - المستوى الأقصى هو 50
+  const maxLevel = Math.max(
+    gameState.levels.strength,
+    gameState.levels.mind,
+    gameState.levels.spirit,
+    gameState.levels.agility
+  );
+  
   useEffect(() => {
-    if (gameState.totalLevel >= MAX_TOTAL_LEVEL) {
+    if (maxLevel >= 50) {
       setShowMaxLevelModal(true);
     }
-  }, [gameState.totalLevel]);
+  }, [maxLevel]);
 
   // Get only main daily quests (not side quests)
   const dailyQuests = gameState.quests.filter(q => q.dailyReset && q.isMainQuest !== false);
@@ -85,8 +94,11 @@ const Index = () => {
   };
 
   const handleStartQuest = (questId: string) => {
-    // Mark quest as started with timestamp
-    console.log('Quest started:', questId);
+    startSideQuest(questId);
+  };
+
+  const handleUpdateQuestProgress = (questId: string, timeProgress: number) => {
+    updateSideQuestProgress(questId, timeProgress);
   };
 
   const handlePrayerComplete = (prayerId: string) => {
@@ -148,6 +160,7 @@ const Index = () => {
             quests={dailyQuests}
             onTaskComplete={handleTaskComplete}
             onStartQuest={handleStartQuest}
+            onUpdateQuestProgress={handleUpdateQuestProgress}
           />
         </section>
 
