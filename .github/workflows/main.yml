@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -50,11 +50,13 @@ jobs:
         with:
           accept-android-sdk-licenses: false
 
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
+      - name: Install Capacitor CLI and Android platform
+        run: |
+          npm install -g @capacitor/cli
+          npm install @capacitor/android --save
 
       - name: Add Android platform
-        run: npx cap add android || true
+        run: npx cap add android || echo "Android platform may already exist"
 
       - name: Sync Capacitor
         run: npx cap sync android
