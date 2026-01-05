@@ -10,247 +10,55 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      Ads: {
-        Row: {
-          ad_type: string
-          advertiser_id: string
-          budget: number | null
-          clicks: number | null
-          created_at: string
-          has_music: boolean
-          id: number
-          image_url: string
-          impressions: number | null
-          landing_url: string | null
-          name: string
-          status: string | null
-          target_app: string | null
-          video_with_music_url: string
-          video_without_music_url: string
-        }
-        Insert: {
-          ad_type?: string
-          advertiser_id: string
-          budget?: number | null
-          clicks?: number | null
-          created_at?: string
-          has_music?: boolean
-          id?: number
-          image_url: string
-          impressions?: number | null
-          landing_url?: string | null
-          name: string
-          status?: string | null
-          target_app?: string | null
-          video_with_music_url: string
-          video_without_music_url: string
-        }
-        Update: {
-          ad_type?: string
-          advertiser_id?: string
-          budget?: number | null
-          clicks?: number | null
-          created_at?: string
-          has_music?: boolean
-          id?: number
-          image_url?: string
-          impressions?: number | null
-          landing_url?: string | null
-          name?: string
-          status?: string | null
-          target_app?: string | null
-          video_with_music_url?: string
-          video_without_music_url?: string
-        }
-        Relationships: []
-      }
-      follows: {
+      game_states: {
         Row: {
           created_at: string
-          follower_id: string
-          following_id: string
+          game_data: Json
           id: string
-        }
-        Insert: {
-          created_at?: string
-          follower_id: string
-          following_id: string
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          follower_id?: string
-          following_id?: string
-          id?: string
-        }
-        Relationships: []
-      }
-      links: {
-        Row: {
-          clicks_count: number | null
-          color: string | null
-          created_at: string
-          icon: string | null
-          id: string
-          is_active: boolean | null
-          sort_order: number | null
-          title: string
           updated_at: string
-          url: string
           user_id: string
         }
         Insert: {
-          clicks_count?: number | null
-          color?: string | null
           created_at?: string
-          icon?: string | null
+          game_data?: Json
           id?: string
-          is_active?: boolean | null
-          sort_order?: number | null
-          title: string
           updated_at?: string
-          url: string
           user_id: string
         }
         Update: {
-          clicks_count?: number | null
-          color?: string | null
           created_at?: string
-          icon?: string | null
+          game_data?: Json
           id?: string
-          is_active?: boolean | null
-          sort_order?: number | null
-          title?: string
           updated_at?: string
-          url?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      lobby_rooms: {
-        Row: {
-          background_image: string | null
-          created_at: string
-          game_name: string
-          host_id: string
-          id: string
-          max_members: number
-          theme_color: string | null
-        }
-        Insert: {
-          background_image?: string | null
-          created_at?: string
-          game_name?: string
-          host_id: string
-          id?: string
-          max_members?: number
-          theme_color?: string | null
-        }
-        Update: {
-          background_image?: string | null
-          created_at?: string
-          game_name?: string
-          host_id?: string
-          id?: string
-          max_members?: number
-          theme_color?: string | null
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          is_read: boolean | null
-          message: string
-          related_user_id: string | null
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          message: string
-          related_user_id?: string | null
-          type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          related_user_id?: string | null
-          type?: string
           user_id?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          bio: string | null
-          can_monetize_ads: boolean | null
-          cover_url: string | null
           created_at: string
-          display_name: string | null
-          followers_count: number | null
-          following_count: number | null
           id: string
-          location: string | null
-          phone: string | null
-          telegram: string | null
-          theme_color: string | null
+          player_name: string
           updated_at: string
           user_id: string
-          username: string
-          visits_count: number | null
-          whatsapp: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          can_monetize_ads?: boolean | null
-          cover_url?: string | null
           created_at?: string
-          display_name?: string | null
-          followers_count?: number | null
-          following_count?: number | null
           id?: string
-          location?: string | null
-          phone?: string | null
-          telegram?: string | null
-          theme_color?: string | null
+          player_name?: string
           updated_at?: string
           user_id: string
-          username: string
-          visits_count?: number | null
-          whatsapp?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          can_monetize_ads?: boolean | null
-          cover_url?: string | null
           created_at?: string
-          display_name?: string | null
-          followers_count?: number | null
-          following_count?: number | null
           id?: string
-          location?: string | null
-          phone?: string | null
-          telegram?: string | null
-          theme_color?: string | null
+          player_name?: string
           updated_at?: string
           user_id?: string
-          username?: string
-          visits_count?: number | null
-          whatsapp?: string | null
         }
         Relationships: []
       }

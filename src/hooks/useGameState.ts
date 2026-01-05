@@ -305,9 +305,13 @@ export const useGameState = () => {
     return 100; // Max level reached
   };
 
-  // حساب المستوى الكلي - أقصى مستوى فردي من بين الأربعة
+  // حساب المستوى الكلي - متوسط جميع المستويات الأربعة
+  // كل قسم له حد أقصى 50، المجموع يكون متوسط (str + int + spr + agi) / 4 * (50/50) = المتوسط
   const getTotalLevel = (levels: typeof gameState.levels): number => {
-    return Math.max(levels.strength, levels.mind, levels.spirit, levels.agility);
+    const sum = levels.strength + levels.mind + levels.spirit + levels.agility;
+    // المتوسط: مجموع الأربعة / 4، الحد الأقصى 50
+    const average = sum / 4;
+    return Math.min(Math.floor(average), MAX_LEVEL);
   };
 
   // نظام الرتب: E, D, C, B, A (S مقفولة)
