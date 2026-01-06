@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, InventoryItem, PrayerQuest, ShadowSoldier, Equipment, Gate } from '@/types/game';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const MAX_LEVEL = 50; // الحد الأقصى للمستوى في نسخة Alpha
 const BASE_XP_PER_LEVEL = 100;
@@ -258,10 +260,97 @@ export const useGameState = () => {
   });
 
   const [levelUpInfo, setLevelUpInfo] = useState<{ show: boolean; newLevel: number; category?: StatType } | null>(null);
+  const { user } = useAuth();
+  const isSyncingRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
+  // Load game state from Supabase when user logs in
+  useEffect(() => {
+    if (!user || isInitializedRef.current) return;
+
+    const loadFromSupabase = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('game_states')
+          .select('game_data')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading game state:', error);
+          isInitializedRef.current = true;
+          return;
+        }
+
+        if (data?.game_data) {
+          const savedState = data.game_data as unknown as GameState;
+          const defaultState = getDefaultState();
+          const mergedState = { ...defaultState, ...savedState, isOnboarded: true };
+          
+          // Check if we need to reset daily quests
+          const today = new Date().toISOString().split('T')[0];
+          if (mergedState.lastActiveDate !== today) {
+            mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
+            mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
+              ({ ...p, completed: false })
+            ) || getInitialPrayerQuests();
+            mergedState.lastActiveDate = today;
+          }
+          
+          setGameState(mergedState);
+        }
+        
+        isInitializedRef.current = true;
+      } catch (err) {
+        console.error('Failed to load game state:', err);
+        isInitializedRef.current = true;
+      }
+    };
+
+    loadFromSupabase();
+  }, [user]);
+
+  // Save to both localStorage and Supabase
   useEffect(() => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
-  }, [gameState]);
+    
+    // Debounced Supabase sync
+    if (!user || isSyncingRef.current || !isInitializedRef.current) return;
+
+    const timeout = setTimeout(async () => {
+      isSyncingRef.current = true;
+      try {
+        const { data: existing } = await supabase
+          .from('game_states')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from('game_states')
+            .update({
+              game_data: JSON.parse(JSON.stringify(gameState)),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('game_states')
+            .insert([{
+              user_id: user.id,
+              game_data: JSON.parse(JSON.stringify(gameState)),
+            }]);
+        }
+      } catch (err) {
+        console.error('Failed to sync game state:', err);
+      } finally {
+        isSyncingRef.current = false;
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [gameState, user]);
 
   // حساب XP المطلوب للمستوى التالي (يزداد بشكل كبير مع المستوى - صعب جداً 20-50)
   const getXpRequiredForLevel = (level: number): number => {

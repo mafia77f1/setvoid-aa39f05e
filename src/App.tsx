@@ -4,8 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useGameState } from "@/hooks/useGameState";
+import { useAuth } from "@/hooks/useAuth";
 import { LevelUpModal } from "@/components/LevelUpModal";
 import { GameOverModal } from "@/components/GameOverModal";
+import { Loader2 } from "lucide-react";
 
 import Index from "./pages/Index";
 import Quests from "./pages/Quests";
@@ -23,8 +25,19 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { gameState, levelUpInfo, dismissLevelUp, resetGame } = useGameState();
+  const { user, loading: authLoading } = useAuth();
 
-  if (!gameState.isOnboarded) {
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#010205] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  // If not authenticated, show onboarding
+  if (!user || !gameState.isOnboarded) {
     return <Onboarding />;
   }
 

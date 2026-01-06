@@ -25,8 +25,12 @@ const Onboarding = () => {
       if (savedName) {
         completeOnboarding(savedName);
         localStorage.removeItem('pendingPlayerName');
-        setStep('alpha');
+        // Small delay to allow state update before showing alpha notice
+        setTimeout(() => {
+          setStep('alpha');
+        }, 100);
       } else {
+        // User is logged in without pending name, go directly to home
         navigate('/');
       }
     }
