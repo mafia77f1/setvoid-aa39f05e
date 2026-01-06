@@ -63,7 +63,7 @@ jobs:
       - name: Generate App Icons
         run: |
           npm install @capacitor/assets
-          npx capacitor-assets generate --android --icon-path assets/src/setvoid.png
+          npx capacitor-assets generate --android --icon-path src/assets/setvoid.png
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
