@@ -59,6 +59,13 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # --- الجزء المضاف لتغيير الأيقونة ---
+      - name: Generate App Icons
+        run: |
+          npm install @capacitor/assets
+          npx capacitor-assets generate --android --icon-path src/assets/setvoid.png
+      # ----------------------------------
+
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
