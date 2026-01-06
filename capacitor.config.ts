@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.setvoid.app',
-  appName: 'SETVOID',
+  appId: 'com.leveluplife.app',
+  appName: 'Level Up Life',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

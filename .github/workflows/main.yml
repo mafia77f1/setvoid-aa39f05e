@@ -33,10 +33,22 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Accept Android SDK licenses manually
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
+          echo -e "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a" > $ANDROID_SDK_ROOT/licenses/google-gdk-license
+          echo -e "\nd975f751698a77b662f1254ddbeed3901e976f5a" > $ANDROID_SDK_ROOT/licenses/intel-android-extra-license
+          echo -e "\n601085b94cd77f0b54ff86406957099ebe79c4d6" > $ANDROID_SDK_ROOT/licenses/android-googletv-license
+          echo -e "\ne9acab5b5fbb560a72cfaecce8a5c9b5e6b3e7a4" > $ANDROID_SDK_ROOT/licenses/mips-android-sysimage-license
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-googlexr-license
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-android-sdk-licenses: true
+          accept-android-sdk-licenses: false
 
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
@@ -46,13 +58,6 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
-
-      # الحل النهائي لمشكلة "الأداة غير موجودة"
-      - name: Generate App Icons
-        run: |
-          npm install @capacitor/assets
-          # تشغيل الأداة من المجلد المحلي للنود لضمان المسار
-          ./node_modules/.bin/capacitor-assets generate --android --icon-path assets/src/setvoid.png
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
