@@ -48,7 +48,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-android-sdk-licenses: false
+          accept-android-sdk-licenses: true
 
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
@@ -59,12 +59,11 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # --- الجزء المضاف لتغيير الأيقونة ---
+      # توليد الأيقونات باستخدام صورتك المحددة
       - name: Generate App Icons
         run: |
           npm install @capacitor/assets
-          npx capacitor-assets generate --android --icon-path src/assets/setvoid.png
-      # ----------------------------------
+          npx capacitor-assets generate --android --icon-path assets/src/setvoid.png
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
