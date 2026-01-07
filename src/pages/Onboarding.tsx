@@ -99,8 +99,8 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية */}
-      <div className="relative w-full max-w-[550px] animate-modal-appear px-2">
+      {/* الحاوية الرئيسية - تم إضافة key لضمان إعادة تشغيل الأنميشن */}
+      <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
         
         {/* الحواف النيونية */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
@@ -240,12 +240,19 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes modal-appear {
-          from { opacity: 0; transform: scale(1.05); }
-          to { opacity: 1; transform: scale(1); }
+        @keyframes vertical-open {
+          0% { 
+            transform: scaleY(0); 
+            opacity: 0;
+          }
+          100% { 
+            transform: scaleY(1); 
+            opacity: 1;
+          }
         }
-        .animate-modal-appear {
-          animation: modal-appear 0.4s ease-out;
+        .animate-vertical-open {
+          animation: vertical-open 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          transform-origin: center;
         }
       `}</style>
 
