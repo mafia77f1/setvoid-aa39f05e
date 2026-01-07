@@ -17,7 +17,6 @@ const Onboarding = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If user is already logged in, redirect to home
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
@@ -117,12 +116,12 @@ const Onboarding = () => {
                       to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.
                     </p>
                     
-                    {/* مساحة نص الموافقة مع تأثير الخلل */}
-                    <div className="relative min-h-[40px] flex items-center justify-center">
-                      <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white] animate-fade-out-welcome absolute">
+                    {/* منطقة تبديل النصوص */}
+                    <div className="relative h-12 flex items-center justify-center">
+                      <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white] animate-fade-out-welcome absolute w-full">
                         Will you accept?
                       </p>
-                      <p className="text-white/80 italic text-xs sm:text-sm animate-glitch-text opacity-0 pointer-events-none">
+                      <p className="text-white/80 italic text-xs sm:text-sm animate-glitch-entry opacity-0 absolute w-full px-4">
                         Your heart will stop in <span className="text-red-500 font-bold drop-shadow-[0_0_10px_#ef4444]">0.02 seconds</span> if you choose not to Accept, will you Accept?
                       </p>
                     </div>
@@ -133,13 +132,13 @@ const Onboarding = () => {
                       onClick={handleAccept}
                       className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]"
                     >
-                      Yes
+                      ACCEPT
                     </button>
                     <button
                       onClick={handleDecline}
                       className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all"
                     >
-                      No
+                      NOT ACCEPT
                     </button>
                   </div>
                 </div>
@@ -166,13 +165,12 @@ const Onboarding = () => {
                 </div>
               )}
 
+              {/* ... باقي الخطوات (email, check_email) كما هي بدون تغيير ... */}
               {step === 'email' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <Mail className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">SYSTEM VERIFICATION</h2>
-                  <p className="text-white/60 text-xs sm:text-sm mb-6">
-                    أدخل بريدك الإلكتروني لتلقي رابط التسجيل
-                  </p>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي رابط التسجيل</p>
                   <input
                     type="email"
                     value={email}
@@ -187,14 +185,7 @@ const Onboarding = () => {
                     disabled={!email.trim() || isSubmitting}
                     className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        SENDING...
-                      </>
-                    ) : (
-                      'CONFIRM'
-                    )}
+                    {isSubmitting ? <><Loader2 className="w-5 h-5 animate-spin" /> SENDING...</> : 'CONFIRM'}
                   </button>
                 </div>
               )}
@@ -233,17 +224,16 @@ const Onboarding = () => {
           100% { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes fade-out {
+        @keyframes fade-out-quick {
           0% { opacity: 1; }
-          90% { opacity: 1; }
           100% { opacity: 0; visibility: hidden; }
         }
 
-        @keyframes glitch {
+        @keyframes glitch-in {
           0% { opacity: 0; transform: translate(0); }
-          1% { opacity: 1; transform: translate(-2px, 2px); text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; }
-          2% { transform: translate(2px, -2px); text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; }
-          3% { transform: translate(0); text-shadow: none; }
+          5% { opacity: 1; transform: translate(-3px, 1px); text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; }
+          10% { transform: translate(3px, -1px); text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; }
+          15% { transform: translate(0); text-shadow: none; }
           100% { opacity: 1; transform: translate(0); }
         }
 
@@ -257,11 +247,12 @@ const Onboarding = () => {
         }
 
         .animate-fade-out-welcome {
-          animation: fade-out 2.5s forwards;
+          animation: fade-out-quick 0.2s forwards 2.4s;
         }
 
-        .animate-glitch-text {
-          animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.5s forwards;
+        .animate-glitch-entry {
+          /* يبدأ فور اختفاء النص القديم */
+          animation: glitch-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.6s forwards;
         }
       `}</style>
 
