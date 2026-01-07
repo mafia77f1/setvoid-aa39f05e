@@ -99,7 +99,7 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية - تم إضافة key لضمان إعادة تشغيل الأنميشن */}
+      {/* الحاوية الرئيسية مع مفتاح لتكرار الأنميشن */}
       <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
         
         {/* الحواف النيونية */}
@@ -125,7 +125,8 @@ const Onboarding = () => {
               </h2>
             </div>
 
-            <div className="p-6 sm:p-10 flex flex-col items-center">
+            {/* تم إضافة كلاس animate-content-fade لظهور المحتوى بعد تمدد الإطار */}
+            <div className="p-6 sm:p-10 flex flex-col items-center animate-content-fade">
               {step === 'welcome' && (
                 <div className="w-full">
                   <div className="text-center space-y-4 mb-8">
@@ -242,17 +243,30 @@ const Onboarding = () => {
       <style>{`
         @keyframes vertical-open {
           0% { 
-            transform: scaleY(0); 
+            transform: scaleY(0.005) scaleX(1); 
             opacity: 0;
           }
+          50% {
+            opacity: 1;
+          }
           100% { 
-            transform: scaleY(1); 
+            transform: scaleY(1) scaleX(1); 
             opacity: 1;
           }
         }
+
+        @keyframes content-fade-in {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
         .animate-vertical-open {
-          animation: vertical-open 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          animation: vertical-open 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           transform-origin: center;
+        }
+
+        .animate-content-fade {
+          animation: content-fade-in 0.4s ease-out 0.4s both;
         }
       `}</style>
 
