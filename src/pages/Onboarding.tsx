@@ -20,17 +20,14 @@ const Onboarding = () => {
   // If user is already logged in, redirect to home
   useEffect(() => {
     if (!authLoading && user) {
-      // User is authenticated, complete onboarding if needed
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
         completeOnboarding(savedName);
         localStorage.removeItem('pendingPlayerName');
-        // Small delay to allow state update before showing alpha notice
         setTimeout(() => {
           setStep('alpha');
         }, 100);
       } else {
-        // User is logged in without pending name, go directly to home
         navigate('/');
       }
     }
@@ -54,11 +51,8 @@ const Onboarding = () => {
 
   const handleSendMagicLink = async () => {
     if (!email.trim() || !playerName.trim()) return;
-    
     setIsSubmitting(true);
-    
     const { error } = await signInWithMagicLink(email.trim(), playerName.trim());
-    
     if (error) {
       console.error('Magic link error:', error);
       toast({
@@ -69,10 +63,7 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
-    
-    // Save player name for after auth redirect
     localStorage.setItem('pendingPlayerName', playerName.trim());
-    
     playLevelUp();
     setStep('check_email');
     setIsSubmitting(false);
@@ -82,7 +73,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center">
@@ -94,28 +84,19 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
       
-      {/* خلفية الضباب الأزرق */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية */}
       <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
-        
-        {/* الحواف النيونية */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
 
-        {/* الكارد الخارجي */}
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
-          
-          {/* الكارد الداخلي */}
           <div 
             className="bg-black/60 border border-blue-400/30 overflow-hidden"
             style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}
           >
-            
-            {/* عنوان الإشعار */}
             <div className="bg-black/90 border-b border-white/5 py-3 flex items-center justify-center gap-3">
               <div className="w-6 h-6 border border-white/60 rounded-full flex items-center justify-center shadow-[0_0_8px_white]">
                 <span className="text-white font-black text-xs">!</span>
@@ -135,9 +116,16 @@ const Onboarding = () => {
                     <p className="text-white text-xl sm:text-2xl font-black">
                       to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.
                     </p>
-                    <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white]">
-                      Will you accept?
-                    </p>
+                    
+                    {/* مساحة نص الموافقة مع تأثير الخلل */}
+                    <div className="relative min-h-[40px] flex items-center justify-center">
+                      <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white] animate-fade-out-welcome absolute">
+                        Will you accept?
+                      </p>
+                      <p className="text-white/80 italic text-xs sm:text-sm animate-glitch-text opacity-0 pointer-events-none">
+                        Your heart will stop in <span className="text-red-500 font-bold drop-shadow-[0_0_10px_#ef4444]">0.02 seconds</span> if you choose not to Accept, will you Accept?
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
@@ -215,15 +203,9 @@ const Onboarding = () => {
                 <div className="w-full text-center flex flex-col items-center">
                   <CheckCircle className="w-16 h-16 text-green-400 mb-4 drop-shadow-[0_0_20px_#22c55e]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4 drop-shadow-[0_0_10px_white]">LINK SENT</h2>
-                  <p className="text-white/80 text-sm sm:text-base mb-2">
-                    تم إرسال رابط التسجيل إلى
-                  </p>
-                  <p className="text-blue-400 font-bold text-lg mb-6" dir="ltr">
-                    {email}
-                  </p>
-                  <p className="text-white/60 text-xs sm:text-sm">
-                    افتح بريدك الإلكتروني واضغط على الرابط للدخول
-                  </p>
+                  <p className="text-white/80 text-sm sm:text-base mb-2">تم إرسال رابط التسجيل إلى</p>
+                  <p className="text-blue-400 font-bold text-lg mb-6" dir="ltr">{email}</p>
+                  <p className="text-white/60 text-xs sm:text-sm">افتح بريدك الإلكتروني واضغط على الرابط للدخول</p>
                   <div className="mt-8 flex gap-4">
                     <button
                       onClick={() => setStep('email')}
@@ -241,22 +223,28 @@ const Onboarding = () => {
 
       <style>{`
         @keyframes vertical-open {
-          0% { 
-            transform: scaleY(0); 
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          100% { 
-            transform: scaleY(1); 
-            opacity: 1;
-          }
+          0% { transform: scaleY(0); opacity: 0; }
+          10% { opacity: 1; }
+          100% { transform: scaleY(1); opacity: 1; }
         }
 
         @keyframes content-fade-in {
           0% { opacity: 0; transform: translateY(5px); }
           100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fade-out {
+          0% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes glitch {
+          0% { opacity: 0; transform: translate(0); }
+          1% { opacity: 1; transform: translate(-2px, 2px); text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; }
+          2% { transform: translate(2px, -2px); text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; }
+          3% { transform: translate(0); text-shadow: none; }
+          100% { opacity: 1; transform: translate(0); }
         }
 
         .animate-vertical-open {
@@ -265,12 +253,18 @@ const Onboarding = () => {
         }
 
         .animate-content-fade {
-          /* تقليل الـ Delay إلى 0.6s ليكون أسرع وأكثر تناسقاً مع حركة الرسالة */
           animation: content-fade-in 0.6s ease-out 0.6s both;
+        }
+
+        .animate-fade-out-welcome {
+          animation: fade-out 2.5s forwards;
+        }
+
+        .animate-glitch-text {
+          animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 2.5s forwards;
         }
       `}</style>
 
-      {/* Alpha Notice Modal */}
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
