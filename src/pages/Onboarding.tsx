@@ -20,17 +20,14 @@ const Onboarding = () => {
   // If user is already logged in, redirect to home
   useEffect(() => {
     if (!authLoading && user) {
-      // User is authenticated, complete onboarding if needed
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
         completeOnboarding(savedName);
         localStorage.removeItem('pendingPlayerName');
-        // Small delay to allow state update before showing alpha notice
         setTimeout(() => {
           setStep('alpha');
         }, 100);
       } else {
-        // User is logged in without pending name, go directly to home
         navigate('/');
       }
     }
@@ -70,7 +67,6 @@ const Onboarding = () => {
       return;
     }
     
-    // Save player name for after auth redirect
     localStorage.setItem('pendingPlayerName', playerName.trim());
     
     playLevelUp();
@@ -82,7 +78,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // Show loading while checking auth
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center">
@@ -94,28 +89,22 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
       
-      {/* خلفية الضباب الأزرق */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية */}
-      <div className="relative w-full max-w-[550px] animate-modal-appear px-2">
+      <div className="relative w-full max-w-[550px] animate-modal-grow px-2">
         
-        {/* الحواف النيونية */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
 
-        {/* الكارد الخارجي */}
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           
-          {/* الكارد الداخلي */}
           <div 
             className="bg-black/60 border border-blue-400/30 overflow-hidden"
             style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}
           >
             
-            {/* عنوان الإشعار */}
             <div className="bg-black/90 border-b border-white/5 py-3 flex items-center justify-center gap-3">
               <div className="w-6 h-6 border border-white/60 rounded-full flex items-center justify-center shadow-[0_0_8px_white]">
                 <span className="text-white font-black text-xs">!</span>
@@ -127,7 +116,7 @@ const Onboarding = () => {
 
             <div className="p-6 sm:p-10 flex flex-col items-center">
               {step === 'welcome' && (
-                <div className="w-full">
+                <div className="w-full animate-text-fade-in">
                   <div className="text-center space-y-4 mb-8">
                     <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">
                       You have acquired the qualifications
@@ -135,9 +124,14 @@ const Onboarding = () => {
                     <p className="text-white text-xl sm:text-2xl font-black">
                       to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.
                     </p>
-                    <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white]">
-                      Will you accept?
-                    </p>
+                    <div className="relative h-6 flex justify-center items-center">
+                       <p className="absolute text-white/60 italic text-xs sm:text-sm animate-glitch-exit">
+                        Will you accept?
+                      </p>
+                      <p className="absolute text-white/60 italic text-xs sm:text-sm animate-glitch-entry opacity-0">
+                        Your heart will stop in <span className="text-red-600 font-bold drop-shadow-[0_0_10px_#dc2626]">(0.02 seconds)</span> if you choose not to Accept will you Accept?
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
@@ -158,7 +152,7 @@ const Onboarding = () => {
               )}
 
               {step === 'name' && (
-                <div className="w-full text-center flex flex-col items-center">
+                <div className="w-full text-center flex flex-col items-center animate-text-fade-in">
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
                   <input
                     type="text"
@@ -179,7 +173,7 @@ const Onboarding = () => {
               )}
 
               {step === 'email' && (
-                <div className="w-full text-center flex flex-col items-center">
+                <div className="w-full text-center flex flex-col items-center animate-text-fade-in">
                   <Mail className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">SYSTEM VERIFICATION</h2>
                   <p className="text-white/60 text-xs sm:text-sm mb-6">
@@ -212,7 +206,7 @@ const Onboarding = () => {
               )}
 
               {step === 'check_email' && (
-                <div className="w-full text-center flex flex-col items-center">
+                <div className="w-full text-center flex flex-col items-center animate-text-fade-in">
                   <CheckCircle className="w-16 h-16 text-green-400 mb-4 drop-shadow-[0_0_20px_#22c55e]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4 drop-shadow-[0_0_10px_white]">LINK SENT</h2>
                   <p className="text-white/80 text-sm sm:text-base mb-2">
@@ -240,16 +234,41 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes modal-appear {
-          from { opacity: 0; transform: scale(1.05); }
-          to { opacity: 1; transform: scale(1); }
+        @keyframes modal-grow {
+          0% { transform: scaleY(0); opacity: 0; }
+          100% { transform: scaleY(1); opacity: 1; }
         }
-        .animate-modal-appear {
-          animation: modal-appear 0.4s ease-out;
+        @keyframes text-fade-in {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glitch-exit {
+          0% { opacity: 1; transform: translateX(0); }
+          20% { transform: translateX(-2px); filter: blur(1px); }
+          40% { transform: translateX(2px); color: #ff0000; }
+          60% { opacity: 0.5; transform: scale(1.1); }
+          100% { opacity: 0; transform: scale(0); display: none; }
+        }
+        @keyframes glitch-entry {
+          0% { opacity: 0; transform: scale(0.8); }
+          80% { opacity: 0; }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-modal-grow {
+          animation: modal-grow 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-text-fade-in {
+          opacity: 0;
+          animation: text-fade-in 0.8s ease-out 0.4s forwards;
+        }
+        .animate-glitch-exit {
+          animation: glitch-exit 0.5s ease-in 2.5s forwards;
+        }
+        .animate-glitch-entry {
+          animation: glitch-entry 0.6s ease-out 3s forwards;
         }
       `}</style>
 
-      {/* Alpha Notice Modal */}
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
