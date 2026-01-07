@@ -145,13 +145,13 @@ const Onboarding = () => {
                       onClick={handleAccept}
                       className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]"
                     >
-                      ACCEPT
+                      Yes
                     </button>
                     <button
                       onClick={handleDecline}
                       className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all"
                     >
-                      NOT ACCEPT
+                      No
                     </button>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ const Onboarding = () => {
             transform: scaleY(0); 
             opacity: 0;
           }
-          20% {
+          10% {
             opacity: 1;
           }
           100% { 
@@ -255,8 +255,8 @@ const Onboarding = () => {
         }
 
         @keyframes content-fade-in {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
+          0% { opacity: 0; transform: translateY(5px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
 
         .animate-vertical-open {
@@ -265,7 +265,8 @@ const Onboarding = () => {
         }
 
         .animate-content-fade {
-          animation: content-fade-in 0.8s ease-out 0.9s both;
+          /* تقليل الـ Delay إلى 0.6s ليكون أسرع وأكثر تناسقاً مع حركة الرسالة */
+          animation: content-fade-in 0.6s ease-out 0.6s both;
         }
       `}</style>
 
