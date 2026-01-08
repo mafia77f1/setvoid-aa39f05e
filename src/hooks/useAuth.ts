@@ -25,20 +25,34 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithMagicLink = async (email: string, playerName: string) => {
-    // Always use the web callback URL - it will handle deep linking for native
-    const redirectUrl = `${window.location.origin}/auth/callback`;
-
+  // دالة إرسال الكود إلى الإيميل
+  const signInWithOtp = async (email: string, playerName: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectUrl,
+        // تم إلغاء الـ Redirect لأننا سنستخدم الكود يدوياً
         data: {
           player_name: playerName,
         },
       },
     });
 
+    return { error };
+  };
+
+  // الدالة الجديدة للتحقق من الكود الرقمي (OTP)
+  const verifyOtp = async (email: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'magiclink', // هذا النوع الافتراضي للـ OTP في Supabase
+    });
+    
+    if (data?.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
+    
     return { error };
   };
 
@@ -51,7 +65,8 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    signInWithMagicLink,
+    signInWithOtp, // تم تغيير الاسم ليكون أدق
+    verifyOtp,     // إضافة دالة التحقق
     signOut,
   };
 };
