@@ -11,11 +11,11 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // تم تغيير الدوال هنا
+  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // استخدام الدوال الجديدة
   const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'verify_otp' | 'loading' | 'alpha'>('welcome');
   const [playerName, setPlayerName] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(''); // حالة الكود الجديد
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -49,6 +49,7 @@ const Onboarding = () => {
     }
   };
 
+  // إرسال الكود
   const handleSendOtp = async () => {
     if (!email.trim() || !playerName.trim()) return;
     setIsSubmitting(true);
@@ -67,10 +68,11 @@ const Onboarding = () => {
     
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
-    setStep('verify_otp');
+    setStep('verify_otp'); // الانتقال لخطوة إدخال الكود
     setIsSubmitting(false);
   };
 
+  // التحقق من الكود
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) return;
     setIsSubmitting(true);
@@ -80,13 +82,12 @@ const Onboarding = () => {
     if (error) {
       toast({
         title: 'فشل التحقق',
-        description: 'الكود غير صحيح أو انتهت صلاحيته',
+        description: 'كود غير صحيح، يرجى المحاولة مرة أخرى',
         variant: 'destructive',
       });
       setIsSubmitting(false);
       return;
     }
-    
     setIsSubmitting(false);
   };
 
@@ -150,7 +151,7 @@ const Onboarding = () => {
                   <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي رمز التحقق</p>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all" autoFocus dir="ltr" />
                   <button onClick={handleSendOtp} disabled={!email.trim() || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SEND CODE'}
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONFIRM'}
                   </button>
                 </div>
               )}
@@ -172,7 +173,7 @@ const Onboarding = () => {
                 <div className="w-full text-center flex flex-col items-center">
                   <CheckCircle className="w-16 h-16 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4">REGISTRATION COMPLETE</h2>
-                  <button onClick={handleAlphaDismiss} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white]">START SYSTEM</button>
+                  <button onClick={handleAlphaDismiss} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all">START SYSTEM</button>
                 </div>
               )}
             </div>
