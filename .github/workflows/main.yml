@@ -24,6 +24,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # حل مشكلة الـ CSS المذكورة في الـ Log تلقائياً
+      - name: Fix CSS Import Order
+        run: |
+          find src -name "*.css" -exec sed -i '1i @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap");' {} +
+          # حذف السطر المكرر من الأسفل إذا وجد
+          find src -name "*.css" -exec sed -i '/@import.*fonts.googleapis.com/d; 1i @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap");' {} +
+
       - name: Build web app
         run: npm run build
 
@@ -39,55 +46,33 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # هذه الخطوة ستبحث عن الصورة في أي مكان داخل المستودع وتنقلها للمسار المطلوب
-      - name: Auto-Locate and Fix Image
+      - name: Locate and Square Icon
         run: |
           mkdir -p src/assets
-          FILE_PATH=$(find . -name "setvoid.png" | head -n 1)
-          if [ -z "$FILE_PATH" ]; then
-            echo "خطأ فادح: لم يتم العثور على ملف setvoid.png في أي مكان!"
+          # البحث عن الصورة في كل المجلدات (حتى لو كانت في مجلد فرعي)
+          IMG_SRC=$(find . -name "setvoid.png" | head -n 1)
+          if [ -z "$IMG_SRC" ]; then
+            echo "::error::الصورة setvoid.png غير موجودة في المستودع!"
             exit 1
           fi
-          echo "تم العثور على الصورة في: $FILE_PATH"
-          cp "$FILE_PATH" src/assets/setvoid.png
-          # تحويلها لمربعة بخلفية سوداء لضمان قبولها كأيقونة
+          cp "$IMG_SRC" src/assets/setvoid.png
+          # جعلها مربعة 1:1 لضمان قبولها كأيقونة
           convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
 
-      - name: Add Android platform
-        run: npx cap add android || true
-
-      # مسح الأيقونات القديمة لفرض الجديدة
-      - name: Purge Old Icons
+      - name: Add/Sync Android
         run: |
-          find android/app/src/main/res/ -name "ic_launcher*" -delete
-
-      - name: Generate Mobile Assets
-        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
-        
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Accept Android SDK licenses
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/licenses
-          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: false
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
+          npx cap add android || true
+          npx capacitor-assets generate --assetPath src/assets/setvoid.png
+          npx cap sync android
 
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
