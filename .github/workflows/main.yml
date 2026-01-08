@@ -24,13 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # --- الخطوات الجديدة للأيقونات تبدأ هنا ---
       - name: Install Capacitor Assets Tool
         run: npm install @capacitor/assets --save-dev
 
+      # هذا هو السطر الذي تم تصحيحه بناءً على الخطأ في الـ Log
       - name: Generate Mobile Icons and Splash
-        run: npx capacitor-assets generate --iconPath src/assets/setvoid.png
-      # --- الخطوات الجديدة تنتهي هنا ---
+        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
 
       - name: Build web app
         run: npm run build
