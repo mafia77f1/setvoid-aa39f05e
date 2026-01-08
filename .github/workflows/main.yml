@@ -37,38 +37,34 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # خطوة معالجة الصورة في المسار الجديد
-      - name: Fix Icon and Path
+      # هذه الخطوة هي "الجوهر": تبحث عن الصورة وتضعها في المكان الصحيح غصباً عن النظام
+      - name: Force Locate and Prepare Icon
         run: |
-          if [ -f "public/setvoid.png" ]; then
-            # جعل الصورة مربعة 1:1 بخلفية سوداء لضمان قبولها
-            convert public/setvoid.png -gravity center -background black -extent 1024x1024 public/setvoid.png
-            mkdir -p src/assets
-            cp public/setvoid.png src/assets/setvoid.png
-          else
-            echo "خطأ: لم نجد الصورة في public/setvoid.png"
+          # البحث عن أي ملف بهذا الاسم في المشروع كله
+          IMG_PATH=$(find . -iname "setvoid.png" -not -path "*/node_modules/*" | head -n 1)
+          
+          if [ -z "$IMG_PATH" ]; then
+            echo "::error::لم يتم العثور على setvoid.png في أي مكان! تأكد من رفع الصورة للمستودع."
             exit 1
           fi
+          
+          echo "تم العثور على الصورة في: $IMG_PATH"
+          mkdir -p src/assets
+          
+          # جعل الصورة مربعة 1024x1024 بخلفية سوداء لضمان قبول أندرويد لها
+          convert "$IMG_PATH" -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
+          # نسخها أيضاً لمسار public للاحتياط
+          mkdir -p public
+          cp src/assets/setvoid.png public/setvoid.png
 
       - name: Add Android platform
         run: npx cap add android || true
 
-      # حذف الأيقونات القديمة تماماً من جذورها لضمان عدم ظهور شعار كاباسيتور
-      - name: Delete Old Icons
-        run: |
-          find android/app/src/main/res/ -name "ic_launcher*" -delete
-          find android/app/src/main/res/ -name "ic_stat*" -delete
-
       - name: Generate and Sync Assets
         run: |
-          npx capacitor-assets generate --assetPath public/setvoid.png
+          # نستخدم الصورة التي أصلحنا أبعادها وتأكدنا من وجودها
+          npx capacitor-assets generate --assetPath src/assets/setvoid.png
           npx cap sync android
-
-      - name: Accept Android SDK licenses
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT/licenses
-          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
 
       - name: Build Debug APK
         working-directory: android
