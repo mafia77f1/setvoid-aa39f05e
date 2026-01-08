@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -24,12 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # حل مشكلة الـ CSS المذكورة في الـ Log تلقائياً
-      - name: Fix CSS Import Order
+      # حل مشكلة الـ CSS المذكورة في الـ Log
+      - name: Fix CSS Order
         run: |
+          find src -name "*.css" -exec sed -i '/@import/d' {} +
           find src -name "*.css" -exec sed -i '1i @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap");' {} +
-          # حذف السطر المكرر من الأسفل إذا وجد
-          find src -name "*.css" -exec sed -i '/@import.*fonts.googleapis.com/d; 1i @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap");' {} +
 
       - name: Build web app
         run: npm run build
@@ -46,20 +43,19 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      - name: Locate and Square Icon
+      # البحث عن الصورة أينما كانت ونقلها للمسار الصحيح
+      - name: Force Locate Icon
         run: |
           mkdir -p src/assets
-          # البحث عن الصورة في كل المجلدات (حتى لو كانت في مجلد فرعي)
-          IMG_SRC=$(find . -name "setvoid.png" | head -n 1)
-          if [ -z "$IMG_SRC" ]; then
-            echo "::error::الصورة setvoid.png غير موجودة في المستودع!"
+          FOUND_IMG=$(find . -iname "setvoid.png" | head -n 1)
+          if [ -z "$FOUND_IMG" ]; then
+            echo "::error::الصورة غير موجودة نهائياً في GitHub! تأكد من رفعها."
             exit 1
           fi
-          cp "$IMG_SRC" src/assets/setvoid.png
-          # جعلها مربعة 1:1 لضمان قبولها كأيقونة
+          cp "$FOUND_IMG" src/assets/setvoid.png
           convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
 
-      - name: Add/Sync Android
+      - name: Capacitor Operations
         run: |
           npx cap add android || true
           npx capacitor-assets generate --assetPath src/assets/setvoid.png
