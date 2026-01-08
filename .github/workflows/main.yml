@@ -22,7 +22,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # الخطوة 1: بناء التطبيق لإنتاج مجلد dist والصورة
       - name: Build web app
         run: npm run build
 
@@ -38,30 +37,31 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # الخطوة 2: سحب الصورة من dist ومعالجتها (الحل الذي كشفه الـ Log)
-      - name: Force Icon Implementation
+      # الخطوة الحاسمة: معالجة الصورة بأي ثمن
+      - name: Force Fix Icon Path & Dimensions
         run: |
           mkdir -p src/assets
-          if [ -f "./dist/setvoid.png" ]; then
-            echo "Success: Image found in dist!"
-            cp ./dist/setvoid.png src/assets/setvoid.png
-            # جعل الصورة مربعة 1024x1024 بخلفية سوداء لضمان قبول أندرويد
-            convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
-          else
-            echo "Error: Image NOT found in dist!"
+          # البحث عن الصورة في كل مكان ممكن (public أو dist أو src)
+          IMG_PATH=$(find . -iname "setvoid.png" -not -path "*/node_modules/*" | head -n 1)
+          
+          if [ -z "$IMG_PATH" ]; then
+            echo "::error::الصورة غير موجودة نهائياً! ارفعها باسم setvoid.png"
             exit 1
           fi
+          
+          echo "Found image at: $IMG_PATH"
+          # تحويل الصورة لمربع 1024x1024 لضمان قبول أندرويد
+          convert "$IMG_PATH" -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
 
-      # الخطوة 3: تهيئة أندرويد ومسح الأيقونات القديمة تماماً
-      - name: Capacitor Setup & Purge
+      - name: Capacitor Android Setup
         run: |
           npx cap add android || true
-          # مسح شامل لكل أيقونة افتراضية قد تمنع ظهور صورتك
+          # حذف الأيقونات القديمة تماماً لضمان عدم ظهور شعار Capacitor الأزرق
           find android/app/src/main/res/ -name "ic_launcher*" -delete
           find android/app/src/main/res/ -name "ic_stat*" -delete
 
-      # الخطوة 4: التوليد والمزامنة
-      - name: Generate Assets and Sync
+      # توليد الأصول وفرض المزامنة
+      - name: Generate and Sync
         run: |
           npx capacitor-assets generate --assetPath src/assets/setvoid.png
           npx cap sync android
