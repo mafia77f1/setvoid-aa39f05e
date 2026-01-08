@@ -22,6 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # الخطوة 1: بناء التطبيق لكي تظهر الصورة في مجلد dist كما رأينا في الـ Log
       - name: Build web app
         run: npm run build
 
@@ -37,24 +38,31 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      - name: Fix Icon From Dist
+      # الخطوة 2: سحب الصورة من dist ومعالجتها لتصبح مربعة
+      - name: Fix Icon from Dist
         run: |
-          # بما أننا عرفنا مكانها في dist، سننقلها فوراً للمكان الصحيح
           mkdir -p src/assets
           if [ -f "./dist/setvoid.png" ]; then
+            echo "تم العثور على الصورة في dist، جاري المعالجة..."
             cp ./dist/setvoid.png src/assets/setvoid.png
-            # جعلها مربعة لتناسب أندرويد
+            # تحويلها لمربعة 1024x1024 بخلفية سوداء (شرط أساسي لأندرويد)
             convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
           else
-            echo "الصورة مفقودة حتى في dist"
+            echo "::error::الصورة لم تظهر في dist بعد الـ build!"
             exit 1
           fi
 
-      - name: Capacitor Setup
+      # الخطوة 3: تهيئة أندرويد وتنظيفه من الأيقونات القديمة
+      - name: Capacitor Setup & Clean
         run: |
           npx cap add android || true
-          # حذف الأيقونات القديمة تماماً لضمان عدم ظهور شعار كاباسيتور
+          # حذف أي أيقونة قديمة لضمان عدم ظهور شعار Capacitor
           find android/app/src/main/res/ -name "ic_launcher*" -delete
+          find android/app/src/main/res/ -name "ic_stat*" -delete
+
+      # الخطوة 4: توليد الأيقونات الجديدة والمزامنة
+      - name: Generate Assets
+        run: |
           npx capacitor-assets generate --assetPath src/assets/setvoid.png
           npx cap sync android
 
