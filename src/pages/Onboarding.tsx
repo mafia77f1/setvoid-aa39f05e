@@ -11,7 +11,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // تم تغيير الدوال هنا
+  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); 
   const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'verify_otp' | 'loading' | 'alpha'>('welcome');
   const [playerName, setPlayerName] = useState('');
   const [email, setEmail] = useState('');
@@ -53,6 +53,7 @@ const Onboarding = () => {
     if (!email.trim() || !playerName.trim()) return;
     setIsSubmitting(true);
     
+    // استخدام دالة إرسال الكود OTP
     const { error } = await signInWithOtp(email.trim(), playerName.trim());
     
     if (error) {
@@ -75,6 +76,7 @@ const Onboarding = () => {
     if (otp.length !== 6) return;
     setIsSubmitting(true);
     
+    // استخدام دالة التحقق من الكود الرقمي
     const { error } = await verifyOtp(email.trim(), otp);
     
     if (error) {
