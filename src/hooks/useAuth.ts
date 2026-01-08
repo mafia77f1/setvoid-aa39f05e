@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+import type { Session, User } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAuth = () => {
@@ -8,16 +9,14 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -28,9 +27,12 @@ export const useAuth = () => {
   }, []);
 
   const signInWithMagicLink = async (email: string, playerName: string) => {
-    // Use capacitor deep link for mobile app redirect
-    const redirectUrl = 'com.leveluplife.app://';
-    
+    // Native (Capacitor): deep link back into the app
+    // Web: redirect back to the current site
+    const redirectUrl = Capacitor.isNativePlatform()
+      ? 'com.setvoid.app://'
+      : `${window.location.origin}/`;
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -40,7 +42,7 @@ export const useAuth = () => {
         },
       },
     });
-    
+
     return { error };
   };
 
