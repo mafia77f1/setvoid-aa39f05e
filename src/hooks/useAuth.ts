@@ -25,27 +25,27 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // دالة إرسال الكود الرقمي - OTP
   const signInWithOtp = async (email: string, playerName: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // التعديل الجذري: نضع رابطاً وهمياً أو نلغيه بطريقة تجبر السيرفر على OTP
-        // في بعض إصدارات Supabase، يجب أن تترك الخيارات فارغة تماماً لإرسال كود
+        // نلغي التوجيه تماماً لضمان عدم توليد رابط
+        emailRedirectTo: undefined,
         data: {
           player_name: playerName,
         },
-        shouldCreateUser: true,
       },
     });
     return { error };
   };
 
+  // دالة التحقق من الكود - هنا السر في التغيير لـ 'signup'
   const verifyOtp = async (email: string, token: string) => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      // التعديل: جرب استخدام 'signup' بدلاً من 'email' إذا كان المستخدم جديداً
-      // أو اتركها 'email' إذا كنت قد غيرت الإعدادات في الداشبورد
+      // نستخدم 'signup' بدلاً من 'magiclink' لإجبار النظام على قبول الكود الرقمي
       type: 'signup', 
     });
     
