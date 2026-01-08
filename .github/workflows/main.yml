@@ -37,26 +37,29 @@ jobs:
         run: |
           npm install -g @capacitor/cli
           npm install @capacitor/assets --save-dev
+          sudo apt-get install -y imagemagick
 
-      # تأكد من وجود المجلد والصورة
-      - name: Verify and Fix Image Path
+      # هذه الخطوة ستبحث عن الصورة في أي مكان داخل المستودع وتنقلها للمسار المطلوب
+      - name: Auto-Locate and Fix Image
         run: |
           mkdir -p src/assets
-          # ابحث عن أي ملف png في المشروع وانقله للمسار الصحيح إذا فقد
-          find . -name "setvoid.png" -exec cp {} src/assets/setvoid.png \;
-
-      - name: Prepare Icon (Square 1:1)
-        run: |
-          sudo apt-get install -y imagemagick
-          if [ -f "src/assets/setvoid.png" ]; then
-            convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
-          else
-            echo "CRITICAL ERROR: Image setvoid.png NOT FOUND IN REPOSITORY"
+          FILE_PATH=$(find . -name "setvoid.png" | head -n 1)
+          if [ -z "$FILE_PATH" ]; then
+            echo "خطأ فادح: لم يتم العثور على ملف setvoid.png في أي مكان!"
             exit 1
           fi
+          echo "تم العثور على الصورة في: $FILE_PATH"
+          cp "$FILE_PATH" src/assets/setvoid.png
+          # تحويلها لمربعة بخلفية سوداء لضمان قبولها كأيقونة
+          convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
 
       - name: Add Android platform
         run: npx cap add android || true
+
+      # مسح الأيقونات القديمة لفرض الجديدة
+      - name: Purge Old Icons
+        run: |
+          find android/app/src/main/res/ -name "ic_launcher*" -delete
 
       - name: Generate Mobile Assets
         run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
