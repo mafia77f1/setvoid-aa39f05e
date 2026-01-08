@@ -25,27 +25,26 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // دالة إرسال الكود إلى الإيميل
   const signInWithOtp = async (email: string, playerName: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // تم إلغاء الـ Redirect لأننا سنستخدم الكود يدوياً
+        // حذف أي رابط توجيه يجبر النظام على إرسال OTP
+        emailRedirectTo: undefined, 
         data: {
           player_name: playerName,
         },
       },
     });
-
     return { error };
   };
 
-  // الدالة الجديدة للتحقق من الكود الرقمي (OTP)
   const verifyOtp = async (email: string, token: string) => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'magiclink', // هذا النوع الافتراضي للـ OTP في Supabase
+      // 'email' أو 'signup' هي القيم الصحيحة للتحقق من الكود الرقمي OTP
+      type: 'email', 
     });
     
     if (data?.session) {
@@ -65,8 +64,8 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    signInWithOtp, // تم تغيير الاسم ليكون أدق
-    verifyOtp,     // إضافة دالة التحقق
+    signInWithOtp,
+    verifyOtp,
     signOut,
   };
 };
