@@ -30,6 +30,9 @@ jobs:
       # هذا هو السطر الذي تم تصحيحه بناءً على الخطأ في الـ Log
       - name: Generate Mobile Icons and Splash
         run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
+        
+      - name: Sync Assets to Android Project
+        run: npx cap sync android
 
       - name: Build web app
         run: npm run build
