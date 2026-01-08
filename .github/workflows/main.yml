@@ -38,24 +38,33 @@ jobs:
           npm install -g @capacitor/cli
           npm install @capacitor/assets --save-dev
 
-      - name: Add Android platform
-        run: npx cap add android || true
+      # تأكد من وجود المجلد والصورة
+      - name: Verify and Fix Image Path
+        run: |
+          mkdir -p src/assets
+          # ابحث عن أي ملف png في المشروع وانقله للمسار الصحيح إذا فقد
+          find . -name "setvoid.png" -exec cp {} src/assets/setvoid.png \;
 
-      # هذه الخطوة تعالج أبعاد الصورة وتجعلها مربعة لتظهر كأيقونة
-      - name: Prepare Icon Dimensions
+      - name: Prepare Icon (Square 1:1)
         run: |
           sudo apt-get install -y imagemagick
           if [ -f "src/assets/setvoid.png" ]; then
             convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
+          else
+            echo "CRITICAL ERROR: Image setvoid.png NOT FOUND IN REPOSITORY"
+            exit 1
           fi
 
+      - name: Add Android platform
+        run: npx cap add android || true
+
       - name: Generate Mobile Assets
-        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png || echo "Image not found, check path"
+        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
         
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Accept Android SDK licenses manually
+      - name: Accept Android SDK licenses
         run: |
           mkdir -p $ANDROID_SDK_ROOT/licenses
           echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
