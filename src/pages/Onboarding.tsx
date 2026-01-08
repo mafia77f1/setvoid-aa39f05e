@@ -11,11 +11,11 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // تم التغيير لـ Otp
-  const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'check_email' | 'loading' | 'alpha'>('welcome');
+  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // تم تغيير الدوال هنا
+  const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'verify_otp' | 'loading' | 'alpha'>('welcome');
   const [playerName, setPlayerName] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(''); // حالة الكود
+  const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -49,7 +49,6 @@ const Onboarding = () => {
     }
   };
 
-  // إرسال الكود الرقمي
   const handleSendOtp = async () => {
     if (!email.trim() || !playerName.trim()) return;
     setIsSubmitting(true);
@@ -68,11 +67,10 @@ const Onboarding = () => {
     
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
-    setStep('check_email'); // سنستخدم نفس الستيب لعرض خانة الكود
+    setStep('verify_otp');
     setIsSubmitting(false);
   };
 
-  // التحقق من الكود الرقمي
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) return;
     setIsSubmitting(true);
@@ -88,6 +86,7 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
+    
     setIsSubmitting(false);
   };
 
@@ -115,7 +114,6 @@ const Onboarding = () => {
 
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           <div className="bg-black/60 border border-blue-400/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}>
-            
             <div className="bg-black/90 border-b border-white/5 py-3 flex items-center justify-center gap-3">
               <div className="w-6 h-6 border border-white/60 rounded-full flex items-center justify-center shadow-[0_0_8px_white]">
                 <span className="text-white font-black text-xs">!</span>
@@ -125,14 +123,13 @@ const Onboarding = () => {
 
             <div className="p-6 sm:p-10 flex flex-col items-center animate-content-fade">
               {step === 'welcome' && (
-                <div className="w-full">
-                  <div className="text-center space-y-4 mb-8">
+                <div className="w-full text-center">
+                  <div className="space-y-4 mb-8">
                     <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">You have acquired the qualifications</p>
                     <p className="text-white text-xl sm:text-2xl font-black">to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.</p>
-                    <p className="text-white/60 italic text-xs sm:text-sm drop-shadow-[0_0_5px_white]">Will you accept?</p>
                   </div>
                   <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
-                    <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all drop-shadow-[0_0_10px_white]">ACCEPT</button>
+                    <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all">ACCEPT</button>
                     <button onClick={handleDecline} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all">NOT ACCEPT</button>
                   </div>
                 </div>
@@ -141,8 +138,8 @@ const Onboarding = () => {
               {step === 'name' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
-                  <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="ENTER NAME..." className="w-full max-w-[250px] sm:max-w-sm bg-transparent border-b border-blue-500/50 py-2 text-center text-xl sm:text-2xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5" autoFocus />
-                  <button onClick={handleNameNext} disabled={!playerName.trim()} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white] disabled:opacity-50 disabled:cursor-not-allowed">NEXT</button>
+                  <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="ENTER NAME..." className="w-full max-w-[250px] bg-transparent border-b border-blue-500/50 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5" autoFocus />
+                  <button onClick={handleNameNext} disabled={!playerName.trim()} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all">NEXT</button>
                 </div>
               )}
 
@@ -150,39 +147,32 @@ const Onboarding = () => {
                 <div className="w-full text-center flex flex-col items-center">
                   <Mail className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">SYSTEM VERIFICATION</h2>
-                  <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي كود التحقق</p>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full max-w-[300px] sm:max-w-sm bg-transparent border-b border-blue-500/50 py-2 text-center text-lg sm:text-xl font-medium text-white focus:outline-none focus:border-white transition-all placeholder:text-white/20" autoFocus dir="ltr" />
-                  <button onClick={handleSendOtp} disabled={!email.trim() || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white] flex items-center gap-2">
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONFIRM'}
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي رمز التحقق</p>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all" autoFocus dir="ltr" />
+                  <button onClick={handleSendOtp} disabled={!email.trim() || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SEND CODE'}
                   </button>
                 </div>
               )}
 
-              {step === 'check_email' && (
+              {step === 'verify_otp' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <KeyRound className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
-                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4 drop-shadow-[0_0_10px_white]">VERIFICATION REQUIRED</h2>
-                  <p className="text-white/80 text-sm mb-2">أدخل الكود المرسل إلى {email}</p>
-                  
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    maxLength={6}
-                    placeholder="000000"
-                    className="w-full max-w-[200px] bg-transparent border-b border-blue-500/50 py-2 text-center text-2xl font-black text-blue-400 tracking-[0.3em] focus:outline-none focus:border-white transition-all"
-                    autoFocus
-                  />
-
-                  <button
-                    onClick={handleVerifyOtp}
-                    disabled={otp.length !== 6 || isSubmitting}
-                    className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white] flex items-center gap-2"
-                  >
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY SYSTEM'}
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">ENTER AUTHENTICATION CODE</h2>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">تم إرسال الكود إلى {email}</p>
+                  <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} maxLength={6} placeholder="000000" className="w-full max-w-[200px] bg-transparent border-b border-blue-500/50 py-2 text-center text-3xl tracking-[0.3em] font-black text-blue-400 focus:outline-none focus:border-white transition-all" autoFocus dir="ltr" />
+                  <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
                   </button>
-                  
-                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all underline decoration-white/20 underline-offset-4">تغيير البريد</button>
+                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
+                </div>
+              )}
+
+              {step === 'alpha' && (
+                <div className="w-full text-center flex flex-col items-center">
+                  <CheckCircle className="w-16 h-16 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4">REGISTRATION COMPLETE</h2>
+                  <button onClick={handleAlphaDismiss} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white]">START SYSTEM</button>
                 </div>
               )}
             </div>
@@ -196,7 +186,6 @@ const Onboarding = () => {
         .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
         .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
       `}</style>
-
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
