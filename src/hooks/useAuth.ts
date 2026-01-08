@@ -29,11 +29,12 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // حذف أي رابط توجيه يجبر النظام على إرسال OTP
-        emailRedirectTo: undefined, 
+        // التعديل الجذري: نضع رابطاً وهمياً أو نلغيه بطريقة تجبر السيرفر على OTP
+        // في بعض إصدارات Supabase، يجب أن تترك الخيارات فارغة تماماً لإرسال كود
         data: {
           player_name: playerName,
         },
+        shouldCreateUser: true,
       },
     });
     return { error };
@@ -43,8 +44,9 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      // 'email' أو 'signup' هي القيم الصحيحة للتحقق من الكود الرقمي OTP
-      type: 'email', 
+      // التعديل: جرب استخدام 'signup' بدلاً من 'email' إذا كان المستخدم جديداً
+      // أو اتركها 'email' إذا كنت قد غيرت الإعدادات في الداشبورد
+      type: 'signup', 
     });
     
     if (data?.session) {
