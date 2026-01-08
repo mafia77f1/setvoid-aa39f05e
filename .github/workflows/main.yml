@@ -37,25 +37,32 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # معالجة الصورة في المسار الجديد وجعلها مربعة 1024x1024 بخلفية سوداء
-      - name: Prepare Icon Dimensions
+      # خطوة معالجة الصورة في المسار الجديد
+      - name: Fix Icon and Path
         run: |
           if [ -f "public/setvoid.png" ]; then
+            # جعل الصورة مربعة 1:1 بخلفية سوداء لضمان قبولها
             convert public/setvoid.png -gravity center -background black -extent 1024x1024 public/setvoid.png
+            mkdir -p src/assets
+            cp public/setvoid.png src/assets/setvoid.png
           else
-            echo "::error::الصورة غير موجودة في public/setvoid.png"
+            echo "خطأ: لم نجد الصورة في public/setvoid.png"
             exit 1
           fi
 
       - name: Add Android platform
         run: npx cap add android || true
 
-      # توليد الأيقونات باستخدام المسار الجديد
-      - name: Generate Mobile Assets
-        run: npx capacitor-assets generate --assetPath public/setvoid.png
-        
-      - name: Sync Capacitor
-        run: npx cap sync android
+      # حذف الأيقونات القديمة تماماً من جذورها لضمان عدم ظهور شعار كاباسيتور
+      - name: Delete Old Icons
+        run: |
+          find android/app/src/main/res/ -name "ic_launcher*" -delete
+          find android/app/src/main/res/ -name "ic_stat*" -delete
+
+      - name: Generate and Sync Assets
+        run: |
+          npx capacitor-assets generate --assetPath public/setvoid.png
+          npx cap sync android
 
       - name: Accept Android SDK licenses
         run: |
@@ -63,17 +70,11 @@ jobs:
           echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: false
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
