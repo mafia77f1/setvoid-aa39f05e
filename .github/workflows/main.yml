@@ -37,24 +37,25 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      - name: Process Icon
+      - name: Fix Icon From Dist
         run: |
-          # التأكد من المسار وتهيئة الصورة لتكون مربعة (مهم جداً لأندرويد)
-          if [ -f "public/setvoid.png" ]; then
-            convert public/setvoid.png -gravity center -background black -extent 1024x1024 public/setvoid.png
-            mkdir -p src/assets
-            cp public/setvoid.png src/assets/setvoid.png
+          # بما أننا عرفنا مكانها في dist، سننقلها فوراً للمكان الصحيح
+          mkdir -p src/assets
+          if [ -f "./dist/setvoid.png" ]; then
+            cp ./dist/setvoid.png src/assets/setvoid.png
+            # جعلها مربعة لتناسب أندرويد
+            convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
           else
-            echo "الصورة مفقودة في public/setvoid.png"
+            echo "الصورة مفقودة حتى في dist"
             exit 1
           fi
 
-      - name: Capacitor Sync & Assets
+      - name: Capacitor Setup
         run: |
           npx cap add android || true
-          # حذف الأيقونات القديمة لضمان عدم ظهور شعار كاباسيتور
+          # حذف الأيقونات القديمة تماماً لضمان عدم ظهور شعار كاباسيتور
           find android/app/src/main/res/ -name "ic_launcher*" -delete
-          npx capacitor-assets generate --assetPath public/setvoid.png
+          npx capacitor-assets generate --assetPath src/assets/setvoid.png
           npx cap sync android
 
       - name: Build Debug APK
