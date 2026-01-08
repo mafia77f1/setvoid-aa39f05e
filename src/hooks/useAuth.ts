@@ -25,12 +25,13 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // دالة إرسال الكود إلى الإيميل
+  // دالة إرسال الكود إلى الإيميل المعدلة لإرسال OTP حصراً
   const signInWithOtp = async (email: string, playerName: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // تم إلغاء الـ Redirect لأننا سنستخدم الكود يدوياً
+        // حذف رابط التحويل يضمن عدم إرسال Magic Link
+        emailRedirectTo: undefined,
         data: {
           player_name: playerName,
         },
@@ -45,7 +46,7 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'magiclink', // هذا النوع الافتراضي للـ OTP في Supabase
+      type: 'magiclink', 
     });
     
     if (data?.session) {
@@ -65,8 +66,8 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    signInWithOtp, // تم تغيير الاسم ليكون أدق
-    verifyOtp,     // إضافة دالة التحقق
+    signInWithOtp,
+    verifyOtp,
     signOut,
   };
 };
