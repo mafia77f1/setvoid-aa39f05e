@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # الخطوة 1: بناء التطبيق لكي تظهر الصورة في مجلد dist كما رأينا في الـ Log
+      # الخطوة 1: بناء التطبيق لإنتاج مجلد dist والصورة
       - name: Build web app
         run: npm run build
 
@@ -38,30 +38,30 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # الخطوة 2: سحب الصورة من dist ومعالجتها لتصبح مربعة
-      - name: Fix Icon from Dist
+      # الخطوة 2: سحب الصورة من dist ومعالجتها (الحل الذي كشفه الـ Log)
+      - name: Force Icon Implementation
         run: |
           mkdir -p src/assets
           if [ -f "./dist/setvoid.png" ]; then
-            echo "تم العثور على الصورة في dist، جاري المعالجة..."
+            echo "Success: Image found in dist!"
             cp ./dist/setvoid.png src/assets/setvoid.png
-            # تحويلها لمربعة 1024x1024 بخلفية سوداء (شرط أساسي لأندرويد)
+            # جعل الصورة مربعة 1024x1024 بخلفية سوداء لضمان قبول أندرويد
             convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
           else
-            echo "::error::الصورة لم تظهر في dist بعد الـ build!"
+            echo "Error: Image NOT found in dist!"
             exit 1
           fi
 
-      # الخطوة 3: تهيئة أندرويد وتنظيفه من الأيقونات القديمة
-      - name: Capacitor Setup & Clean
+      # الخطوة 3: تهيئة أندرويد ومسح الأيقونات القديمة تماماً
+      - name: Capacitor Setup & Purge
         run: |
           npx cap add android || true
-          # حذف أي أيقونة قديمة لضمان عدم ظهور شعار Capacitor
+          # مسح شامل لكل أيقونة افتراضية قد تمنع ظهور صورتك
           find android/app/src/main/res/ -name "ic_launcher*" -delete
           find android/app/src/main/res/ -name "ic_stat*" -delete
 
-      # الخطوة 4: توليد الأيقونات الجديدة والمزامنة
-      - name: Generate Assets
+      # الخطوة 4: التوليد والمزامنة
+      - name: Generate Assets and Sync
         run: |
           npx capacitor-assets generate --assetPath src/assets/setvoid.png
           npx cap sync android
