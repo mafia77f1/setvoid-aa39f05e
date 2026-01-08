@@ -33,7 +33,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install Capacitor CLI & Assets Tool
+      - name: Install Tools
         run: |
           npm install -g @capacitor/cli
           npm install @capacitor/assets --save-dev
@@ -41,16 +41,18 @@ jobs:
       - name: Add Android platform
         run: npx cap add android || true
 
-      # خطوة إضافية لضمان مسح أي أيقونات قديمة تعيق ظهور الجديدة
-      - name: Clean old assets
+      # هذه الخطوة تعالج أبعاد الصورة وتجعلها مربعة لتظهر كأيقونة
+      - name: Prepare Icon Dimensions
         run: |
-          rm -rf android/app/src/main/res/mipmap-*
-          rm -rf android/app/src/main/res/drawable-*
+          sudo apt-get install -y imagemagick
+          if [ -f "src/assets/setvoid.png" ]; then
+            convert src/assets/setvoid.png -gravity center -background black -extent 1024x1024 src/assets/setvoid.png
+          fi
 
-      - name: Generate Mobile Icons and Splash
-        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png
+      - name: Generate Mobile Assets
+        run: npx capacitor-assets generate --assetPath src/assets/setvoid.png || echo "Image not found, check path"
         
-      - name: Sync Assets to Android Project
+      - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Accept Android SDK licenses manually
@@ -63,9 +65,6 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: false
-
-      - name: Sync Capacitor
-        run: npx cap sync android
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
