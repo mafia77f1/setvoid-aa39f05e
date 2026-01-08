@@ -11,7 +11,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); 
+  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); // تم تغيير الدوال هنا
   const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'verify_otp' | 'loading' | 'alpha'>('welcome');
   const [playerName, setPlayerName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,13 +22,16 @@ const Onboarding = () => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
-        // بعد التحقق الناجح، ننتقل فوراً لإشعار Alpha قبل أي شيء آخر
-        setStep('alpha');
+        completeOnboarding(savedName);
+        localStorage.removeItem('pendingPlayerName');
+        setTimeout(() => {
+          setStep('alpha');
+        }, 100);
       } else {
         navigate('/');
       }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, completeOnboarding]);
 
   const handleAccept = () => {
     playClick();
@@ -49,7 +52,9 @@ const Onboarding = () => {
   const handleSendOtp = async () => {
     if (!email.trim() || !playerName.trim()) return;
     setIsSubmitting(true);
+    
     const { error } = await signInWithOtp(email.trim(), playerName.trim());
+    
     if (error) {
       toast({
         title: 'خطأ',
@@ -59,6 +64,7 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
+    
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
     setStep('verify_otp');
@@ -68,7 +74,9 @@ const Onboarding = () => {
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) return;
     setIsSubmitting(true);
+    
     const { error } = await verifyOtp(email.trim(), otp);
+    
     if (error) {
       toast({
         title: 'فشل التحقق',
@@ -78,15 +86,11 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
-    // لا نحتاج لعمل شيء هنا، الـ useEffect سيلتقط تغيير حالة المستخدم ويظهر الـ Alpha
+    
+    setIsSubmitting(false);
   };
 
   const handleAlphaDismiss = () => {
-    const savedName = localStorage.getItem('pendingPlayerName');
-    if (savedName) {
-      completeOnboarding(savedName);
-      localStorage.removeItem('pendingPlayerName');
-    }
     navigate('/');
   };
 
@@ -104,7 +108,6 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية مع أنيميشن الفتح الطولي */}
       <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
@@ -168,8 +171,7 @@ const Onboarding = () => {
               {step === 'alpha' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <CheckCircle className="w-16 h-16 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
-                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4">SYSTEM ACCESS GRANTED</h2>
-                  <p className="text-white/60 text-xs italic mb-6">Initial synchronization complete</p>
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-4">REGISTRATION COMPLETE</h2>
                   <button onClick={handleAlphaDismiss} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_white]">START SYSTEM</button>
                 </div>
               )}
@@ -184,8 +186,6 @@ const Onboarding = () => {
         .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
         .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
       `}</style>
-      
-      {/* ظهور الـ Modal الآن مربوط بانتهاء الخطوات بنجاح */}
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
