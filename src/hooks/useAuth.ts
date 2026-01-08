@@ -28,7 +28,8 @@ export const useAuth = () => {
   }, []);
 
   const signInWithMagicLink = async (email: string, playerName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Use capacitor deep link for mobile app redirect
+    const redirectUrl = 'com.leveluplife.app://';
     
     const { error } = await supabase.auth.signInWithOtp({
       email,
