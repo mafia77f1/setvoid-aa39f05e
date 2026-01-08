@@ -22,12 +22,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 1. حل مشكلة الـ CSS لضمان عدم فشل الـ Build
-      - name: Fix CSS Order
-        run: |
-          find src -name "*.css" -exec sed -i '/@import/d' {} +
-          find src -name "*.css" -exec sed -i '1i @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap");' {} +
-
       - name: Build web app
         run: npm run build
 
@@ -43,40 +37,43 @@ jobs:
           npm install @capacitor/assets --save-dev
           sudo apt-get install -y imagemagick
 
-      # 2. البحث عن الصورة "انتحارياً" في كل المجلدات
-      - name: Force Locate and Square Icon
+      # معالجة الصورة في المسار الجديد وجعلها مربعة 1024x1024 بخلفية سوداء
+      - name: Prepare Icon Dimensions
         run: |
-          mkdir -p src/assets
-          # البحث عن الملف بكل الاحتمالات (setvoid.png, Setvoid.png, SETVOID.PNG)
-          FOUND_PATH=$(find . -iname "setvoid.png" -not -path "*/node_modules/*" | head -n 1)
-          if [ -z "$FOUND_PATH" ]; then
-            echo "::error::الملف setvoid.png غير موجود في المستودع! تأكد من رفعه."
+          if [ -f "public/setvoid.png" ]; then
+            convert public/setvoid.png -gravity center -background black -extent 1024x1024 public/setvoid.png
+          else
+            echo "::error::الصورة غير موجودة في public/setvoid.png"
             exit 1
           fi
-          echo "Found image at: $FOUND_PATH"
-          cp "$FOUND_PATH" src/assets/setvoid.png
-          # تحويل الصورة لمربعة 1024x1024 لضمان قبولها
-          convert src/assets/setvoid.png -resize 1024x1024^ -gravity center -extent 1024x1024 src/assets/setvoid.png
 
-      # 3. تنظيف أندرويد وإضافة المنصة
-      - name: Capacitor Setup
-        run: |
-          npx cap add android || true
-          # حذف الأيقونات القديمة تماماً لإجبار النظام على الجديدة
-          find android/app/src/main/res/ -name "ic_launcher*" -delete
-          find android/app/src/main/res/ -name "ic_stat*" -delete
+      - name: Add Android platform
+        run: npx cap add android || true
 
-      # 4. توليد الأيقونات والمزامنة
-      - name: Generate Assets and Sync
+      # توليد الأيقونات باستخدام المسار الجديد
+      - name: Generate Mobile Assets
+        run: npx capacitor-assets generate --assetPath public/setvoid.png
+        
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Accept Android SDK licenses
         run: |
-          npx capacitor-assets generate --assetPath src/assets/setvoid.png
-          npx cap sync android
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: false
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
 
       - name: Build Debug APK
         working-directory: android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
