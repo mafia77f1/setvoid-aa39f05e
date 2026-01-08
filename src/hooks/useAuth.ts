@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAuth = () => {
@@ -27,11 +26,8 @@ export const useAuth = () => {
   }, []);
 
   const signInWithMagicLink = async (email: string, playerName: string) => {
-    // Native (Capacitor): deep link back into the app
-    // Web: redirect back to the current site
-    const redirectUrl = Capacitor.isNativePlatform()
-      ? 'com.setvoid.app://'
-      : `${window.location.origin}/`;
+    // Always use the web callback URL - it will handle deep linking for native
+    const redirectUrl = `${window.location.origin}/auth/callback`;
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
