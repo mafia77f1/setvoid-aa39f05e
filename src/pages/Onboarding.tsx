@@ -18,20 +18,23 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // تشغيل الصوت فور تغيير الحالة ليوافق بداية الأنميشن
-  useEffect(() => {
+  // دالة تشغيل الصوت الفورية
+  const playSystemNotification = () => {
     const systemSound = new Audio('/SystemNotificationSound.wav');
-    systemSound.preload = 'auto'; // تحميل مسبق للصوت لتقليل التأخير
-    systemSound.play().catch(() => {
-      /* تجاهل الخطأ إذا لم يتفاعل المستخدم بعد */
-    });
-  }, [step]);
+    systemSound.play().catch(() => {});
+  };
+
+  // تشغيل الصوت عند أول دخول (أول ظهور لـ Welcome)
+  useEffect(() => {
+    playSystemNotification();
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
         setStep('alpha');
+        playSystemNotification(); // تشغيل الصوت عند الانتقال التلقائي لـ alpha
       } else {
         navigate('/');
       }
@@ -40,6 +43,7 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
+    playSystemNotification(); // تشغيل فوري مع تغيير الحالة
     setStep('name');
   };
 
@@ -50,6 +54,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
+      playSystemNotification(); // تشغيل فوري مع تغيير الحالة
       setStep('email');
     }
   };
@@ -69,6 +74,7 @@ const Onboarding = () => {
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
+    playSystemNotification(); // تشغيل فوري مع تغيير الحالة
     setStep('verify_otp');
     setIsSubmitting(false);
   };
@@ -86,6 +92,7 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
+    // ملاحظة: عند النجاح سيقوم useEffect الخاص بـ User بتغيير الحالة لـ alpha وتشغيل الصوت
   };
 
   const handleAlphaDismiss = () => {
@@ -167,7 +174,7 @@ const Onboarding = () => {
                   <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
                   </button>
-                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
+                  <button onClick={() => { setStep('email'); playSystemNotification(); }} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
                 </div>
               )}
 
