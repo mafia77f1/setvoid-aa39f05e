@@ -17,17 +17,25 @@ const Onboarding = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // حالة التحكم في الشاشة السوداء الانتقالية
+  // حالة التحكم في الشاشة السوداء الانتقالية للصمت
   const [isTransitioning, setIsTransitioning] = useState(false);
+  // حالة للتحكم في تأخير ظهور عناصر الإدخال داخل الشاشة
+  const [showContent, setShowContent] = useState(true);
 
-  // دالة مساعدة لعمل التأثير الأسود
+  // دالة الانتقال مع الشاشة السوداء (1.5 ثانية صمت)
   const triggerTransition = (nextStep: typeof step, playSound?: () => void) => {
     setIsTransitioning(true);
+    setShowContent(false); // إخفاء المحتوى الداخلي للتحضير للخطوة القادمة
     setTimeout(() => {
       if (playSound) playSound();
       setStep(nextStep);
       setIsTransitioning(false);
-    }, 1500); // 1.5 ثانية صمت
+      
+      // تأخير إضافي لمدة 1 ثانية قبل إظهار عناصر الإدخال (الاسم/الايميل) بعد ظهور الإطار
+      setTimeout(() => {
+        setShowContent(true);
+      }, 1000);
+    }, 1500);
   };
 
   useEffect(() => {
@@ -43,7 +51,7 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
-    triggerTransition('name'); // تأثير أسود بعد الموافقة
+    triggerTransition('name');
   };
 
   const handleDecline = () => {
@@ -53,7 +61,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      triggerTransition('email'); // تأثير أسود بعد إدخال الاسم
+      triggerTransition('email');
     }
   };
 
@@ -72,7 +80,7 @@ const Onboarding = () => {
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
     setIsSubmitting(false);
-    triggerTransition('verify_otp', playLevelUp); // تأثير أسود + صوت بعد إرسال الإيميل
+    triggerTransition('verify_otp', playLevelUp);
   };
 
   const handleVerifyOtp = async () => {
@@ -88,7 +96,6 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
-    // الـ useEffect سيتولى الانتقال لـ alpha
   };
 
   const handleAlphaDismiss = () => {
@@ -108,9 +115,9 @@ const Onboarding = () => {
     );
   }
 
-  // إذا كان في حالة انتقال، تظهر شاشة سوداء تماماً
+  // الشاشة السوداء (الصمت)
   if (isTransitioning) {
-    return <div className="min-h-screen bg-black flex items-center justify-center" />;
+    return <div className="min-h-screen bg-black" />;
   }
 
   return (
@@ -132,7 +139,7 @@ const Onboarding = () => {
               <h2 className="text-white font-black tracking-[0.4em] italic text-sm sm:text-base drop-shadow-[0_0_10px_white]">NOTIFICATION</h2>
             </div>
 
-            <div className="p-6 sm:p-10 flex flex-col items-center animate-content-fade">
+            <div className={`p-6 sm:p-10 flex flex-col items-center transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
               {step === 'welcome' && (
                 <div className="w-full text-center">
                   <div className="space-y-4 mb-8">
@@ -175,7 +182,6 @@ const Onboarding = () => {
                   <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
                   </button>
-                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
                 </div>
               )}
 
@@ -194,9 +200,7 @@ const Onboarding = () => {
 
       <style>{`
         @keyframes vertical-open { 0% { transform: scaleY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
-        @keyframes content-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
         .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
-        .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
       `}</style>
       
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
