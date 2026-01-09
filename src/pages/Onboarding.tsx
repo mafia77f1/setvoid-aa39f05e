@@ -18,23 +18,20 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // دالة تشغيل الصوت الفورية
-  const playSystemNotification = () => {
-    const systemSound = new Audio('/SystemNotificationSound.wav');
-    systemSound.play().catch(() => {});
-  };
-
-  // تشغيل الصوت عند أول دخول
+  // تشغيل الصوت فور تغيير الحالة ليوافق بداية الأنميشن
   useEffect(() => {
-    playSystemNotification();
-  }, []);
+    const systemSound = new Audio('/SystemNotificationSound.wav');
+    systemSound.preload = 'auto'; // تحميل مسبق للصوت لتقليل التأخير
+    systemSound.play().catch(() => {
+      /* تجاهل الخطأ إذا لم يتفاعل المستخدم بعد */
+    });
+  }, [step]);
 
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
         setStep('alpha');
-        playSystemNotification();
       } else {
         navigate('/');
       }
@@ -43,7 +40,6 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
-    playSystemNotification();
     setStep('name');
   };
 
@@ -54,7 +50,6 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      playSystemNotification();
       setStep('email');
     }
   };
@@ -74,7 +69,6 @@ const Onboarding = () => {
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
-    playSystemNotification();
     setStep('verify_otp');
     setIsSubmitting(false);
   };
@@ -173,7 +167,7 @@ const Onboarding = () => {
                   <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
                   </button>
-                  <button onClick={() => { setStep('email'); playSystemNotification(); }} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
+                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
                 </div>
               )}
 
@@ -191,24 +185,10 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes vertical-open { 
-          0% { transform: scaleY(0); opacity: 0; } 
-          10% { opacity: 1; } 
-          100% { transform: scaleY(1); opacity: 1; } 
-        }
-        @keyframes content-fade-in { 
-          0% { opacity: 0; transform: translateY(10px); } 
-          100% { opacity: 1; transform: translateY(0); } 
-        }
-        /* تم تغيير المدة هنا من 1.2s إلى 2.5s ليكون الظهور أبطأ وأطول */
-        .animate-vertical-open { 
-          animation: vertical-open 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
-          transform-origin: center; 
-        }
-        /* تم جعل ظهور المحتوى الداخلي يتناسب مع مدة الأنيميشن الجديدة */
-        .animate-content-fade { 
-          animation: content-fade-in 1.2s ease-out 1.8s both; 
-        }
+        @keyframes vertical-open { 0% { transform: scaleY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
+        @keyframes content-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+        .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
+        .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
       `}</style>
       
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
