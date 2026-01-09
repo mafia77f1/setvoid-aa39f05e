@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -18,18 +18,42 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // مرجع لصوت النظام
+  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
+
   // حالات التحكم في التأخير والسينمائية
-  const [isTransitioning, setIsTransitioning] = useState(true); // تبدأ سوداء (الدخول الأولي)
+  const [isTransitioning, setIsTransitioning] = useState(true); 
   const [showContent, setShowContent] = useState(false);
+
+  // تهيئة كائن الصوت عند تحميل المكون
+  useEffect(() => {
+    notificationSoundRef.current = new Audio('/SystemNotificationSound.wav');
+  }, []);
+
+  // دالة تشغيل صوت النظام
+  const playSystemSound = () => {
+    if (notificationSoundRef.current) {
+      notificationSoundRef.current.currentTime = 0;
+      notificationSoundRef.current.play().catch(err => console.log("Sound play deferred:", err));
+    }
+  };
 
   // 1️⃣ الشاشة السوداء عند الدخول الأولي (1.5 ثانية صمت)
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsTransitioning(false);
-      setTimeout(() => setShowContent(true), 1000); // تأخير ظهور العناصر الداخلية
+      playSystemSound(); // تشغيل الصوت عند ظهور أول كارد (Welcome)
+      setTimeout(() => setShowContent(true), 1000);
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  // تشغيل الصوت عند تغير الخطوات (باستثناء شاشة الـ loading)
+  useEffect(() => {
+    if (step !== 'welcome' && step !== 'loading' && !isTransitioning) {
+      playSystemSound();
+    }
+  }, [step]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -42,7 +66,6 @@ const Onboarding = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // دالة مساعدة للانتقال السينمائي (شاشة سوداء + صمت)
   const triggerTransition = (nextStep: typeof step, playSound?: () => void) => {
     setIsTransitioning(true);
     setShowContent(false);
@@ -50,14 +73,15 @@ const Onboarding = () => {
       setStep(nextStep);
       if (playSound) playSound();
       setIsTransitioning(false);
-      // تأخير إضافي لظهور الأزرار/المحتوى لضمان قراءة الرسالة
+      // تشغيل صوت النظام فور انتهاء السواد وظهور الكارد الجديد
+      playSystemSound();
       setTimeout(() => setShowContent(true), 1200);
     }, 1500);
   };
 
   const handleAccept = () => {
     playClick();
-    triggerTransition('name'); // 2️⃣ بعد الضغط على Accept
+    triggerTransition('name');
   };
 
   const handleDecline = () => {
@@ -67,7 +91,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      triggerTransition('email'); // 3️⃣ بعد إدخال الاسم
+      triggerTransition('email');
     }
   };
 
@@ -85,8 +109,6 @@ const Onboarding = () => {
       return;
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
-    
-    // 4️⃣ بعد إرسال الإيميل (شاشة سوداء + صوت)
     triggerTransition('verify_otp', playLevelUp); 
     setIsSubmitting(false);
   };
@@ -125,7 +147,6 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
-      {/* الشاشة السوداء المطلقة للتحولات */}
       {isTransitioning && (
         <div className="fixed inset-0 bg-black z-[100] transition-opacity duration-500" />
       )}
@@ -154,7 +175,6 @@ const Onboarding = () => {
                     <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">You have acquired the qualifications</p>
                     <p className="text-white text-xl sm:text-2xl font-black">to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.</p>
                   </div>
-                  {/* الأزرار تظهر بتأخير */}
                   <div className={`flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
                     <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all">ACCEPT</button>
                     <button onClick={handleDecline} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all">NOT ACCEPT</button>
