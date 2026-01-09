@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -17,43 +17,14 @@ const Onboarding = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // مرجع لصوت النظام
-  const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // حالات التحكم في التأخير والسينمائية
-  const [isTransitioning, setIsTransitioning] = useState(true); 
-  const [showContent, setShowContent] = useState(false);
-
-  // تهيئة كائن الصوت عند تحميل المكون
+  // تشغيل صوت التنبيه عند ظهور الكارد لأول مرة
   useEffect(() => {
-    notificationSoundRef.current = new Audio('/SystemNotificationSound.wav');
+    const notificationSound = new Audio('/SystemNotificationSound.wav');
+    notificationSound.play().catch(error => {
+      console.log("Autoplay was prevented. Sound will play on next interaction.");
+    });
   }, []);
-
-  // دالة تشغيل صوت النظام
-  const playSystemSound = () => {
-    if (notificationSoundRef.current) {
-      notificationSoundRef.current.currentTime = 0;
-      notificationSoundRef.current.play().catch(err => console.log("Sound play deferred:", err));
-    }
-  };
-
-  // 1️⃣ الشاشة السوداء عند الدخول الأولي (1.5 ثانية صمت)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTransitioning(false);
-      playSystemSound(); // تشغيل الصوت عند ظهور أول كارد (Welcome)
-      setTimeout(() => setShowContent(true), 1000);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // تشغيل الصوت عند تغير الخطوات (باستثناء شاشة الـ loading)
-  useEffect(() => {
-    if (step !== 'welcome' && step !== 'loading' && !isTransitioning) {
-      playSystemSound();
-    }
-  }, [step]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -66,22 +37,9 @@ const Onboarding = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const triggerTransition = (nextStep: typeof step, playSound?: () => void) => {
-    setIsTransitioning(true);
-    setShowContent(false);
-    setTimeout(() => {
-      setStep(nextStep);
-      if (playSound) playSound();
-      setIsTransitioning(false);
-      // تشغيل صوت النظام فور انتهاء السواد وظهور الكارد الجديد
-      playSystemSound();
-      setTimeout(() => setShowContent(true), 1200);
-    }, 1500);
-  };
-
   const handleAccept = () => {
     playClick();
-    triggerTransition('name');
+    setStep('name');
   };
 
   const handleDecline = () => {
@@ -91,7 +49,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      triggerTransition('email');
+      setStep('email');
     }
   };
 
@@ -109,7 +67,8 @@ const Onboarding = () => {
       return;
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
-    triggerTransition('verify_otp', playLevelUp); 
+    playLevelUp();
+    setStep('verify_otp');
     setIsSubmitting(false);
   };
 
@@ -147,15 +106,11 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
-      {isTransitioning && (
-        <div className="fixed inset-0 bg-black z-[100] transition-opacity duration-500" />
-      )}
-
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      <div key={step} className={`relative w-full max-w-[550px] animate-vertical-open px-2 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+      <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
 
@@ -175,7 +130,7 @@ const Onboarding = () => {
                     <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">You have acquired the qualifications</p>
                     <p className="text-white text-xl sm:text-2xl font-black">to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.</p>
                   </div>
-                  <div className={`flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
                     <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all">ACCEPT</button>
                     <button onClick={handleDecline} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all">NOT ACCEPT</button>
                   </div>
@@ -185,10 +140,8 @@ const Onboarding = () => {
               {step === 'name' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
-                  <div className={`w-full flex flex-col items-center transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="ENTER NAME..." className="w-full max-w-[250px] bg-transparent border-b border-blue-500/50 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5" autoFocus />
-                    <button onClick={handleNameNext} disabled={!playerName.trim()} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all">NEXT</button>
-                  </div>
+                  <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="ENTER NAME..." className="w-full max-w-[250px] bg-transparent border-b border-blue-500/50 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-white transition-all placeholder:text-white/5" />
+                  <button onClick={handleNameNext} disabled={!playerName.trim()} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all">NEXT</button>
                 </div>
               )}
 
@@ -196,13 +149,11 @@ const Onboarding = () => {
                 <div className="w-full text-center flex flex-col items-center">
                   <Mail className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">SYSTEM VERIFICATION</h2>
-                  <div className={`w-full flex flex-col items-center transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي رمز التحقق</p>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all" autoFocus dir="ltr" />
-                    <button onClick={handleSendOtp} disabled={!email.trim() || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
-                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SEND CODE'}
-                    </button>
-                  </div>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بريدك الإلكتروني لتلقي رمز التحقق</p>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all" dir="ltr" />
+                  <button onClick={handleSendOtp} disabled={!email.trim() || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SEND CODE'}
+                  </button>
                 </div>
               )}
 
@@ -210,13 +161,12 @@ const Onboarding = () => {
                 <div className="w-full text-center flex flex-col items-center">
                   <KeyRound className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">ENTER AUTHENTICATION CODE</h2>
-                  <div className={`w-full flex flex-col items-center transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <p className="text-white/60 text-xs sm:text-sm mb-6">تم إرسال الكود إلى {email}</p>
-                    <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} maxLength={6} placeholder="000000" className="w-full max-w-[200px] bg-transparent border-b border-blue-500/50 py-2 text-center text-3xl tracking-[0.3em] font-black text-blue-400 focus:outline-none focus:border-white transition-all" autoFocus dir="ltr" />
-                    <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
-                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
-                    </button>
-                  </div>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">تم إرسال الكود إلى {email}</p>
+                  <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} maxLength={6} placeholder="000000" className="w-full max-w-[200px] bg-transparent border-b border-blue-500/50 py-2 text-center text-3xl tracking-[0.3em] font-black text-blue-400 focus:outline-none focus:border-white transition-all" dir="ltr" />
+                  <button onClick={handleVerifyOtp} disabled={otp.length !== 6 || isSubmitting} className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY'}
+                  </button>
+                  <button onClick={() => setStep('email')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">CHANGE EMAIL</button>
                 </div>
               )}
 
