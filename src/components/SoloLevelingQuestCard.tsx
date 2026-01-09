@@ -68,7 +68,9 @@ interface QuestModalProps {
 }
 
 const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: QuestModalProps) => {
-  const [timeProgress, setTimeProgress] = useState<number>(quest.timeProgress || 0);
+  // استخدام التقدم المحفوظ من المهمة مباشرة
+  const savedProgress = quest.timeProgress || 0;
+  const [timeProgress, setTimeProgress] = useState<number>(savedProgress);
   const [isRunning, setIsRunning] = useState(false);
   const config = categoryConfig[quest.category];
   const diffConfig = difficultyConfig[quest.difficulty];
@@ -77,29 +79,32 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
   const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
   const isCompleted = timeProgress >= requiredTimeInSeconds;
 
-  // استمرار العداد إذا كانت المهمة قد بدأت
+  // تحديث التقدم من المهمة عند فتح الـ modal
+  useEffect(() => {
+    const currentProgress = quest.timeProgress || 0;
+    setTimeProgress(currentProgress);
+  }, [quest.timeProgress]);
+
+  // استمرار العداد إذا كانت المهمة قد بدأت وليست مكتملة
   useEffect(() => {
     if (quest.startedAt && !quest.completed && !isCompleted) {
       setIsRunning(true);
     }
   }, [quest.startedAt, quest.completed, isCompleted]);
 
-  // عداد الوقت
+  // عداد الوقت - يعمل فقط عندما يكون الـ modal مفتوحاً
   useEffect(() => {
     if (!isRunning || isCompleted) return;
 
     const timer = setInterval(() => {
       setTimeProgress(prev => {
         const newProgress = prev + 1;
-        // حفظ التقدم كل 5 ثواني
-        if (newProgress % 5 === 0 && onUpdateProgress) {
+        // حفظ التقدم كل ثانية
+        if (onUpdateProgress) {
           onUpdateProgress(newProgress);
         }
         if (newProgress >= requiredTimeInSeconds) {
           setIsRunning(false);
-          if (onUpdateProgress) {
-            onUpdateProgress(newProgress);
-          }
         }
         return newProgress;
       });
