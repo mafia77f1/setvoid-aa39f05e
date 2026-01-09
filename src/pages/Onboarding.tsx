@@ -18,7 +18,7 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // التعديل هنا: استخدام useLayoutEffect لضمان انطلاق الصوت مع بداية الـ Animation تماماً
+  // التعديل: تفعيل الصوت عند التحميل الأول (Welcome) وعند كل تغيير في الخطوات
   useLayoutEffect(() => {
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
@@ -34,7 +34,7 @@ const Onboarding = () => {
       systemSound.pause();
       systemSound.currentTime = 0;
     };
-  }, [step]);
+  }, [step]); // سيعمل فوراً لأن القيمة الابتدائية هي 'welcome'
 
   useEffect(() => {
     if (!authLoading && user) {
