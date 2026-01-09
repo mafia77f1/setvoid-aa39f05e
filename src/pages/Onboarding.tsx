@@ -18,10 +18,12 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // التأثير المسؤول عن تشغيل صوت النظام عند تغيير الخطوة (ظهور الكارد)
+  // تشغيل الصوت فور تغيير الحالة ليوافق بداية الأنميشن
   useEffect(() => {
     const systemSound = new Audio('/SystemNotificationSound.wav');
-    systemSound.play().catch(error => console.log("Audio play deferred until user interaction"));
+    systemSound.play().catch(() => {
+      /* تجاهل الخطأ إذا لم يتفاعل المستخدم بعد */
+    });
   }, [step]);
 
   useEffect(() => {
