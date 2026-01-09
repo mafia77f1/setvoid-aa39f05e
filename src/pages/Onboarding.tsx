@@ -18,13 +18,11 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // تشغيل صوت التنبيه عند ظهور الكارد لأول مرة
+  // التأثير المسؤول عن تشغيل صوت النظام عند تغيير الخطوة (ظهور الكارد)
   useEffect(() => {
-    const notificationSound = new Audio('/SystemNotificationSound.wav');
-    notificationSound.play().catch(error => {
-      console.log("Autoplay was prevented. Sound will play on next interaction.");
-    });
-  }, []);
+    const systemSound = new Audio('/SystemNotificationSound.wav');
+    systemSound.play().catch(error => console.log("Audio play deferred until user interaction"));
+  }, [step]);
 
   useEffect(() => {
     if (!authLoading && user) {
