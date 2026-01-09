@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -18,13 +18,22 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // تشغيل الصوت فور تغيير الحالة ليوافق بداية الأنميشن
-  useEffect(() => {
+  // التعديل هنا: استخدام useLayoutEffect لضمان انطلاق الصوت مع بداية الـ Animation تماماً
+  useLayoutEffect(() => {
     const systemSound = new Audio('/SystemNotificationSound.wav');
-    systemSound.preload = 'auto'; // تحميل مسبق للصوت لتقليل التأخير
-    systemSound.play().catch(() => {
-      /* تجاهل الخطأ إذا لم يتفاعل المستخدم بعد */
-    });
+    systemSound.preload = 'auto';
+    const playPromise = systemSound.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        /* تجاهل القيود إذا لم يتفاعل المستخدم بعد */
+      });
+    }
+
+    return () => {
+      systemSound.pause();
+      systemSound.currentTime = 0;
+    };
   }, [step]);
 
   useEffect(() => {
