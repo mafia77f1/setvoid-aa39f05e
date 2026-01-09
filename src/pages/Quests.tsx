@@ -1,4 +1,4 @@
-Import { useGameState } from '@/hooks/useGameState';
+import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { useState, useEffect } from 'react';
 import { Dumbbell, Brain, Heart, Zap, Target, CheckCircle2, Clock, Scroll, X, ShieldAlert, Loader2 } from 'lucide-react';
