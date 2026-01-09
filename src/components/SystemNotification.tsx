@@ -21,149 +21,129 @@ export const SystemNotification = ({
 }: SystemNotificationProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [hasAppeared, setHasAppeared] = useState(false); // للتحكم في الظهور لمرة واحدة
 
   useEffect(() => {
-    if (show) {
-      // Delay for entrance animation
-      const timer = setTimeout(() => setIsVisible(true), 50);
+    if (show && !hasAppeared) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+        setHasAppeared(true); // تثبيت الحالة أنه ظهر مرة واحدة
+      }, 50);
       return () => clearTimeout(timer);
-    } else {
-      setIsVisible(false);
     }
-  }, [show]);
+  }, [show, hasAppeared]);
 
   const handleClose = () => {
     setIsExiting(true);
+    // جعل الخروج أسرع قليلاً من الدخول للحفاظ على سلاسة التجربة
     setTimeout(() => {
       setIsExiting(false);
       onClose();
-    }, 300);
+    }, 800); 
   };
 
-  if (!show) return null;
+  if (!show || (hasAppeared && !isVisible && !isExiting)) return null;
 
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-300",
-        isVisible && !isExiting ? "bg-black/80" : "bg-black/0"
+        "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
+        isVisible && !isExiting ? "bg-black/70" : "bg-black/0 pointer-events-none"
       )}
       onClick={handleClose}
     >
-      {/* إطار النافذة الرئيسي - ستايل الماركت */}
       <div 
         className={cn(
-          "relative max-w-sm w-full bg-black/90 border-2 border-slate-200/90 shadow-[0_0_30px_rgba(30,58,138,0.5)] transition-all duration-500",
+          "relative max-w-sm w-full bg-black/95 border-x-2 border-slate-200/90 shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
+          // انيميشن الانفتاح الطولي
           isVisible && !isExiting 
-            ? "opacity-100 scale-100 translate-y-0" 
-            : "opacity-0 scale-90 translate-y-8"
+            ? "opacity-100 scale-y-100 duration-[1500ms]" 
+            : "opacity-0 scale-y-0 duration-[1000ms]",
+          "origin-center" // الانفتاح يبدأ من المنتصف للطول
         )}
-        style={{
-          animation: isVisible && !isExiting ? 'notification-glitch 0.5s ease-out' : undefined
-        }}
         onClick={e => e.stopPropagation()}
       >
-        {/* الزوايا الديكورية البيضاء */}
+        {/* الخطوط العلوية والسفلية المتمددة */}
         <div className={cn(
-          "absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white z-10 transition-all duration-700",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0 -translate-x-2 -translate-y-2"
+          "absolute top-0 left-0 right-0 h-[2px] bg-white transition-all duration-[1200ms] delay-300",
+          isVisible && !isExiting ? "scale-x-100" : "scale-x-0"
         )} />
         <div className={cn(
-          "absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white z-10 transition-all duration-700",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0 translate-x-2 -translate-y-2"
+          "absolute bottom-0 left-0 right-0 h-[2px] bg-white transition-all duration-[1200ms] delay-300",
+          isVisible && !isExiting ? "scale-x-100" : "scale-x-0"
         )} />
-        <div className={cn(
-          "absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white z-10 transition-all duration-700",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0 -translate-x-2 translate-y-2"
-        )} />
-        <div className={cn(
-          "absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white z-10 transition-all duration-700",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0 translate-x-2 translate-y-2"
-        )} />
+
+        {/* الزوايا الديكورية */}
+        <div className="absolute top-0 left-0 w-2 h-8 border-l-2 border-white -translate-x-[2px]" />
+        <div className="absolute bottom-0 right-0 w-2 h-8 border-r-2 border-white translate-x-[2px]" />
 
         {/* زر الإغلاق */}
         <button
           onClick={handleClose}
-          className="absolute top-2 right-2 p-1 hover:bg-white/10 transition-colors z-20"
+          className="absolute top-4 right-4 p-1 hover:rotate-90 transition-all duration-300 z-20"
         >
-          <X className="w-4 h-4 text-slate-400 hover:text-white" />
+          <X className="w-4 h-4 text-white/50 hover:text-white" />
         </button>
 
-        <div className="p-6">
-          {/* Header - العنوان الطائر فوق الإطار */}
-          <div className={cn(
-            "flex justify-center mb-8 mt-[-2.5rem] transition-all duration-500 delay-100",
-            isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-          )}>
-            <div className="border border-slate-400/50 px-4 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              <span className="text-[10px] font-black tracking-[0.3em] text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] uppercase italic">
-                System Message
+        {/* Content Container - يظهر بعد تمدد الإطار */}
+        <div className={cn(
+          "p-8 transition-opacity duration-1000 delay-[800ms]",
+          isVisible && !isExiting ? "opacity-100" : "opacity-0"
+        )}>
+          {/* Header */}
+          <div className="flex justify-center mb-10">
+            <div className="relative border border-white/20 px-6 py-1 overflow-hidden">
+              <div className="absolute inset-0 bg-white/5 animate-pulse" />
+              <span className="relative text-[9px] font-black tracking-[0.5em] text-white/80 uppercase italic">
+                Secure Transmission
               </span>
             </div>
           </div>
 
-          {/* Content */}
-          <div className={cn(
-            "text-center space-y-4 mb-8 transition-all duration-500 delay-200",
-            isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}>
-            <h3 className="text-lg font-black italic tracking-wider text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
+          {/* Text Content */}
+          <div className="text-center space-y-6 mb-10">
+            <h3 className="text-xl font-light tracking-[0.2em] text-white uppercase">
               {title}
             </h3>
             
-            <div className={cn(
-              "h-[1px] w-full bg-gradient-to-r from-transparent via-slate-500/50 to-transparent transition-all duration-700 delay-300",
-              isVisible && !isExiting ? "scale-x-100" : "scale-x-0"
-            )} />
-            
-            <p className="text-xs text-slate-300 font-bold leading-relaxed italic tracking-tight">
+            <p className="text-[11px] text-slate-400 font-medium leading-relaxed tracking-wider uppercase">
               {message}
             </p>
           </div>
 
-          {/* Actions - الأزرار */}
-          <div className={cn(
-            "flex flex-col gap-2 transition-all duration-500 delay-300",
-            isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}>
-            {actions.map((action, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  action.onClick();
-                  handleClose();
-                }}
-                className={cn(
-                  "w-full py-3 text-[10px] font-black tracking-[0.2em] uppercase transition-all active:scale-95 border",
-                  action.variant === 'secondary'
-                    ? "bg-transparent border-slate-700 text-slate-500 hover:text-slate-300"
-                    : "bg-white/10 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:bg-white/20"
-                )}
-              >
-                {action.label}
-              </button>
-            ))}
-            
-            {actions.length === 0 && (
+          {/* Actions */}
+          <div className="flex flex-col gap-3">
+            {actions.length > 0 ? (
+              actions.map((action, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    action.onClick();
+                    handleClose();
+                  }}
+                  className={cn(
+                    "w-full py-3 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-300",
+                    action.variant === 'secondary'
+                      ? "border border-white/10 text-white/40 hover:bg-white/5"
+                      : "bg-white text-black hover:bg-transparent hover:text-white border border-white"
+                  )}
+                >
+                  {action.label}
+                </button>
+              ))
+            ) : (
               <button
                 onClick={handleClose}
-                className="w-full py-3 bg-white text-black font-black text-[10px] tracking-[0.3em] uppercase hover:bg-slate-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                className="w-full py-4 bg-white text-black font-black text-[10px] tracking-[0.4em] uppercase hover:invert transition-all"
               >
-                Confirm
+                Acknowledge
               </button>
             )}
           </div>
         </div>
 
-        {/* Scanline Effect Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
-        
-        {/* Glitch line effect */}
-        {isVisible && !isExiting && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute w-full h-[2px] bg-white/30 animate-[scan-line_2s_linear_infinite]" />
-          </div>
-        )}
+        {/* Scanline & Noise Effect */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02),rgba(255,255,255,0.05))] bg-[size:100%_4px,4px_100%]" />
       </div>
     </div>
   );
