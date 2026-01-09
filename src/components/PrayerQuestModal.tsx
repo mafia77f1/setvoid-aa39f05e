@@ -15,8 +15,8 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  // هذا الجزء يضمن تفعيل الأنيميشن فور ظهور المكون
   useEffect(() => {
-    // أنيميشن الدخول يبدأ فور تحميل المكون
     const timer = setTimeout(() => setIsVisible(true), 50);
     return () => clearTimeout(timer);
   }, []);
@@ -25,27 +25,26 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
     setIsExiting(true);
     setTimeout(() => {
       onClose();
-    }, 800); // وقت الخروج
+    }, 800); // مدة خروج الأنيميشن
   };
 
   const handleComplete = () => {
     playQuestComplete();
     onComplete(prayer.id);
-    handleClose(); // نغلقها بالأنيميشن بعد الإكمال
+    handleClose();
   };
 
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
-        isVisible && !isExiting ? "bg-black/60" : "bg-black/0"
+        "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-1000",
+        isVisible && !isExiting ? "bg-black/70" : "bg-black/0 pointer-events-none"
       )}
       onClick={handleClose}
     >
-      {/* الإطار الرئيسي مع أنيميشن الانفتاح الطولي */}
       <div 
         className={cn(
-          "relative max-w-sm w-full bg-black border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)]",
+          "relative max-w-sm w-full bg-black border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
           isVisible && !isExiting 
             ? "opacity-100 scale-y-100 duration-[1500ms]" 
             : "opacity-0 scale-y-0 duration-[800ms]",
@@ -63,12 +62,12 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
         )} />
 
-        {/* زر الإغلاق السريع */}
+        {/* زر إغلاق X في الزاوية */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-1 hover:rotate-90 transition-all duration-300 z-20"
+          className="absolute top-4 right-4 p-1 hover:rotate-90 transition-all duration-300 z-[160]"
         >
-          <X className="w-4 h-4 text-white/30 hover:text-white" />
+          <X className="w-4 h-4 text-white/40 hover:text-white" />
         </button>
 
         <div className={cn(
@@ -76,65 +75,62 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )}>
           
-          {/* Header - Quest Label */}
+          {/* Label العلوي */}
           <div className="flex justify-center mb-8">
             <div className="border border-white/20 px-4 py-0.5 bg-white/5">
               <span className="text-[9px] font-black tracking-[0.4em] text-white/60 uppercase">
-                Active Objective
+                Divine Mission
               </span>
             </div>
           </div>
 
           {/* اسم الصلاة - توهج أبيض مكثف */}
           <div className="text-center mb-8">
-            <h3 className="text-4xl font-black italic text-white tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
+            <h3 className="text-4xl font-black italic text-white tracking-tighter uppercase drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">
               {prayer.arabicName}
             </h3>
-            <p className="text-[10px] text-white/40 tracking-[0.3em] uppercase mt-2 font-bold">
-              Daily Prayer Mission
-            </p>
+            <div className="h-[1px] w-12 bg-white/20 mx-auto mt-4" />
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-px bg-white/10 border border-white/10 mb-8">
-            <div className="bg-black p-4">
-              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Time Window</p>
-              <div className="flex items-center gap-2">
-                <Clock className="w-3 h-3 text-white" />
-                <span className="text-xs font-mono font-bold text-white">45:00</span>
-              </div>
+          {/* تفاصيل المهمة */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="text-center">
+              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Window</p>
+              <span className="text-xs font-mono font-bold text-white uppercase">45 Mins</span>
             </div>
-            <div className="bg-black p-4">
-              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Spirit Gain</p>
+            <div className="text-center border-l border-white/10">
+              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Reward</p>
               <span className="text-xs font-bold text-white drop-shadow-[0_0_8px_white]">
                 +{prayer.xpReward} XP
               </span>
             </div>
           </div>
 
-          {/* Description */}
-          <p className="text-[11px] text-white/60 text-center italic leading-relaxed mb-10 px-4">
-            "Establishing prayer is the foundation of your spiritual journey."
-          </p>
-
-          {/* Action Buttons */}
+          {/* أزرار الأكشن */}
           <div className="space-y-3">
             <button
               onClick={handleComplete}
               disabled={prayer.completed}
               className={cn(
-                "w-full py-4 font-black text-[11px] tracking-[0.4em] uppercase transition-all duration-500",
+                "w-full py-4 font-black text-[11px] tracking-[0.4em] uppercase transition-all duration-500 border",
                 prayer.completed
-                  ? "bg-white/5 text-white/20 cursor-not-allowed"
-                  : "bg-white text-black shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:shadow-[0_0_40px_rgba(255,255,255,0.6)] active:scale-95"
+                  ? "bg-transparent border-white/5 text-white/20 cursor-not-allowed"
+                  : "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] active:scale-95"
               )}
             >
-              {prayer.completed ? 'Mission Accomplished' : 'Execute Prayer'}
+              {prayer.completed ? 'Already Cleared' : 'Complete Quest'}
+            </button>
+            
+            <button
+              onClick={handleClose}
+              className="w-full py-2 text-[9px] font-bold text-white/30 hover:text-white/60 tracking-[0.2em] uppercase transition-colors"
+            >
+              Dismiss Window
             </button>
           </div>
         </div>
 
-        {/* Scanlines Effect Overlay */}
+        {/* تأثير الخطوط الرقمية (Scanlines) */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_50%,transparent_50%)] bg-[size:100%_4px]" />
       </div>
     </div>
