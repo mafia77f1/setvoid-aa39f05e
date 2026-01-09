@@ -62,7 +62,7 @@ const Boss = () => {
   };
 
   const getGateGlow = (color) => {
-    const glows = { purple: '0 0 60px rgba(168, 85, 247, 0.4)', blue: '0 0 50px rgba(59, 130, 246, 0.3)', red: '0 0 80px rgba(239, 68, 68, 0.5)' };
+    const glows = { purple: '0 0 60px rgba(168, 85, 247, 0.6)', blue: '0 0 50px rgba(59, 130, 246, 0.5)', red: '0 0 80px rgba(239, 68, 68, 0.7)' };
     return glows[color] || '0 0 40px rgba(156, 163, 175, 0.4)';
   };
 
@@ -158,69 +158,67 @@ const Boss = () => {
       {selectedGate && (
         <div className={cn(
           "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
-          isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
+          isVisible && !isExiting ? "bg-black/60" : "bg-black/0 pointer-events-none"
         )}>
           <div className={cn(
-            "relative max-w-md w-full bg-[#050507] border-x border-white/20 shadow-2xl transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
+            "relative max-w-md w-full bg-[#0c0c0e] border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
             isVisible && !isExiting 
               ? "opacity-100 scale-y-100 duration-[1500ms]" 
               : "opacity-0 scale-y-0 duration-[800ms]"
           )} style={{ boxShadow: getGateGlow(selectedGate.color) }}>
             
             <div className={cn(
-              "absolute top-0 left-0 right-0 h-[1.5px] bg-white shadow-[0_0_20px_white] transition-all duration-[1500ms] delay-500",
+              "absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
             <div className={cn(
-              "absolute bottom-0 left-0 right-0 h-[1.5px] bg-white shadow-[0_0_20px_white] transition-all duration-[1500ms] delay-500",
+              "absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
 
             <div className={cn(
-              "p-8 transition-all duration-1000 delay-700",
+              "p-6 transition-all duration-1000 delay-700",
               isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             )}>
-              <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all z-20"><X className="w-5 h-5" /></button>
+              <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-20"><X className="w-4 h-4" /></button>
               
-              <div className="text-center mb-8">
-                <div className={cn("w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-4xl font-black mb-4 text-white shadow-lg transform rotate-3 bg-gradient-to-br", getGateColor(selectedGate.color))}>
+              <div className="text-center mb-6">
+                <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.color))}>
                   {playerPower < selectedGate.requiredPower ? "?" : selectedGate.rank}
                 </div>
-                <h2 className="text-3xl font-black text-white uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.7)]">{playerPower < selectedGate.requiredPower ? "UNKNOWN" : selectedGate.name}</h2>
-                <p className={cn("text-xs font-bold uppercase tracking-[0.3em] mt-2", selectedGate.color === 'red' ? "text-red-500" : "text-blue-400")}>
-                  {playerPower < selectedGate.requiredPower ? "ANALYSIS FAILED" : selectedGate.danger}
-                </p>
+                <h2 className="text-2xl font-bold text-white uppercase drop-shadow-[0_0_100px_rgba(255,255,255,0.8)]">{playerPower < selectedGate.requiredPower ? "??" : selectedGate.name}</h2>
+                <p className="text-sm text-slate-400 uppercase tracking-widest mt-1">{playerPower < selectedGate.requiredPower ? "???,???" : selectedGate.danger}</p>
               </div>
               
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/10 group hover:border-white/20 transition-colors">
-                  <span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Energy Level</span>
-                  <span className="font-mono font-bold text-white text-lg drop-shadow-[0_0_8px_white]">{playerPower < selectedGate.requiredPower ? "???,???" : `${selectedGate.energy} MP`}</span>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
+                  <span className="flex items-center gap-2 text-sm text-slate-300">كثافة الطاقة</span>
+                  <span className="font-bold">{playerPower < selectedGate.requiredPower ? "???,???" : `${selectedGate.energy} MP`}</span>
                 </div>
-                <div className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/10 group hover:border-white/20 transition-colors">
-                  <span className="text-xs text-slate-400 uppercase font-bold tracking-widest">Time Limit</span>
-                  <span className="font-mono font-bold text-white text-lg drop-shadow-[0_0_8px_white]">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
+                <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
+                  <span className="flex items-center gap-2 text-sm text-slate-300">الوقت المتاح</span>
+                  <span className="font-bold">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
                 </div>
               </div>
               
-              <div className="p-4 rounded-xl bg-white/5 border-l-4 border-white/30 mb-8">
-                <h3 className="text-[10px] font-black mb-3 text-slate-500 text-center uppercase tracking-[0.5em]">Potential Rewards</h3>
-                <div className="flex justify-around text-sm font-bold text-white tracking-tight italic">
-                  <span className="drop-shadow-[0_0_5px_white]">{playerPower < selectedGate.requiredPower ? "???" : `+${selectedGate.rewards.xp} XP`}</span>
-                  <span className="drop-shadow-[0_0_5px_white]">{playerPower < selectedGate.requiredPower ? "???" : `+${selectedGate.rewards.gold} GOLD`}</span>
+              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
+                <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
+                <div className="flex justify-around text-sm text-slate-200">
+                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.xp} XP`}</span>
+                  <span>{playerPower < selectedGate.requiredPower ? "?" : `+${selectedGate.rewards.gold} ذهب`}</span>
                 </div>
               </div>
               
               <button
                 onClick={handleEnterGate}
-                className={cn("w-full py-5 rounded-xl font-black text-sm uppercase tracking-[0.4em] transition-all hover:scale-[1.02] active:scale-95 text-white shadow-2xl relative overflow-hidden group", getGateColor(selectedGate.color))}
+                className={cn("w-full py-4 rounded-xl font-bold text-lg transition-all text-white bg-gradient-to-r shadow-lg", getGateColor(selectedGate.color))}
               >
-                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 italic" />
-                <span className="flex items-center justify-center gap-3 relative z-10">
-                  {playerPower < selectedGate.requiredPower ? <><Skull className="w-5 h-5" /> Terminate</> : <><Activity className="w-5 h-5" /> Start Dungeon</>}
+                <span className="flex items-center justify-center gap-2">
+                  {playerPower < selectedGate.requiredPower ? <><Skull className="w-5 h-5" /> ? ? ?</> : <><Activity className="w-5 h-5" /> دخول البوابة</>}
                 </span>
               </button>
             </div>
+            {/* تم حذف تأثير الـ Scanline من هنا بنجاح */}
           </div>
         </div>
       )}
