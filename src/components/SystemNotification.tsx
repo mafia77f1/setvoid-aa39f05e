@@ -6,7 +6,6 @@ interface SystemNotificationProps {
   show: boolean;
   title: string;
   message: string;
-  type?: 'info' | 'success' | 'warning' | 'error';
   onClose: () => void;
   actions?: { label: string; onClick: () => void; variant?: 'primary' | 'secondary' }[];
 }
@@ -15,101 +14,85 @@ export const SystemNotification = ({
   show,
   title,
   message,
-  type = 'info',
   onClose,
   actions = [],
 }: SystemNotificationProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const [hasAppeared, setHasAppeared] = useState(false); // للتحكم في الظهور لمرة واحدة
+  const [alreadyShown, setAlreadyShown] = useState(true); // نبدأ بـ true لمنع الوميض
 
   useEffect(() => {
-    if (show && !hasAppeared) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        setHasAppeared(true); // تثبيت الحالة أنه ظهر مرة واحدة
-      }, 50);
+    // التحقق إذا كان المستخدم قد رأى الرسالة من قبل في هذا المتصفح
+    const hasSeen = localStorage.getItem('system_notification_seen');
+    
+    if (!hasSeen && show) {
+      setAlreadyShown(false);
+      const timer = setTimeout(() => setIsVisible(true), 50);
       return () => clearTimeout(timer);
     }
-  }, [show, hasAppeared]);
+  }, [show]);
 
   const handleClose = () => {
     setIsExiting(true);
-    // جعل الخروج أسرع قليلاً من الدخول للحفاظ على سلاسة التجربة
+    // تخزين الحالة في المتصفح لمنع الظهور للأبد
+    localStorage.setItem('system_notification_seen', 'true');
+    
     setTimeout(() => {
       setIsExiting(false);
       onClose();
-    }, 800); 
+    }, 800);
   };
 
-  if (!show || (hasAppeared && !isVisible && !isExiting)) return null;
+  // إذا رآها مسبقاً أو لا توجد رسالة للعرض، لا ترجع شيئاً
+  if (alreadyShown || !show) return null;
 
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
-        isVisible && !isExiting ? "bg-black/70" : "bg-black/0 pointer-events-none"
+        "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
+        isVisible && !isExiting ? "bg-black/60" : "bg-black/0 pointer-events-none"
       )}
-      onClick={handleClose}
     >
       <div 
         className={cn(
-          "relative max-w-sm w-full bg-black/95 border-x-2 border-slate-200/90 shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-          // انيميشن الانفتاح الطولي
+          "relative max-w-sm w-full bg-black border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)]",
           isVisible && !isExiting 
             ? "opacity-100 scale-y-100 duration-[1500ms]" 
-            : "opacity-0 scale-y-0 duration-[1000ms]",
-          "origin-center" // الانفتاح يبدأ من المنتصف للطول
+            : "opacity-0 scale-y-0 duration-[800ms]",
+          "origin-center"
         )}
-        onClick={e => e.stopPropagation()}
       >
-        {/* الخطوط العلوية والسفلية المتمددة */}
+        {/* خطوط التوهج العلوي والسفلي */}
         <div className={cn(
-          "absolute top-0 left-0 right-0 h-[2px] bg-white transition-all duration-[1200ms] delay-300",
-          isVisible && !isExiting ? "scale-x-100" : "scale-x-0"
+          "absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500",
+          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
         )} />
         <div className={cn(
-          "absolute bottom-0 left-0 right-0 h-[2px] bg-white transition-all duration-[1200ms] delay-300",
-          isVisible && !isExiting ? "scale-x-100" : "scale-x-0"
+          "absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500",
+          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
         )} />
 
-        {/* الزوايا الديكورية */}
-        <div className="absolute top-0 left-0 w-2 h-8 border-l-2 border-white -translate-x-[2px]" />
-        <div className="absolute bottom-0 right-0 w-2 h-8 border-r-2 border-white translate-x-[2px]" />
-
-        {/* زر الإغلاق */}
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 p-1 hover:rotate-90 transition-all duration-300 z-20"
-        >
-          <X className="w-4 h-4 text-white/50 hover:text-white" />
-        </button>
-
-        {/* Content Container - يظهر بعد تمدد الإطار */}
         <div className={cn(
-          "p-8 transition-opacity duration-1000 delay-[800ms]",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0"
+          "p-8 transition-all duration-1000 delay-700",
+          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )}>
-          {/* Header */}
-          <div className="flex justify-center mb-10">
-            <div className="relative border border-white/20 px-6 py-1 overflow-hidden">
-              <div className="absolute inset-0 bg-white/5 animate-pulse" />
-              <span className="relative text-[9px] font-black tracking-[0.5em] text-white/80 uppercase italic">
-                Secure Transmission
-              </span>
-            </div>
+          
+          {/* Header - توهج خفيف */}
+          <div className="text-center mb-8">
+            <span className="text-[10px] font-black tracking-[0.5em] text-white/40 uppercase">
+              Terminal Access
+            </span>
           </div>
 
-          {/* Text Content */}
-          <div className="text-center space-y-6 mb-10">
-            <h3 className="text-xl font-light tracking-[0.2em] text-white uppercase">
-              {title}
-            </h3>
-            
-            <p className="text-[11px] text-slate-400 font-medium leading-relaxed tracking-wider uppercase">
-              {message}
-            </p>
-          </div>
+          {/* Title - نص متوهج بقوة */}
+          <h3 className="text-2xl font-black text-center text-white tracking-tighter uppercase italic drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] mb-4">
+            {title}
+          </h3>
+          
+          {/* Message - نص أبيض واضح ونقي */}
+          <p className="text-sm text-white/90 font-medium text-center leading-relaxed tracking-wide mb-10 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+            {message}
+          </p>
 
           {/* Actions */}
           <div className="flex flex-col gap-3">
@@ -122,10 +105,10 @@ export const SystemNotification = ({
                     handleClose();
                   }}
                   className={cn(
-                    "w-full py-3 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-300",
+                    "w-full py-3 text-[11px] font-black tracking-[0.3em] uppercase transition-all duration-500",
                     action.variant === 'secondary'
-                      ? "border border-white/10 text-white/40 hover:bg-white/5"
-                      : "bg-white text-black hover:bg-transparent hover:text-white border border-white"
+                      ? "text-white/40 hover:text-white"
+                      : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.6)]"
                   )}
                 >
                   {action.label}
@@ -134,16 +117,16 @@ export const SystemNotification = ({
             ) : (
               <button
                 onClick={handleClose}
-                className="w-full py-4 bg-white text-black font-black text-[10px] tracking-[0.4em] uppercase hover:invert transition-all"
+                className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all"
               >
-                Acknowledge
+                Confirm
               </button>
             )}
           </div>
         </div>
 
-        {/* Scanline & Noise Effect */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02),rgba(255,255,255,0.05))] bg-[size:100%_4px,4px_100%]" />
+        {/* تأثير الـ Scanline الخفيف جداً */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_50%,transparent_50%)] bg-[size:100%_4px]" />
       </div>
     </div>
   );
