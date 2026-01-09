@@ -13,7 +13,7 @@ const Boss = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
 
-  // حالات الأنيمايشن الجديدة
+  // حالات الأنيمايشن
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -32,7 +32,6 @@ const Boss = () => {
   const handleGateClick = (gate) => {
     setSelectedGate(gate);
     setIsExiting(false);
-    // بدء أنيمايشن الظهور
     setTimeout(() => setIsVisible(true), 50);
   };
 
@@ -42,7 +41,7 @@ const Boss = () => {
       setIsVisible(false);
       setSelectedGate(null);
       setIsExiting(false);
-    }, 800); // مدة أنيمايشن الخروج
+    }, 800);
   };
 
   const handleEnterGate = () => {
@@ -168,7 +167,6 @@ const Boss = () => {
               : "opacity-0 scale-y-0 duration-[800ms]"
           )} style={{ boxShadow: getGateGlow(selectedGate.color) }}>
             
-            {/* خطوط التوهج من الكود المطلوب */}
             <div className={cn(
               "absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
@@ -188,7 +186,7 @@ const Boss = () => {
                 <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.color))}>
                   {playerPower < selectedGate.requiredPower ? "?" : selectedGate.rank}
                 </div>
-                <h2 className="text-2xl font-bold text-white uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">{playerPower < selectedGate.requiredPower ? "??" : selectedGate.name}</h2>
+                <h2 className="text-2xl font-bold text-white uppercase drop-shadow-[0_0_100px_rgba(255,255,255,0.8)]">{playerPower < selectedGate.requiredPower ? "??" : selectedGate.name}</h2>
                 <p className="text-sm text-slate-400 uppercase tracking-widest mt-1">{playerPower < selectedGate.requiredPower ? "???,???" : selectedGate.danger}</p>
               </div>
               
@@ -201,12 +199,7 @@ const Boss = () => {
                   <span className="flex items-center gap-2 text-sm text-slate-300">الوقت المتاح</span>
                   <span className="font-bold">{playerPower < selectedGate.requiredPower ? "??:??:??" : selectedGate.timeLimit}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span className="flex items-center gap-2 text-sm text-slate-300">القوة المطلوبة</span>
-                  <span className={cn("font-bold", playerPower >= selectedGate.requiredPower ? "text-green-500" : "text-red-500")}>
-                    {selectedGate.requiredPower} (أنت: {playerPower})
-                  </span>
-                </div>
+                {/* تم حذف قسم القوة المطلوبة من هنا */}
               </div>
               
               <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
@@ -227,7 +220,6 @@ const Boss = () => {
               </button>
             </div>
             
-            {/* تأثير الـ Scanline */}
             <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_50%,transparent_50%)] bg-[size:100%_4px]" />
           </div>
         </div>
