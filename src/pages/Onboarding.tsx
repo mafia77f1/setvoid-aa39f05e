@@ -24,7 +24,7 @@ const Onboarding = () => {
     systemSound.play().catch(() => {});
   };
 
-  // تشغيل الصوت عند أول دخول (أول ظهور لـ Welcome)
+  // تشغيل الصوت عند أول دخول
   useEffect(() => {
     playSystemNotification();
   }, []);
@@ -34,7 +34,7 @@ const Onboarding = () => {
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
         setStep('alpha');
-        playSystemNotification(); // تشغيل الصوت عند الانتقال التلقائي لـ alpha
+        playSystemNotification();
       } else {
         navigate('/');
       }
@@ -43,7 +43,7 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
-    playSystemNotification(); // تشغيل فوري مع تغيير الحالة
+    playSystemNotification();
     setStep('name');
   };
 
@@ -54,7 +54,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      playSystemNotification(); // تشغيل فوري مع تغيير الحالة
+      playSystemNotification();
       setStep('email');
     }
   };
@@ -74,7 +74,7 @@ const Onboarding = () => {
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
     playLevelUp();
-    playSystemNotification(); // تشغيل فوري مع تغيير الحالة
+    playSystemNotification();
     setStep('verify_otp');
     setIsSubmitting(false);
   };
@@ -92,7 +92,6 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
-    // ملاحظة: عند النجاح سيقوم useEffect الخاص بـ User بتغيير الحالة لـ alpha وتشغيل الصوت
   };
 
   const handleAlphaDismiss = () => {
@@ -192,10 +191,24 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes vertical-open { 0% { transform: scaleY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
-        @keyframes content-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
-        .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
-        .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
+        @keyframes vertical-open { 
+          0% { transform: scaleY(0); opacity: 0; } 
+          10% { opacity: 1; } 
+          100% { transform: scaleY(1); opacity: 1; } 
+        }
+        @keyframes content-fade-in { 
+          0% { opacity: 0; transform: translateY(10px); } 
+          100% { opacity: 1; transform: translateY(0); } 
+        }
+        /* تم تغيير المدة هنا من 1.2s إلى 2.5s ليكون الظهور أبطأ وأطول */
+        .animate-vertical-open { 
+          animation: vertical-open 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+          transform-origin: center; 
+        }
+        /* تم جعل ظهور المحتوى الداخلي يتناسب مع مدة الأنيميشن الجديدة */
+        .animate-content-fade { 
+          animation: content-fade-in 1.2s ease-out 1.8s both; 
+        }
       `}</style>
       
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
