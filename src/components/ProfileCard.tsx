@@ -51,23 +51,23 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
         <div className="scan-line" />
 
         <div className="status-header">
-          <h2>STATUS</h2>
+          <h2>الحالة</h2>
         </div>
 
         <div className="p-6">
           <div className="flex items-center gap-6 mb-4">
-            {/* القسم الأيسر: الاسم، الرتبة، واللقب */}
-            <div className="flex-1 flex flex-col gap-1">
+            {/* القسم الأيسر: المعلومات بالعربي */}
+            <div className="flex-1 flex flex-col gap-1 text-right" dir="rtl">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">NAME:</span>
-                <span className="font-semibold">{gameState.playerName}</span>
+                <span className="text-[10px] text-primary/70 font-bold">الاسم:</span>
+                <span className="font-semibold text-sm">{gameState.playerName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">RANK:</span>
-                <span className={cn("font-bold", rankColor.text)}>{rankColor.rankName}</span>
+                <span className="text-[10px] text-primary/70 font-bold">الرتبة:</span>
+                <span className={cn("font-bold text-sm", rankColor.text)}>{rankColor.rankName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-primary/70">TITLE:</span>
+                <span className="text-[10px] text-primary/70 font-bold">اللقب:</span>
                 <span className="text-sm text-primary">{gameState.playerTitle}</span>
               </div>
             </div>
@@ -75,7 +75,7 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             {/* القسم الأيمن: اللفل */}
             <div className="text-center">
               <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
+              <div className="text-[10px] text-muted-foreground tracking-widest font-bold">المستوى</div>
             </div>
           </div>
 
@@ -151,16 +151,6 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
           </div>
         </div>
       </div>
-
-      {onUpdateProfile && (
-        <EditProfileModal
-          show={showEditModal}
-          currentName={gameState.playerName}
-          currentTitle={gameState.playerTitle}
-          onSave={onUpdateProfile}
-          onClose={() => setShowEditModal(false)}
-        />
-      )}
     </>
   );
 };
