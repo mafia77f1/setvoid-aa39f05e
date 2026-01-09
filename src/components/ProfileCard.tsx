@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, Flame, Edit, Shield, Zap } from 'lucide-react';
+import { Dumbbell, Brain, Heart, Flame, Shield, Zap } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
@@ -17,7 +17,6 @@ const stats = [
   { key: 'agility', label: 'AGI', icon: Zap, color: 'text-agility' },
 ] as const;
 
-// نظام الرتب: E, D, C, B, A (S مقفولة في هذا الإصدار)
 const getRankColor = (totalLevel: number) => {
   if (totalLevel >= 50) return { border: 'border-orange-400', bg: 'bg-orange-400/10', glow: 'shadow-orange-400/50', text: 'text-orange-400', rankName: 'A' };
   if (totalLevel >= 35) return { border: 'border-purple-400', bg: 'bg-purple-400/10', glow: 'shadow-purple-400/50', text: 'text-purple-400', rankName: 'B' };
@@ -28,7 +27,7 @@ const getRankColor = (totalLevel: number) => {
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  // حساب المستوى الكلي - أقصى مستوى فردي من بين الأربعة
+  
   const totalLevel = Math.max(
     gameState.levels.strength,
     gameState.levels.mind,
@@ -56,15 +55,8 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
         </div>
 
         <div className="p-6">
-          {/* تم تعديل هذا القسم لنقل اللفل لليسار وترتيب العناصر عمودياً */}
           <div className="flex items-center gap-6 mb-4">
-            {/* اللفل على اليسار */}
-            <div className="text-center">
-              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
-            </div>
-
-            {/* الاسم، الرتبة، واللقب مرتبة تحت بعضها */}
+            {/* القسم الأيسر: الاسم، الرتبة، واللقب */}
             <div className="flex-1 flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-primary/70">NAME:</span>
@@ -80,12 +72,11 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               </div>
             </div>
 
-            <button 
-              onClick={() => setShowEditModal(true)}
-              className="p-2 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-all"
-            >
-              <Edit className="w-4 h-4 text-primary" />
-            </button>
+            {/* القسم الأيمن: اللفل */}
+            <div className="text-center">
+              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
+              <div className="text-xs text-muted-foreground tracking-widest">LEVEL</div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
