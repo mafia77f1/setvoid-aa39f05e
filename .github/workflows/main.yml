@@ -56,6 +56,12 @@ jobs:
       - name: Add Android platform
         run: npx cap add android || true
 
+      - name: Generate Android app icons (Capacitor Assets)
+        run: |
+          npx --yes @capacitor/assets generate \
+            --android \
+            --iconPath public/setvoid.png
+
       - name: Sync Capacitor
         run: npx cap sync android
 
