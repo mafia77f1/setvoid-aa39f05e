@@ -1,7 +1,7 @@
 import { PrayerQuest } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Clock, Check, X } from 'lucide-react';
+import { Clock, Check, X, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface PrayerQuestModalProps {
@@ -15,8 +15,8 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
-  // هذا الجزء يضمن تفعيل الأنيميشن فور ظهور المكون
   useEffect(() => {
+    // تفعيل أنيميشن الظهور
     const timer = setTimeout(() => setIsVisible(true), 50);
     return () => clearTimeout(timer);
   }, []);
@@ -25,7 +25,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
     setIsExiting(true);
     setTimeout(() => {
       onClose();
-    }, 800); // مدة خروج الأنيميشن
+    }, 800); 
   };
 
   const handleComplete = () => {
@@ -37,14 +37,15 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-1000",
-        isVisible && !isExiting ? "bg-black/70" : "bg-black/0 pointer-events-none"
+        "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
+        isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
       )}
       onClick={handleClose}
     >
+      {/* Container - أنيميشن الانفتاح من المنتصف */}
       <div 
         className={cn(
-          "relative max-w-sm w-full bg-black border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
+          "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 p-5 shadow-[0_0_30px_rgba(30,58,138,0.4)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
           isVisible && !isExiting 
             ? "opacity-100 scale-y-100 duration-[1500ms]" 
             : "opacity-0 scale-y-0 duration-[800ms]",
@@ -52,86 +53,88 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
         )}
         onClick={e => e.stopPropagation()}
       >
-        {/* خطوط التوهج الكريستالي العلوية والسفلية */}
+        {/* الترويسة العلوية - ثابتة كما هي */}
         <div className={cn(
-          "absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500",
-          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-        )} />
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500",
-          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-        )} />
-
-        {/* زر إغلاق X في الزاوية */}
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 p-1 hover:rotate-90 transition-all duration-300 z-[160]"
-        >
-          <X className="w-4 h-4 text-white/40 hover:text-white" />
-        </button>
-
-        <div className={cn(
-          "p-8 transition-all duration-1000 delay-700",
-          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          "flex justify-center mb-6 mt-[-1.8rem] transition-all duration-700 delay-700",
+          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
         )}>
-          
-          {/* Label العلوي */}
-          <div className="flex justify-center mb-8">
-            <div className="border border-white/20 px-4 py-0.5 bg-white/5">
-              <span className="text-[9px] font-black tracking-[0.4em] text-white/60 uppercase">
-                Divine Mission
-              </span>
-            </div>
+          <div className="border border-slate-400/50 px-5 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <h2 className="text-[10px] font-bold tracking-[0.2em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
+              QUEST: <span className="text-blue-400">Daily Prayer</span>
+            </h2>
           </div>
+        </div>
 
-          {/* اسم الصلاة - توهج أبيض مكثف */}
-          <div className="text-center mb-8">
-            <h3 className="text-4xl font-black italic text-white tracking-tighter uppercase drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">
+        {/* محتوى المهمة - يظهر بتدرج بعد الانفتاح */}
+        <div className={cn(
+          "space-y-6 transition-all duration-1000 delay-[800ms]",
+          isVisible && !isExiting ? "opacity-100" : "opacity-0"
+        )}>
+          {/* اسم الصلاة بتوهج أبيض قوي */}
+          <div className="text-center py-2">
+            <h3 className="text-3xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,1)] tracking-tighter">
               {prayer.arabicName}
             </h3>
-            <div className="h-[1px] w-12 bg-white/20 mx-auto mt-4" />
           </div>
 
-          {/* تفاصيل المهمة */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="text-center">
-              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Window</p>
-              <span className="text-xs font-mono font-bold text-white uppercase">45 Mins</span>
+          {/* معلومات المهمة - نفس الـ Grid الأصلي */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="border border-white/10 p-2 bg-white/5">
+              <p className="text-[8px] text-slate-500 uppercase font-bold mb-1">Time Limit</p>
+              <div className="flex items-center gap-2 text-white">
+                <Clock className="w-3 h-3 text-blue-400" />
+                <span className="text-xs font-mono font-bold">45:00</span>
+              </div>
             </div>
-            <div className="text-center border-l border-white/10">
-              <p className="text-[8px] text-white/30 uppercase font-black mb-1">Reward</p>
-              <span className="text-xs font-bold text-white drop-shadow-[0_0_8px_white]">
-                +{prayer.xpReward} XP
-              </span>
+            <div className="border border-white/10 p-2 bg-white/5">
+              <p className="text-[8px] text-slate-500 uppercase font-bold mb-1">Clear Reward</p>
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-xs font-bold text-blue-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+                  +{prayer.xpReward} XP
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* أزرار الأكشن */}
-          <div className="space-y-3">
+          {/* نص الوصف */}
+          <div className="py-3 border-t border-slate-700/50 text-center px-2">
+            <p className="text-[10px] text-slate-400 italic leading-relaxed">
+              "Prayer is the pillar of religion. Complete this quest to maintain your spirit energy."
+            </p>
+          </div>
+
+          {/* الأزرار - نفس الستايل الأصلي */}
+          <div className="space-y-2">
             <button
               onClick={handleComplete}
               disabled={prayer.completed}
               className={cn(
-                "w-full py-4 font-black text-[11px] tracking-[0.4em] uppercase transition-all duration-500 border",
+                "w-full py-3 border transition-all active:scale-[0.98] font-bold text-[11px] tracking-[0.2em] uppercase",
                 prayer.completed
-                  ? "bg-transparent border-white/5 text-white/20 cursor-not-allowed"
-                  : "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_35px_rgba(255,255,255,0.5)] active:scale-95"
+                  ? "bg-slate-800/50 border-slate-700 text-slate-500"
+                  : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20 shadow-[0_0_15px_rgba(96,165,250,0.2)]"
               )}
             >
-              {prayer.completed ? 'Already Cleared' : 'Complete Quest'}
+              <span className="flex items-center justify-center gap-2">
+                <Check className="w-3.5 h-3.5" />
+                {prayer.completed ? 'Quest Cleared' : 'Complete Quest'}
+              </span>
             </button>
-            
+
             <button
-              onClick={handleClose}
-              className="w-full py-2 text-[9px] font-bold text-white/30 hover:text-white/60 tracking-[0.2em] uppercase transition-colors"
+              onClick={() => { playClick(); handleClose(); }}
+              className="w-full py-2 bg-transparent border border-white/10 text-slate-500 text-[9px] font-bold tracking-[0.1em] uppercase hover:bg-white/5 transition-colors"
             >
-              Dismiss Window
+              Close Window
             </button>
           </div>
         </div>
 
-        {/* تأثير الخطوط الرقمية (Scanlines) */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_50%,transparent_50%)] bg-[size:100%_4px]" />
+        {/* الزوايا الديكورية */}
+        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/30" />
+        <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/30" />
+        <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/30" />
+        <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/30" />
       </div>
     </div>
   );
