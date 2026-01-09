@@ -17,12 +17,23 @@ const Onboarding = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // حالة التحكم في الشاشة السوداء الانتقالية
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // دالة مساعدة لعمل التأثير الأسود
+  const triggerTransition = (nextStep: typeof step, playSound?: () => void) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      if (playSound) playSound();
+      setStep(nextStep);
+      setIsTransitioning(false);
+    }, 1500); // 1.5 ثانية صمت
+  };
 
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
       if (savedName) {
-        // بعد التحقق الناجح، ننتقل فوراً لإشعار Alpha قبل أي شيء آخر
         setStep('alpha');
       } else {
         navigate('/');
@@ -32,7 +43,7 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
-    setStep('name');
+    triggerTransition('name'); // تأثير أسود بعد الموافقة
   };
 
   const handleDecline = () => {
@@ -42,7 +53,7 @@ const Onboarding = () => {
   const handleNameNext = () => {
     if (playerName.trim()) {
       playClick();
-      setStep('email');
+      triggerTransition('email'); // تأثير أسود بعد إدخال الاسم
     }
   };
 
@@ -60,9 +71,8 @@ const Onboarding = () => {
       return;
     }
     localStorage.setItem('pendingPlayerName', playerName.trim());
-    playLevelUp();
-    setStep('verify_otp');
     setIsSubmitting(false);
+    triggerTransition('verify_otp', playLevelUp); // تأثير أسود + صوت بعد إرسال الإيميل
   };
 
   const handleVerifyOtp = async () => {
@@ -78,7 +88,7 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
-    // لا نحتاج لعمل شيء هنا، الـ useEffect سيلتقط تغيير حالة المستخدم ويظهر الـ Alpha
+    // الـ useEffect سيتولى الانتقال لـ alpha
   };
 
   const handleAlphaDismiss = () => {
@@ -98,13 +108,17 @@ const Onboarding = () => {
     );
   }
 
+  // إذا كان في حالة انتقال، تظهر شاشة سوداء تماماً
+  if (isTransitioning) {
+    return <div className="min-h-screen bg-black flex items-center justify-center" />;
+  }
+
   return (
     <div className="min-h-screen bg-[#010205] flex items-center justify-center p-2 overflow-hidden select-none font-sans">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      {/* الحاوية الرئيسية مع أنيميشن الفتح الطولي */}
       <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
@@ -185,7 +199,6 @@ const Onboarding = () => {
         .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
       `}</style>
       
-      {/* ظهور الـ Modal الآن مربوط بانتهاء الخطوات بنجاح */}
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
     </div>
   );
