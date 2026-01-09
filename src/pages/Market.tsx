@@ -11,21 +11,20 @@ const Market = () => {
   const { playPurchase } = useSoundEffects();
   
   const [isScanning, setIsScanning] = useState(false);
-  const [isClosing, setIsClosing] = useState(false); // لإدارة أنيميشن الإغلاق
+  const [isClosing, setIsClosing] = useState(false); 
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
 
-  // نظام ألوان الندرة
+  // نظام ألوان الندرة (تم الحفاظ عليه لاستخدامه في المنطق)
   const RARITY_CONFIG = {
-    S: { border: 'border-gray-900', text: 'text-gray-400', bg: 'bg-gradient-to-br from-black via-gray-900 to-black', locked: true },
-    A: { border: 'border-purple-500', text: 'text-purple-400', bg: 'bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-purple-900/30', locked: true },
-    B: { border: 'border-blue-500', text: 'text-blue-400', bg: 'bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30', locked: false },
-    C: { border: 'border-white/50', text: 'text-white', bg: 'bg-gradient-to-br from-white/10 via-gray-200/5 to-white/10', locked: false },
-    E: { border: 'border-gray-600', text: 'text-gray-400', bg: 'bg-gradient-to-br from-gray-800/50 via-gray-700/30 to-gray-800/50', locked: false },
+    S: { border: 'border-gray-900', text: 'text-gray-400', locked: true },
+    A: { border: 'border-purple-500', text: 'text-purple-400', locked: true },
+    B: { border: 'border-blue-500', text: 'text-blue-400', locked: false },
+    C: { border: 'border-white/50', text: 'text-white', locked: false },
+    E: { border: 'border-gray-600', text: 'text-gray-400', locked: false },
   };
 
   const SOLO_ITEMS = [
-    // رتبة E (رمادي - الإكسيرات الأساسية)
     { 
       id: 'hp_potion', 
       name: 'Blood Elixir', 
@@ -50,7 +49,6 @@ const Market = () => {
       rankLevel: 0,
       isBasic: true 
     },
-    // رتبة C (أبيض)
     { 
       id: 'mana_meter', 
       name: 'Mana Gauge', 
@@ -75,7 +73,6 @@ const Market = () => {
       rankLevel: 0,
       isBasic: true 
     },
-    // رتبة B (أزرق)
     { 
       id: 'power_eye_title', 
       name: 'Eye of Power', 
@@ -112,7 +109,6 @@ const Market = () => {
       rankLevel: 2,
       isBasic: false 
     },
-    // رتبة A (بنفسجي - مقفلة)
     { 
       id: 'shadow_elixir', 
       name: 'Shadow Monarch Elixir', 
@@ -125,7 +121,6 @@ const Market = () => {
       rankLevel: 5, 
       isBasic: false 
     },
-    // رتبة S (أسود - مقفلة)
     { 
       id: 'demon_blood', 
       name: 'Demon King Blood', 
@@ -156,7 +151,6 @@ const Market = () => {
     }, 3000);
   };
 
-  // دالة الإغلاق بالأنيميشن المطلوب
   const closeScanModal = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -164,7 +158,7 @@ const Market = () => {
       setIsClosing(false);
       setScanResult('idle');
       setActiveItem(null);
-    }, 500); // وقت الأنيميشن
+    }, 500);
   };
 
   const handlePurchase = (item) => {
@@ -184,12 +178,13 @@ const Market = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Overlay */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* System Modal */}
+      {/* System Modal (Scanner) */}
       {isScanning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className={cn(
@@ -228,41 +223,31 @@ const Market = () => {
                       return "UNKNOWN DATA";
                     };
 
-                    // حساب قوة الشريط بناءً على صعوبة العنصر
-                    const powerLevels = { 'S': '80%', 'SS': '92%', 'EX': '100%' };
-                    const itemPower = powerLevels[activeItem?.difficulty] || '60%';
+                    const powerLevels = { 'S': '80%', 'A': '70%', 'B': '50%', 'C': '30%' };
+                    const itemPower = powerLevels[activeItem?.difficulty] || '20%';
 
                     return (
                       <div className="w-full space-y-4">
                         <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-                          <div className="absolute top-0 right-0 p-1">
-                            <ShieldAlert className="w-4 h-4 text-red-500/50" />
-                          </div>
-                          
+                          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-red-500/50" /></div>
                           <div className="mb-3 border-b border-blue-500/30 pb-2">
                             <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
                             <span className="text-sm font-bold text-white tracking-wider">
                               {revealText(activeItem?.name || "???", levelDiff)}
                             </span>
                           </div>
-
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <span className="text-[9px] text-blue-400 block mb-1">DIFFICULTY:</span>
-                              <span className="text-xs font-bold text-red-400">
-                                {levelDiff <= 15 ? activeItem?.difficulty : '??'}
-                              </span>
+                              <span className="text-xs font-bold text-red-400">{levelDiff <= 15 ? activeItem?.difficulty : '??'}</span>
                             </div>
                             <div>
                               <span className="text-[9px] text-blue-400 block mb-1">CATEGORY:</span>
-                              <span className="text-xs font-bold text-white uppercase">
-                                {revealText(activeItem?.category || "???", levelDiff)}
-                              </span>
+                              <span className="text-xs font-bold text-white uppercase">{revealText(activeItem?.category || "???", levelDiff)}</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* قسم القوة والشكل المكتشف الجديد */}
                         <div className="w-full border border-red-900/40 p-3 bg-red-950/10 space-y-3">
                           <div className="flex items-center gap-2 border-b border-red-900/20 pb-1">
                             <Zap className="w-3 h-3 text-red-500" />
@@ -287,15 +272,10 @@ const Market = () => {
                         <div className="text-left bg-red-950/20 border border-red-900/50 p-3">
                           <p className="text-[10px] text-red-400 leading-relaxed font-bold uppercase tracking-tighter">
                             Warning: Player level [{playerLevel}] is insufficient to decrypt this entry. 
-                            Minimum level required: {requiredLevel}.
+                            Min required: {requiredLevel}.
                           </p>
                         </div>
-
-                        {/* زر الإغلاق اليدوي */}
-                        <button 
-                          onClick={closeScanModal}
-                          className="w-full py-2 mt-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all active:scale-95"
-                        >
+                        <button onClick={closeScanModal} className="w-full py-2 mt-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all active:scale-95">
                           <X className="w-3 h-3 inline-block mr-1" /> Terminate Connection
                         </button>
                       </div>
@@ -328,61 +308,38 @@ const Market = () => {
           
           return (
             <div key={item.id} className="relative group">
-              <div className={cn(
-                "absolute -inset-0.5 blur-sm opacity-0 group-hover:opacity-100 transition duration-500",
-                rarity.locked ? "bg-gray-500/20" : "bg-blue-500/20"
-              )} />
+              {/* Blue Glow on hover */}
+              <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
               
-              <div className={cn(
-                "relative border-2 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]",
-                rarity.bg,
-                isLocked || rarity.locked ? "border-slate-700/50 grayscale" : rarity.border
-              )}>
+              {/* Card Style from Code 2 */}
+              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
+                
+                {/* Header Title from Code 2 */}
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className={cn(
-                    "border px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]",
-                    isLocked || rarity.locked ? "border-slate-600" : rarity.border
-                  )}>
-                    <h2 className={cn(
-                      "text-xs font-bold tracking-widest drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase",
-                      isLocked || rarity.locked ? "text-slate-500" : rarity.text
-                    )}>
-                      {isLocked ? '???' : (item.arabicName || item.name)}
+                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                    <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
+                      ITEM: <span className="text-blue-100">{isLocked ? '???' : (item.arabicName || item.name)}</span>
                     </h2>
                   </div>
                 </div>
 
-                {/* Rank Badge */}
-                <div className="absolute top-2 left-2">
-                  <span className={cn(
-                    "text-[10px] font-black px-2 py-0.5 border",
-                    isLocked || rarity.locked ? "border-slate-600 text-slate-500" : rarity.border + " " + rarity.text
-                  )}>
-                    {item.difficulty}
-                  </span>
-                </div>
-
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-24 h-24 border flex items-center justify-center relative flex-shrink-0",
-                      isLocked || rarity.locked ? "border-slate-700/50 bg-black/40" : rarity.border + " bg-black/40"
-                    )}>
+                    {/* Icon Box from Code 2 */}
+                    <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
                       <span className={cn(
                         "text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]",
-                        isLocked || rarity.locked ? "filter grayscale brightness-50" : "filter grayscale brightness-200 opacity-90"
+                        isLocked ? "filter grayscale brightness-50" : "filter grayscale brightness-200 opacity-90"
                       )}>
                         {item.icon}
                       </span>
                     </div>
 
+                    {/* Stats from Code 2 */}
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Rank:</p>
-                        <p className={cn(
-                          "text-xs font-bold italic uppercase",
-                          isLocked || rarity.locked ? "text-slate-500" : rarity.text
-                        )}>
+                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
                           {isLocked ? '?' : item.difficulty}
                         </p>
                       </div>
@@ -395,18 +352,21 @@ const Market = () => {
                     </div>
                   </div>
 
+                  {/* Price from Code 2 */}
                   <div className="py-2 border-t border-slate-700/50">
                     <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
                       Gold: {isLocked ? '???,???' : item.price.toLocaleString()}
                     </p>
                   </div>
 
+                  {/* Description */}
                   <div className="text-center px-1">
                     <p className="text-[10px] text-slate-300 italic leading-tight">
                       {isLocked ? '?' : item.description}
                     </p>
                   </div>
 
+                  {/* Button Logic from Code 1 + Style from Code 2 */}
                   <button
                     onClick={() => handlePurchase(item)}
                     disabled={rarity.locked}
@@ -432,6 +392,16 @@ const Market = () => {
 
       <BottomNav />
 
+      <style jsx>{`
+        @keyframes unfoldVertical {
+          0% { transform: scaleY(0); }
+          100% { transform: scaleY(1); }
+        }
+        @keyframes foldVertical {
+          0% { transform: scaleY(1); opacity: 1; }
+          100% { transform: scaleY(0); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };
