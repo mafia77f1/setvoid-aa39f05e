@@ -21,6 +21,7 @@ const Onboarding = () => {
   // تشغيل الصوت فور تغيير الحالة ليوافق بداية الأنميشن
   useEffect(() => {
     const systemSound = new Audio('/SystemNotificationSound.wav');
+    systemSound.preload = 'auto'; // تحميل مسبق للصوت لتقليل التأخير
     systemSound.play().catch(() => {
       /* تجاهل الخطأ إذا لم يتفاعل المستخدم بعد */
     });
