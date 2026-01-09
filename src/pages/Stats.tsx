@@ -5,11 +5,17 @@ import { RadarChart } from '@/components/RadarChart';
 import { InventoryPanel } from '@/components/InventoryPanel';
 import { cn } from '@/lib/utils';
 import { 
+  TrendingUp, 
   Dumbbell, 
   Brain, 
   Heart, 
+  Shield,
+  Crown,
+  Plus,
+  CircleUser,
   Zap,
   Target,
+  Lock,
   Coins,
   Package
 } from 'lucide-react';
@@ -24,30 +30,38 @@ const Stats = () => {
     { 
       category: 'strength' as const, 
       level: gameState.levels.strength, 
+      xp: gameState.stats.strength, 
       xpProgress: getXpProgress(gameState.stats.strength),
       name: 'STRENGTH',
       icon: <Dumbbell className="w-5 h-5" />,
+      color: '#60a5fa' // Blue-400
     },
     { 
       category: 'mind' as const, 
       level: gameState.levels.mind, 
+      xp: gameState.stats.mind, 
       xpProgress: getXpProgress(gameState.stats.mind),
       name: 'MIND',
       icon: <Brain className="w-5 h-5" />,
+      color: '#60a5fa'
     },
     { 
       category: 'spirit' as const, 
       level: gameState.levels.spirit, 
+      xp: gameState.stats.spirit, 
       xpProgress: getXpProgress(gameState.stats.spirit),
       name: 'SPIRIT',
       icon: <Heart className="w-5 h-5" />,
+      color: '#60a5fa'
     },
     { 
       category: 'agility' as const, 
       level: gameState.levels.agility || 0, 
+      xp: gameState.stats.agility || 0, 
       xpProgress: getXpProgress(gameState.stats.agility || 0),
       name: 'AGILITY',
       icon: <Zap className="w-5 h-5" />,
+      color: '#60a5fa'
     },
   ];
 
@@ -69,26 +83,28 @@ const Stats = () => {
   const levelConfig = getLevelConfig();
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans pb-24">
-      {/* الخلفية المضيئة مثل المتجر */}
+    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Overlay from Market */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
+      {/* Header aligned with Market style */}
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
         <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
           Player Status
         </h1>
         <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
           <Coins className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="font-mono font-bold text-blue-100 text-sm">
+          <span className="font-mono font-bold text-blue-100 drop-shadow-[0_0:10px_rgba(255,255,255,0.7)] text-sm">
             {gameState.gold.toLocaleString()}
           </span>
         </div>
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
-        {/* التبويبات بنفس ستايل أزرار المتجر */}
+        {/* Navigation Tabs (System Style) */}
         <div className="flex gap-2 mb-6">
           {['stats', 'equipment'].map((tab) => (
             <button
@@ -101,7 +117,17 @@ const Stats = () => {
                   : "bg-black/40 border-slate-700 text-slate-500"
               )}
             >
-              {tab === 'stats' ? <><Target className="w-3 h-3" /> Abilities</> : <><Package className="w-3 h-3" /> Inventory</>}
+              {tab === 'stats' ? (
+                <>
+                  <Target className="w-3 h-3" />
+                  Abilities
+                </>
+              ) : (
+                <>
+                  <Package className="w-3 h-3" />
+                  Inventory
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -109,11 +135,11 @@ const Stats = () => {
         {activeTab === 'stats' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             
-            {/* إطار المستوى بنفس شكل إطار عناصر المتجر (أبيض وسميك) */}
+            {/* Level Window - Matching Market Item Frame */}
             <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
                 <div className="border border-slate-400/50 px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                  <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">
+                  <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase italic">
                     Class: <span className="text-blue-400">Shadow Monarch</span>
                   </h2>
                 </div>
@@ -132,19 +158,20 @@ const Stats = () => {
               </div>
             </div>
 
+            {/* Analysis Grid (Radar + Small Stats) */}
             <div className="grid grid-cols-1 gap-6">
-              {/* إطار الرادار بتنسيق أزرق متجر */}
+               {/* Radar Chart Window */}
               <div className="bg-black/40 border border-blue-500/30 p-4 relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-4 border-l-2 border-blue-400 pl-2">
                   <Target className="w-4 h-4 text-blue-400" />
-                  <span className="text-[10px] font-bold tracking-widest text-blue-100 uppercase">Ability Analysis</span>
+                  <span className="text-[10px] font-bold tracking-widest text-blue-100">ABILITY ANALYSIS</span>
                 </div>
                 <div className="flex justify-center py-2">
                    <RadarChart stats={radarStats} size={240} />
                 </div>
               </div>
 
-              {/* قائمة الإحصائيات بألوان المتجر */}
+              {/* Individual Stats - Matching Market List Style */}
               <div className="space-y-3">
                 {stats.map((stat) => (
                   <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3 hover:border-blue-500/50 transition-colors">
@@ -157,7 +184,7 @@ const Stats = () => {
                         {stat.level}
                       </span>
                     </div>
-                    {/* شريط التقدم الأزرق المضيء */}
+                    {/* Progress Bar - System Blue */}
                     <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)] transition-all duration-1000"
