@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
+import { InventoryPanel } from '@/components/InventoryPanel';
 import { cn } from '@/lib/utils';
 import { 
   TrendingUp, 
@@ -15,11 +16,12 @@ import {
   Zap,
   Target,
   Lock,
-  Coins
+  Coins,
+  Package
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress } = useGameState();
+  const { gameState, getXpProgress, useItem } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
   const MAX_LEVEL = 100;
@@ -109,13 +111,23 @@ const Stats = () => {
               key={tab}
               onClick={() => setActiveTab(tab as any)}
               className={cn(
-                "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all",
+                "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
                 activeTab === tab 
                   ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" 
                   : "bg-black/40 border-slate-700 text-slate-500"
               )}
             >
-              {tab === 'stats' ? 'Abilities' : 'Equipment'}
+              {tab === 'stats' ? (
+                <>
+                  <Target className="w-3 h-3" />
+                  Abilities
+                </>
+              ) : (
+                <>
+                  <Package className="w-3 h-3" />
+                  Inventory
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -187,14 +199,10 @@ const Stats = () => {
         )}
 
         {activeTab === 'equipment' && (
-          <div className="relative animate-in zoom-in-95 duration-300">
-            <div className="relative bg-black/60 border-2 border-slate-800 p-8 min-h-[400px] flex flex-col items-center justify-center grayscale opacity-60">
-               <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.1)_3px)] pointer-events-none" />
-               <Lock className="w-10 h-10 text-slate-600 mb-4" />
-               <h3 className="text-sm font-bold tracking-[0.3em] text-slate-500 uppercase">Access Denied</h3>
-               <p className="text-[9px] text-slate-700 mt-2">Required Level: 50</p>
-            </div>
-          </div>
+          <InventoryPanel 
+            inventory={gameState.inventory} 
+            onUseItem={useItem}
+          />
         )}
       </main>
 

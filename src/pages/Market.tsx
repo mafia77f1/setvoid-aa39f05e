@@ -15,60 +15,127 @@ const Market = () => {
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
 
+  // نظام ألوان الندرة
+  const RARITY_CONFIG = {
+    S: { border: 'border-gray-900', text: 'text-gray-400', bg: 'bg-gradient-to-br from-black via-gray-900 to-black', locked: true },
+    A: { border: 'border-purple-500', text: 'text-purple-400', bg: 'bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-purple-900/30', locked: true },
+    B: { border: 'border-blue-500', text: 'text-blue-400', bg: 'bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30', locked: false },
+    C: { border: 'border-white/50', text: 'text-white', bg: 'bg-gradient-to-br from-white/10 via-gray-200/5 to-white/10', locked: false },
+    E: { border: 'border-gray-600', text: 'text-gray-400', bg: 'bg-gradient-to-br from-gray-800/50 via-gray-700/30 to-gray-800/50', locked: false },
+  };
+
   const SOLO_ITEMS = [
+    // رتبة E (رمادي - الإكسيرات الأساسية)
     { 
       id: 'hp_potion', 
-      name: 'HP Recovery Potion 50%', 
+      name: 'Blood Elixir', 
+      arabicName: 'إكسير الدم',
       category: 'Elixir', 
-      difficulty: 'C', 
+      difficulty: 'E', 
       price: 500, 
       icon: '🧪', 
-      description: 'Restores 50% of the user\'s current health.',
+      description: 'يستعيد 50% من الصحة القصوى',
       rankLevel: 0,
       isBasic: true 
     },
     { 
       id: 'mp_potion', 
-      name: 'MP Recovery Potion 50%', 
+      name: 'Energy Elixir', 
+      arabicName: 'إكسير الطاقة',
       category: 'Elixir', 
-      difficulty: 'C', 
+      difficulty: 'E', 
       price: 500, 
-      icon: '🧪', 
-      description: 'Restores 50% of the user\'s current mana.',
+      icon: '⚡', 
+      description: 'يستعيد 50% من الطاقة القصوى',
+      rankLevel: 0,
+      isBasic: true 
+    },
+    // رتبة C (أبيض)
+    { 
+      id: 'mana_meter', 
+      name: 'Mana Gauge', 
+      arabicName: 'مقياس المانا',
+      category: 'Tool', 
+      difficulty: 'C', 
+      price: 2000, 
+      icon: '📊', 
+      description: 'جهاز قياس طاقة البوابات والعناصر',
       rankLevel: 0,
       isBasic: true 
     },
     { 
-      id: 'hidden_1', 
+      id: 'awakened_title', 
+      name: 'Awakened One', 
+      arabicName: 'المستيقظ الواعي',
+      category: 'Title', 
+      difficulty: 'C', 
+      price: 3000, 
+      icon: '👑', 
+      description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%',
+      rankLevel: 0,
+      isBasic: true 
+    },
+    // رتبة B (أزرق)
+    { 
+      id: 'power_eye_title', 
+      name: 'Eye of Power', 
+      arabicName: 'عين القوة',
+      category: 'Title', 
+      difficulty: 'B', 
+      price: 10000, 
+      icon: '👁️', 
+      description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم',
+      rankLevel: 2,
+      isBasic: false 
+    },
+    { 
+      id: 'storm_hand_title', 
+      name: 'Hand of Storm', 
+      arabicName: 'يد العاصفة',
+      category: 'Title', 
+      difficulty: 'B', 
+      price: 15000, 
+      icon: '🌩️', 
+      description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%',
+      rankLevel: 2,
+      isBasic: false 
+    },
+    { 
+      id: 'return_key', 
+      name: 'Return Key', 
+      arabicName: 'مفتاح العودة',
+      category: 'Key', 
+      difficulty: 'B', 
+      price: 8000, 
+      icon: '🔑', 
+      description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن',
+      rankLevel: 2,
+      isBasic: false 
+    },
+    // رتبة A (بنفسجي - مقفلة)
+    { 
+      id: 'shadow_elixir', 
       name: 'Shadow Monarch Elixir', 
+      arabicName: 'إكسير ملك الظلال',
       category: 'Ancient Grade', 
-      difficulty: 'S', 
-      price: 1500000, 
+      difficulty: 'A', 
+      price: 150000, 
       icon: '🧪', 
-      description: 'A legendary elixir hidden within the system archives.',
+      description: 'إكسير أسطوري مخفي في أرشيف النظام',
       rankLevel: 5, 
       isBasic: false 
     },
+    // رتبة S (أسود - مقفلة)
     { 
-      id: 'hidden_2', 
+      id: 'demon_blood', 
       name: 'Demon King Blood', 
+      arabicName: 'دم ملك الشياطين',
       category: 'Divine Item', 
-      difficulty: 'SS', 
+      difficulty: 'S', 
       price: 5000000, 
-      icon: '🧪', 
-      description: 'Essence of a high-ranking demon king.',
+      icon: '💀', 
+      description: 'جوهر ملك شيطاني رفيع المستوى',
       rankLevel: 8, 
-      isBasic: false 
-    },
-    { 
-      id: 'hidden_3', 
-      name: 'Absolute Power Source', 
-      category: 'Origin', 
-      difficulty: 'EX', 
-      price: 99999999, 
-      icon: '🧪', 
-      description: 'The core of the system itself.',
-      rankLevel: 10, 
       isBasic: false 
     },
   ];
@@ -256,36 +323,71 @@ const Market = () => {
       <main className="relative z-10 max-w-md mx-auto space-y-12">
         {SOLO_ITEMS.map((item) => {
           const isLocked = !canSeeItem(item);
+          const rarityKey = item.difficulty as keyof typeof RARITY_CONFIG;
+          const rarity = RARITY_CONFIG[rarityKey] || RARITY_CONFIG.E;
+          
           return (
             <div key={item.id} className="relative group">
-              <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
+              <div className={cn(
+                "absolute -inset-0.5 blur-sm opacity-0 group-hover:opacity-100 transition duration-500",
+                rarity.locked ? "bg-gray-500/20" : "bg-blue-500/20"
+              )} />
               
-              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
+              <div className={cn(
+                "relative border-2 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]",
+                rarity.bg,
+                isLocked || rarity.locked ? "border-slate-700/50 grayscale" : rarity.border
+              )}>
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                    <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
-                      ITEM: <span className="text-blue-100">{isLocked ? '???' : item.name}</span>
+                  <div className={cn(
+                    "border px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]",
+                    isLocked || rarity.locked ? "border-slate-600" : rarity.border
+                  )}>
+                    <h2 className={cn(
+                      "text-xs font-bold tracking-widest drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase",
+                      isLocked || rarity.locked ? "text-slate-500" : rarity.text
+                    )}>
+                      {isLocked ? '???' : (item.arabicName || item.name)}
                     </h2>
                   </div>
                 </div>
 
+                {/* Rank Badge */}
+                <div className="absolute top-2 left-2">
+                  <span className={cn(
+                    "text-[10px] font-black px-2 py-0.5 border",
+                    isLocked || rarity.locked ? "border-slate-600 text-slate-500" : rarity.border + " " + rarity.text
+                  )}>
+                    {item.difficulty}
+                  </span>
+                </div>
+
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                      <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
+                    <div className={cn(
+                      "w-24 h-24 border flex items-center justify-center relative flex-shrink-0",
+                      isLocked || rarity.locked ? "border-slate-700/50 bg-black/40" : rarity.border + " bg-black/40"
+                    )}>
+                      <span className={cn(
+                        "text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]",
+                        isLocked || rarity.locked ? "filter grayscale brightness-50" : "filter grayscale brightness-200 opacity-90"
+                      )}>
                         {item.icon}
                       </span>
                     </div>
 
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold">Diff:</p>
-                        <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
+                        <p className="text-[9px] text-slate-400 uppercase font-bold">Rank:</p>
+                        <p className={cn(
+                          "text-xs font-bold italic uppercase",
+                          isLocked || rarity.locked ? "text-slate-500" : rarity.text
+                        )}>
                           {isLocked ? '?' : item.difficulty}
                         </p>
                       </div>
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <p className="text-[9px] text-slate-400 uppercase font-bold">Cat:</p>
+                        <p className="text-[9px] text-slate-400 uppercase font-bold">Type:</p>
                         <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
                           {isLocked ? '???' : item.category}
                         </p>
@@ -307,14 +409,19 @@ const Market = () => {
 
                   <button
                     onClick={() => handlePurchase(item)}
+                    disabled={rarity.locked}
                     className={cn(
                       "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
-                      isLocked 
-                        ? "bg-slate-900/50 border-slate-700 text-slate-500" 
-                        : "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
+                      rarity.locked
+                        ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed"
+                        : isLocked 
+                          ? "bg-slate-900/50 border-slate-700 text-slate-500" 
+                          : gameState.gold >= item.price
+                            ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
+                            : "bg-red-900/20 border-red-500/30 text-red-400"
                     )}
                   >
-                    {isLocked ? 'not found' : 'Purchase Item'}
+                    {rarity.locked ? 'Locked in Alpha' : isLocked ? 'Not Found' : 'Purchase Item'}
                   </button>
                 </div>
               </div>
