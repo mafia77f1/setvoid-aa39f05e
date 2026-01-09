@@ -51,31 +51,31 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
         <div className="scan-line" />
 
         <div className="status-header">
-          <h2>الحالة</h2>
+          <h2 className="text-xl font-bold">الحالة</h2>
         </div>
 
         <div className="p-6">
           <div className="flex items-center gap-6 mb-4">
-            {/* القسم الأيسر: المعلومات بالعربي */}
-            <div className="flex-1 flex flex-col gap-1 text-right" dir="rtl">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">الاسم:</span>
-                <span className="font-semibold text-sm">{gameState.playerName}</span>
+            {/* القسم الأيسر: تم تكبير النصوص هنا */}
+            <div className="flex-1 flex flex-col gap-2 text-right" dir="rtl">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-primary/70 font-black">الاسم:</span>
+                <span className="font-bold text-lg">{gameState.playerName}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">الرتبة:</span>
-                <span className={cn("font-bold text-sm", rankColor.text)}>{rankColor.rankName}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-primary/70 font-black">الرتبة:</span>
+                <span className={cn("font-black text-xl", rankColor.text)}>{rankColor.rankName}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">اللقب:</span>
-                <span className="text-sm text-primary">{gameState.playerTitle}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-primary/70 font-black">اللقب:</span>
+                <span className="text-base font-bold text-primary">{gameState.playerTitle}</span>
               </div>
             </div>
 
-            {/* القسم الأيمن: اللفل */}
+            {/* القسم الأيمن: المستوى */}
             <div className="text-center">
-              <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-[10px] text-muted-foreground tracking-widest font-bold">المستوى</div>
+              <div className={cn("text-6xl font-black glow-text", rankColor.text)}>{totalLevel}</div>
+              <div className="text-xs text-muted-foreground tracking-[0.2em] font-black mt-1">المستوى</div>
             </div>
           </div>
 
@@ -84,7 +84,7 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1">
                   <Shield className="w-4 h-4 text-destructive" />
-                  <span className="text-xs">HP</span>
+                  <span className="text-xs font-bold">HP</span>
                 </div>
                 <span className="text-xs font-bold">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
               </div>
@@ -96,7 +96,7 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1">
                   <Zap className="w-4 h-4 text-secondary" />
-                  <span className="text-xs">ENERGY</span>
+                  <span className="text-xs font-bold">ENERGY</span>
                 </div>
                 <span className="text-xs font-bold">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
               </div>
