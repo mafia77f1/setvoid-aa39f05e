@@ -18,23 +18,18 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // التعديل: تفعيل الصوت عند التحميل الأول (Welcome) وعند كل تغيير في الخطوات
+  // التعديل هنا: لضمان تشغيل الصوت في أول كارد (welcome) وعند كل تغيير في الخطوات
   useLayoutEffect(() => {
-    const systemSound = new Audio('/SystemNotificationSound.wav');
-    systemSound.preload = 'auto';
-    const playPromise = systemSound.play();
-    
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        /* تجاهل القيود إذا لم يتفاعل المستخدم بعد */
+    const playSystemSound = () => {
+      const systemSound = new Audio('/SystemNotificationSound.wav');
+      systemSound.preload = 'auto';
+      systemSound.play().catch(() => {
+        /* تجاهل قيود Autoplay للمتصفح */
       });
-    }
-
-    return () => {
-      systemSound.pause();
-      systemSound.currentTime = 0;
     };
-  }, [step]); // سيعمل فوراً لأن القيمة الابتدائية هي 'welcome'
+
+    playSystemSound();
+  }, [step]); // سيتم تشغيله عند البداية (welcome) ومع كل انتقال
 
   useEffect(() => {
     if (!authLoading && user) {
