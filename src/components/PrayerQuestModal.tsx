@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { Clock, Check, X, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Platform, PermissionsAndroid } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
 
 interface PrayerQuestModalProps {
   prayer: PrayerQuest;
@@ -14,18 +16,86 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const { playQuestComplete, playClick } = useSoundEffects();
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [prayerTime, setPrayerTime] = useState<string>('...');
 
   useEffect(() => {
-    // تفعيل أنيميشن الظهور
     const timer = setTimeout(() => setIsVisible(true), 50);
+
+    // دالة لطلب إذن الموقع في Android
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+      return true; // iOS يسأل تلقائياً
+    };
+
+    const fetchPrayerTime = async () => {
+      try {
+        const hasPermission = await requestLocationPermission();
+        if (!hasPermission) {
+          setPrayerTime('Permission Denied');
+          return;
+        }
+
+        Geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const response = await fetch(
+              `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2&date=${new Date()
+                .toISOString()
+                .split('T')[0]}`
+            );
+            const data = await response.json();
+            if (data?.data?.timings) {
+              const key = prayer.arabicName.toLowerCase();
+              let time = '';
+              switch (key) {
+                case 'الفجر':
+                  time = data.data.timings.Fajr;
+                  break;
+                case 'الظهر':
+                  time = data.data.timings.Dhuhr;
+                  break;
+                case 'العصر':
+                  time = data.data.timings.Asr;
+                  break;
+                case 'المغرب':
+                  time = data.data.timings.Maghrib;
+                  break;
+                case 'العشاء':
+                  time = data.data.timings.Isha;
+                  break;
+                default:
+                  time = 'N/A';
+              }
+              setPrayerTime(time);
+            }
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            setPrayerTime('N/A');
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+      } catch (err) {
+        console.error('Error fetching prayer time:', err);
+        setPrayerTime('N/A');
+      }
+    };
+
+    fetchPrayerTime();
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [prayer.arabicName]);
 
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(() => {
       onClose();
-    }, 800); 
+    }, 800);
   };
 
   const handleComplete = () => {
@@ -35,29 +105,29 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
         isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
       )}
       onClick={handleClose}
     >
-      {/* Container - أنيميشن الانفتاح من المنتصف */}
-      <div 
+      <div
         className={cn(
           "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 p-5 shadow-[0_0_30px_rgba(30,58,138,0.4)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-          isVisible && !isExiting 
-            ? "opacity-100 scale-y-100 duration-[1500ms]" 
+          isVisible && !isExiting
+            ? "opacity-100 scale-y-100 duration-[1500ms]"
             : "opacity-0 scale-y-0 duration-[800ms]",
           "origin-center"
         )}
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* الترويسة العلوية - ثابتة كما هي */}
-        <div className={cn(
-          "flex justify-center mb-6 mt-[-1.8rem] transition-all duration-700 delay-700",
-          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-        )}>
+        <div
+          className={cn(
+            "flex justify-center mb-6 mt-[-1.8rem] transition-all duration-700 delay-700",
+            isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+          )}
+        >
           <div className="border border-slate-400/50 px-5 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <h2 className="text-[10px] font-bold tracking-[0.2em] text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase">
               QUEST: <span className="text-blue-400">Daily Prayer</span>
@@ -65,25 +135,24 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           </div>
         </div>
 
-        {/* محتوى المهمة - يظهر بتدرج بعد الانفتاح */}
-        <div className={cn(
-          "space-y-6 transition-all duration-1000 delay-[800ms]",
-          isVisible && !isExiting ? "opacity-100" : "opacity-0"
-        )}>
-          {/* اسم الصلاة بتوهج أبيض قوي */}
+        <div
+          className={cn(
+            "space-y-6 transition-all duration-1000 delay-[800ms]",
+            isVisible && !isExiting ? "opacity-100" : "opacity-0"
+          )}
+        >
           <div className="text-center py-2">
             <h3 className="text-3xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,1)] tracking-tighter">
               {prayer.arabicName}
             </h3>
           </div>
 
-          {/* معلومات المهمة - نفس الـ Grid الأصلي */}
           <div className="grid grid-cols-2 gap-3">
             <div className="border border-white/10 p-2 bg-white/5">
               <p className="text-[8px] text-slate-500 uppercase font-bold mb-1">Time Limit</p>
               <div className="flex items-center gap-2 text-white">
                 <Clock className="w-3 h-3 text-blue-400" />
-                <span className="text-xs font-mono font-bold">45:00</span>
+                <span className="text-xs font-mono font-bold">{prayerTime}</span>
               </div>
             </div>
             <div className="border border-white/10 p-2 bg-white/5">
@@ -96,14 +165,12 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
             </div>
           </div>
 
-          {/* نص الوصف */}
           <div className="py-3 border-t border-slate-700/50 text-center px-2">
             <p className="text-[10px] text-slate-400 italic leading-relaxed">
               "Prayer is the pillar of religion. Complete this quest to maintain your spirit energy."
             </p>
           </div>
 
-          {/* الأزرار - نفس الستايل الأصلي */}
           <div className="space-y-2">
             <button
               onClick={handleComplete}
@@ -122,7 +189,10 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
             </button>
 
             <button
-              onClick={() => { playClick(); handleClose(); }}
+              onClick={() => {
+                playClick();
+                handleClose();
+              }}
               className="w-full py-2 bg-transparent border border-white/10 text-slate-500 text-[9px] font-bold tracking-[0.1em] uppercase hover:bg-white/5 transition-colors"
             >
               Close Window
@@ -130,7 +200,6 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           </div>
         </div>
 
-        {/* الزوايا الديكورية */}
         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/30" />
         <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/30" />
         <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/30" />
