@@ -18,30 +18,30 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); // 1.5 ثانية شاشة سوداء
+    }, 1500); 
     return () => clearTimeout(timer);
   }, []);
 
-  // تعديل: الصوت يعمل الآن بالضبط مع بداية الأنميشن فور انتهاء الشاشة السوداء
+  // تعديل الصوت والاهتزاز الحقيقي للموبايل
   useLayoutEffect(() => {
     if (isInitialLoading || authLoading) return;
 
+    // 1. تشغيل الصوت
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
-    
-    // تشغيل الصوت فوراً عند تغير الـ step أو انتهاء التحميل الأولي
     const playPromise = systemSound.play();
-    
     if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // حماية في حال منع المتصفح التشغيل التلقائي
-      });
+      playPromise.catch(() => {});
+    }
+
+    // 2. اهتزاز الموبايل الحقيقي (نبضة واحدة قوية 200 مللي ثانية)
+    if ('vibrate' in navigator) {
+      navigator.vibrate(200); 
     }
 
     return () => {
@@ -50,6 +50,7 @@ const Onboarding = () => {
     };
   }, [step, isInitialLoading, authLoading]);
 
+  // باقي الكود (Logic و JSX) يبقى كما هو تماماً دون تغيير...
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
@@ -120,7 +121,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -136,7 +136,6 @@ const Onboarding = () => {
       </div>
 
       <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
-        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
@@ -156,13 +155,13 @@ const Onboarding = () => {
                     <p className="text-white/90 text-sm sm:text-lg font-bold tracking-wide drop-shadow-[0_0_6px_white]">You have acquired the qualifications</p>
                     <p className="text-white text-xl sm:text-2xl font-black">to be a <span className="text-blue-400 italic drop-shadow-[0_0_20px_#3b82f6] underline decoration-blue-500 decoration-2 underline-offset-4 sm:underline-offset-6">Player</span>.</p>
                   </div>
-                  <div className="flex flex-row gap-3 sm:gap-6 w-full max-w-sm mx-auto">
+                  <div className="flex flex-row gap-3 sm:gap-6 w-full max-sm mx-auto">
                     <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all">ACCEPT</button>
                     <button onClick={handleDecline} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all">NOT ACCEPT</button>
                   </div>
                 </div>
               )}
-
+              {/* باقي الخطوات تبقى كما هي... */}
               {step === 'name' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-6 drop-shadow-[0_0_10px_white]">CHARACTER REGISTRATION</h2>
@@ -210,14 +209,12 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* انميشن الفتح السينمائي المحترف */
         @keyframes super-smooth-entry {
           0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
           40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
           100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* انميشن الخطوط المتوهجة */
         @keyframes line-expand {
           0% { width: 0%; left: 50%; opacity: 0; }
           40% { width: 0%; left: 50%; opacity: 1; }
