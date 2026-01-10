@@ -1,31 +1,23 @@
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dumbbell, Brain, Heart, Zap, Target, CheckCircle2, Clock, Scroll, X, ShieldAlert, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+// استيراد مكتبة الأنميشن
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Quests = () => {
-  const { gameState, startSideQuest, claimSideQuest, closeSideQuest } = useGameState();
+  const { gameState, startSideQuest, claimSideQuest } = useGameState();
   const [activeTab, setActiveTab] = useState<'all' | 'strength' | 'mind' | 'spirit' | 'agility'>('all');
-  
-  // --- Modal Logic with New Animation ---
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
 
   const handleOpenDetails = (quest: any) => {
     setSelectedQuest(quest);
-    setTimeout(() => setIsVisible(true), 50);
   };
 
   const handleCloseModal = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsExiting(false);
-      setSelectedQuest(null);
-    }, 800); // مدة التلاشي
+    setSelectedQuest(null);
   };
 
   const handleConfirmStart = () => {
@@ -51,82 +43,95 @@ const Quests = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans pb-24">
+    <div className="min-h-screen bg-[#020817] text-white p-3 font-sans pb-24 overflow-x-hidden">
+      {/* الخلفية */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
       </div>
 
-      {/* --- New Animated Quest Detail Modal --- */}
-      {selectedQuest && (
-        <div className={cn(
-          "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
-          isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
-        )}>
-          <div className={cn(
-            "relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)]",
-            isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[800ms]",
-            "origin-center"
-          )}>
-            {/* خطوط التوهج العلوي والسفلي (مثل الكود المطلوب) */}
-            <div className={cn(
-              "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300",
-              isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-            )} />
-            <div className={cn(
-              "absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300",
-              isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-            )} />
+      {/* --- القائمة المنبثقة المحسنة (Quest Detail Modal) --- */}
+      <AnimatePresence>
+        {selectedQuest && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-black/80"
+          >
+            <motion.div 
+              initial={{ scaleY: 0, opacity: 0, scaleX: 0.9 }}
+              animate={{ scaleY: 1, opacity: 1, scaleX: 1 }}
+              exit={{ scaleY: 0, opacity: 0, transition: { duration: 0.3 } }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] origin-center overflow-hidden"
+            >
+              {/* خطوط التوهج المتحركة */}
+              <motion.div 
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)]" 
+              />
+              <motion.div 
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)]" 
+              />
 
-            {/* محتوى المهمة بنفس الشكل السابق */}
-            <div className={cn(
-              "p-6 space-y-5 transition-all duration-1000 delay-500",
-              isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            )}>
-              <div className="text-center">
-                <span className="text-[10px] font-black tracking-[0.4em] text-blue-500/60 uppercase">Mission Briefing</span>
-              </div>
-
-              <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-                <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/40" /></div>
-                <div className="mb-3 border-b border-blue-500/20 pb-2">
-                  <span className="text-[9px] text-blue-400 block mb-1 uppercase font-bold">Designation:</span>
-                  <span className="text-sm font-bold text-white tracking-widest uppercase italic">{selectedQuest.title}</span>
+              {/* محتوى المهمة */}
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="p-6 space-y-5"
+              >
+                <div className="text-center">
+                  <span className="text-[10px] font-black tracking-[0.4em] text-blue-500/60 uppercase">Mission Briefing</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-[9px] text-blue-400 block mb-1">TYPE:</span>
-                    <span className="text-xs font-bold text-white">{selectedQuest.category.toUpperCase()}</span>
+
+                <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
+                  <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/40" /></div>
+                  <div className="mb-3 border-b border-blue-500/20 pb-2">
+                    <span className="text-[9px] text-blue-400 block mb-1 uppercase font-bold">Designation:</span>
+                    <span className="text-sm font-bold text-white tracking-widest uppercase italic">{selectedQuest.title}</span>
                   </div>
-                  <div>
-                    <span className="text-[9px] text-blue-400 block mb-1">LIMIT:</span>
-                    <span className="text-xs font-bold text-blue-300">{selectedQuest.duration}M</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-[9px] text-blue-400 block mb-1">TYPE:</span>
+                      <span className="text-xs font-bold text-white">{selectedQuest.category.toUpperCase()}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-blue-400 block mb-1">LIMIT:</span>
+                      <span className="text-xs font-bold text-blue-300">{selectedQuest.duration}M</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-black/40 border border-blue-900/30 p-3 italic text-[10px] text-slate-300 leading-relaxed">
-                {selectedQuest.description}
-              </div>
+                <div className="bg-black/40 border border-blue-900/30 p-3 italic text-[10px] text-slate-300 leading-relaxed">
+                  {selectedQuest.description}
+                </div>
 
-              <div className="border-l-2 border-yellow-500 bg-yellow-500/5 p-3 flex justify-between items-center">
-                <span className="text-[10px] font-bold text-yellow-500 uppercase">Rewards:</span>
-                <span className="text-xs font-bold text-white tracking-widest">{selectedQuest.rewardGold} GOLD</span>
-              </div>
+                <div className="border-l-2 border-yellow-500 bg-yellow-500/5 p-3 flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-yellow-500 uppercase">Rewards:</span>
+                  <span className="text-xs font-bold text-white tracking-widest">{selectedQuest.rewardGold || selectedQuest.goldReward} GOLD</span>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button onClick={handleCloseModal} className="py-3 border border-slate-700 text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-red-400 hover:border-red-400/50 transition-all">
-                  Abort
-                </button>
-                <button onClick={handleConfirmStart} className="py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95 transition-all">
-                  Initialize
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button onClick={handleCloseModal} className="py-3 border border-slate-700 text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-red-400 hover:border-red-400/50 transition-all active:bg-red-500/10">
+                    Abort
+                  </button>
+                  <button onClick={handleConfirmStart} className="py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95 transition-all">
+                    Initialize
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* --- Main UI Content --- */}
+      {/* --- باقي محتوى الصفحة (لم يتغير سوى إضافة الأنميشن للقائمة) --- */}
       <header className="relative z-10 flex flex-col items-center mb-6 border-b border-blue-500/30 pb-4">
         <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">Side Quests</h1>
         <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-blue-400 uppercase mt-2">
@@ -136,7 +141,8 @@ const Quests = () => {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-8">
-        <div className="flex gap-1 p-1 bg-black/40 border border-slate-800 rounded-lg overflow-x-auto">
+        {/* التبويبات */}
+        <div className="flex gap-1 p-1 bg-black/40 border border-slate-800 rounded-lg overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={cn("flex items-center gap-1.5 px-3 py-2 rounded-md transition-all whitespace-nowrap", activeTab === tab.id ? "bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)]" : "text-slate-500")}>
               <tab.icon className="w-3.5 h-3.5" />
@@ -145,9 +151,14 @@ const Quests = () => {
           ))}
         </div>
 
+        {/* عرض المهام مع أنميشن بسيط للقائمة */}
         <div className="space-y-12">
           {getFilteredQuests().map((quest) => (
-            <div key={quest.id} className="relative group">
+            <motion.div 
+              layout
+              key={quest.id} 
+              className="relative group"
+            >
               <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90">
@@ -172,14 +183,6 @@ const Quests = () => {
                           {quest.active ? 'In Progress' : quest.completed && !quest.claimed ? 'Ready' : quest.claimed ? 'Claimed' : 'Available'}
                         </span>
                       </div>
-                      {quest.active && quest.requiredTime && (
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                          <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
-                          <span className="text-[9px] font-bold text-blue-300">
-                            {Math.floor((quest.timeProgress || 0) / 60)}m / {quest.requiredTime}m
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
                   <button
@@ -196,7 +199,7 @@ const Quests = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </main>
