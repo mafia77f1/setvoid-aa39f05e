@@ -18,18 +18,18 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
+  // شاشة سوداء لمدة 1.5 ثانية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); // 1.5 ثانية شاشة سوداء
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   useLayoutEffect(() => {
-    if (isInitialLoading) return; // لا تشغل الصوت أثناء الشاشة السوداء
+    if (isInitialLoading) return;
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
@@ -115,7 +115,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -130,10 +129,10 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
-        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
-        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
-        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
+      <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
+        {/* الخطوط الآن تنبثق وتتمدد مع الرسالة مباشرة عبر الـ Keyframe الرئيسي */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20 origin-center" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20 origin-center" />
 
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           <div className="bg-black/60 border border-blue-400/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}>
@@ -205,35 +204,21 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* انميشن الفتح السينمائي المحترف */
-        @keyframes super-smooth-entry {
-          0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
-          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
-          100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+        @keyframes vertical-open { 
+          0% { transform: scaleY(0) scaleX(0); opacity: 0; filter: brightness(2); } 
+          20% { transform: scaleY(0.01) scaleX(1); opacity: 1; } 
+          100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); } 
         }
-
-        /* انميشن الخطوط المتوهجة */
-        @keyframes line-expand {
-          0% { width: 0%; left: 50%; opacity: 0; }
-          40% { width: 0%; left: 50%; opacity: 1; }
-          100% { width: 100%; left: 0%; opacity: 1; }
-        }
-
         @keyframes content-fade-in { 
-          0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
-          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+          0% { opacity: 0; transform: translateY(5px); } 
+          100% { opacity: 1; transform: translateY(0); } 
         }
-
-        .animate-super-smooth-entry { 
-          animation: super-smooth-entry 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        .animate-vertical-open { 
+          animation: vertical-open 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+          transform-origin: center; 
         }
-
-        .animate-line-expand {
-          animation: line-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
         .animate-content-fade { 
-          animation: content-fade-in 0.8s ease-out 1.1s both; 
+          animation: content-fade-in 0.6s ease-out 1s both; 
         }
       `}</style>
       
