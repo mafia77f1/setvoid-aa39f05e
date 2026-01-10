@@ -1,0 +1,24 @@
+name: TestSprite Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  testsprite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run TestSprite
+        run: |
+          curl -X POST https://api.testsprite.com/run \
+          -H "Authorization: Bearer ${{ secrets.TESTSPRITE_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "repo": "${{ github.repository }}",
+            "branch": "${{ github.ref_name }}"
+          }'
