@@ -9,16 +9,16 @@ const Quests = () => {
   const { gameState, startSideQuest, claimSideQuest, closeSideQuest } = useGameState();
   const [activeTab, setActiveTab] = useState<'all' | 'strength' | 'mind' | 'spirit' | 'agility'>('all');
   
-  // --- Modal Logic with Original Animation & Performance Fix ---
+  // --- Modal Logic with New Animation ---
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
   const handleOpenDetails = (quest: any) => {
     setSelectedQuest(quest);
-    // استخدام requestAnimationFrame يحل مشكلة السلاسة في Capacitor والمتصفح
+    // تم استخدام requestAnimationFrame لضمان استجابة المتصفح الفورية قبل بدء التوقيت
     requestAnimationFrame(() => {
-      setTimeout(() => setIsVisible(true), 50);
+        setTimeout(() => setIsVisible(true), 50);
     });
   };
 
@@ -28,7 +28,7 @@ const Quests = () => {
       setIsVisible(false);
       setIsExiting(false);
       setSelectedQuest(null);
-    }, 800); 
+    }, 800); // مدة التلاشي الأصلية
   };
 
   const handleConfirmStart = () => {
@@ -59,30 +59,31 @@ const Quests = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
       </div>
 
-      {/* --- Original Animated Quest Detail Modal with Fix --- */}
+      {/* --- New Animated Quest Detail Modal --- */}
       {selectedQuest && (
         <div className={cn(
-          "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms] ease-in-out",
-          isVisible && !isExiting ? "bg-black/80 opacity-100" : "bg-black/0 opacity-0 pointer-events-none"
+          "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
+          isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
         )}>
+          {/* تم إضافة transform-gpu و will-change لضمان سلاسة scale-y في المتصفح و Capacitor */}
           <div className={cn(
-            "relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] will-change-transform transform-gpu",
+            "relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] transform-gpu will-change-transform",
             isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[800ms]",
             "origin-center"
           )}>
-            {/* خطوط التوهج - نفس الكود الأصلي */}
+            {/* خطوط التوهج العلوي والسفلي */}
             <div className={cn(
-              "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 will-change-transform",
+              "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 transform-gpu",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
             <div className={cn(
-              "absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 will-change-transform",
+              "absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 transform-gpu",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
 
-            {/* محتوى المهمة - نفس الكود الأصلي */}
+            {/* محتوى المهمة */}
             <div className={cn(
-              "p-6 space-y-5 transition-all duration-1000 delay-500 will-change-transform",
+              "p-6 space-y-5 transition-all duration-1000 delay-500 transform-gpu",
               isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             )}>
               <div className="text-center">
@@ -129,7 +130,7 @@ const Quests = () => {
         </div>
       )}
 
-      {/* --- باقي محتوى الواجهة (بدون تغيير) --- */}
+      {/* --- Main UI Content --- */}
       <header className="relative z-10 flex flex-col items-center mb-6 border-b border-blue-500/30 pb-4">
         <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">Side Quests</h1>
         <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-blue-400 uppercase mt-2">
