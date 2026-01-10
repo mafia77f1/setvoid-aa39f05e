@@ -3,8 +3,6 @@ import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { Clock, Check, X, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
 
 interface PrayerQuestModalProps {
   prayer: PrayerQuest;
@@ -21,28 +19,17 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 50);
 
-    // دالة لطلب إذن الموقع في Android
-    const requestLocationPermission = async () => {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      }
-      return true; // iOS يسأل تلقائياً
-    };
-
+    // جلب موقع المستخدم عبر navigator.geolocation (Web + Mobile متوافق)
     const fetchPrayerTime = async () => {
-      try {
-        const hasPermission = await requestLocationPermission();
-        if (!hasPermission) {
-          setPrayerTime('Permission Denied');
-          return;
-        }
+      if (!navigator.geolocation) {
+        setPrayerTime('Geolocation not supported');
+        return;
+      }
 
-        Geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
             const response = await fetch(
               `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2&date=${new Date()
                 .toISOString()
@@ -73,17 +60,17 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
               }
               setPrayerTime(time);
             }
-          },
-          (error) => {
-            console.error('Geolocation error:', error);
+          } catch (err) {
+            console.error('Error fetching prayer time:', err);
             setPrayerTime('N/A');
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
-      } catch (err) {
-        console.error('Error fetching prayer time:', err);
-        setPrayerTime('N/A');
-      }
+          }
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setPrayerTime('N/A');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
     };
 
     fetchPrayerTime();
