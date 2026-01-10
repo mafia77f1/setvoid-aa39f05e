@@ -27,22 +27,35 @@ const Onboarding = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // تعديل الصوت ليظهر قبل النص بـ 0.5 ثانية بالضبط
+  // حل مشكلة الصوت في أول كارد + ضبط التوقيت
   useLayoutEffect(() => {
     if (isInitialLoading || authLoading) return;
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
     
-    // الأنميشن يبدأ في 0s، النص يظهر في 1.1s
-    // لذا نشغل الصوت في 0.6s ليكون قبل النص بـ 0.5 ثانية
-    const soundTimer = setTimeout(() => {
+    const playSound = () => {
       const playPromise = systemSound.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          // في حال منع المتصفح الصوت، سيشتغل عند أول ضغطة (Accept)
+          // في حال استمرار المنع، سيحاول مرة أخرى عند التفاعل القادم
         });
       }
+    };
+
+    // التوقيت: يظهر الصوت قبل النص بـ 0.5 ثانية (النص يظهر في 1.1s)
+    const soundTimer = setTimeout(() => {
+      // محاولة تشغيل الصوت مباشرة
+      playSound();
+      
+      // إذا فشل بسبب قيود المتصفح، سيتم التشغيل فور أول لمسة للشاشة
+      const enableAudio = () => {
+        playSound();
+        window.removeEventListener('touchstart', enableAudio);
+        window.removeEventListener('click', enableAudio);
+      };
+      window.addEventListener('touchstart', enableAudio, { once: true });
+      window.addEventListener('click', enableAudio, { once: true });
     }, 600); 
 
     return () => {
