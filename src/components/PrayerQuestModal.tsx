@@ -1,7 +1,7 @@
 import { PrayerQuest } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { Clock, Check, MapPin, Save, ChevronLeft, Zap, HeartPulse } from 'lucide-react';
+import { Clock, Check, MapPin, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface PrayerQuestModalProps {
@@ -15,39 +15,13 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   
-  const [city, setCity] = useState(() => localStorage.getItem('user_city') || 'Baghdad');
-  const [country, setCountry] = useState(() => localStorage.getItem('user_country') || 'Iraq');
-  const [showLocationSettings, setShowLocationSettings] = useState(false);
-  const [prayerTime, setPrayerTime] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [city] = useState(() => localStorage.getItem('user_city') || 'Baghdad');
+  const [country] = useState(() => localStorage.getItem('user_country') || 'Iraq');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 50);
-    fetchPrayerTimings();
     return () => clearTimeout(timer);
   }, []);
-
-  const fetchPrayerTimings = async () => {
-    setIsLoading(true);
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const response = await fetch(
-        `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=2&date=${today}`
-      );
-      const data = await response.json();
-      if (data.code === 200) {
-        const timings = data.data.timings;
-        const time = timings[prayer.id.charAt(0).toUpperCase() + prayer.id.slice(1)]; 
-        setPrayerTime(time || "00:00");
-        localStorage.setItem('user_city', city);
-        localStorage.setItem('user_country', country);
-      }
-    } catch (error) {
-      console.error("Error fetching timings:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleClose = () => {
     setIsExiting(true);
@@ -63,18 +37,18 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all duration-1000",
+        "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-1000",
         isVisible && !isExiting ? "bg-black/90" : "bg-black/0 pointer-events-none"
       )}
       onClick={handleClose}
     >
-      {/* ترويسة النظام المنفصلة */}
+      {/* ترويسة النظام المستقلة */}
       <div className={cn(
-        "fixed top-[10%] left-1/2 -translate-x-1/2 z-[60] transition-all duration-1000",
+        "fixed top-[15%] left-1/2 -translate-x-1/2 z-[60] transition-all duration-1000",
         isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"
       )}>
-        <div className="bg-black border border-white/20 px-8 py-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-          <h2 className="text-white font-black tracking-[0.6em] italic text-lg sm:text-xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
+        <div className="bg-black border border-white/20 px-6 py-1 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <h2 className="text-white font-black tracking-[0.5em] italic text-sm drop-shadow-[0_0_10px_white]">
             SYSTEM: <span className="text-blue-500">DAILY QUEST</span>
           </h2>
         </div>
@@ -82,120 +56,87 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
 
       <div
         className={cn(
-          "relative max-w-md w-full bg-[#050505] border-x border-white/10 shadow-[0_0_60px_rgba(59,130,246,0.1)] min-h-[600px] flex flex-col",
+          "relative max-w-[340px] w-full bg-[#050505] border-x border-white/10 shadow-[0_0_40px_rgba(59,130,246,0.1)] overflow-hidden",
           isVisible && !isExiting ? "animate-super-smooth-entry" : "opacity-0 scale-y-0 duration-[800ms]"
         )}
         onClick={e => e.stopPropagation()}
       >
-        <div className="absolute -top-[1px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3b82f6]" />
-        <div className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent shadow-[0_0_15px_white]" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_15px_#3b82f6]" />
 
-        <div className="p-8 flex-1 flex flex-col">
-          {showLocationSettings ? (
-            <div className="space-y-6 animate-content-fade">
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowLocationSettings(false)} className="text-white/40 hover:text-white"><ChevronLeft /></button>
-                <h3 className="text-white font-black tracking-widest uppercase italic">Location Settings</h3>
+        <div className="p-6 space-y-5 animate-content-fade">
+          {/* اسم الصلاة */}
+          <div className="text-center pt-2">
+            <h3 className="text-4xl font-black italic text-white drop-shadow-[0_0_15px_white] tracking-tighter">
+              {prayer.arabicName}
+            </h3>
+            <p className="text-[8px] text-white/40 font-black tracking-widest uppercase mt-1 italic">
+              "اتصال الروح بالخالق"
+            </p>
+          </div>
+
+          {/* الإحصائيات المختصرة */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white/5 border border-white/5 p-2 flex items-center justify-between">
+              <span className="text-[7px] text-white/40 font-black">TIME</span>
+              <span className="text-xs font-black text-white italic">40m</span>
+            </div>
+            <div className="bg-white/5 border border-white/5 p-2 flex items-center justify-between">
+              <span className="text-[7px] text-white/40 font-black">XP</span>
+              <span className="text-xs font-black text-blue-400">+{prayer.xpReward}</span>
+            </div>
+          </div>
+
+          {/* خانة التطوير SPR - تشبه الصورة تماماً */}
+          <div className="bg-blue-900/10 border border-blue-500/30 p-3 relative">
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-[7px] text-blue-400 font-black tracking-widest">RATE</span>
+                <span className="text-lg font-black text-white drop-shadow-[0_0_8px_white]">40xp</span>
               </div>
-              <div className="space-y-4 pt-4">
-                 <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white font-bold" placeholder="COUNTRY" />
-                 <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-white/5 border border-white/10 p-3 text-white font-bold" placeholder="CITY" />
-                 <button onClick={() => { fetchPrayerTimings(); setShowLocationSettings(false); }} className="w-full py-4 bg-white text-black font-black italic tracking-widest">SAVE DATA</button>
+              <div className="text-right">
+                <span className="text-[7px] text-blue-400 font-black tracking-widest uppercase">Special Stat Upgrade</span>
+                <h4 className="text-white font-black italic text-sm">SPR <span className="text-[8px] text-white/40 ml-1 italic">Spiritual</span></h4>
               </div>
             </div>
-          ) : (
-            <div className="space-y-8 animate-content-fade flex-1 flex flex-col">
-              {/* اسم الصلاة والوصف */}
-              <div className="text-center relative">
-                <h3 className="text-5xl font-black italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] tracking-tighter mb-2">
-                  {prayer.arabicName}
-                </h3>
-                <p className="text-white/40 text-[10px] font-bold tracking-[0.2em] uppercase">ارتقِ بروحك من خلال الاتصال بخالقك</p>
-                <button onClick={() => setShowLocationSettings(true)} className="absolute right-0 top-0 text-white/20 hover:text-blue-400"><MapPin size={18} /></button>
-              </div>
+          </div>
 
-              {/* قسم الإحصائيات (القديم) */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/[0.03] border border-white/10 p-4 relative overflow-hidden group">
-                  <p className="text-[9px] text-white/40 font-black mb-1">TIME LIMIT</p>
-                  <div className="flex items-center gap-2 text-white">
-                    <Clock size={16} className="text-blue-400" />
-                    <span className="text-lg font-black italic">40m</span>
-                  </div>
-                </div>
-                <div className="bg-white/[0.03] border border-white/10 p-4">
-                  <p className="text-[9px] text-white/40 font-black mb-1">XP REWARD</p>
-                  <div className="flex items-center gap-2 text-white">
-                    <span className="text-lg font-black italic text-blue-400 drop-shadow-[0_0_10px_#3b82f6]">+{prayer.xpReward}</span>
-                  </div>
-                </div>
+          {/* الفوائد - مختصرة جداً */}
+          <div className="space-y-1.5 py-1">
+            {['الطمأنينة القلبية', 'تعزيز الرابطة مع الله', 'الراحة النفسية والسكينة', 'تقوية الإيمان الداخلي'].map((benefit, i) => (
+              <div key={i} className="flex items-center gap-2 text-[10px] text-white/70 font-bold bg-white/[0.02] px-2 py-1 border-l border-blue-500/50">
+                <div className="w-1 h-1 bg-white rotate-45" />
+                {benefit}
               </div>
+            ))}
+          </div>
 
-              {/* خانة التطوير SPR */}
-              <div className="bg-gradient-to-r from-blue-900/20 to-transparent border border-blue-500/30 p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-[9px] text-blue-400 font-black mb-1 tracking-widest uppercase">Special Stat Upgrade</p>
-                    <h4 className="text-white font-black italic text-xl">SPR <span className="text-[10px] text-white/60 ml-2">Spiritual Power</span></h4>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] text-white/40 font-black mb-1">RATE</p>
-                    <p className="text-white font-black italic text-xl text-blue-400 drop-shadow-[0_0_8px_#3b82f6]">40xp</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* ماذا ستكسب من الصلاة */}
-              <div className="flex-1 space-y-4">
-                <div className="flex items-center gap-2">
-                  <HeartPulse size={14} className="text-white/60" />
-                  <span className="text-[10px] text-white/60 font-black tracking-widest uppercase">Spiritual Benefits</span>
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {['الطمأنينة القلبية', 'تعزيز الرابطة مع الله', 'الراحة النفسية والسكينة', 'تقوية الإيمان الداخلي'].map((benefit, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-white/[0.02] p-3 border-l-2 border-blue-500/50">
-                      <div className="w-1.5 h-1.5 bg-white rotate-45 shadow-[0_0_5px_white]" />
-                      <span className="text-white/80 text-xs font-bold">{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* الأزرار */}
-              <div className="space-y-3 pt-6">
-                <button
-                  onClick={handleComplete}
-                  disabled={prayer.completed}
-                  className={cn(
-                    "w-full py-5 font-black text-sm tracking-[0.3em] uppercase italic transition-all active:scale-[0.98]",
-                    prayer.completed
-                      ? "bg-white/5 text-white/20 border border-white/10"
-                      : "bg-white text-black hover:bg-blue-500 hover:text-white shadow-[0_0_30px_rgba(255,255,255,0.3)]"
-                  )}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <Zap size={18} />
-                    {prayer.completed ? 'COMPLETED' : 'ACCEPT & COMPLETE'}
-                  </span>
-                </button>
-                <button onClick={handleClose} className="w-full text-white/30 text-[10px] font-black tracking-widest uppercase hover:text-white transition-colors">DISMISS WINDOW</button>
-              </div>
-            </div>
-          )}
+          {/* الأزرار */}
+          <div className="space-y-2 pt-2">
+            <button
+              onClick={handleComplete}
+              disabled={prayer.completed}
+              className="w-full py-3 bg-white text-black font-black text-xs tracking-[0.2em] italic hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+            >
+              ACCEPT & COMPLETE
+            </button>
+            <button onClick={handleClose} className="w-full text-white/20 text-[8px] font-black tracking-widest uppercase hover:text-white transition-colors text-center">
+              CLOSE WINDOW
+            </button>
+          </div>
         </div>
 
         <style>{`
           @keyframes super-smooth-entry {
-            0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
-            40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
-            100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+            0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; }
+            40% { transform: scaleY(0.005) scaleX(1); opacity: 1; }
+            100% { transform: scaleY(1) scaleX(1); opacity: 1; }
           }
           @keyframes content-fade-in { 
-            0% { opacity: 0; transform: translateY(20px); filter: blur(10px); }
-            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
           }
-          .animate-super-smooth-entry { animation: super-smooth-entry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-          .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.8s both; }
+          .animate-super-smooth-entry { animation: super-smooth-entry 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+          .animate-content-fade { animation: content-fade-in 0.6s ease-out 0.6s both; }
         `}</style>
       </div>
     </div>
