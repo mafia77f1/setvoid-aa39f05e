@@ -18,33 +18,35 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); // 1.5 ثانية شاشة سوداء
+    }, 1500); 
     return () => clearTimeout(timer);
   }, []);
 
-  // تعديل: الصوت يعمل الآن بالضبط مع بداية الأنميشن فور انتهاء الشاشة السوداء
+  // تعديل الصوت ليظهر قبل النص بـ 0.5 ثانية بالضبط
   useLayoutEffect(() => {
     if (isInitialLoading || authLoading) return;
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
     
-    // تشغيل الصوت فوراً عند تغير الـ step أو انتهاء التحميل الأولي
-    const playPromise = systemSound.play();
-    
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // حماية في حال منع المتصفح التشغيل التلقائي
-      });
-    }
+    // الأنميشن يبدأ في 0s، النص يظهر في 1.1s
+    // لذا نشغل الصوت في 0.6s ليكون قبل النص بـ 0.5 ثانية
+    const soundTimer = setTimeout(() => {
+      const playPromise = systemSound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // في حال منع المتصفح الصوت، سيشتغل عند أول ضغطة (Accept)
+        });
+      }
+    }, 600); 
 
     return () => {
+      clearTimeout(soundTimer);
       systemSound.pause();
       systemSound.currentTime = 0;
     };
@@ -120,7 +122,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -136,7 +137,6 @@ const Onboarding = () => {
       </div>
 
       <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
-        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
@@ -210,36 +210,23 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* انميشن الفتح السينمائي المحترف */
         @keyframes super-smooth-entry {
           0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
           40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
           100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
-
-        /* انميشن الخطوط المتوهجة */
         @keyframes line-expand {
           0% { width: 0%; left: 50%; opacity: 0; }
           40% { width: 0%; left: 50%; opacity: 1; }
           100% { width: 100%; left: 0%; opacity: 1; }
         }
-
         @keyframes content-fade-in { 
           0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
           100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
-
-        .animate-super-smooth-entry { 
-          animation: super-smooth-entry 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-        }
-
-        .animate-line-expand {
-          animation: line-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-content-fade { 
-          animation: content-fade-in 0.8s ease-out 1.1s both; 
-        }
+        .animate-super-smooth-entry { animation: super-smooth-entry 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-line-expand { animation: line-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-content-fade { animation: content-fade-in 0.8s ease-out 1.1s both; }
       `}</style>
       
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
