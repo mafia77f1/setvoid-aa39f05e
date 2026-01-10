@@ -68,7 +68,12 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-primary/70 font-bold">اللقب:</span>
-                <span className="text-sm text-primary">{gameState.playerTitle}</span>
+                <span className="text-sm text-primary">
+                  {gameState.equippedTitle || gameState.playerTitle}
+                </span>
+                {gameState.equippedTitle && (
+                  <span className="text-[8px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">مجهز</span>
+                )}
               </div>
             </div>
 
