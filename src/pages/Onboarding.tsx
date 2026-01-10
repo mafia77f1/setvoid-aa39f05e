@@ -18,24 +18,23 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); 
+    }, 1500); // 1.5 ثانية شاشة سوداء
     return () => clearTimeout(timer);
   }, []);
 
-  // تعديل الصوت ليعمل مع بداية ظهور الرسالة بالضبط
   useLayoutEffect(() => {
-    if (isInitialLoading || authLoading) return;
+    if (isInitialLoading) return; // لا تشغل الصوت أثناء الشاشة السوداء
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
-    
-    // تشغيل فوري
     const playPromise = systemSound.play();
+    
     if (playPromise !== undefined) {
       playPromise.catch(() => {});
     }
@@ -44,7 +43,7 @@ const Onboarding = () => {
       systemSound.pause();
       systemSound.currentTime = 0;
     };
-  }, [step, isInitialLoading, authLoading]);
+  }, [step, isInitialLoading]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -116,6 +115,7 @@ const Onboarding = () => {
     navigate('/');
   };
 
+  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -131,6 +131,7 @@ const Onboarding = () => {
       </div>
 
       <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
+        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
@@ -204,19 +205,17 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* أنميشن الفتح مع اهتزاز Glitch في لحظة التمدد */
+        /* انميشن الفتح السينمائي المحترف */
         @keyframes super-smooth-entry {
           0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
-          35% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
-          40% { transform: scaleY(1.02) scaleX(1) translateX(2px); } /* بداية الاهتزاز */
-          45% { transform: scaleY(1) scaleX(1) translateX(-2px); }
-          50% { transform: scaleY(1) scaleX(1) translateX(1px); }
+          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
           100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
 
+        /* انميشن الخطوط المتوهجة */
         @keyframes line-expand {
           0% { width: 0%; left: 50%; opacity: 0; }
-          35% { width: 0%; left: 50%; opacity: 1; }
+          40% { width: 0%; left: 50%; opacity: 1; }
           100% { width: 100%; left: 0%; opacity: 1; }
         }
 
