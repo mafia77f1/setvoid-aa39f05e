@@ -17,24 +17,33 @@ const Onboarding = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // التعديل هنا: استخدام useLayoutEffect لضمان انطلاق الصوت مع بداية الـ Animation تماماً
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 1500); // 1.5 ثانية شاشة سوداء
+    return () => clearTimeout(timer);
+  }, []);
+
   useLayoutEffect(() => {
+    if (isInitialLoading) return; // لا تشغل الصوت أثناء الشاشة السوداء
+
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
     const playPromise = systemSound.play();
     
     if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        /* تجاهل القيود إذا لم يتفاعل المستخدم بعد */
-      });
+      playPromise.catch(() => {});
     }
 
     return () => {
       systemSound.pause();
       systemSound.currentTime = 0;
     };
-  }, [step]);
+  }, [step, isInitialLoading]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -106,10 +115,11 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  if (authLoading) {
+  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
+  if (isInitialLoading || authLoading) {
     return (
-      <div className="min-h-screen bg-[#010205] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
+        {authLoading && <Loader2 className="w-8 h-8 animate-spin text-blue-500" />}
       </div>
     );
   }
@@ -120,9 +130,10 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
-        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
-        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20" />
+      <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
+        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           <div className="bg-black/60 border border-blue-400/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}>
@@ -194,10 +205,36 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes vertical-open { 0% { transform: scaleY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
-        @keyframes content-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
-        .animate-vertical-open { animation: vertical-open 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; transform-origin: center; }
-        .animate-content-fade { animation: content-fade-in 0.8s ease-out 0.9s both; }
+        /* انميشن الفتح السينمائي المحترف */
+        @keyframes super-smooth-entry {
+          0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
+          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
+          100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+        }
+
+        /* انميشن الخطوط المتوهجة */
+        @keyframes line-expand {
+          0% { width: 0%; left: 50%; opacity: 0; }
+          40% { width: 0%; left: 50%; opacity: 1; }
+          100% { width: 100%; left: 0%; opacity: 1; }
+        }
+
+        @keyframes content-fade-in { 
+          0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        .animate-super-smooth-entry { 
+          animation: super-smooth-entry 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+
+        .animate-line-expand {
+          animation: line-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-content-fade { 
+          animation: content-fade-in 0.8s ease-out 1.1s both; 
+        }
       `}</style>
       
       <AlphaNoticeModal show={step === 'alpha'} onDismiss={handleAlphaDismiss} />
