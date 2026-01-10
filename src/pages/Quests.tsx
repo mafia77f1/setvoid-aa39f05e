@@ -9,14 +9,17 @@ const Quests = () => {
   const { gameState, startSideQuest, claimSideQuest, closeSideQuest } = useGameState();
   const [activeTab, setActiveTab] = useState<'all' | 'strength' | 'mind' | 'spirit' | 'agility'>('all');
   
-  // --- إضافة عداد لتحديث الواجهة كل ثانية لضمان تقدم الـ Progress ---
-  const [, setTick] = useState(0);
+  // --- محرك التحديث التلقائي (هذا ما سيجعل الرقم يتحرك) ---
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
   useEffect(() => {
-    const timer = setInterval(() => setTick(prev => prev + 1), 1000);
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000); // تحديث كل ثانية لضمان دقة العداد
     return () => clearInterval(timer);
   }, []);
 
-  // --- Modal Logic with New Animation ---
+  // --- Modal Logic ---
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -32,7 +35,7 @@ const Quests = () => {
       setIsVisible(false);
       setIsExiting(false);
       setSelectedQuest(null);
-    }, 800); 
+    }, 800);
   };
 
   const handleConfirmStart = () => {
@@ -63,7 +66,7 @@ const Quests = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
       </div>
 
-      {/* --- New Animated Quest Detail Modal --- */}
+      {/* --- Animated Quest Detail Modal --- */}
       {selectedQuest && (
         <div className={cn(
           "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
@@ -152,13 +155,13 @@ const Quests = () => {
 
         <div className="space-y-12">
           {getFilteredQuests().map((quest) => {
-            // حساب التقدم بناءً على startTime المخزن في الداتا
-            let currentProgress = 0;
+            // حساب التقدم الحقيقي بالدقائق
+            let displayMinutes = 0;
             if (quest.active && quest.startTime) {
-              const elapsedMinutes = Math.floor((Date.now() - quest.startTime) / 60000);
-              currentProgress = Math.min(elapsedMinutes, quest.requiredTime || 0);
-            } else {
-              currentProgress = quest.timeProgress || 0;
+              const diffMs = currentTime - quest.startTime;
+              displayMinutes = Math.floor(diffMs / 60000);
+              // التأكد أن العداد لا يتجاوز الوقت المطلوب
+              if (displayMinutes >= quest.requiredTime) displayMinutes = quest.requiredTime;
             }
 
             return (
@@ -191,7 +194,7 @@ const Quests = () => {
                           <div className="flex justify-between items-center border-b border-white/10 pb-1">
                             <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
                             <span className="text-[9px] font-bold text-blue-300">
-                              {currentProgress}m / {quest.requiredTime}m
+                              {displayMinutes}m / {quest.requiredTime}m
                             </span>
                           </div>
                         )}
