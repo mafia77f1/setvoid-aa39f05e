@@ -12,7 +12,9 @@ interface PrayerQuestModalProps {
 
 export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestModalProps) => {
   const { playQuestComplete, playClick } = useSoundEffects();
-  const [isVisible, setIsVisible] = useState(false);
+  
+  // تعديل: جعل الحالة true دائماً لمنع الاختفاء
+  const [isVisible, setIsVisible] = useState(true); 
   const [isExiting, setIsExiting] = useState(false);
   
   const [showLocationSettings, setShowLocationSettings] = useState(false);
@@ -22,9 +24,8 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 50);
+    // تم الإبقاء على جلب البيانات عند التحميل
     fetchPrayerTimings();
-    return () => clearTimeout(timer);
   }, []);
 
   const fetchPrayerTimings = async () => {
@@ -37,7 +38,6 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
       const data = await response.json();
       if (data.code === 200) {
         const timings = data.data.timings;
-        // نستخدم معرف الصلاة لجلب الوقت، وإذا لم يوجد نعرض --:-- بدل الإخفاء
         const time = timings[prayer.id.charAt(0).toUpperCase() + prayer.id.slice(1)]; 
         setPrayerTime(time || "00:00");
       }
@@ -49,6 +49,8 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   };
 
   const handleClose = () => {
+    // إذا كنت تريد للمودال أن يغلق فعلياً عند الضغط، اتركها كما هي
+    // أما إذا أردت منعه من الاختفاء نهائياً حتى عند الضغط، اترك onClose فارغة
     setIsExiting(true);
     setTimeout(() => onClose(), 800);
   };
@@ -63,21 +65,22 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
-        isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
+        "bg-black/80 opacity-100 pointer-events-auto" // تعديل: ثبات الخلفية والظهور
       )}
       onClick={handleClose}
     >
       <div
         className={cn(
           "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 p-5 shadow-[0_0_30px_rgba(30,58,138,0.4)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-          isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1500ms]" : "opacity-0 scale-y-0 duration-[800ms]",
+          "opacity-100 scale-y-100 duration-[1500ms]", // تعديل: ثبات المقياس والشفافية
           "origin-center"
         )}
         onClick={e => e.stopPropagation()}
       >
+        {/* الترويسة */}
         <div className={cn(
           "flex justify-center mb-6 mt-[-1.8rem] transition-all duration-700 delay-700",
-          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+          "opacity-100 translate-y-0" // تعديل: ثبات الترويسة
         )}>
           <div className="border border-slate-400/50 px-5 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <h2 className="text-[10px] font-bold tracking-[0.2em] text-white uppercase">
@@ -86,6 +89,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           </div>
         </div>
 
+        {/* محتوى الإعدادات */}
         {showLocationSettings ? (
           <div className="space-y-4 animate-in fade-in zoom-in duration-300">
             <div className="flex items-center gap-2 mb-4">
@@ -124,9 +128,10 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
             </button>
           </div>
         ) : (
+          /* محتوى المهمة الرئيسي */
           <div className={cn(
             "space-y-6 transition-all duration-1000 delay-[800ms]",
-            isVisible && !isExiting ? "opacity-100" : "opacity-0"
+            "opacity-100" // تعديل: ثبات المحتوى
           )}>
             <div className="text-center py-2 relative">
               <h3 className="text-3xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,1)] tracking-tighter">
@@ -146,8 +151,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
                 <div className="flex items-center gap-2 text-white">
                   <Clock className="w-3 h-3 text-blue-400" />
                   <span className="text-xs font-mono font-bold">
-                    {/* هنا يظهر الوقت دائماً أو حالة التحميل دون إخفاء الكارد */}
-                    {isLoading ? "LOADING..." : prayerTime || "--:--"}
+                    {isLoading ? "..." : prayerTime || "---"}
                   </span>
                 </div>
               </div>
@@ -170,8 +174,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
             <div className="space-y-2">
               <button
                 onClick={handleComplete}
-                // الزر يبقى متاحاً للضغط لإتمام المهمة في أي وقت
-                disabled={prayer.completed}
+                disabled={prayer.completed || isLoading}
                 className={cn(
                   "w-full py-3 border transition-all active:scale-[0.98] font-bold text-[11px] tracking-[0.2em] uppercase",
                   prayer.completed
@@ -195,7 +198,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           </div>
         )}
 
-        {/* Decor Corners */}
+        {/* الزوايا الديكورية */}
         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/30" />
         <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-white/30" />
         <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-white/30" />
