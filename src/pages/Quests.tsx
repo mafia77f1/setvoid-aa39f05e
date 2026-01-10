@@ -164,14 +164,22 @@ const Quests = () => {
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <span className="text-[9px] text-slate-400 uppercase font-bold">Reward:</span>
-                        <span className="text-xs font-bold text-yellow-400">+{quest.rewardGold} G</span>
+                        <span className="text-xs font-bold text-yellow-400">+{quest.goldReward || 10} G</span>
                       </div>
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <span className="text-[9px] text-slate-400 uppercase font-bold">Status:</span>
-                        <span className={cn("text-[9px] font-bold uppercase", quest.active ? "text-blue-400 animate-pulse" : "text-slate-500")}>
-                          {quest.active ? 'In Progress' : quest.completed ? 'Ready' : 'Available'}
+                        <span className={cn("text-[9px] font-bold uppercase", quest.active ? "text-blue-400 animate-pulse" : quest.completed ? "text-green-400" : "text-slate-500")}>
+                          {quest.active ? 'In Progress' : quest.completed && !quest.claimed ? 'Ready' : quest.claimed ? 'Claimed' : 'Available'}
                         </span>
                       </div>
+                      {quest.active && quest.requiredTime && (
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                          <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
+                          <span className="text-[9px] font-bold text-blue-300">
+                            {Math.floor((quest.timeProgress || 0) / 60)}m / {quest.requiredTime}m
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <button

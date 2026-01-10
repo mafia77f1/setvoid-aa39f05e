@@ -6,6 +6,7 @@ interface SystemNotificationProps {
   show: boolean;
   title: string;
   message: string;
+  type?: 'info' | 'success' | 'warning' | 'error';
   onClose: () => void;
   actions?: { label: string; onClick: () => void; variant?: 'primary' | 'secondary' }[];
 }
@@ -14,6 +15,7 @@ export const SystemNotification = ({
   show,
   title,
   message,
+  type = 'info',
   onClose,
   actions = [],
 }: SystemNotificationProps) => {

@@ -36,6 +36,8 @@ export interface Quest {
   requiredTime?: number; // Required time in minutes to complete
   timeProgress?: number; // Progress in seconds (saved even when app closes)
   goldReward?: number; // Gold reward
+  active?: boolean; // Whether quest is currently active/in progress
+  claimed?: boolean; // Whether rewards have been claimed
 }
 
 export interface Gate {
@@ -139,11 +141,13 @@ export interface InventoryItem {
   id: string;
   name: string;
   description: string;
-  type: 'health' | 'xp' | 'energy' | 'revive';
+  type: 'health' | 'xp' | 'energy' | 'revive' | 'title' | 'tool' | 'key';
+  category?: string;
   effect: number;
   price: number;
   quantity: number;
   icon: string;
+  equipped?: boolean; // For titles - whether equipped
 }
 
 export interface Equipment {
@@ -177,6 +181,7 @@ export interface GameState {
   // Player Info
   playerName: string;
   playerTitle: string;
+  equippedTitle?: string; // Currently equipped title from inventory
   playerJob: string;
   isOnboarded: boolean;
   

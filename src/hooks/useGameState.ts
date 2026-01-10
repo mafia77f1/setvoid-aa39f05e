@@ -82,19 +82,32 @@ const getRotatingQuests = (): Quest[] => {
   return mainQuests;
 };
 
-// Side quests - different from main quests, with time-based completion
+// Side quests - different from main quests, with time-based completion and gold rewards based on difficulty
 const getSideQuests = (): Quest[] => {
   const day = getDayOfWeek();
   
+  // Gold rewards based on difficulty: easy 25-50, medium 50-100, hard 100-175, legendary 175-250
+  const getGoldReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary'): number => {
+    switch (difficulty) {
+      case 'easy': return Math.floor(Math.random() * 26) + 25; // 25-50
+      case 'medium': return Math.floor(Math.random() * 51) + 50; // 50-100
+      case 'hard': return Math.floor(Math.random() * 76) + 100; // 100-175
+      case 'legendary': return Math.floor(Math.random() * 76) + 175; // 175-250
+    }
+  };
+  
   const sideQuests: Quest[] = [
-    { id: 'side_read', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً لمدة 30 دقيقة متواصلة', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 30, goldReward: 20 },
-    { id: 'side_walk', title: 'المشي 20 دقيقة', description: 'امش لمدة 20 دقيقة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 20, goldReward: 15 },
-    { id: 'side_meditate', title: 'التأمل 15 دقيقة', description: 'تأمل واسترخ لمدة 15 دقيقة', category: 'spirit', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 15, goldReward: 20 },
-    { id: 'side_stretch', title: 'تمارين إطالة', description: 'قم بتمارين إطالة لمدة 10 دقائق', category: 'strength', xpReward: 25, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 10, goldReward: 10 },
-    { id: 'side_water', title: 'شرب 8 أكواب ماء', description: 'اشرب 8 أكواب ماء على مدار اليوم', category: 'spirit', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 60, goldReward: 15 },
+    { id: 'side_read', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً لمدة 30 دقيقة متواصلة', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('medium'), active: false, claimed: false },
+    { id: 'side_walk', title: 'المشي 20 دقيقة', description: 'امش لمدة 20 دقيقة', category: 'agility', xpReward: 30, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 20, goldReward: getGoldReward('easy'), active: false, claimed: false },
+    { id: 'side_meditate', title: 'التأمل 15 دقيقة', description: 'تأمل واسترخ لمدة 15 دقيقة', category: 'spirit', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('medium'), active: false, claimed: false },
+    { id: 'side_stretch', title: 'تمارين إطالة', description: 'قم بتمارين إطالة لمدة 10 دقائق', category: 'strength', xpReward: 25, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 10, goldReward: getGoldReward('easy'), active: false, claimed: false },
+    { id: 'side_water', title: 'شرب 8 أكواب ماء', description: 'اشرب 8 أكواب ماء على مدار اليوم', category: 'spirit', xpReward: 20, completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 60, goldReward: getGoldReward('easy'), active: false, claimed: false },
+    { id: 'side_pushups', title: '50 ضغطة', description: 'قم بـ 50 ضغطة على مجموعات', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('hard'), active: false, claimed: false },
+    { id: 'side_study', title: 'دراسة 45 دقيقة', description: 'ادرس أو تعلم شيء جديد', category: 'mind', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 45, goldReward: getGoldReward('hard'), active: false, claimed: false },
+    { id: 'side_quran', title: 'قراءة 5 صفحات قرآن', description: 'اقرأ 5 صفحات من القرآن بتدبر', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('legendary'), active: false, claimed: false },
   ];
 
-  // Rotate side quests based on day
+  // Rotate side quests based on day - show 3 random quests
   const startIndex = day % sideQuests.length;
   return [
     sideQuests[startIndex],
@@ -126,14 +139,50 @@ const getInitialAchievements = (): Achievement[] => [
   { id: 'ach9', name: 'المستوى 100', description: 'وصلت للمستوى 100', requirement: 100, progress: 0, unlocked: false, icon: '🏅', rarity: 'legendary' },
 ];
 
-const getInitialGates = (): Gate[] => [
-  { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: 50, shadowPoints: 2 } },
-  { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: 150, shadowPoints: 5 } },
-  { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: 300, shadowPoints: 10 } },
-  { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: 600, shadowPoints: 20 } },
-  { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 1500, shadowPoints: 50 } },
-  { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 5000, shadowPoints: 200 } },
-];
+// Generate random gates for the day based on player level
+const getRandomDailyGates = (playerLevel: number): Gate[] => {
+  const allGates: Gate[] = [
+    { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: Math.floor(Math.random() * 41) + 10, shadowPoints: 2 } },
+    { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: Math.floor(Math.random() * 91) + 50, shadowPoints: 5 } },
+    { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: Math.floor(Math.random() * 151) + 100, shadowPoints: 10 } },
+    { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: Math.floor(Math.random() * 251) + 250, shadowPoints: 20 } },
+    { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 0, shadowPoints: 50 } }, // Locked in alpha - gold reward would be 1000-3000
+    { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 0, shadowPoints: 200 } }, // Locked in alpha - gold reward would be 3000-5000
+  ];
+  
+  // Determine number of gates based on random (1-3 per day)
+  const numGates = Math.floor(Math.random() * 3) + 1; // 1-3 gates
+  
+  // Filter gates based on player level - higher level = more chance for higher gates
+  const availableGates = allGates.filter(gate => {
+    // Always include E gates
+    if (gate.rank === 'E') return true;
+    // D gates available from level 5+
+    if (gate.rank === 'D') return playerLevel >= 5;
+    // C gates available from level 15+
+    if (gate.rank === 'C') return playerLevel >= 15;
+    // B gates available from level 25+
+    if (gate.rank === 'B') return playerLevel >= 25;
+    // A gates available from level 40+ (but locked in alpha)
+    if (gate.rank === 'A') return playerLevel >= 40;
+    // S gates available from level 50+ (but locked in alpha)
+    if (gate.rank === 'S') return playerLevel >= 50;
+    return false;
+  });
+  
+  // Shuffle and pick random gates
+  const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
+  const selectedGates = shuffled.slice(0, numGates);
+  
+  // Mark discovered based on player level
+  return selectedGates.map(gate => ({
+    ...gate,
+    id: `${gate.id}_${Date.now()}_${Math.random()}`, // Unique ID for each daily gate
+    discovered: playerLevel >= gate.requiredPower * 0.5,
+  }));
+};
+
+const getInitialGates = (): Gate[] => getRandomDailyGates(1);
 
 const getInitialBoss = (): Boss => ({
   id: 'boss1',
@@ -149,9 +198,9 @@ const getInitialBoss = (): Boss => ({
 });
 
 const getInitialInventory = (): InventoryItem[] => [
-  { id: 'health_potion', name: 'زجاجة الدم', description: 'تزيد الدم بنسبة 25%', type: 'health', effect: 25, price: 100, quantity: 0, icon: '❤️' },
-  { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', effect: 500, price: 250, quantity: 0, icon: '📚' },
-  { id: 'energy_drink', name: 'مشروب الطاقة', description: 'يستعيد 50% من الطاقة', type: 'energy', effect: 50, price: 150, quantity: 0, icon: '⚡' },
+  { id: 'health_potion', name: 'زجاجة الدم', description: 'تزيد الدم بنسبة 25%', type: 'health', category: 'Elixir', effect: 25, price: 100, quantity: 0, icon: '❤️' },
+  { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', category: 'Book', effect: 500, price: 250, quantity: 0, icon: '📚' },
+  { id: 'energy_drink', name: 'مشروب الطاقة', description: 'يستعيد 50% من الطاقة', type: 'energy', category: 'Elixir', effect: 50, price: 150, quantity: 0, icon: '⚡' },
 ];
 
 const getInitialPrayerQuests = (): PrayerQuest[] => [
@@ -171,6 +220,7 @@ const getInitialShadowSoldiers = (): ShadowSoldier[] => [
 const getDefaultState = (): GameState => ({
   playerName: 'المحارب',
   playerTitle: 'محارب التطوير الذاتي',
+  equippedTitle: undefined,
   playerJob: 'غير معروف',
   isOnboarded: false,
   
@@ -234,6 +284,9 @@ export const useGameState = () => {
           ({ ...p, completed: false })
         ) || getInitialPrayerQuests();
         
+        // Generate new random gates for the day based on player level
+        mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
+        
         // Update streak
         const lastDate = new Date(mergedState.lastActiveDate);
         const todayDate = new Date(today);
@@ -250,8 +303,8 @@ export const useGameState = () => {
       }
       
       // Ensure gates exist
-      if (!mergedState.gates) {
-        mergedState.gates = getInitialGates();
+      if (!mergedState.gates || mergedState.gates.length === 0) {
+        mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
       }
       
       return mergedState;
@@ -294,6 +347,8 @@ export const useGameState = () => {
             mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
               ({ ...p, completed: false })
             ) || getInitialPrayerQuests();
+            // Generate new random gates
+            mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
             mergedState.lastActiveDate = today;
           }
           
@@ -691,10 +746,37 @@ export const useGameState = () => {
     });
   }, []);
 
+  // Market items configuration - used for purchasing items not in initial inventory
+  const MARKET_ITEMS: InventoryItem[] = [
+    { id: 'hp_potion', name: 'Blood Elixir', description: 'يستعيد 50% من الصحة القصوى', type: 'health', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '🧪' },
+    { id: 'mp_potion', name: 'Energy Elixir', description: 'يستعيد 50% من الطاقة القصوى', type: 'energy', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '⚡' },
+    { id: 'mana_meter', name: 'Mana Gauge', description: 'جهاز قياس طاقة البوابات والعناصر', type: 'tool', category: 'Tool', effect: 0, price: 2000, quantity: 0, icon: '📊' },
+    { id: 'awakened_title', name: 'المستيقظ الواعي', description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%', type: 'title', category: 'Title', effect: 5, price: 3000, quantity: 0, icon: '👑' },
+    { id: 'power_eye_title', name: 'عين القوة', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', type: 'title', category: 'Title', effect: 10, price: 10000, quantity: 0, icon: '👁️' },
+    { id: 'storm_hand_title', name: 'يد العاصفة', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', type: 'title', category: 'Title', effect: 10, price: 15000, quantity: 0, icon: '🌩️' },
+    { id: 'return_key', name: 'مفتاح العودة', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', type: 'key', category: 'Key', effect: 0, price: 8000, quantity: 0, icon: '🔑' },
+  ];
+
   const purchaseItem = useCallback((itemId: string) => {
     setGameState(prev => {
-      const item = prev.inventory.find(i => i.id === itemId);
-      if (!item || prev.gold < item.price) return prev;
+      // First check if item exists in inventory
+      let item = prev.inventory.find(i => i.id === itemId);
+      
+      // If not in inventory, check market items
+      if (!item) {
+        item = MARKET_ITEMS.find(i => i.id === itemId);
+        if (!item || prev.gold < item.price) return prev;
+        
+        // Add new item to inventory
+        const newItem = { ...item, quantity: 1 };
+        return {
+          ...prev,
+          inventory: [...prev.inventory, newItem],
+          gold: prev.gold - item.price,
+        };
+      }
+      
+      if (prev.gold < item.price) return prev;
 
       const newInventory = prev.inventory.map(i =>
         i.id === itemId ? { ...i, quantity: i.quantity + 1 } : i
@@ -704,6 +786,42 @@ export const useGameState = () => {
         ...prev,
         inventory: newInventory,
         gold: prev.gold - item.price,
+      };
+    });
+  }, []);
+
+  // Equip a title from inventory
+  const equipTitle = useCallback((itemId: string) => {
+    setGameState(prev => {
+      const item = prev.inventory.find(i => i.id === itemId);
+      if (!item || item.type !== 'title' || item.quantity <= 0) return prev;
+
+      // Unequip any currently equipped title
+      const newInventory = prev.inventory.map(i => ({
+        ...i,
+        equipped: i.id === itemId ? true : (i.type === 'title' ? false : i.equipped)
+      }));
+
+      return {
+        ...prev,
+        inventory: newInventory,
+        equippedTitle: item.name,
+      };
+    });
+  }, []);
+
+  // Unequip title
+  const unequipTitle = useCallback(() => {
+    setGameState(prev => {
+      const newInventory = prev.inventory.map(i => ({
+        ...i,
+        equipped: i.type === 'title' ? false : i.equipped
+      }));
+
+      return {
+        ...prev,
+        inventory: newInventory,
+        equippedTitle: undefined,
       };
     });
   }, []);
@@ -727,6 +845,12 @@ export const useGameState = () => {
           spirit: prev.stats.spirit + xpPerStat,
           agility: prev.stats.agility + xpPerStat,
         };
+      } else if (item.type === 'title') {
+        // Titles are equipped, not consumed
+        return prev;
+      } else if (item.type === 'tool' || item.type === 'key') {
+        // Tools and keys don't get consumed on use, they just activate
+        return prev;
       }
 
       const newInventory = prev.inventory.map(i =>
@@ -780,12 +904,18 @@ export const useGameState = () => {
     setLevelUpInfo(null);
   }, []);
 
-  // Start a side quest timer
+  // Start a side quest timer - marks as active and records start time
   const startSideQuest = useCallback((questId: string) => {
     setGameState(prev => {
       const newQuests = prev.quests.map(q => {
-        if (q.id === questId && !q.startedAt) {
-          return { ...q, startedAt: new Date().toISOString(), timeProgress: 0 };
+        if (q.id === questId && !q.active) {
+          return { 
+            ...q, 
+            startedAt: new Date().toISOString(), 
+            timeProgress: q.timeProgress || 0,
+            active: true,
+            claimed: false
+          };
         }
         return q;
       });
@@ -793,12 +923,20 @@ export const useGameState = () => {
     });
   }, []);
 
-  // Update time progress for side quests (called periodically)
+  // Update time progress for side quests - called periodically, also checks for completion
   const updateSideQuestProgress = useCallback((questId: string, progress: number) => {
     setGameState(prev => {
       const newQuests = prev.quests.map(q => {
         if (q.id === questId) {
-          return { ...q, timeProgress: progress };
+          const requiredSeconds = (q.requiredTime || 0) * 60;
+          const isComplete = progress >= requiredSeconds;
+          return { 
+            ...q, 
+            timeProgress: progress,
+            // Mark completed when time is reached (but not claimed yet)
+            completed: isComplete ? true : q.completed,
+            active: isComplete ? false : q.active
+          };
         }
         return q;
       });
@@ -806,11 +944,11 @@ export const useGameState = () => {
     });
   }, []);
 
-  // Claim completed side quest
+  // Claim completed side quest - gets rewards
   const claimSideQuest = useCallback((questId: string) => {
     setGameState(prev => {
       const quest = prev.quests.find(q => q.id === questId);
-      if (!quest || quest.completed) return prev;
+      if (!quest || quest.claimed) return prev;
 
       const newStats = { ...prev.stats };
       newStats[quest.category] += quest.xpReward;
@@ -828,7 +966,7 @@ export const useGameState = () => {
       }
 
       const newQuests = prev.quests.map(q =>
-        q.id === questId ? { ...q, completed: true } : q
+        q.id === questId ? { ...q, completed: true, claimed: true, active: false } : q
       );
 
       return {
@@ -872,6 +1010,8 @@ export const useGameState = () => {
     summonShadowSoldier,
     purchaseItem,
     useItem,
+    equipTitle,
+    unequipTitle,
     takeDamage,
     applyPunishment,
     clearPunishment,
