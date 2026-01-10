@@ -18,17 +18,18 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); 
+    }, 1500); // 1.5 ثانية شاشة سوداء
     return () => clearTimeout(timer);
   }, []);
 
   useLayoutEffect(() => {
-    if (isInitialLoading) return;
+    if (isInitialLoading) return; // لا تشغل الصوت أثناء الشاشة السوداء
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
@@ -114,6 +115,7 @@ const Onboarding = () => {
     navigate('/');
   };
 
+  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -129,9 +131,9 @@ const Onboarding = () => {
       </div>
 
       <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
-        {/* الخطوط الزرقاء مربوطة بنفس أنيميشن التمدد line-expand لتفتح من الجهتين */}
-        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand origin-center" />
-        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand origin-center" />
+        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           <div className="bg-black/60 border border-blue-400/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}>
@@ -203,23 +205,23 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* انميشن الحاوية الرئيسي */
+        /* انميشن الفتح السينمائي المحترف */
         @keyframes super-smooth-entry {
-          0% { transform: scaleY(0.005) scaleX(0); opacity: 0; }
-          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; }
-          100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+          0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
+          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
+          100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* انميشن الخطوط الزرقاء تفتح من الجهتين (يمين يسار) بالتزامن */
+        /* انميشن الخطوط المتوهجة */
         @keyframes line-expand {
-          0% { transform: scaleX(0); opacity: 0; }
-          40% { transform: scaleX(1); opacity: 1; }
-          100% { transform: scaleX(1); opacity: 1; }
+          0% { width: 0%; left: 50%; opacity: 0; }
+          40% { width: 0%; left: 50%; opacity: 1; }
+          100% { width: 100%; left: 0%; opacity: 1; }
         }
 
         @keyframes content-fade-in { 
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
         .animate-super-smooth-entry { 
