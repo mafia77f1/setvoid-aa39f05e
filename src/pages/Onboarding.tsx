@@ -18,13 +18,12 @@ const Onboarding = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // شاشة سوداء لمدة 1.5 ثانية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500);
+    }, 1500); 
     return () => clearTimeout(timer);
   }, []);
 
@@ -129,10 +128,10 @@ const Onboarding = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-900/10 blur-[120px] rounded-full" />
       </div>
 
-      <div key={step} className="relative w-full max-w-[550px] animate-vertical-open px-2">
-        {/* الخطوط الآن تنبثق وتتمدد مع الرسالة مباشرة عبر الـ Keyframe الرئيسي */}
-        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20 origin-center" />
-        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_20px_#3b82f6,0_0_10px_#fff] z-20 origin-center" />
+      <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
+        {/* الخطوط الزرقاء مربوطة بنفس أنيميشن التمدد line-expand لتفتح من الجهتين */}
+        <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand origin-center" />
+        <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand origin-center" />
 
         <div className="relative border-x border-blue-500/30 bg-transparent backdrop-blur-2xl">
           <div className="bg-black/60 border border-blue-400/30 overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 88%, 96% 100%, 0 100%)' }}>
@@ -204,21 +203,35 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        @keyframes vertical-open { 
-          0% { transform: scaleY(0) scaleX(0); opacity: 0; filter: brightness(2); } 
-          20% { transform: scaleY(0.01) scaleX(1); opacity: 1; } 
-          100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); } 
+        /* انميشن الحاوية الرئيسي */
+        @keyframes super-smooth-entry {
+          0% { transform: scaleY(0.005) scaleX(0); opacity: 0; }
+          40% { transform: scaleY(0.005) scaleX(1); opacity: 1; }
+          100% { transform: scaleY(1) scaleX(1); opacity: 1; }
         }
+
+        /* انميشن الخطوط الزرقاء تفتح من الجهتين (يمين يسار) بالتزامن */
+        @keyframes line-expand {
+          0% { transform: scaleX(0); opacity: 0; }
+          40% { transform: scaleX(1); opacity: 1; }
+          100% { transform: scaleX(1); opacity: 1; }
+        }
+
         @keyframes content-fade-in { 
-          0% { opacity: 0; transform: translateY(5px); } 
-          100% { opacity: 1; transform: translateY(0); } 
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-vertical-open { 
-          animation: vertical-open 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-          transform-origin: center; 
+
+        .animate-super-smooth-entry { 
+          animation: super-smooth-entry 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
         }
+
+        .animate-line-expand {
+          animation: line-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         .animate-content-fade { 
-          animation: content-fade-in 0.6s ease-out 1s both; 
+          animation: content-fade-in 0.8s ease-out 1.1s both; 
         }
       `}</style>
       
