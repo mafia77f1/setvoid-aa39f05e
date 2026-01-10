@@ -9,10 +9,10 @@ const Quests = () => {
   const { gameState, startSideQuest, claimSideQuest, closeSideQuest } = useGameState();
   const [activeTab, setActiveTab] = useState<'all' | 'strength' | 'mind' | 'spirit' | 'agility'>('all');
   
-  // تحديث الواجهة كل ثانية لضمان استمرار العداد الزمني
+  // --- إضافة عداد لتحديث الواجهة كل ثانية لضمان تقدم الـ Progress ---
   const [, setTick] = useState(0);
   useEffect(() => {
-    const timer = setInterval(() => setTick(t => t + 1), 1000);
+    const timer = setInterval(() => setTick(prev => prev + 1), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -57,22 +57,13 @@ const Quests = () => {
     { id: 'agility', label: 'AGI', icon: Zap },
   ];
 
-  // وظيفة لحساب التقدم الفعلي بناءً على الوقت المنقضي
-  const calculateProgress = (quest: any) => {
-    if (!quest.active || !quest.startTime) return 0;
-    const now = Date.now();
-    const elapsedSeconds = Math.floor((now - quest.startTime) / 1000);
-    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-    return Math.min(elapsedMinutes, quest.requiredTime);
-  };
-
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans pb-24">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
       </div>
 
-      {/* --- Animated Quest Detail Modal --- */}
+      {/* --- New Animated Quest Detail Modal --- */}
       {selectedQuest && (
         <div className={cn(
           "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
@@ -113,7 +104,7 @@ const Quests = () => {
                   </div>
                   <div>
                     <span className="text-[9px] text-blue-400 block mb-1">LIMIT:</span>
-                    <span className="text-xs font-bold text-blue-300">{selectedQuest.requiredTime}M</span>
+                    <span className="text-xs font-bold text-blue-300">{selectedQuest.requiredTime || selectedQuest.duration}M</span>
                   </div>
                 </div>
               </div>
@@ -161,8 +152,14 @@ const Quests = () => {
 
         <div className="space-y-12">
           {getFilteredQuests().map((quest) => {
-            const currentProgress = calculateProgress(quest);
-            const isFinished = currentProgress >= (quest.requiredTime || 0);
+            // حساب التقدم بناءً على startTime المخزن في الداتا
+            let currentProgress = 0;
+            if (quest.active && quest.startTime) {
+              const elapsedMinutes = Math.floor((Date.now() - quest.startTime) / 60000);
+              currentProgress = Math.min(elapsedMinutes, quest.requiredTime || 0);
+            } else {
+              currentProgress = quest.timeProgress || 0;
+            }
 
             return (
               <div key={quest.id} className="relative group">
@@ -186,11 +183,11 @@ const Quests = () => {
                         </div>
                         <div className="flex justify-between items-center border-b border-white/10 pb-1">
                           <span className="text-[9px] text-slate-400 uppercase font-bold">Status:</span>
-                          <span className={cn("text-[9px] font-bold uppercase", (quest.active && !isFinished) ? "text-blue-400 animate-pulse" : (quest.completed || isFinished) ? "text-green-400" : "text-slate-500")}>
-                            {quest.active && !isFinished ? 'In Progress' : (quest.completed || isFinished) && !quest.claimed ? 'Ready' : quest.claimed ? 'Claimed' : 'Available'}
+                          <span className={cn("text-[9px] font-bold uppercase", quest.active ? "text-blue-400 animate-pulse" : quest.completed ? "text-green-400" : "text-slate-500")}>
+                            {quest.active ? 'In Progress' : quest.completed && !quest.claimed ? 'Ready' : quest.claimed ? 'Claimed' : 'Available'}
                           </span>
                         </div>
-                        {quest.active && quest.requiredTime && (
+                        {quest.active && (
                           <div className="flex justify-between items-center border-b border-white/10 pb-1">
                             <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
                             <span className="text-[9px] font-bold text-blue-300">
@@ -201,16 +198,16 @@ const Quests = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => (quest.completed || isFinished) && !quest.claimed ? claimSideQuest(quest.id) : handleOpenDetails(quest)}
-                      disabled={quest.active && !isFinished}
+                      onClick={() => quest.completed && !quest.claimed ? claimSideQuest(quest.id) : handleOpenDetails(quest)}
+                      disabled={quest.active}
                       className={cn(
                         "w-full py-2 text-[10px] font-bold tracking-[0.2em] uppercase border transition-all",
-                        (quest.active && !isFinished) ? "bg-slate-900 border-blue-500/20 text-blue-900" : 
-                        (quest.completed || isFinished) && !quest.claimed ? "bg-yellow-500/10 border-yellow-500/40 text-yellow-400 animate-pulse" :
+                        quest.active ? "bg-slate-900 border-blue-500/20 text-blue-900" : 
+                        quest.completed && !quest.claimed ? "bg-yellow-500/10 border-yellow-500/40 text-yellow-400 animate-pulse" :
                         "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
                       )}
                     >
-                      {quest.active && !isFinished ? 'Processing...' : (quest.completed || isFinished) && !quest.claimed ? 'Claim Reward' : 'Initialize Quest'}
+                      {quest.active ? 'Processing...' : quest.completed && !quest.claimed ? 'Claim Reward' : 'Initialize Quest'}
                     </button>
                   </div>
                 </div>
