@@ -16,10 +16,7 @@ const Quests = () => {
 
   const handleOpenDetails = (quest: any) => {
     setSelectedQuest(quest);
-    // تم استخدام requestAnimationFrame لضمان استجابة المتصفح الفورية قبل بدء التوقيت
-    requestAnimationFrame(() => {
-        setTimeout(() => setIsVisible(true), 50);
-    });
+    setTimeout(() => setIsVisible(true), 50);
   };
 
   const handleCloseModal = () => {
@@ -28,7 +25,7 @@ const Quests = () => {
       setIsVisible(false);
       setIsExiting(false);
       setSelectedQuest(null);
-    }, 800); // مدة التلاشي الأصلية
+    }, 800); // مدة التلاشي
   };
 
   const handleConfirmStart = () => {
@@ -65,25 +62,24 @@ const Quests = () => {
           "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
           isVisible && !isExiting ? "bg-black/80" : "bg-black/0 pointer-events-none"
         )}>
-          {/* تم إضافة transform-gpu و will-change لضمان سلاسة scale-y في المتصفح و Capacitor */}
           <div className={cn(
-            "relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] transform-gpu will-change-transform",
+            "relative max-w-sm w-full bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)]",
             isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[800ms]",
             "origin-center"
           )}>
-            {/* خطوط التوهج العلوي والسفلي */}
+            {/* خطوط التوهج العلوي والسفلي (مثل الكود المطلوب) */}
             <div className={cn(
-              "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 transform-gpu",
+              "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
             <div className={cn(
-              "absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300 transform-gpu",
+              "absolute bottom-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
 
-            {/* محتوى المهمة */}
+            {/* محتوى المهمة بنفس الشكل السابق */}
             <div className={cn(
-              "p-6 space-y-5 transition-all duration-1000 delay-500 transform-gpu",
+              "p-6 space-y-5 transition-all duration-1000 delay-500",
               isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             )}>
               <div className="text-center">
