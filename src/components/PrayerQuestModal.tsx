@@ -12,11 +12,10 @@ interface PrayerQuestModalProps {
 
 export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestModalProps) => {
   const { playQuestComplete, playClick } = useSoundEffects();
-  
-  // تعديل: جعل الحالة true دائماً لمنع الاختفاء
-  const [isVisible, setIsVisible] = useState(true); 
+  const [isVisible, setIsVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
   
+  // حالات جديدة لإدارة الموقع والوقت
   const [showLocationSettings, setShowLocationSettings] = useState(false);
   const [city, setCity] = useState('Baghdad');
   const [country, setCountry] = useState('Iraq');
@@ -24,7 +23,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // تم الإبقاء على جلب البيانات عند التحميل
+    // جلب التوقيت الافتراضي عند الفتح
     fetchPrayerTimings();
   }, []);
 
@@ -37,6 +36,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
       );
       const data = await response.json();
       if (data.code === 200) {
+        // البحث عن وقت الصلاة الحالية بناءً على اسم الصلاة بالانجليزي (مثلاً Fajr)
         const timings = data.data.timings;
         const time = timings[prayer.id.charAt(0).toUpperCase() + prayer.id.slice(1)]; 
         setPrayerTime(time || "00:00");
@@ -49,8 +49,6 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   };
 
   const handleClose = () => {
-    // إذا كنت تريد للمودال أن يغلق فعلياً عند الضغط، اتركها كما هي
-    // أما إذا أردت منعه من الاختفاء نهائياً حتى عند الضغط، اترك onClose فارغة
     setIsExiting(true);
     setTimeout(() => onClose(), 800);
   };
@@ -64,15 +62,15 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
-        "bg-black/80 opacity-100 pointer-events-auto" // تعديل: ثبات الخلفية والظهور
+        "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-1000",
+        "bg-black/80 opacity-100 pointer-events-auto"
       )}
       onClick={handleClose}
     >
       <div
         className={cn(
-          "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 p-5 shadow-[0_0_30px_rgba(30,58,138,0.4)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-          "opacity-100 scale-y-100 duration-[1500ms]", // تعديل: ثبات المقياس والشفافية
+          "relative max-w-sm w-full bg-black/90 border-2 border-slate-200/90 p-5 shadow-[0_0_30px_rgba(30,58,138,0.4)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
+          "opacity-100 scale-y-100 duration-[1500ms]",
           "origin-center"
         )}
         onClick={e => e.stopPropagation()}
@@ -80,7 +78,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
         {/* الترويسة */}
         <div className={cn(
           "flex justify-center mb-6 mt-[-1.8rem] transition-all duration-700 delay-700",
-          "opacity-100 translate-y-0" // تعديل: ثبات الترويسة
+          "opacity-100 translate-y-0"
         )}>
           <div className="border border-slate-400/50 px-5 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <h2 className="text-[10px] font-bold tracking-[0.2em] text-white uppercase">
@@ -89,7 +87,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           </div>
         </div>
 
-        {/* محتوى الإعدادات */}
+        {/* محتوى الإعدادات (يظهر عند الضغط على زر الضبط) */}
         {showLocationSettings ? (
           <div className="space-y-4 animate-in fade-in zoom-in duration-300">
             <div className="flex items-center gap-2 mb-4">
@@ -131,7 +129,7 @@ export const PrayerQuestModal = ({ prayer, onComplete, onClose }: PrayerQuestMod
           /* محتوى المهمة الرئيسي */
           <div className={cn(
             "space-y-6 transition-all duration-1000 delay-[800ms]",
-            "opacity-100" // تعديل: ثبات المحتوى
+            "opacity-100"
           )}>
             <div className="text-center py-2 relative">
               <h3 className="text-3xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,1)] tracking-tighter">
