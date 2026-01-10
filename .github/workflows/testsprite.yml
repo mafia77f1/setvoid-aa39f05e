@@ -1,24 +1,23 @@
-name: TestSprite Tests
+name: TestSprite
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
 
 jobs:
   testsprite:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Run TestSprite
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run TestSprite MCP
+        env:
+          API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
         run: |
-          curl -X POST https://api.testsprite.com/run \
-          -H "Authorization: Bearer ${{ secrets.TESTSPRITE_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "repo": "${{ github.repository }}",
-            "branch": "${{ github.ref_name }}"
-          }'
+          npx @testsprite/testsprite-mcp@latest
