@@ -36,10 +36,24 @@ const Market = () => {
     { id: 'demon_blood', name: 'Demon King Blood', arabicName: 'دم ملك الشياطين', category: 'Divine Item', difficulty: 'S', price: 5000000, icon: '💀', description: 'جوهر ملك شيطاني رفيع المستوى', rankLevel: 8, isBasic: false },
   ];
 
+  // الحصول على رتبة اللاعب بناءً على المستوى
+  const getPlayerRank = () => {
+    const level = gameState.totalLevel || 1;
+    if (level >= 50) return 'A'; // S مقفولة
+    if (level >= 35) return 'B';
+    if (level >= 20) return 'C';
+    if (level >= 10) return 'D';
+    return 'E';
+  };
+
+  const rankOrder = { 'E': 0, 'D': 1, 'C': 2, 'B': 3, 'A': 4, 'S': 5 };
+  const playerRank = getPlayerRank();
+
   const canSeeItem = (item) => {
     if (item.isBasic) return true;
-    const playerRankLevel = Math.floor((gameState.totalLevel || 1) / 10); 
-    return playerRankLevel >= item.rankLevel;
+    // مقارنة رتبة العنصر مع رتبة اللاعب
+    const itemRank = item.difficulty;
+    return rankOrder[playerRank] >= rankOrder[itemRank];
   };
 
   const startSystemScan = (item) => {
