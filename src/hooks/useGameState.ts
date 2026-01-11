@@ -900,6 +900,47 @@ export const useGameState = () => {
     setGameState(getDefaultState());
   }, []);
 
+  // تحديث بيانات اللاعب بشكل مباشر (للإعدادات والتعديل اليدوي)
+  const updatePlayerData = useCallback((data: {
+    playerName?: string;
+    title?: string;
+    gold?: number;
+    hp?: number;
+    maxHp?: number;
+    stats?: {
+      strength: number;
+      mind: number;
+      spirit: number;
+      agility: number;
+    };
+    streakDays?: number;
+  }) => {
+    setGameState(prev => {
+      const newState = { ...prev };
+      
+      if (data.playerName !== undefined) newState.playerName = data.playerName;
+      if (data.title !== undefined) newState.equippedTitle = data.title === '-' ? undefined : data.title;
+      if (data.gold !== undefined) newState.gold = data.gold;
+      if (data.hp !== undefined) newState.hp = data.hp;
+      if (data.maxHp !== undefined) newState.maxHp = data.maxHp;
+      if (data.streakDays !== undefined) newState.streakDays = data.streakDays;
+      
+      if (data.stats) {
+        newState.stats = data.stats;
+        // إعادة حساب المستويات بناءً على XP الجديد
+        newState.levels = {
+          strength: calculateLevel(data.stats.strength),
+          mind: calculateLevel(data.stats.mind),
+          spirit: calculateLevel(data.stats.spirit),
+          agility: calculateLevel(data.stats.agility),
+        };
+        newState.totalLevel = getTotalLevel(newState.levels);
+      }
+      
+      return newState;
+    });
+  }, [calculateLevel, getTotalLevel]);
+
   const dismissLevelUp = useCallback(() => {
     setLevelUpInfo(null);
   }, []);
@@ -1085,5 +1126,6 @@ export const useGameState = () => {
     updateSideQuestProgress,
     claimSideQuest,
     closeSideQuest,
+    updatePlayerData,
   };
 };

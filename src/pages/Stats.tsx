@@ -3,6 +3,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { InventoryPanel } from '@/components/InventoryPanel';
+import { UserSettingsModal } from '@/components/UserSettingsModal';
 import { cn } from '@/lib/utils';
 import { 
   Dumbbell, 
@@ -11,12 +12,14 @@ import {
   Zap,
   Target,
   Coins,
-  Package
+  Package,
+  Settings
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle } = useGameState();
+  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, updatePlayerData } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const MAX_LEVEL = 100;
 
@@ -89,11 +92,19 @@ const Stats = () => {
         <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
           Player Status
         </h1>
-        <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
-          <Coins className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="font-mono font-bold text-blue-100 drop-shadow-[0_0:10px_rgba(255,255,255,0.7)] text-sm">
-            {gameState.gold.toLocaleString()}
-          </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="p-2 border border-slate-600 bg-black/50 hover:bg-blue-500/20 hover:border-blue-500/50 transition-colors"
+          >
+            <Settings className="w-4 h-4 text-slate-400 hover:text-blue-400" />
+          </button>
+          <div className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2">
+            <Coins className="w-3.5 h-3.5 text-yellow-400" />
+            <span className="font-mono font-bold text-blue-100 drop-shadow-[0_0:10px_rgba(255,255,255,0.7)] text-sm">
+              {gameState.gold.toLocaleString()}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -260,6 +271,34 @@ const Stats = () => {
       </main>
 
       <BottomNav />
+
+      {/* User Settings Modal */}
+      <UserSettingsModal
+        show={showSettingsModal}
+        currentData={{
+          playerName: gameState.playerName,
+          title: gameState.equippedTitle || '-',
+          gold: gameState.gold,
+          hp: gameState.hp,
+          maxHp: gameState.maxHp,
+          stats: gameState.stats,
+          levels: gameState.levels,
+          totalLevel: gameState.totalLevel,
+          streakDays: gameState.streakDays,
+        }}
+        onSave={(data) => {
+          updatePlayerData({
+            playerName: data.playerName,
+            title: data.title,
+            gold: data.gold,
+            hp: data.hp,
+            maxHp: data.maxHp,
+            stats: data.stats,
+            streakDays: data.streakDays,
+          });
+        }}
+        onClose={() => setShowSettingsModal(false)}
+      />
     </div>
   );
 };
