@@ -7,11 +7,12 @@ import { PrayerQuestModal } from '@/components/PrayerQuestModal';
 import { SystemNotification } from '@/components/SystemNotification';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { MaxLevelModal } from '@/components/MaxLevelModal';
+import { GateDiscoveryNotification } from '@/components/GateDiscoveryNotification';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Zap, Trophy, Skull, Sparkles, ShoppingBag, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { StatType } from '@/types/game';
+import { StatType, Gate } from '@/types/game';
 
 
 
@@ -33,6 +34,8 @@ const Index = () => {
   const [showNewQuestNotification, setShowNewQuestNotification] = useState(false);
   const [systemMessage, setSystemMessage] = useState<string | null>(null);
   const [showMaxLevelModal, setShowMaxLevelModal] = useState(false);
+  const [showGateNotification, setShowGateNotification] = useState(false);
+  const [discoveredGate, setDiscoveredGate] = useState<Gate | null>(null);
 
   // Check for max level - المستوى الأقصى هو 50
   const maxLevel = Math.max(
@@ -85,6 +88,24 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // إشعار البوابات الجديدة
+  useEffect(() => {
+    const gates = gameState.gates || [];
+    const shownGates = JSON.parse(localStorage.getItem('shownGateNotifications') || '[]');
+    
+    const newGates = gates.filter(g => !shownGates.includes(g.id) && g.discovered);
+    
+    if (newGates.length > 0) {
+      // عرض إشعار لأول بوابة جديدة
+      setDiscoveredGate(newGates[0]);
+      setShowGateNotification(true);
+      
+      // تحديث البوابات المعروضة
+      const updatedShown = [...shownGates, ...newGates.map(g => g.id)];
+      localStorage.setItem('shownGateNotifications', JSON.stringify(updatedShown));
+    }
+  }, [gameState.gates]);
 
   const handleTaskComplete = (taskId: string) => {
     playQuestComplete();
@@ -317,6 +338,16 @@ const Index = () => {
       <MaxLevelModal 
         show={showMaxLevelModal} 
         onDismiss={() => setShowMaxLevelModal(false)} 
+      />
+
+      {/* Gate Discovery Notification */}
+      <GateDiscoveryNotification
+        show={showGateNotification}
+        gate={discoveredGate}
+        hasManaGauge={gameState.inventory?.some(item => item.id === 'mana_meter' && item.quantity > 0) || false}
+        playerPower={gameState.totalLevel || 1}
+        onClose={() => setShowGateNotification(false)}
+        onEnter={() => setShowGateNotification(false)}
       />
     </div>
   );

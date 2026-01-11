@@ -908,7 +908,7 @@ export const useGameState = () => {
   const startSideQuest = useCallback((questId: string) => {
     setGameState(prev => {
       const newQuests = prev.quests.map(q => {
-        if (q.id === questId && !q.active) {
+        if (q.id === questId && !q.active && !q.startedAt) {
           return { 
             ...q, 
             startedAt: new Date().toISOString(), 
@@ -921,6 +921,64 @@ export const useGameState = () => {
       });
       return { ...prev, quests: newQuests };
     });
+  }, []);
+
+  // حساب الوقت المنقضي تلقائياً للمهمات النشطة (يعمل حتى لو كان التطبيق مغلقاً)
+  const calculateQuestProgress = useCallback((quest: Quest): number => {
+    if (!quest.startedAt) return quest.timeProgress || 0;
+    
+    const startTime = new Date(quest.startedAt).getTime();
+    const now = Date.now();
+    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+    const savedProgress = quest.timeProgress || 0;
+    
+    return savedProgress + elapsedSeconds;
+  }, []);
+
+  // تحديث تقدم المهمات تلقائياً عند تحميل التطبيق
+  useEffect(() => {
+    const updateActiveQuests = () => {
+      setGameState(prev => {
+        let hasChanges = false;
+        const newQuests = prev.quests.map(q => {
+          if (q.startedAt && !q.completed) {
+            const startTime = new Date(q.startedAt).getTime();
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            const totalProgress = (q.timeProgress || 0) + elapsedSeconds;
+            const requiredSeconds = (q.requiredTime || 0) * 60;
+            
+            if (totalProgress >= requiredSeconds && !q.completed) {
+              hasChanges = true;
+              return {
+                ...q,
+                timeProgress: totalProgress,
+                completed: true,
+                active: false,
+                startedAt: undefined // إيقاف العداد
+              };
+            } else if (elapsedSeconds > 0) {
+              hasChanges = true;
+              return {
+                ...q,
+                timeProgress: totalProgress,
+                startedAt: new Date().toISOString() // إعادة تعيين وقت البداية
+              };
+            }
+          }
+          return q;
+        });
+        
+        return hasChanges ? { ...prev, quests: newQuests } : prev;
+      });
+    };
+
+    // تحديث عند تحميل التطبيق
+    updateActiveQuests();
+
+    // تحديث كل 10 ثواني
+    const interval = setInterval(updateActiveQuests, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   // Update time progress for side quests - called periodically, also checks for completion
