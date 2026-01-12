@@ -27,7 +27,7 @@ const Market = () => {
   const SOLO_ITEMS = [
     { id: 'hp_potion', name: 'Blood Elixir', arabicName: 'إكسير الدم', category: 'Elixir', difficulty: 'E', price: 500, icon: '🧪', description: 'يستعيد 50% من الصحة القصوى', rankLevel: 0 },
     { id: 'mp_potion', name: 'Energy Elixir', arabicName: 'إكسير الطاقة', category: 'Elixir', difficulty: 'E', price: 500, icon: '⚡', description: 'يستعيد 50% من الطاقة القصوى', rankLevel: 0 },
-    { id: 'mana_meter', name: 'Mana Gauge', arabicName: 'مقياس المانا', category: 'Tool', difficulty: 'D', price: 2000, icon: '📊', description: 'جهاز قياس طاقة البوابات والعناصر', rankLevel: 1 },
+    { id: 'mana_meter', name: 'Mana Gauge', arabicName: 'مقياس المانا', category: 'Tool', difficulty: 'D', price: 2000, icon: '/ManaDeviceIcon.png', description: 'جهاز قياس طاقة البوابات والعناصر', rankLevel: 1 },
     { id: 'awakened_title', name: 'Awakened One', arabicName: 'المستيقظ الواعي', category: 'Title', difficulty: 'C', price: 3000, icon: '👑', description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%', rankLevel: 2 },
     { id: 'power_eye_title', name: 'Eye of Power', arabicName: 'عين القوة', category: 'Title', difficulty: 'B', price: 10000, icon: '👁️', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', rankLevel: 3 },
     { id: 'storm_hand_title', name: 'Hand of Storm', arabicName: 'يد العاصفة', category: 'Title', difficulty: 'B', price: 15000, icon: '🌩️', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', rankLevel: 3 },
@@ -50,14 +50,14 @@ const Market = () => {
   const rankOrder = { 'E': 0, 'D': 1, 'C': 2, 'B': 3, 'A': 4, 'S': 5 };
   const playerRank = getPlayerRank();
 
-  // يجب أن يكون اللاعب بنفس الرتبة أو أعلى لرؤية العنصر
+  // يجب أن يكون اللاعب بنفس الرتبة أو أعلى لرؤية العنصر بشكل طبيعي
   const canSeeItem = (item) => {
     const itemRank = item.difficulty;
     return rankOrder[playerRank] >= rankOrder[itemRank];
   };
   
-  // العناصر المرئية فقط
-  const visibleItems = SOLO_ITEMS.filter(item => canSeeItem(item));
+  // جميع العناصر تظهر الآن
+  const visibleItems = SOLO_ITEMS;
 
   const startSystemScan = (item) => {
     setActiveItem(item);
@@ -183,7 +183,11 @@ const Market = () => {
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 border border-red-500/20 flex items-center justify-center bg-black/40">
-                              <span className="text-2xl filter blur-[2px] opacity-40">{activeItem?.icon}</span>
+                              {activeItem?.id === 'mana_meter' ? (
+                                <img src={activeItem.icon} alt="icon" className="w-8 h-8 filter blur-[2px] opacity-40" />
+                              ) : (
+                                <span className="text-2xl filter blur-[2px] opacity-40">{activeItem?.icon}</span>
+                              )}
                             </div>
                             <div className="flex-1 space-y-1">
                               <div className="flex justify-between text-[7px] text-slate-400 uppercase">
@@ -229,17 +233,11 @@ const Market = () => {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-12">
-        {visibleItems.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">🔒</div>
-            <p className="text-slate-400 text-sm">لا توجد عناصر متاحة لرتبتك الحالية</p>
-            <p className="text-slate-500 text-xs mt-1">ارفع مستواك لفتح المزيد من العناصر</p>
-          </div>
-        ) : null}
         {visibleItems.map((item) => {
           const isAlphaLocked = item.difficulty === 'S' || item.difficulty === 'A';
           const rarityKey = item.difficulty;
           const rarity = RARITY_CONFIG[rarityKey] || RARITY_CONFIG.E;
+          const isRevealed = canSeeItem(item);
           
           return (
             <div key={item.id} className="relative group">
@@ -248,7 +246,7 @@ const Market = () => {
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
                   <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
-                      ITEM: <span className="text-blue-100">{item.arabicName || item.name}</span>
+                      ITEM: <span className="text-blue-100">{isRevealed ? (item.arabicName || item.name) : 'NOT FOUND'}</span>
                     </h2>
                   </div>
                 </div>
@@ -256,22 +254,28 @@ const Market = () => {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                      <span className="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] filter grayscale brightness-200 opacity-90">
-                        {item.icon}
-                      </span>
+                      {!isRevealed ? (
+                        <span className="text-4xl opacity-20 grayscale">❓</span>
+                      ) : item.id === 'mana_meter' ? (
+                        <img src={item.icon} alt="icon" className="w-16 h-16 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] filter grayscale brightness-200 opacity-90" />
+                      ) : (
+                        <span className="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] filter grayscale brightness-200 opacity-90">
+                          {item.icon}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Rank:</p>
                         <p className={cn("text-xs font-bold drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase", rarity.text)}>
-                          {item.difficulty}
+                          {isRevealed ? item.difficulty : '??'}
                         </p>
                       </div>
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Type:</p>
                         <p className="text-xs font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] italic uppercase">
-                          {item.category}
+                          {isRevealed ? item.category : 'NOT FOUND'}
                         </p>
                       </div>
                     </div>
@@ -279,29 +283,31 @@ const Market = () => {
 
                   <div className="py-2 border-t border-slate-700/50">
                     <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
-                      Gold: {item.price.toLocaleString()}
+                      Gold: {isRevealed ? item.price.toLocaleString() : '????'}
                     </p>
                   </div>
 
                   <div className="text-center px-1">
                     <p className="text-[10px] text-slate-300 italic leading-tight">
-                      {item.description}
+                      {isRevealed ? item.description : 'System analysis failed: Unauthorized access to item description.'}
                     </p>
                   </div>
 
                   <button
                     onClick={() => handlePurchase(item)}
-                    disabled={isAlphaLocked}
+                    disabled={isAlphaLocked && isRevealed}
                     className={cn(
                       "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
-                      isAlphaLocked
-                        ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed"
-                        : gameState.gold >= item.price
-                          ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
-                          : "bg-red-900/20 border-red-500/30 text-red-400"
+                      !isRevealed 
+                        ? "bg-blue-900/40 border-blue-500/50 text-blue-400 hover:bg-blue-800/60"
+                        : isAlphaLocked
+                          ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed"
+                          : gameState.gold >= item.price
+                            ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
+                            : "bg-red-900/20 border-red-500/30 text-red-400"
                     )}
                   >
-                    {isAlphaLocked ? 'Locked in Alpha' : 'Purchase Item'}
+                    {!isRevealed ? 'Analyze Item' : isAlphaLocked ? 'Locked in Alpha' : 'Purchase Item'}
                   </button>
                 </div>
               </div>
