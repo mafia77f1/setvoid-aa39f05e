@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield } from 'lucide-react';
+import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield, Map as MapIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Gate } from '@/types/game';
 
@@ -231,46 +231,82 @@ const Gates = () => {
             )}>
               <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-20"><X className="w-4 h-4" /></button>
               
-              <div className="text-center mb-6">
-                <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.rank))}>
-                  {!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rank}
+              {isScanning ? (
+                <div className="flex flex-col items-center justify-center py-10 animate-pulse">
+                  <img src="/ManaAnimation.gif" alt="Scanning..." className="w-48 h-48 object-contain mb-4" />
+                  <p className="text-blue-400 font-black tracking-widest animate-bounce">ANALYZING MANA WAVEFORM...</p>
                 </div>
-                <h2 className="text-2xl font-bold text-white uppercase drop-shadow-[0_0_100px_rgba(255,255,255,0.8)]">{!canSeeGateDetails(selectedGate) ? "??" : selectedGate.name}</h2>
-                <p className="text-sm text-slate-400 uppercase tracking-widest mt-1">{!canSeeGateDetails(selectedGate) ? "???,???" : selectedGate.danger}</p>
-              </div>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
-                  <span className="flex items-center gap-2 text-sm text-slate-300">كثافة الطاقة</span>
-                  <span className="font-bold">{showManaDetails || !hasManaGauge ? selectedGate.energyDensity : '???'} MP</span>
-                </div>
-
-                {showManaDetails && (
-                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 animate-fade-in">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-4 h-4 text-purple-400" />
-                      <span className="text-[10px] text-purple-300 uppercase font-bold">Required Power</span>
+              ) : (
+                <>
+                  <div className="text-center mb-6">
+                    <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.rank))}>
+                      {!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rank}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-white">{selectedGate.requiredPower}</span>
-                      <span className={cn(
-                        "text-xs font-bold",
-                        playerPower >= selectedGate.requiredPower ? "text-green-400" : "text-yellow-400"
-                      )}>
-                        قوتك: {playerPower}
-                      </span>
+                    <h2 className="text-2xl font-bold text-white uppercase drop-shadow-[0_0_100px_rgba(255,255,255,0.8)]">{!canSeeGateDetails(selectedGate) ? "??" : selectedGate.name}</h2>
+                    <p className="text-sm text-slate-400 uppercase tracking-widest mt-1">{!canSeeGateDetails(selectedGate) ? "???,???" : selectedGate.danger}</p>
+                  </div>
+                  
+                  <div className="space-y-3 mb-6">
+                    {showManaDetails ? (
+                      <div className="p-4 rounded-lg bg-blue-500/5 border border-white/20 animate-in fade-in zoom-in duration-500">
+                         <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-1">
+                               <p className="text-[9px] text-slate-500 font-bold uppercase">Gate Name</p>
+                               <p className="text-xs text-white font-bold">{selectedGate.name}</p>
+                            </div>
+                            <div className="space-y-1">
+                               <p className="text-[9px] text-slate-500 font-bold uppercase">Gate Rank</p>
+                               <p className={cn("text-xs font-black", (selectedGate.rank === 'S' || selectedGate.rank === 'A') ? "text-red-500" : "text-blue-400")}>{selectedGate.rank}</p>
+                            </div>
+                            <div className="space-y-1">
+                               <p className="text-[9px] text-slate-500 font-bold uppercase">Mana Output</p>
+                               <p className="text-xs text-white font-mono">{selectedGate.energyDensity} MP</p>
+                            </div>
+                            <div className="space-y-1">
+                               <p className="text-[9px] text-slate-500 font-bold uppercase">Threat Level</p>
+                               <p className="text-xs flex items-center gap-1">
+                                  {selectedGate.danger} 
+                                  {(selectedGate.rank === 'S' || selectedGate.rank === 'A') ? <span className="text-red-500 text-lg">⛔🚫</span> : <span className="text-slate-400 text-lg">⚠️</span>}
+                                </p>
+                            </div>
+                         </div>
+                         
+                         {/* Dungeon Map Section */}
+                         <div className="mt-4 border-t border-white/10 pt-4">
+                            <div className="flex items-center gap-2 mb-2">
+                               <MapIcon className="w-3 h-3 text-blue-400" />
+                               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Dimensional Map Structure</span>
+                            </div>
+                            <div className="h-24 w-full bg-slate-950 rounded border border-blue-500/20 relative overflow-hidden flex items-center justify-center">
+                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+                               <div className="relative w-full h-full flex items-center justify-center">
+                                  <div className="w-12 h-12 rounded-full border-2 border-dashed border-blue-400/50 animate-[spin_10s_linear_infinite]" />
+                                  <div className="absolute w-16 h-1 border-t border-white/40 rotate-45" />
+                                  <div className="absolute w-16 h-1 border-t border-white/40 -rotate-45" />
+                                  <div className="absolute top-4 right-8 w-2 h-2 bg-white rounded-full animate-ping" />
+                                  <div className="absolute bottom-6 left-10 w-2 h-2 bg-blue-500 rounded-full" />
+                                  <div className="text-[8px] absolute top-2 left-2 text-blue-300 font-mono">X: {Math.floor(Math.random()*100)} Y: {Math.floor(Math.random()*100)}</div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
+                        <span className="flex items-center gap-2 text-sm text-slate-300">كثافة الطاقة</span>
+                        <span className="font-bold">{!hasManaGauge ? selectedGate.energyDensity : '???'} MP</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
+                    <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
+                    <div className="flex justify-around text-sm text-slate-200">
+                      <span>+{selectedGate.rewards.xp} XP</span>
+                      <span>+{selectedGate.rewards.gold} ذهب</span>
                     </div>
                   </div>
-                )}
-              </div>
-              
-              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
-                <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
-                <div className="flex justify-around text-sm text-slate-200">
-                  <span>+{selectedGate.rewards.xp} XP</span>
-                  <span>+{selectedGate.rewards.gold} ذهب</span>
-                </div>
-              </div>
+                </>
+              )}
 
               {/* زر قياس المانا */}
               {hasManaGauge && !showManaDetails && (
@@ -298,24 +334,26 @@ const Gates = () => {
                 </button>
               )}
               
-              <button
-                onClick={handleEnterGate}
-                disabled={isGateLocked(selectedGate)}
-                className={cn(
-                  "w-full py-4 rounded-xl font-bold text-lg transition-all text-white",
-                  isGateLocked(selectedGate) 
-                    ? "bg-slate-800 border border-slate-700 text-slate-500 cursor-not-allowed"
-                    : "bg-gradient-to-r shadow-lg " + getGateColor(selectedGate.rank)
-                )}
-              >
-                <span className="flex items-center justify-center gap-2">
-                  {isGateLocked(selectedGate) ? (
-                    <><Skull className="w-5 h-5" /> مقفول في Alpha</>
-                  ) : (
-                    <><Activity className="w-5 h-5" /> دخول البوابة</>
+              {!isScanning && (
+                <button
+                  onClick={handleEnterGate}
+                  disabled={isGateLocked(selectedGate)}
+                  className={cn(
+                    "w-full py-4 rounded-xl font-bold text-lg transition-all text-white",
+                    isGateLocked(selectedGate) 
+                      ? "bg-slate-800 border border-slate-700 text-slate-500 cursor-not-allowed"
+                      : "bg-gradient-to-r shadow-lg " + getGateColor(selectedGate.rank)
                   )}
-                </span>
-              </button>
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {isGateLocked(selectedGate) ? (
+                      <><Skull className="w-5 h-5" /> مقفول في Alpha</>
+                    ) : (
+                      <><Activity className="w-5 h-5" /> دخول البوابة</>
+                    )}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>
