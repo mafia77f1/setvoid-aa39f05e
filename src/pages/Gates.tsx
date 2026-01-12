@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield, Map as MapIcon } from 'lucide-react';
+import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield, Map as MapIcon, LocateFixed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Gate } from '@/types/game';
 
@@ -232,9 +232,12 @@ const Gates = () => {
               <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-20"><X className="w-4 h-4" /></button>
               
               {isScanning ? (
-                <div className="flex flex-col items-center justify-center py-10 animate-pulse">
-                  <img src="/ManaAnimation.gif" alt="Scanning..." className="w-48 h-48 object-contain mb-4" />
-                  <p className="text-blue-400 font-black tracking-widest animate-bounce">ANALYZING MANA WAVEFORM...</p>
+                <div className="flex flex-col items-center justify-center py-10">
+                  <div className="relative">
+                    <img src="/ManaAnimation.gif" alt="Scanning..." className="w-48 h-48 object-contain mb-4 relative z-10" />
+                    <div className="absolute inset-0 bg-blue-500/20 blur-[50px] animate-pulse rounded-full" />
+                  </div>
+                  <p className="text-blue-400 font-black tracking-[0.3em] text-xs animate-pulse">DECODING DIMENSIONAL FREQUENCY...</p>
                 </div>
               ) : (
                 <>
@@ -248,44 +251,58 @@ const Gates = () => {
                   
                   <div className="space-y-3 mb-6">
                     {showManaDetails ? (
-                      <div className="p-4 rounded-lg bg-blue-500/5 border border-white/20 animate-in fade-in zoom-in duration-500">
-                         <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="p-4 rounded-lg bg-black/40 border border-white/20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                         <div className="grid grid-cols-2 gap-4 mb-4 border-b border-white/10 pb-4">
                             <div className="space-y-1">
-                               <p className="text-[9px] text-slate-500 font-bold uppercase">Gate Name</p>
-                               <p className="text-xs text-white font-bold">{selectedGate.name}</p>
+                               <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Identifier</p>
+                               <p className="text-[11px] text-white font-bold truncate">{selectedGate.name}</p>
                             </div>
                             <div className="space-y-1">
-                               <p className="text-[9px] text-slate-500 font-bold uppercase">Gate Rank</p>
-                               <p className={cn("text-xs font-black", (selectedGate.rank === 'S' || selectedGate.rank === 'A') ? "text-red-500" : "text-blue-400")}>{selectedGate.rank}</p>
+                               <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Class Rank</p>
+                               <p className={cn("text-[11px] font-black italic", (selectedGate.rank === 'S' || selectedGate.rank === 'A') ? "text-red-500" : "text-blue-400")}>{selectedGate.rank}-Grade</p>
                             </div>
                             <div className="space-y-1">
-                               <p className="text-[9px] text-slate-500 font-bold uppercase">Mana Output</p>
-                               <p className="text-xs text-white font-mono">{selectedGate.energyDensity} MP</p>
+                               <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Mana Signature</p>
+                               <p className="text-[11px] text-white font-mono font-bold tracking-widest">{selectedGate.energyDensity.toLocaleString()}</p>
                             </div>
                             <div className="space-y-1">
-                               <p className="text-[9px] text-slate-500 font-bold uppercase">Threat Level</p>
-                               <p className="text-xs flex items-center gap-1">
+                               <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Threat Status</p>
+                               <p className="text-[11px] flex items-center gap-1 font-bold">
                                   {selectedGate.danger} 
-                                  {(selectedGate.rank === 'S' || selectedGate.rank === 'A') ? <span className="text-red-500 text-lg">⛔🚫</span> : <span className="text-slate-400 text-lg">⚠️</span>}
+                                  {(selectedGate.rank === 'S' || selectedGate.rank === 'A') ? <span className="text-red-500">⛔🚫</span> : <span className="text-slate-400">⚠️</span>}
                                 </p>
                             </div>
                          </div>
                          
-                         {/* Dungeon Map Section */}
-                         <div className="mt-4 border-t border-white/10 pt-4">
-                            <div className="flex items-center gap-2 mb-2">
-                               <MapIcon className="w-3 h-3 text-blue-400" />
-                               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Dimensional Map Structure</span>
+                         {/* High-End Dungeon Map */}
+                         <div className="mt-2">
+                            <div className="flex justify-between items-center mb-2">
+                               <div className="flex items-center gap-2">
+                                  <LocateFixed className="w-3 h-3 text-blue-400 animate-pulse" />
+                                  <span className="text-[8px] text-white font-black uppercase tracking-[0.2em]">Live Dungeon Mapping</span>
+                               </div>
+                               <span className="text-[7px] text-blue-400/60 font-mono">SECTOR 7-B</span>
                             </div>
-                            <div className="h-24 w-full bg-slate-950 rounded border border-blue-500/20 relative overflow-hidden flex items-center justify-center">
-                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
-                               <div className="relative w-full h-full flex items-center justify-center">
-                                  <div className="w-12 h-12 rounded-full border-2 border-dashed border-blue-400/50 animate-[spin_10s_linear_infinite]" />
-                                  <div className="absolute w-16 h-1 border-t border-white/40 rotate-45" />
-                                  <div className="absolute w-16 h-1 border-t border-white/40 -rotate-45" />
-                                  <div className="absolute top-4 right-8 w-2 h-2 bg-white rounded-full animate-ping" />
-                                  <div className="absolute bottom-6 left-10 w-2 h-2 bg-blue-500 rounded-full" />
-                                  <div className="text-[8px] absolute top-2 left-2 text-blue-300 font-mono">X: {Math.floor(Math.random()*100)} Y: {Math.floor(Math.random()*100)}</div>
+                            <div className="h-32 w-full bg-[#050505] rounded-sm border border-blue-500/30 relative overflow-hidden group">
+                               {/* Grid System */}
+                               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#4f4f4f 1px, transparent 1px), linear-gradient(90deg, #4f4f4f 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
+                               
+                               {/* Path Logic */}
+                               <svg className="absolute inset-0 w-full h-full opacity-60">
+                                  <path d="M 10 110 L 40 80 L 80 90 L 120 40 L 180 60 L 220 20" stroke="rgba(59, 130, 246, 0.5)" strokeWidth="1.5" fill="none" className="animate-[dash_3s_ease-in-out_infinite]" strokeDasharray="1000" strokeDashoffset="1000">
+                                     <animate attributeName="stroke-dashoffset" from="1000" to="0" dur="4s" repeatCount="indefinite" />
+                                  </path>
+                                  <circle cx="220" cy="20" r="4" fill="#ef4444" className="animate-pulse" />
+                                  <circle cx="10" cy="110" r="3" fill="#ffffff" />
+                               </svg>
+
+                               {/* Holographic Overlays */}
+                               <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 to-transparent pointer-events-none" />
+                               <div className="absolute top-0 left-0 w-full h-[1px] bg-blue-400/20 shadow-[0_0_10px_blue] animate-[scan_2s_linear_infinite]" />
+                               
+                               <div className="absolute bottom-2 right-2 text-[6px] text-white/30 font-mono uppercase text-right leading-none">
+                                  Structural Integrity: 94%<br/>
+                                  Mob Density: High
                                </div>
                             </div>
                          </div>
@@ -299,10 +316,10 @@ const Gates = () => {
                   </div>
                   
                   <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
-                    <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase">المكافآت</h3>
-                    <div className="flex justify-around text-sm text-slate-200">
-                      <span>+{selectedGate.rewards.xp} XP</span>
-                      <span>+{selectedGate.rewards.gold} ذهب</span>
+                    <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase tracking-widest">المكافآت المتوقعة</h3>
+                    <div className="flex justify-around text-sm font-bold text-slate-200">
+                      <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-yellow-400" /> +{selectedGate.rewards.xp} XP</span>
+                      <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-blue-400" /> +{selectedGate.rewards.gold} Gold</span>
                     </div>
                   </div>
                 </>
@@ -314,21 +331,21 @@ const Gates = () => {
                   onClick={handleScanMana}
                   disabled={isScanning}
                   className={cn(
-                    "w-full py-3 mb-4 border text-[10px] font-bold uppercase tracking-widest transition-all rounded-lg",
+                    "w-full py-3 mb-4 border text-[10px] font-black uppercase tracking-[0.3em] transition-all rounded-lg",
                     isScanning 
-                      ? "bg-blue-500/20 border-blue-500/30 text-blue-300 cursor-wait"
-                      : "bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20"
+                      ? "bg-blue-600/20 border-blue-400/50 text-blue-300 cursor-wait"
+                      : "bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
                   )}
                 >
                   {isScanning ? (
                     <span className="flex items-center justify-center gap-2">
-                      <Scan className="w-4 h-4 animate-pulse" />
-                      جاري المسح...
+                      <Scan className="w-4 h-4 animate-spin" />
+                      SYSTEM CALIBRATING...
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <Scan className="w-4 h-4" />
-                      قياس طاقة البوابة
+                      إطلاق موجات السونار السحرية
                     </span>
                   )}
                 </button>
@@ -339,17 +356,17 @@ const Gates = () => {
                   onClick={handleEnterGate}
                   disabled={isGateLocked(selectedGate)}
                   className={cn(
-                    "w-full py-4 rounded-xl font-bold text-lg transition-all text-white",
+                    "w-full py-4 rounded-xl font-black text-lg transition-all text-white uppercase tracking-wider",
                     isGateLocked(selectedGate) 
-                      ? "bg-slate-800 border border-slate-700 text-slate-500 cursor-not-allowed"
-                      : "bg-gradient-to-r shadow-lg " + getGateColor(selectedGate.rank)
+                      ? "bg-slate-800 border border-slate-700 text-slate-500 cursor-not-allowed opacity-50"
+                      : "bg-gradient-to-r shadow-[0_10px_30px_rgba(0,0,0,0.5)] " + getGateColor(selectedGate.rank)
                   )}
                 >
                   <span className="flex items-center justify-center gap-2">
                     {isGateLocked(selectedGate) ? (
-                      <><Skull className="w-5 h-5" /> مقفول في Alpha</>
+                      <><Skull className="w-5 h-5" /> LOCKED (RANK TOO HIGH)</>
                     ) : (
-                      <><Activity className="w-5 h-5" /> دخول البوابة</>
+                      <><Activity className="w-5 h-5" /> ENTER DUNGEON</>
                     )}
                   </span>
                 </button>
@@ -360,6 +377,19 @@ const Gates = () => {
       )}
 
       <BottomNav />
+
+      {/* Custom Keyframes for Map */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes scan {
+          0% { top: 0; }
+          100% { top: 100%; }
+        }
+        @keyframes dash {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}} />
     </div>
   );
 };
