@@ -17,22 +17,46 @@ export type Database = {
       game_states: {
         Row: {
           created_at: string
+          energy: number | null
+          equipped_title: string | null
           game_data: Json
+          gold: number | null
+          hp: number | null
           id: string
+          max_energy: number | null
+          max_hp: number | null
+          player_name: string | null
+          shadow_points: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          energy?: number | null
+          equipped_title?: string | null
           game_data?: Json
+          gold?: number | null
+          hp?: number | null
           id?: string
+          max_energy?: number | null
+          max_hp?: number | null
+          player_name?: string | null
+          shadow_points?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          energy?: number | null
+          equipped_title?: string | null
           game_data?: Json
+          gold?: number | null
+          hp?: number | null
           id?: string
+          max_energy?: number | null
+          max_hp?: number | null
+          player_name?: string | null
+          shadow_points?: number | null
           updated_at?: string
           user_id?: string
         }
