@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Zap, Target, X, Skull, Activity, Scan, Shield, LocateFixed } from 'lucide-react';
+import { AlertTriangle, Zap, Target, X, Skull, Activity, Scan, Shield, Map as MapIcon, LocateFixed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Gate } from '@/types/game';
 
@@ -22,26 +22,21 @@ const Gates = () => {
   const gates = gameState.gates || [];
   const hasManaGauge = gameState.inventory?.some(item => item.id === 'mana_meter' && item.quantity > 0);
 
-  // منطق توليد خارطة ثابتة بناءً على ID البوابة
-  const generateStaticMap = (gateId: string) => {
-    const seed = gateId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const random = (s: number) => {
-      const x = Math.sin(s) * 10000;
-      return x - Math.floor(x);
+  // منطق إنشاء خريطة ثابتة لكل بوابة بناءً على الـ ID الخاص بها
+  const staticMapData = useMemo(() => {
+    if (!selectedGate) return null;
+    const seed = selectedGate.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const pseudoRandom = (s: number) => Math.abs(Math.sin(s) * 10000) % 1;
+
+    return {
+      path: `M 10 110 Q ${40 + pseudoRandom(seed) * 50} ${20 + pseudoRandom(seed + 1) * 80}, ${120 + pseudoRandom(seed + 2) * 40} ${60} T 240 30`,
+      mobs: [
+        { x: 50 + pseudoRandom(seed + 3) * 40, y: 40 + pseudoRandom(seed + 4) * 40 },
+        { x: 150 + pseudoRandom(seed + 5) * 40, y: 30 + pseudoRandom(seed + 6) * 50 }
+      ],
+      boss: { x: 240, y: 30 }
     };
-
-    const path = `M 10 120 L 10 ${100 - random(seed)*20} L ${40 + random(seed+1)*30} ${80 - random(seed+2)*20} L ${80 + random(seed+3)*40} ${90} L ${130} ${50} L ${180} ${70} L ${220} ${30} L 250 20`;
-    
-    const mobs = [
-      { x: 50 + random(seed+4)*30, y: 80 - random(seed+5)*20 },
-      { x: 120 + random(seed+6)*40, y: 60 - random(seed+7)*30 },
-      { x: 170 + random(seed+8)*30, y: 75 }
-    ];
-
-    return { path, mobs, boss: { x: 250, y: 20 } };
-  };
-
-  const gateMap = useMemo(() => selectedGate ? generateStaticMap(selectedGate.id) : null, [selectedGate]);
+  }, [selectedGate]);
 
   const handleGateClick = (gate: Gate) => {
     setSelectedGate(gate);
@@ -71,7 +66,9 @@ const Gates = () => {
 
   const handleEnterGate = () => {
     setIsEntering(true);
-    setTimeout(() => navigate('/battle'), 3000); 
+    setTimeout(() => {
+      navigate('/battle');
+    }, 3000); 
   };
 
   const getGateColor = (rank: string) => {
@@ -124,24 +121,24 @@ const Gates = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#020203] text-white font-sans selection:bg-purple-500/30 pb-40 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020203] text-white font-sans pb-40 overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(76,29,149,0.15),transparent_80%)]" />
       </div>
 
       <header className="relative z-20 pt-16 pb-12 px-6 text-center border-b border-white/5">
         <h1 className="relative text-3xl font-black italic tracking-[0.3em] uppercase">
-          <span className="text-white drop-shadow-[0_0_100px_rgba(255,255,255,0.5)]">Dungeon</span>
+          <span className="text-white">Dungeon</span>
           <span className="block text-xs text-blue-400 mt-2 tracking-[0.5em] font-bold uppercase opacity-70">Gate Recognition System</span>
         </h1>
       </header>
 
       <main className="relative z-10 px-6 space-y-40 mt-16">
         {gates.map((gate) => (
-          <div key={gate.id} className="relative group flex flex-col items-center max-w-sm mx-auto">
+          <div key={gate.id} className="relative flex flex-col items-center max-w-sm mx-auto">
             <div 
               onClick={() => handleGateClick(gate)}
-              className="relative w-72 h-72 flex items-center justify-center transition-all duration-500 cursor-pointer hover:scale-110 active:scale-90 z-20"
+              className="relative w-72 h-72 flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-90 z-20"
               style={{ filter: `drop-shadow(${getGateGlow(gate.rank)})` }}
             >
               <div className={cn("relative w-full h-full rounded-full overflow-hidden border-2", getGateBorderColor(gate.rank))}>
@@ -153,72 +150,79 @@ const Gates = () => {
       </main>
 
       {selectedGate && (
-        <div className={cn("fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-[1000ms]", isVisible && !isExiting ? "bg-black/80 backdrop-blur-md" : "bg-transparent pointer-events-none")}>
+        <div className={cn("fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]", isVisible && !isExiting ? "bg-black/60" : "bg-black/0 pointer-events-none")}>
           
-          {/* طبقة الأنيمايشن المعزولة تماماً */}
+          {/* الأنيمايشن المعزول تماماً مع خلفية شفافة */}
           {isScanning ? (
-            <div className="fixed inset-0 z-[110] flex flex-col items-center justify-center bg-transparent">
-              <img src="/AnimationManaAnalysis.gif" alt="Scanning" className="w-80 h-80 object-contain" />
-              <p className="text-blue-400 font-black tracking-[0.5em] text-sm animate-pulse mt-4">ANALYZING MANA SOURCE...</p>
+            <div className="fixed inset-0 flex flex-col items-center justify-center bg-transparent z-[110]">
+              <img src="/AnimationManaAnalysis.gif" alt="Mana Scan" className="w-80 h-80 object-contain" />
+              <p className="text-blue-400 font-black tracking-[0.5em] text-xs animate-pulse">ANALYZING FREQUENCY...</p>
             </div>
           ) : (
-            <div className={cn("relative max-w-md w-full bg-[#0c0c0e] border-x border-white/40 transition-all ease-[cubic-bezier(0.2,1,0.2,1)]", isVisible && !isExiting ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0")}>
-              <div className="p-6">
+            <div className={cn("relative max-w-md w-full bg-[#0c0c0e] border-x border-white/40 shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all ease-[cubic-bezier(0.2,1,0.2,1)]", isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1500ms]" : "opacity-0 scale-y-0")}>
+              <div className="p-6 transition-all duration-1000">
                 <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white"><X className="w-4 h-4" /></button>
                 
                 <div className="text-center mb-6">
                   <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.rank))}>
-                    {selectedGate.rank}
+                    {!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rank}
                   </div>
-                  <h2 className="text-2xl font-bold uppercase">{selectedGate.name}</h2>
+                  <h2 className="text-2xl font-bold text-white uppercase">{!canSeeGateDetails(selectedGate) ? "??" : selectedGate.name}</h2>
                 </div>
 
-                {showManaDetails && gateMap && (
-                  <div className="p-4 rounded-lg bg-black/40 border border-white/20 animate-in fade-in zoom-in duration-500">
-                    <div className="flex justify-between items-center mb-2">
-                       <div className="flex items-center gap-2">
-                          <LocateFixed className="w-3 h-3 text-blue-400 animate-pulse" />
-                          <span className="text-[8px] text-white font-black uppercase tracking-[0.2em]">Static Dungeon Map</span>
-                       </div>
-                    </div>
-                    <div className="h-40 w-full bg-[#050505] rounded-sm border border-blue-500/30 relative overflow-hidden">
-                       <svg className="absolute inset-0 w-full h-full opacity-60">
-                          <path d={gateMap.path} stroke="rgba(59, 130, 246, 0.5)" strokeWidth="2" fill="none" strokeDasharray="1000" strokeDashoffset="0" />
-                          
-                          {/* الوحوش باللون الأحمر */}
-                          {gateMap.mobs.map((mob, i) => (
-                            <circle key={i} cx={mob.x} cy={mob.y} r="3" fill="#ef4444" className="animate-pulse" />
-                          ))}
-
-                          {/* البوس باللون البنفسجي */}
-                          <circle cx={gateMap.boss.x} cy={gateMap.boss.y} r="5" fill="#a855f7" className="animate-bounce" />
-                          
-                          <circle cx="10" cy="120" r="3" fill="#ffffff" />
-                       </svg>
-                       <div className="absolute top-2 right-2 flex flex-col gap-1">
-                          <span className="text-[6px] text-red-500 flex items-center gap-1">● MONSTERS</span>
-                          <span className="text-[6px] text-purple-500 flex items-center gap-1">● BOSS</span>
-                       </div>
-                    </div>
-                  </div>
-                )}
-
+                <div className="space-y-3 mb-6">
+                  {showManaDetails && staticMapData ? (
+                    <div className="p-4 rounded-lg bg-black/40 border border-white/20 animate-in fade-in zoom-in duration-700">
+                         <div className="grid grid-cols-2 gap-4 mb-4 border-b border-white/10 pb-4">
+                            <div className="space-y-1">
+                               <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Mana Signature</p>
+                               <p className="text-[11px] text-white font-mono font-bold">{selectedGate.energyDensity.toLocaleString()}</p>
+                            </div>
+                         </div>
+                         
+                         {/* الخارطة الثابتة لكل بوابة */}
+                         <div className="mt-2">
+                            <div className="flex items-center gap-2 mb-2 text-blue-400">
+                               <LocateFixed className="w-3 h-3 animate-pulse" />
+                               <span className="text-[8px] font-black uppercase tracking-[0.2em]">Static Labyrinth Map</span>
+                            </div>
+                            <div className="h-32 w-full bg-[#050505] rounded-sm border border-blue-500/30 relative overflow-hidden">
+                               <svg className="absolute inset-0 w-full h-full opacity-60">
+                                  <path d={staticMapData.path} stroke="rgba(59, 130, 246, 0.5)" strokeWidth="1.5" fill="none" />
+                                  {/* الوحوش باللون الأحمر */}
+                                  {staticMapData.mobs.map((mob, i) => (
+                                    <circle key={i} cx={mob.x} cy={mob.y} r="3" fill="#ef4444" className="animate-pulse" />
+                                  ))}
+                                  {/* البوس باللون البنفسجي */}
+                                  <circle cx={staticMapData.boss.x} cy={staticMapData.boss.y} r="4" fill="#a855f7" />
+                                  <circle cx="10" cy="110" r="2.5" fill="#ffffff" />
+                               </svg>
+                            </div>
+                         </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10">
+                        <span className="text-sm text-slate-300">كثافة الطاقة</span>
+                        <span className="font-bold">{selectedGate.energyDensity} MP</span>
+                      </div>
+                    )}
+                </div>
+                
                 {hasManaGauge && !showManaDetails && (
-                  <button onClick={handleScanMana} className="w-full py-3 mt-6 bg-blue-500/10 border border-blue-500/40 text-blue-400 font-black text-[10px] tracking-[0.3em] uppercase rounded-lg">
+                  <button onClick={handleScanMana} className="w-full py-3 mb-4 bg-blue-500/10 border border-blue-500/40 text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-lg">
                     <Scan className="w-4 h-4 inline mr-2" /> إطلاق موجات السونار
                   </button>
                 )}
-
-                {!isScanning && (
-                  <button onClick={handleEnterGate} disabled={isGateLocked(selectedGate)} className={cn("w-full py-4 mt-4 rounded-xl font-black text-lg transition-all text-white", isGateLocked(selectedGate) ? "bg-slate-800 opacity-50" : "bg-gradient-to-r " + getGateColor(selectedGate.rank))}>
-                    ENTER DUNGEON
-                  </button>
-                )}
+                
+                <button onClick={handleEnterGate} disabled={isGateLocked(selectedGate)} className={cn("w-full py-4 rounded-xl font-black text-lg transition-all text-white", isGateLocked(selectedGate) ? "bg-slate-800 opacity-50" : "bg-gradient-to-r " + getGateColor(selectedGate.rank))}>
+                  ENTER DUNGEON
+                </button>
               </div>
             </div>
           )}
         </div>
       )}
+
       <BottomNav />
     </div>
   );
