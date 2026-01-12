@@ -13,6 +13,9 @@ const Quests = () => {
   const [selectedQuest, setSelectedQuest] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  
+  // Track quests being claimed with animation
+  const [claimingQuests, setClaimingQuests] = useState<Set<string>>(new Set());
 
   const handleOpenDetails = (quest: any) => {
     setSelectedQuest(quest);
@@ -25,7 +28,7 @@ const Quests = () => {
       setIsVisible(false);
       setIsExiting(false);
       setSelectedQuest(null);
-    }, 800); // مدة التلاشي
+    }, 800);
   };
 
   const handleConfirmStart = () => {
@@ -39,7 +42,27 @@ const Quests = () => {
     }
   };
 
-  const sideQuests = gameState.quests.filter(q => q.isMainQuest === false);
+  const handleClaim = (questId: string) => {
+    // Add to claiming set for animation
+    setClaimingQuests(prev => new Set([...prev, questId]));
+    
+    // Wait for animation then claim
+    setTimeout(() => {
+      claimSideQuest(questId);
+      toast({
+        title: 'SYSTEM: REWARDS CLAIMED',
+        description: 'تم استلام المكافآت بنجاح!',
+      });
+    }, 800);
+  };
+
+  // Filter out claimed quests and those being claimed
+  const sideQuests = gameState.quests.filter(q => 
+    q.isMainQuest === false && 
+    !q.claimed && 
+    !claimingQuests.has(q.id)
+  );
+  
   const getFilteredQuests = () => activeTab === 'all' ? sideQuests : sideQuests.filter(q => q.category === activeTab);
   
   const tabs = [
@@ -67,7 +90,7 @@ const Quests = () => {
             isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[800ms]",
             "origin-center"
           )}>
-            {/* خطوط التوهج العلوي والسفلي (مثل الكود المطلوب) */}
+            {/* خطوط التوهج العلوي والسفلي */}
             <div className={cn(
               "absolute top-0 left-0 right-0 h-[1px] bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,1)] transition-all duration-[1200ms] delay-300",
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
@@ -77,7 +100,7 @@ const Quests = () => {
               isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
             )} />
 
-            {/* محتوى المهمة بنفس الشكل السابق */}
+            {/* محتوى المهمة */}
             <div className={cn(
               "p-6 space-y-5 transition-all duration-1000 delay-500",
               isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -99,7 +122,7 @@ const Quests = () => {
                   </div>
                   <div>
                     <span className="text-[9px] text-blue-400 block mb-1">LIMIT:</span>
-                    <span className="text-xs font-bold text-blue-300">{selectedQuest.duration}M</span>
+                    <span className="text-xs font-bold text-blue-300">{selectedQuest.requiredTime || 10}M</span>
                   </div>
                 </div>
               </div>
@@ -108,9 +131,15 @@ const Quests = () => {
                 {selectedQuest.description}
               </div>
 
-              <div className="border-l-2 border-yellow-500 bg-yellow-500/5 p-3 flex justify-between items-center">
-                <span className="text-[10px] font-bold text-yellow-500 uppercase">Rewards:</span>
-                <span className="text-xs font-bold text-white tracking-widest">{selectedQuest.rewardGold} GOLD</span>
+              <div className="border-l-2 border-yellow-500 bg-yellow-500/5 p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-yellow-500 uppercase">Gold:</span>
+                  <span className="text-xs font-bold text-yellow-400 tracking-widest">{selectedQuest.goldReward || 25} G</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-blue-400 uppercase">XP:</span>
+                  <span className="text-xs font-bold text-blue-300 tracking-widest">+{selectedQuest.xpReward} XP</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
@@ -131,7 +160,7 @@ const Quests = () => {
         <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">Side Quests</h1>
         <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-blue-400 uppercase mt-2">
           <CheckCircle2 className="w-3 h-3" />
-          <span>Progress: {sideQuests.filter(q => q.completed).length} / {sideQuests.length}</span>
+          <span>Available: {sideQuests.filter(q => !q.completed).length} / {sideQuests.length}</span>
         </div>
       </header>
 
@@ -146,58 +175,93 @@ const Quests = () => {
         </div>
 
         <div className="space-y-12">
-          {getFilteredQuests().map((quest) => (
-            <div key={quest.id} className="relative group">
-              <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
-                <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90">
-                    <h2 className="text-[10px] font-bold tracking-widest text-white uppercase italic">QUEST: {quest.title}</h2>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40">
-                      <div className="text-3xl grayscale brightness-200 opacity-80 drop-shadow-[0_0_10px_white]">
-                        {quest.category === 'strength' ? <Dumbbell /> : <Zap />}
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <span className="text-[9px] text-slate-400 uppercase font-bold">Reward:</span>
-                        <span className="text-xs font-bold text-yellow-400">+{quest.goldReward || 10} G</span>
-                      </div>
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                        <span className="text-[9px] text-slate-400 uppercase font-bold">Status:</span>
-                        <span className={cn("text-[9px] font-bold uppercase", quest.active ? "text-blue-400 animate-pulse" : quest.completed ? "text-green-400" : "text-slate-500")}>
-                          {quest.active ? 'In Progress' : quest.completed && !quest.claimed ? 'Ready' : quest.claimed ? 'Claimed' : 'Available'}
-                        </span>
-                      </div>
-                      {quest.active && quest.requiredTime && (
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                          <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
-                          <span className="text-[9px] font-bold text-blue-300">
-                            {Math.floor((quest.timeProgress || 0) / 60)}m / {quest.requiredTime}m
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => quest.completed && !quest.claimed ? claimSideQuest(quest.id) : handleOpenDetails(quest)}
-                    disabled={quest.active}
-                    className={cn(
-                      "w-full py-2 text-[10px] font-bold tracking-[0.2em] uppercase border transition-all",
-                      quest.active ? "bg-slate-900 border-blue-500/20 text-blue-900" : 
-                      quest.completed && !quest.claimed ? "bg-yellow-500/10 border-yellow-500/40 text-yellow-400 animate-pulse" :
-                      "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
-                    )}
-                  >
-                    {quest.active ? 'Processing...' : quest.completed && !quest.claimed ? 'Claim Reward' : 'Initialize Quest'}
-                  </button>
-                </div>
-              </div>
+          {getFilteredQuests().length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">✅</div>
+              <p className="text-slate-400 text-sm">لا توجد مهمات متاحة</p>
+              <p className="text-slate-500 text-xs mt-1">أكملت جميع المهمات!</p>
             </div>
-          ))}
+          ) : (
+            getFilteredQuests().map((quest) => {
+              const isClaiming = claimingQuests.has(quest.id);
+              const progressPercent = quest.requiredTime 
+                ? Math.min(100, ((quest.timeProgress || 0) / (quest.requiredTime * 60)) * 100)
+                : 0;
+              
+              return (
+                <div 
+                  key={quest.id} 
+                  className={cn(
+                    "relative group transition-all duration-700",
+                    isClaiming && "opacity-0 scale-y-0 origin-center"
+                  )}
+                >
+                  <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+                    <div className="flex justify-center mb-4 mt-[-1.5rem]">
+                      <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90">
+                        <h2 className="text-[10px] font-bold tracking-widest text-white uppercase italic">QUEST: {quest.title}</h2>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40">
+                          <div className="text-3xl grayscale brightness-200 opacity-80 drop-shadow-[0_0_10px_white]">
+                            {quest.category === 'strength' ? <Dumbbell /> : quest.category === 'mind' ? <Brain /> : quest.category === 'spirit' ? <Heart /> : <Zap />}
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                            <span className="text-[9px] text-slate-400 uppercase font-bold">Reward:</span>
+                            <div className="flex gap-2">
+                              <span className="text-xs font-bold text-yellow-400">+{quest.goldReward || 25} G</span>
+                              <span className="text-xs font-bold text-blue-300">+{quest.xpReward} XP</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                            <span className="text-[9px] text-slate-400 uppercase font-bold">Status:</span>
+                            <span className={cn("text-[9px] font-bold uppercase", quest.active ? "text-blue-400 animate-pulse" : quest.completed && !quest.claimed ? "text-green-400" : "text-slate-500")}>
+                              {quest.active ? 'In Progress' : quest.completed && !quest.claimed ? 'Ready to Claim' : 'Available'}
+                            </span>
+                          </div>
+                          {(quest.active || quest.completed) && quest.requiredTime && (
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] text-slate-400 uppercase font-bold">Progress:</span>
+                                <span className="text-[9px] font-bold text-blue-300">
+                                  {Math.floor((quest.timeProgress || 0) / 60)}m / {quest.requiredTime}m
+                                </span>
+                              </div>
+                              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                  className={cn(
+                                    "h-full transition-all duration-300 rounded-full",
+                                    quest.completed ? "bg-green-500" : "bg-blue-500"
+                                  )}
+                                  style={{ width: `${progressPercent}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => quest.completed && !quest.claimed ? handleClaim(quest.id) : handleOpenDetails(quest)}
+                        disabled={quest.active}
+                        className={cn(
+                          "w-full py-2 text-[10px] font-bold tracking-[0.2em] uppercase border transition-all",
+                          quest.active ? "bg-slate-900 border-blue-500/20 text-blue-900" : 
+                          quest.completed && !quest.claimed ? "bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30" :
+                          "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
+                        )}
+                      >
+                        {quest.active ? 'Processing...' : quest.completed && !quest.claimed ? '✓ Claim Reward' : 'Initialize Quest'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </main>
       <BottomNav />
