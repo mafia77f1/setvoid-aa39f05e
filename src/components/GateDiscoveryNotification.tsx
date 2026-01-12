@@ -157,16 +157,20 @@ export const GateDiscoveryNotification = ({
 
           {/* معلومات البوابة */}
           <div className="space-y-3">
+            {/* كمية الطاقة المنبعثة */}
             <div className="flex justify-between items-center p-3 bg-white/5 border border-white/10">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-yellow-400" />
                 <span className="text-[10px] text-slate-400 uppercase font-bold">Energy Density</span>
               </div>
               <span className="text-sm font-bold text-white">
-                {showManaDetails || !hasManaGauge ? gate.energyDensity : '???'} MP
+                {showManaDetails ? gate.energyDensity + ' MP' : 
+                 !hasManaGauge ? '??? MP' : 
+                 'قم بالمسح للكشف'}
               </span>
             </div>
 
+            {/* مستوى الخطر */}
             <div className="flex justify-between items-center p-3 bg-white/5 border border-white/10">
               <div className="flex items-center gap-2">
                 <Skull className="w-4 h-4 text-red-400" />
@@ -176,24 +180,50 @@ export const GateDiscoveryNotification = ({
                 "text-xs font-bold uppercase",
                 gate.rank === 'S' || gate.rank === 'A' ? "text-red-400" : "text-blue-400"
               )}>
-                {showManaDetails || !hasManaGauge ? gate.danger : '???'}
+                {showManaDetails ? gate.danger : 
+                 !hasManaGauge ? '???' : 
+                 'مجهول'}
               </span>
             </div>
 
+            {/* رتبة البوابة - تظهر فقط إذا كان المسح قد تم */}
             {showManaDetails && (
               <div className="p-3 bg-purple-500/10 border border-purple-500/30 animate-fade-in">
                 <div className="flex items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-purple-400" />
-                  <span className="text-[10px] text-purple-300 uppercase font-bold">Required Power</span>
+                  <Target className="w-4 h-4 text-purple-400" />
+                  <span className="text-[10px] text-purple-300 uppercase font-bold">Gate Analysis</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-white">{gate.requiredPower}</span>
-                  <span className={cn(
-                    "text-xs font-bold",
-                    canEnter ? "text-green-400" : "text-red-400"
-                  )}>
-                    {canEnter ? 'مستوى كافٍ' : 'مستوى غير كافٍ'}
-                  </span>
+                <div className="space-y-2">
+                  {/* إظهار الرتبة فقط إذا كانت منخفضة أو متوسطة */}
+                  <div className="flex justify-between">
+                    <span className="text-xs text-slate-400">Rank:</span>
+                    <span className={cn(
+                      "text-sm font-bold",
+                      gate.rank === 'S' || gate.rank === 'A' ? "text-red-500" : "text-white"
+                    )}>
+                      {gate.rank === 'S' || gate.rank === 'A' ? 
+                        '⚠️ لا يمكن قياسها - طاقة هائلة!' : 
+                        gate.rank}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-slate-400">Required Power:</span>
+                    <span className={cn(
+                      "text-sm font-bold",
+                      canEnter ? "text-green-400" : "text-red-400"
+                    )}>
+                      {gate.rank === 'S' || gate.rank === 'A' ? '???' : gate.requiredPower}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-slate-400">Status:</span>
+                    <span className={cn(
+                      "text-xs font-bold",
+                      canEnter ? "text-green-400" : "text-red-400"
+                    )}>
+                      {canEnter ? '✓ مستوى كافٍ' : '✗ مستوى غير كافٍ'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
