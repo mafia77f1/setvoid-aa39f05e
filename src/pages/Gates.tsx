@@ -22,10 +22,8 @@ const Gates = () => {
   const totalLevel = gameState.totalLevel || 1;
   const playerPower = totalLevel;
 
-  // استخدام البوابات من gameState (العشوائية)
   const gates = gameState.gates || [];
 
-  // التحقق من امتلاك جهاز قياس المانا
   const hasManaGauge = gameState.inventory?.some(item => item.id === 'mana_meter' && item.quantity > 0);
 
   const handleGateClick = (gate: Gate) => {
@@ -48,10 +46,11 @@ const Gates = () => {
 
   const handleScanMana = () => {
     setIsScanning(true);
+    // تمديد الوقت إلى 8 ثوانٍ كما طلبت
     setTimeout(() => {
       setIsScanning(false);
       setShowManaDetails(true);
-    }, 2000);
+    }, 8000); 
   };
 
   const handleEnterGate = () => {
@@ -232,15 +231,19 @@ const Gates = () => {
               <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-20"><X className="w-4 h-4" /></button>
               
               {isScanning ? (
-                <div className="flex flex-col items-center justify-center py-10">
+                /* تم تحديث قسم الأنيمايشن والخلفية الضبابية */
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
                   <div className="relative">
-                    <img src="/ManaAnimation.gif" alt="Scanning..." className="w-48 h-48 object-contain mb-4 relative z-10" />
-                    <div className="absolute inset-0 bg-blue-500/20 blur-[50px] animate-pulse rounded-full" />
+                    <img src="/AnimationManaAnalysis.gif" alt="Scanning..." className="w-64 h-64 object-contain mb-4 relative z-10" />
+                    <div className="absolute inset-0 bg-blue-500/20 blur-[60px] animate-pulse rounded-full" />
                   </div>
-                  <p className="text-blue-400 font-black tracking-[0.3em] text-xs animate-pulse">DECODING DIMENSIONAL FREQUENCY...</p>
+                  <p className="text-blue-400 font-black tracking-[0.4em] text-sm animate-pulse">DECODING MANA FREQUENCY...</p>
+                  <div className="mt-4 w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 animate-[loading_8s_linear]" />
+                  </div>
                 </div>
               ) : (
-                <>
+                <div className={cn("transition-all duration-700", showManaDetails ? "animate-in fade-in zoom-in-95" : "")}>
                   <div className="text-center mb-6">
                     <div className={cn("w-20 h-20 mx-auto rounded-xl flex items-center justify-center text-4xl font-black mb-3 text-white bg-gradient-to-br", getGateColor(selectedGate.rank))}>
                       {!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rank}
@@ -251,7 +254,7 @@ const Gates = () => {
                   
                   <div className="space-y-3 mb-6">
                     {showManaDetails ? (
-                      <div className="p-4 rounded-lg bg-black/40 border border-white/20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                      <div className="p-4 rounded-lg bg-black/40 border border-white/20">
                          <div className="grid grid-cols-2 gap-4 mb-4 border-b border-white/10 pb-4">
                             <div className="space-y-1">
                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Identifier</p>
@@ -274,35 +277,38 @@ const Gates = () => {
                             </div>
                          </div>
                          
-                         {/* High-End Dungeon Map */}
+                         {/* تم تحديث الخريطة لتشبه المتاهة Labyrinth Mapping */}
                          <div className="mt-2">
                             <div className="flex justify-between items-center mb-2">
                                <div className="flex items-center gap-2">
                                   <LocateFixed className="w-3 h-3 text-blue-400 animate-pulse" />
-                                  <span className="text-[8px] text-white font-black uppercase tracking-[0.2em]">Live Dungeon Mapping</span>
+                                  <span className="text-[8px] text-white font-black uppercase tracking-[0.2em]">Labyrinth Structural Mapping</span>
                                </div>
-                               <span className="text-[7px] text-blue-400/60 font-mono">SECTOR 7-B</span>
+                               <span className="text-[7px] text-blue-400/60 font-mono">NODE-042</span>
                             </div>
                             <div className="h-32 w-full bg-[#050505] rounded-sm border border-blue-500/30 relative overflow-hidden group">
-                               {/* Grid System */}
-                               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#4f4f4f 1px, transparent 1px), linear-gradient(90deg, #4f4f4f 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
+                               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#4f4f4f 1px, transparent 1px), linear-gradient(90deg, #4f4f4f 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
                                
-                               {/* Path Logic */}
+                               {/* مسارات معقدة تشبه المتاهة */}
                                <svg className="absolute inset-0 w-full h-full opacity-60">
-                                  <path d="M 10 110 L 40 80 L 80 90 L 120 40 L 180 60 L 220 20" stroke="rgba(59, 130, 246, 0.5)" strokeWidth="1.5" fill="none" className="animate-[dash_3s_ease-in-out_infinite]" strokeDasharray="1000" strokeDashoffset="1000">
-                                     <animate attributeName="stroke-dashoffset" from="1000" to="0" dur="4s" repeatCount="indefinite" />
+                                  <path d="M 10 120 V 100 H 40 V 80 H 20 V 50 H 60 V 70 H 90 V 40 H 120 V 90 H 150 V 60 H 180 V 100 H 210 V 20 H 250" 
+                                        stroke="rgba(59, 130, 246, 0.7)" strokeWidth="1.5" fill="none" strokeDasharray="1000">
+                                     <animate attributeName="stroke-dashoffset" from="1000" to="0" dur="8s" repeatCount="indefinite" />
                                   </path>
-                                  <circle cx="220" cy="20" r="4" fill="#ef4444" className="animate-pulse" />
-                                  <circle cx="10" cy="110" r="3" fill="#ffffff" />
+                                  {/* مسارات فرعية */}
+                                  <path d="M 60 50 V 20 H 100" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="1" fill="none" />
+                                  <path d="M 150 90 V 110 H 190" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="1" fill="none" />
+                                  
+                                  <circle cx="250" cy="20" r="4" fill="#ef4444" className="animate-pulse" />
+                                  <circle cx="10" cy="120" r="3" fill="#ffffff" />
                                </svg>
 
-                               {/* Holographic Overlays */}
                                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/10 to-transparent pointer-events-none" />
                                <div className="absolute top-0 left-0 w-full h-[1px] bg-blue-400/20 shadow-[0_0_10px_blue] animate-[scan_2s_linear_infinite]" />
                                
                                <div className="absolute bottom-2 right-2 text-[6px] text-white/30 font-mono uppercase text-right leading-none">
-                                  Structural Integrity: 94%<br/>
-                                  Mob Density: High
+                                  Complex Pathing Detected<br/>
+                                  Integrity: Stable
                                </div>
                             </div>
                          </div>
@@ -322,32 +328,18 @@ const Gates = () => {
                       <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-blue-400" /> +{selectedGate.rewards.gold} Gold</span>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
-              {/* زر قياس المانا */}
-              {hasManaGauge && !showManaDetails && (
+              {hasManaGauge && !showManaDetails && !isScanning && (
                 <button
                   onClick={handleScanMana}
-                  disabled={isScanning}
-                  className={cn(
-                    "w-full py-3 mb-4 border text-[10px] font-black uppercase tracking-[0.3em] transition-all rounded-lg",
-                    isScanning 
-                      ? "bg-blue-600/20 border-blue-400/50 text-blue-300 cursor-wait"
-                      : "bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
-                  )}
+                  className="w-full py-3 mb-4 bg-blue-500/10 border border-blue-500/40 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)] text-[10px] font-black uppercase tracking-[0.3em] transition-all rounded-lg"
                 >
-                  {isScanning ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Scan className="w-4 h-4 animate-spin" />
-                      SYSTEM CALIBRATING...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Scan className="w-4 h-4" />
-                      إطلاق موجات السونار السحرية
-                    </span>
-                  )}
+                  <span className="flex items-center justify-center gap-2">
+                    <Scan className="w-4 h-4" />
+                    إطلاق موجات السونار السحرية
+                  </span>
                 </button>
               )}
               
@@ -378,7 +370,6 @@ const Gates = () => {
 
       <BottomNav />
 
-      {/* Custom Keyframes for Map */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scan {
           0% { top: 0; }
@@ -388,6 +379,10 @@ const Gates = () => {
           to {
             stroke-dashoffset: 0;
           }
+        }
+        @keyframes loading {
+          from { width: 0%; }
+          to { width: 100%; }
         }
       `}} />
     </div>
