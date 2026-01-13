@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
@@ -11,24 +11,23 @@ import {
 const Stats = () => {
   const { gameState, getXpProgress, useItem, addStatXp } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
-
   const [activeItem, setActiveItem] = useState<any>(null);
   const [modalType, setModalType] = useState<'analysis' | 'use' | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  // حالة خاصة بكارد الاستخدام
+  // حالة كارد الاستخدام
   const [itemQuantity, setItemQuantity] = useState(1);
   const [targetStat, setTargetStat] = useState<'strength' | 'mind' | 'spirit' | 'agility'>('strength');
 
   const MAX_LEVEL = 100;
 
-  const stats = [
-    { category: 'strength' as const, level: gameState.levels.strength, xp: gameState.stats.strength, xpProgress: getXpProgress(gameState.stats.strength), name: 'STRENGTH', icon: <Dumbbell className="w-5 h-5" />, color: '#60a5fa' },
-    { category: 'mind' as const, level: gameState.levels.mind, xp: gameState.stats.mind, xpProgress: getXpProgress(gameState.stats.mind), name: 'MIND', icon: <Brain className="w-5 h-5" />, color: '#60a5fa' },
-    { category: 'spirit' as const, level: gameState.levels.spirit, xp: gameState.stats.spirit, xpProgress: getXpProgress(gameState.stats.spirit), name: 'SPIRIT', icon: <Heart className="w-5 h-5" />, color: '#60a5fa' },
-    { category: 'agility' as const, level: gameState.levels.agility || 0, xp: gameState.stats.agility || 0, xpProgress: getXpProgress(gameState.stats.agility || 0), name: 'AGILITY', icon: <Zap className="w-5 h-5" />, color: '#60a5fa' },
+  const statsList = [
+    { id: 'strength' as const, name: 'STRENGTH', icon: <Dumbbell className="w-3 h-3" />, level: gameState.levels.strength, xp: gameState.stats.strength },
+    { id: 'mind' as const, name: 'MIND', icon: <Brain className="w-3 h-3" />, level: gameState.levels.mind, xp: gameState.stats.mind },
+    { id: 'spirit' as const, name: 'SPIRIT', icon: <Heart className="w-3 h-3" />, level: gameState.levels.spirit, xp: gameState.stats.spirit },
+    { id: 'agility' as const, name: 'AGILITY', icon: <Zap className="w-3 h-3" />, level: gameState.levels.agility || 0, xp: gameState.stats.agility || 0 },
   ];
 
   const openModal = (item: any, type: 'analysis' | 'use') => {
@@ -53,15 +52,13 @@ const Stats = () => {
 
   const handleAction = () => {
     if (modalType === 'analysis') {
-      // إذا كان العنصر هو جهاز المانا، يتم استهلاكه عند التحليل
       if (activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge') {
         useItem(activeItem.id);
       }
       closeModal();
     } else {
-      // منطق استخدام كتب الخبرة أو العناصر العادية
       for (let i = 0; i < itemQuantity; i++) {
-        if (activeItem.type === 'xp_book') {
+        if (activeItem.type === 'xp_book' || activeItem.id.includes('book')) {
           addStatXp(targetStat, activeItem.xpValue || 100);
         }
         useItem(activeItem.id);
@@ -82,7 +79,6 @@ const Stats = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* Background Layers */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
@@ -96,7 +92,7 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* SHARED MODAL SYSTEM */}
+      {/* MODAL SYSTEM */}
       {isScanning && activeItem && (
         <div className={cn(
           "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
@@ -115,17 +111,14 @@ const Stats = () => {
                 <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeModal} />
               </div>
 
-              {/* 1. Information Card (Always Shown) */}
-              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3 shadow-inner">
+              {/* 1. Basic Info */}
+              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-2 shadow-inner">
                 <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
                   <Info className="w-3 h-3 text-blue-400" />
-                  <span className="text-[10px] font-bold text-blue-100 tracking-widest uppercase italic">Item Properties</span>
+                  <span className="text-[10px] font-bold text-blue-100 tracking-widest uppercase italic">Information</span>
                 </div>
-                <div className="space-y-2 text-[11px]">
-                  <div className="flex justify-between"><span className="text-slate-500 uppercase">Identity:</span> <span className="text-white font-bold tracking-wider">{activeItem.name}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 uppercase">Classification:</span> <span className="text-blue-400 font-bold uppercase">{activeItem.category || activeItem.type}</span></div>
-                  <div className="flex justify-between border-t border-white/5 pt-1"><span className="text-slate-500 uppercase">Description:</span> <span className="text-white italic">{activeItem.description}</span></div>
-                </div>
+                <div className="flex justify-between text-[11px]"><span className="text-slate-500 uppercase">Item:</span> <span className="text-white font-bold">{activeItem.name}</span></div>
+                <div className="text-[10px] text-slate-400 italic leading-tight border-t border-white/5 pt-1">{activeItem.description}</div>
               </div>
 
               {modalType === 'analysis' ? (
@@ -135,94 +128,74 @@ const Stats = () => {
                       <MapPin className="w-3 h-3 text-yellow-500" />
                       <span className="text-[10px] font-bold text-yellow-100 tracking-widest uppercase italic">Acquisition Route</span>
                     </div>
-                    <div className="grid grid-cols-1 gap-2 text-[10px]">
-                      <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic">
-                        <span>Store Purchase</span>
-                        <span className="text-green-400 font-bold tracking-tighter">AVAILABLE</span>
-                      </div>
+                    <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic text-[10px]">
+                      <span>System Drop / Store</span>
+                      <span className="text-green-400 font-bold">VERIFIED</span>
                     </div>
                   </div>
-                  <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-                    <div className="flex items-center gap-2 mb-3 border-l-2 border-green-500 pl-2">
-                      <ImageIcon className="w-3 h-3 text-green-500" />
-                      <span className="text-[10px] font-bold text-green-100 tracking-widest uppercase italic">Visual Reference</span>
-                    </div>
-                    <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center overflow-hidden">
-                       {activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge' ? (
-                        <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-110 object-contain drop-shadow-[0_0_10px_#3b82f6]" />
-                      ) : (
-                        <span className="text-7xl filter grayscale brightness-150 opacity-90">{activeItem.icon || '📦'}</span>
-                      )}
-                    </div>
+                  <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center overflow-hidden">
+                    {activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge' ? (
+                      <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-110 object-contain drop-shadow-[0_0_10px_#3b82f6]" />
+                    ) : (
+                      <span className="text-7xl filter grayscale brightness-150 opacity-90">{activeItem.icon || '📦'}</span>
+                    )}
                   </div>
                 </>
               ) : (
-                /* CONSUMPTION CARD */
+                /* CONSUMPTION MODE */
                 <div className="space-y-4">
-                  {/* Quantity Selector */}
                   <div className="bg-black/40 border border-slate-700/50 p-4">
-                    <p className="text-[10px] font-bold text-blue-400 mb-3 tracking-widest">SELECT QUANTITY</p>
+                    <p className="text-[10px] font-bold text-blue-400 mb-3 tracking-widest">QUANTITY</p>
                     <div className="flex items-center justify-between bg-blue-950/20 p-2 border border-blue-500/20">
-                      <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))} className="p-2 hover:bg-white/10 text-white"><Minus className="w-4 h-4" /></button>
+                      <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))} className="p-2 text-white"><Minus className="w-4 h-4" /></button>
                       <span className="text-xl font-black italic">{itemQuantity}</span>
-                      <button onClick={() => setItemQuantity(Math.min(activeItem.quantity, itemQuantity + 1))} className="p-2 hover:bg-white/10 text-white"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => setItemQuantity(Math.min(activeItem.quantity, itemQuantity + 1))} className="p-2 text-white"><Plus className="w-4 h-4" /></button>
                     </div>
                   </div>
 
-                  {/* Stat Target (If XP Book) */}
-                  {activeItem.type === 'xp_book' && (
-                    <div className="bg-black/40 border border-slate-700/50 p-4">
-                      <p className="text-[10px] font-bold text-blue-400 mb-3 tracking-widest">ASSIGN EXPERIENCE TO:</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {['strength', 'mind', 'spirit', 'agility'].map((s) => (
-                          <button 
-                            key={s}
-                            onClick={() => setTargetStat(s as any)}
-                            className={cn(
-                              "py-2 text-[9px] font-bold uppercase border transition-all",
-                              targetStat === s ? "bg-blue-500/20 border-blue-400 text-white" : "border-white/10 text-slate-500"
+                  <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
+                    <p className="text-[10px] font-bold text-blue-400 mb-1 tracking-widest">TARGET STAT & PROGRESS</p>
+                    <div className="space-y-2">
+                      {statsList.map((stat) => (
+                        <div 
+                          key={stat.id} 
+                          onClick={() => setTargetStat(stat.id)}
+                          className={cn(
+                            "p-2 border transition-all cursor-pointer relative overflow-hidden",
+                            targetStat === stat.id ? "bg-blue-500/10 border-blue-400/60" : "bg-black/20 border-white/5 opacity-60"
+                          )}
+                        >
+                          <div className="flex justify-between items-center mb-1.5 relative z-10">
+                            <div className="flex items-center gap-2">
+                              <span className={targetStat === stat.id ? "text-blue-400" : "text-slate-400"}>{stat.icon}</span>
+                              <span className="text-[9px] font-bold uppercase">{stat.name}</span>
+                            </div>
+                            <span className="text-[11px] font-black italic">LV. {stat.level}</span>
+                          </div>
+                          {/* Progress Line */}
+                          <div className="h-[2px] bg-slate-800 w-full relative">
+                            <div className="absolute h-full bg-blue-500" style={{ width: `${getXpProgress(stat.xp)}%` }} />
+                            {targetStat === stat.id && (
+                              <div className="absolute h-full bg-green-400 animate-pulse shadow-[0_0_8px_#4ade80]" 
+                                   style={{ width: `${Math.min(100, getXpProgress(stat.xp) + (itemQuantity * 8))}%` }} />
                             )}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Progress Preview */}
-                  <div className="bg-black/40 border border-slate-700/50 p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-bold text-green-400 flex items-center gap-1 italic"><TrendingUp className="w-3 h-3" /> Growth Preview</span>
-                      <span className="text-[10px] text-white">+{itemQuantity * (activeItem.xpValue || 100)} XP</span>
-                    </div>
-                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden relative">
-                       <div 
-                        className="absolute h-full bg-blue-500/40 transition-all duration-500" 
-                        style={{ width: `${getXpProgress(gameState.stats[targetStat])}%` }} 
-                       />
-                       <div 
-                        className="absolute h-full bg-green-400 shadow-[0_0_10px_#4ade80] transition-all duration-500 animate-pulse" 
-                        style={{ width: `${Math.min(100, getXpProgress(gameState.stats[targetStat]) + (itemQuantity * 5))}%` }} 
-                       />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="pt-2">
-                <button 
-                  onClick={handleAction}
-                  className={cn(
-                    "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all",
-                    modalType === 'analysis' ? "bg-blue-500/20 text-blue-300 border border-blue-500/50" : "bg-white text-black"
-                  )}
-                >
-                  {modalType === 'analysis' 
-                    ? (activeItem.id === 'mana_meter' ? 'CONSUME TO ANALYZE' : 'COMPLETE ANALYSIS') 
-                    : 'INITIATE CONSUMPTION'}
-                </button>
-              </div>
+              <button 
+                onClick={handleAction}
+                className={cn(
+                  "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all",
+                  modalType === 'analysis' ? "bg-blue-500/20 text-blue-300 border border-blue-500/50" : "bg-white text-black"
+                )}
+              >
+                Confirm {modalType}
+              </button>
             </div>
             <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
           </div>
@@ -258,13 +231,13 @@ const Stats = () => {
             </div>
             <div className="bg-black/40 border border-blue-500/30 p-4"><div className="flex justify-center py-2"><RadarChart stats={radarStats} size={240} /></div></div>
             <div className="space-y-3">
-              {stats.map((stat) => (
-                <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3">
+              {statsList.map((stat) => (
+                <div key={stat.id} className="bg-black/60 border border-slate-700/50 p-3">
                   <div className="flex justify-between items-end mb-2">
                     <div className="flex items-center gap-3"><div className="text-blue-400 opacity-80">{stat.icon}</div><span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span></div>
                     <span className="text-lg font-black italic text-white">{stat.level}</span>
                   </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${stat.xpProgress}%` }} /></div>
+                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${getXpProgress(stat.xp)}%` }} /></div>
                 </div>
               ))}
             </div>
@@ -277,7 +250,7 @@ const Stats = () => {
               <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50"><Package className="w-12 h-12 mx-auto mb-4 text-slate-600" /><p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p></div>
             ) : (
               gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
-                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all">
                   <div className="flex justify-center mb-4 mt-[-1.5rem]">
                     <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                       <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">ITEM: <span className="text-blue-400">{item.name}</span></h2>
@@ -293,24 +266,12 @@ const Stats = () => {
                         )}
                       </div>
                       <div className="flex-1 space-y-2">
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p><p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p></div>
                         <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
                       </div>
                     </div>
-                    
                     <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => openModal(item, 'analysis')}
-                        className="py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500/20 transition-all"
-                      >
-                        Analyze
-                      </button>
-                      <button
-                        onClick={() => openModal(item, 'use')}
-                        className="py-2 bg-white/10 border border-white/40 text-white text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-white/20 transition-all"
-                      >
-                        Use Item
-                      </button>
+                      <button onClick={() => openModal(item, 'analysis')} className="py-2.5 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500/20 transition-all">Analyze</button>
+                      <button onClick={() => openModal(item, 'use')} className="py-2.5 bg-white/10 border border-white/40 text-white text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-white/20 transition-all">Use Item</button>
                     </div>
                   </div>
                 </div>
