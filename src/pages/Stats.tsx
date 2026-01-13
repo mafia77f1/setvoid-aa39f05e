@@ -4,68 +4,45 @@ import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { cn } from '@/lib/utils';
 import { 
-  Dumbbell, Brain, Heart, Zap, Target, Coins, Package, X, 
-  ShieldAlert, Info, MapPin, Image as ImageIcon, Plus, Minus, TrendingUp 
+  Dumbbell, 
+  Brain, 
+  Heart, 
+  Zap,
+  Target,
+  Coins,
+  Package,
+  X,
+  ShieldAlert,
+  Info,
+  MapPin,
+  Image as ImageIcon,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, addStatXp } = useGameState();
+  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
+
   const [activeItem, setActiveItem] = useState<any>(null);
-  const [modalType, setModalType] = useState<'analysis' | 'use' | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [isUsing, setIsUsing] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  // حالة كارد الاستخدام
-  const [itemQuantity, setItemQuantity] = useState(1);
-  const [targetStat, setTargetStat] = useState<'strength' | 'mind' | 'spirit' | 'agility'>('strength');
+  // States للتفاعل مع العناصر
+  const [itemQty, setItemQty] = useState(1);
+  const [selectedStat, setSelectedStat] = useState('strength');
 
   const MAX_LEVEL = 100;
 
-  const statsList = [
-    { id: 'strength' as const, name: 'STRENGTH', icon: <Dumbbell className="w-3 h-3" />, level: gameState.levels.strength, xp: gameState.stats.strength },
-    { id: 'mind' as const, name: 'MIND', icon: <Brain className="w-3 h-3" />, level: gameState.levels.mind, xp: gameState.stats.mind },
-    { id: 'spirit' as const, name: 'SPIRIT', icon: <Heart className="w-3 h-3" />, level: gameState.levels.spirit, xp: gameState.stats.spirit },
-    { id: 'agility' as const, name: 'AGILITY', icon: <Zap className="w-3 h-3" />, level: gameState.levels.agility || 0, xp: gameState.stats.agility || 0 },
+  const stats = [
+    { category: 'strength' as const, level: gameState.levels.strength, xp: gameState.stats.strength, xpProgress: getXpProgress(gameState.stats.strength), name: 'STRENGTH', icon: <Dumbbell className="w-5 h-5" />, color: '#60a5fa' },
+    { category: 'mind' as const, level: gameState.levels.mind, xp: gameState.stats.mind, xpProgress: getXpProgress(gameState.stats.mind), name: 'MIND', icon: <Brain className="w-5 h-5" />, color: '#60a5fa' },
+    { category: 'spirit' as const, level: gameState.levels.spirit, xp: gameState.stats.spirit, xpProgress: getXpProgress(gameState.stats.spirit), name: 'SPIRIT', icon: <Heart className="w-5 h-5" />, color: '#60a5fa' },
+    { category: 'agility' as const, level: gameState.levels.agility || 0, xp: gameState.stats.agility || 0, xpProgress: getXpProgress(gameState.stats.agility || 0), name: 'AGILITY', icon: <Zap className="w-5 h-5" />, color: '#60a5fa' },
   ];
-
-  const openModal = (item: any, type: 'analysis' | 'use') => {
-    setActiveItem(item);
-    setModalType(type);
-    setItemQuantity(1);
-    setIsScanning(true);
-    setIsExiting(false);
-    setTimeout(() => setIsVisible(true), 50);
-  };
-
-  const closeModal = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setIsExiting(false);
-      setIsVisible(false);
-      setActiveItem(null);
-      setModalType(null);
-    }, 800);
-  };
-
-  const handleAction = () => {
-    if (modalType === 'analysis') {
-      if (activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge') {
-        useItem(activeItem.id);
-      }
-      closeModal();
-    } else {
-      for (let i = 0; i < itemQuantity; i++) {
-        if (activeItem.type === 'xp_book' || activeItem.id.includes('book')) {
-          addStatXp(targetStat, activeItem.xpValue || 100);
-        }
-        useItem(activeItem.id);
-      }
-      closeModal();
-    }
-  };
 
   const radarStats = {
     strength: Math.min((gameState.levels.strength / MAX_LEVEL) * 100, 100),
@@ -74,14 +51,41 @@ const Stats = () => {
     agility: Math.min(((gameState.levels.agility || 0) / MAX_LEVEL) * 100, 100),
   };
 
+  // دالة التحليل واستهلاك المانا
+  const openAnalysis = (item: any) => {
+    const manaItem = gameState.inventory.find(i => (i.id === 'mana_meter' || i.name === 'Mana Gauge') && i.quantity > 0);
+    if (!manaItem) {
+      toast({ title: "System Error", description: "Mana Gauge is required for analysis.", variant: "destructive" });
+      return;
+    }
+    useItem(manaItem.id); // يختفي الجهاز بعد الاستخدام
+    setActiveItem(item);
+    setIsScanning(true);
+    setIsUsing(false);
+    setIsExiting(false);
+    setTimeout(() => setIsVisible(true), 50);
+  };
+
+  const closeModals = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setIsUsing(false);
+      setIsExiting(false);
+      setIsVisible(false);
+      setActiveItem(null);
+      setItemQty(1);
+    }, 800);
+  };
+
   const totalLevel = gameState.totalLevel;
   const levelConfig = totalLevel >= 40 ? { color: '#c084fc', tier: 'S-RANK' } : totalLevel >= 20 ? { color: '#60a5fa', tier: 'B-RANK' } : { color: '#ffffff', tier: 'E-RANK' };
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Overlay */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
@@ -92,152 +96,128 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* MODAL SYSTEM */}
-      {isScanning && activeItem && (
+      {/* DYNAMIC USAGE & ANALYSIS MODAL */}
+      {(isScanning || isUsing) && activeItem && (
         <div className={cn(
           "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
           isVisible && !isExiting ? "bg-black/95" : "bg-black/0 pointer-events-none"
         )}>
           <div className={cn(
-            "relative bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.3)] max-w-sm w-full font-mono overflow-y-auto max-h-[90vh] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
-            isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1000ms]" : "opacity-0 scale-y-0 duration-[800ms]"
+            "relative bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.3)] max-w-sm w-full font-mono overflow-y-auto max-h-[90vh] transition-all origin-center",
+            isVisible && !isExiting ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
           )}>
-            <div className={cn("absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
-            
-            <div className={cn("p-6 space-y-6 transition-all duration-1000 delay-700", isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
+            <div className="p-6 space-y-6">
               <div className="flex justify-between items-center border-b border-blue-500/30 pb-2">
                 <ShieldAlert className="w-5 h-5 text-blue-400" />
-                <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic">{modalType === 'analysis' ? 'System Analysis' : 'Item Consumption'}</h2>
-                <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeModal} />
+                <h2 className="text-blue-400 text-sm font-bold uppercase italic">{isUsing ? 'Item usage' : 'Analysis Results'}</h2>
+                <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeModals} />
               </div>
 
-              {/* 1. Basic Info */}
-              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-2 shadow-inner">
-                <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
-                  <Info className="w-3 h-3 text-blue-400" />
-                  <span className="text-[10px] font-bold text-blue-100 tracking-widest uppercase italic">Information</span>
-                </div>
+              {/* المعلومات الأساسية */}
+              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-2">
                 <div className="flex justify-between text-[11px]"><span className="text-slate-500 uppercase">Item:</span> <span className="text-white font-bold">{activeItem.name}</span></div>
-                <div className="text-[10px] text-slate-400 italic leading-tight border-t border-white/5 pt-1">{activeItem.description}</div>
+                <div className="flex justify-between text-[11px]"><span className="text-slate-500 uppercase">Class:</span> <span className="text-blue-400 uppercase">{activeItem.type}</span></div>
+                <p className="text-[10px] text-slate-300 italic pt-2 border-t border-white/5">{activeItem.description}</p>
               </div>
 
-              {modalType === 'analysis' ? (
-                <>
-                  <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-                    <div className="flex items-center gap-2 mb-1 border-l-2 border-yellow-500 pl-2">
-                      <MapPin className="w-3 h-3 text-yellow-500" />
-                      <span className="text-[10px] font-bold text-yellow-100 tracking-widest uppercase italic">Acquisition Route</span>
-                    </div>
-                    <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic text-[10px]">
-                      <span>System Drop / Store</span>
-                      <span className="text-green-400 font-bold">VERIFIED</span>
-                    </div>
-                  </div>
-                  <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center overflow-hidden">
-                    {activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge' ? (
-                      <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-110 object-contain drop-shadow-[0_0_10px_#3b82f6]" />
-                    ) : (
-                      <span className="text-7xl filter grayscale brightness-150 opacity-90">{activeItem.icon || '📦'}</span>
-                    )}
-                  </div>
-                </>
-              ) : (
-                /* CONSUMPTION MODE */
-                <div className="space-y-4">
-                  <div className="bg-black/40 border border-slate-700/50 p-4">
-                    <p className="text-[10px] font-bold text-blue-400 mb-3 tracking-widest">QUANTITY</p>
-                    <div className="flex items-center justify-between bg-blue-950/20 p-2 border border-blue-500/20">
-                      <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))} className="p-2 text-white"><Minus className="w-4 h-4" /></button>
-                      <span className="text-xl font-black italic">{itemQuantity}</span>
-                      <button onClick={() => setItemQuantity(Math.min(activeItem.quantity, itemQuantity + 1))} className="p-2 text-white"><Plus className="w-4 h-4" /></button>
+              {/* لوحة كتب الخبرة / استعادة الطاقة */}
+              {isUsing && (activeItem.type === 'experience' || activeItem.category === 'consumable') && (
+                <div className="bg-black/40 border border-slate-700/50 p-4 space-y-4 shadow-[inset_0_0_20px_rgba(59,130,246,0.1)]">
+                  <div className="space-y-2">
+                    <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest text-center">Set Amount to Consume</p>
+                    <div className="flex items-center gap-4 bg-blue-950/20 p-2 border border-blue-500/20">
+                      <input 
+                        type="range" min="1" max={activeItem.quantity} value={itemQty} 
+                        onChange={(e) => setItemQty(parseInt(e.target.value))}
+                        className="flex-1 accent-blue-500"
+                      />
+                      <span className="text-xs font-bold text-white">x{itemQty}</span>
                     </div>
                   </div>
 
-                  <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-                    <p className="text-[10px] font-bold text-blue-400 mb-1 tracking-widest">TARGET STAT & PROGRESS</p>
-                    <div className="space-y-2">
-                      {statsList.map((stat) => (
-                        <div 
-                          key={stat.id} 
-                          onClick={() => setTargetStat(stat.id)}
-                          className={cn(
-                            "p-2 border transition-all cursor-pointer relative overflow-hidden",
-                            targetStat === stat.id ? "bg-blue-500/10 border-blue-400/60" : "bg-black/20 border-white/5 opacity-60"
-                          )}
-                        >
-                          <div className="flex justify-between items-center mb-1.5 relative z-10">
-                            <div className="flex items-center gap-2">
-                              <span className={targetStat === stat.id ? "text-blue-400" : "text-slate-400"}>{stat.icon}</span>
-                              <span className="text-[9px] font-bold uppercase">{stat.name}</span>
-                            </div>
-                            <span className="text-[11px] font-black italic">LV. {stat.level}</span>
-                          </div>
-                          {/* Progress Line */}
-                          <div className="h-[2px] bg-slate-800 w-full relative">
-                            <div className="absolute h-full bg-blue-500" style={{ width: `${getXpProgress(stat.xp)}%` }} />
-                            {targetStat === stat.id && (
-                              <div className="absolute h-full bg-green-400 animate-pulse shadow-[0_0_8px_#4ade80]" 
-                                   style={{ width: `${Math.min(100, getXpProgress(stat.xp) + (itemQuantity * 8))}%` }} />
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                  {/* في حالة كتاب الخبرة: اختيار الفئة والزيادة المتوقعة */}
+                  {activeItem.type === 'experience' && (
+                    <div className="space-y-3">
+                      <p className="text-[9px] text-slate-500 uppercase font-bold text-center">Select Targeted Attribute</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {stats.map(s => (
+                          <button key={s.category} onClick={() => setSelectedStat(s.category)}
+                            className={cn("p-2 border text-[9px] uppercase font-bold transition-all", 
+                            selectedStat === s.category ? "bg-blue-600 border-white text-white" : "bg-slate-900/50 border-slate-800 text-slate-500")}>
+                            {s.name} <span className="text-green-400 ml-1">▲+{itemQty * 5}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* في حالة استعادة الصحة أو المانا */}
+                  {activeItem.category === 'consumable' && (
+                    <div className="space-y-2">
+                       <div className="flex justify-between text-[9px] uppercase font-bold"><span className="text-green-400">Recovery Preview</span> <Activity className="w-3 h-3" /></div>
+                       <div className="h-1.5 bg-slate-900 border border-white/5 relative">
+                          <div className="h-full bg-green-500/50 animate-pulse" style={{ width: `${Math.min(100, itemQty * 10)}%` }} />
+                       </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              <button 
-                onClick={handleAction}
-                className={cn(
-                  "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all",
-                  modalType === 'analysis' ? "bg-blue-500/20 text-blue-300 border border-blue-500/50" : "bg-white text-black"
+              {/* لوحة الصور والتحليل */}
+              {!isUsing && (
+                 <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
+                    <div className="flex items-center gap-2 border-l-2 border-yellow-500 pl-2">
+                       <MapPin className="w-3 h-3 text-yellow-500" /><span className="text-[9px] font-bold text-yellow-100 uppercase">Locations</span>
+                    </div>
+                    <p className="text-[10px] italic text-slate-400 pl-5">• Available via Store Marketplace</p>
+                    <p className="text-[10px] italic text-slate-400 pl-5">• Rare Dungeon Gate Drop</p>
+                 </div>
+              )}
+
+              <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center relative group">
+                {activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge' ? (
+                  <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-110 object-contain drop-shadow-[0_0_15px_#3b82f6]" />
+                ) : (
+                  <span className="text-7xl filter grayscale brightness-150">{activeItem.icon || '📦'}</span>
                 )}
+              </div>
+
+              <button 
+                onClick={() => { useItem(activeItem.id); closeModals(); }}
+                className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase hover:bg-slate-200 transition-all"
               >
-                Confirm {modalType}
+                Execute Action
               </button>
             </div>
-            <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
           </div>
         </div>
       )}
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 font-bold">
           {['stats', 'equipment'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={cn(
-                "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
-                activeTab === tab ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : "bg-black/40 border-slate-700 text-slate-500"
-              )}
-            >
-              {tab === 'stats' ? <><Target className="w-3 h-3" /> Abilities</> : <><Package className="w-3 h-3" /> Inventory</>}
+            <button key={tab} onClick={() => setActiveTab(tab as any)} 
+              className={cn("flex-1 py-2 border text-[10px] uppercase transition-all", activeTab === tab ? "bg-blue-500/20 border-blue-400 text-blue-100" : "bg-black/40 border-slate-700 text-slate-500")}>
+              {tab === 'stats' ? 'Abilities' : 'Inventory'}
             </button>
           ))}
         </div>
 
         {activeTab === 'stats' && (
           <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)] text-center">
-              <div className="flex justify-center mb-6 mt-[-2.5rem]">
-                <div className="border border-slate-400/50 px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                  <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">Class: <span className="text-blue-400">Shadow Monarch</span></h2>
-                </div>
-              </div>
-              <div className="text-4xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">LV. {totalLevel}</div>
+            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 text-center">
+              <div className="text-4xl font-black italic">LV. {totalLevel}</div>
               <div className="text-[10px] font-bold tracking-[0.4em] uppercase py-1 px-4 border-y border-white/20 mt-2 inline-block" style={{ color: levelConfig.color }}>{levelConfig.tier}</div>
             </div>
-            <div className="bg-black/40 border border-blue-500/30 p-4"><div className="flex justify-center py-2"><RadarChart stats={radarStats} size={240} /></div></div>
+            <div className="bg-black/40 border border-blue-500/30 p-4 flex justify-center"><RadarChart stats={radarStats} size={240} /></div>
             <div className="space-y-3">
-              {statsList.map((stat) => (
-                <div key={stat.id} className="bg-black/60 border border-slate-700/50 p-3">
+              {stats.map((stat) => (
+                <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3">
                   <div className="flex justify-between items-end mb-2">
-                    <div className="flex items-center gap-3"><div className="text-blue-400 opacity-80">{stat.icon}</div><span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span></div>
-                    <span className="text-lg font-black italic text-white">{stat.level}</span>
+                    <span className="text-xs font-bold text-slate-300 uppercase">{stat.name}</span>
+                    <span className="text-lg font-black italic">{stat.level}</span>
                   </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${getXpProgress(stat.xp)}%` }} /></div>
+                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500" style={{ width: `${stat.xpProgress}%` }} /></div>
                 </div>
               ))}
             </div>
@@ -246,37 +226,53 @@ const Stats = () => {
 
         {activeTab === 'equipment' && (
           <div className="space-y-12 animate-in fade-in duration-500">
-            {gameState.inventory.filter(i => i.quantity > 0).length === 0 ? (
-              <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50"><Package className="w-12 h-12 mx-auto mb-4 text-slate-600" /><p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p></div>
-            ) : (
-              gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
-                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all">
+            {gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
+                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+                  
+                  {/* أيقونة ❓ فضية بدون خلفية في الأعلى يسار */}
+                  <button 
+                    onClick={() => openAnalysis(item)}
+                    className="absolute top-2 left-2 z-20 text-slate-400 hover:text-white transition-colors p-1"
+                  >
+                    <span className="text-2xl font-black drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">❓</span>
+                  </button>
+
                   <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                    <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                      <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">ITEM: <span className="text-blue-400">{item.name}</span></h2>
-                    </div>
+                    <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90"><h2 className="text-xs font-bold text-white uppercase italic">ITEM: <span className="text-blue-400">{item.name}</span></h2></div>
                   </div>
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
+                      <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40 overflow-hidden relative">
                         {item.id === 'mana_meter' || item.name === 'Mana Gauge' ? (
-                          <img src="/ManaDeviceIcon.png" alt="Mana Gauge" className="w-[150%] h-[150%] scale-125 object-contain filter brightness-110 drop-shadow-[0_0_10px_#3b82f6]" />
+                          <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-125 object-contain filter brightness-110" />
                         ) : (
-                          <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">{item.icon || '📦'}</span>
+                          <span className="text-4xl grayscale brightness-150">{item.icon || '📦'}</span>
                         )}
                       </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
+                      <div className="flex-1 space-y-2 text-[10px]">
+                        <div className="flex justify-between border-b border-white/10 pb-1"><span className="text-slate-500 uppercase">Category:</span> <span className="text-white font-bold">{item.type}</span></div>
+                        <div className="flex justify-between border-b border-white/10 pb-1"><span className="text-slate-500 uppercase">Quantity:</span> <span className="text-blue-400 font-bold">x{item.quantity}</span></div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => openModal(item, 'analysis')} className="py-2.5 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500/20 transition-all">Analyze</button>
-                      <button onClick={() => openModal(item, 'use')} className="py-2.5 bg-white/10 border border-white/40 text-white text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-white/20 transition-all">Use Item</button>
-                    </div>
+                    <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
+                    
+                    {/* زر الاستخدام المطور */}
+                    <button
+                      onClick={() => {
+                        setActiveItem(item);
+                        setIsUsing(true);
+                        setIsScanning(false);
+                        setIsExiting(false);
+                        setTimeout(() => setIsVisible(true), 50);
+                      }}
+                      className="w-full mt-2 py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95]"
+                    >
+                      Use Item
+                    </button>
                   </div>
                 </div>
               ))
-            )}
+            }
           </div>
         )}
       </main>
