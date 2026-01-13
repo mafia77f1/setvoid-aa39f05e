@@ -1,26 +1,40 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { cn } from '@/lib/utils';
 import { 
-  Dumbbell, Brain, Heart, Zap, Target, Coins, Package, X, 
-  ShieldAlert, Info, MapPin, Image as ImageIcon, ChevronUp, Plus, Minus
+  Dumbbell, 
+  Brain, 
+  Heart, 
+  Zap,
+  Target,
+  Coins,
+  Package,
+  X,
+  ShieldAlert,
+  Info,
+  MapPin,
+  Image as ImageIcon,
+  ChevronUp,
+  Plus,
+  Minus
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, updateStats } = useGameState();
+  const { gameState, getXpProgress, useItem } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
   const [activeItem, setActiveItem] = useState<any>(null);
-  const [isScanning, setIsScanning] = useState(false); // Analysis Modal
-  const [isUsing, setIsUsing] = useState(false);       // Use Modal
+  const [isScanning, setIsScanning] = useState(false);
+  const [isUsing, setIsUsing] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  
-  // XP Distribution Logic
+
+  // LOGIC STATES
   const [selectedAmount, setSelectedAmount] = useState(1);
   const [selectedStat, setSelectedStat] = useState<'strength' | 'mind' | 'spirit' | 'agility'>('strength');
+  const XP_PER_BOOK = 5;
 
   const MAX_LEVEL = 100;
 
@@ -63,7 +77,6 @@ const Stats = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* Background FX (No Change) */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
@@ -77,7 +90,6 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* MODAL SYSTEM (Analysis & Use) */}
       {(isScanning || isUsing) && activeItem && (
         <div className={cn(
           "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
@@ -98,7 +110,6 @@ const Stats = () => {
                 <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeModal} />
               </div>
 
-              {/* SHARED: Identity Card */}
               <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3 shadow-inner">
                 <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
                   <Info className="w-3 h-3 text-blue-400" />
@@ -106,11 +117,10 @@ const Stats = () => {
                 </div>
                 <div className="space-y-2 text-[11px]">
                   <div className="flex justify-between"><span className="text-slate-500 uppercase">Identity:</span> <span className="text-white font-bold tracking-wider">{activeItem.name}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 uppercase">Quantity:</span> <span className="text-blue-400 font-bold uppercase">{activeItem.quantity}</span></div>
+                  <div className="flex justify-between border-t border-white/5 pt-1"><span className="text-slate-500 uppercase">Integrity:</span> <span className="text-white italic">{activeItem.description}</span></div>
                 </div>
               </div>
 
-              {/* MODE: SCANNING (Original Content) */}
               {isScanning && (
                 <>
                   <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
@@ -119,7 +129,10 @@ const Stats = () => {
                       <span className="text-[10px] font-bold text-yellow-100 tracking-widest uppercase italic">Acquisition Route</span>
                     </div>
                     <div className="grid grid-cols-1 gap-2 text-[10px]">
-                      <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic"><span>Store Purchase</span><span className="text-green-400 font-bold">AVAILABLE</span></div>
+                      <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic">
+                        <span>Store Purchase</span>
+                        <span className="text-green-400 font-bold tracking-tighter">AVAILABLE</span>
+                      </div>
                     </div>
                   </div>
                   <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
@@ -130,62 +143,67 @@ const Stats = () => {
                 </>
               )}
 
-              {/* MODE: USING (XP & Distribution Logic) */}
               {isUsing && (
-                <>
-                  <div className="bg-black/40 border border-slate-700/50 p-4 space-y-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-blue-400 tracking-widest uppercase italic border-l-2 border-blue-400 pl-2">Selection Amount</span>
-                      <div className="flex items-center gap-4 bg-white/5 px-2 py-1 border border-white/10">
-                        <button onClick={() => setSelectedAmount(Math.max(1, selectedAmount - 1))}><Minus className="w-3 h-3" /></button>
-                        <span className="text-xs font-bold w-4 text-center">{selectedAmount}</span>
-                        <button onClick={() => setSelectedAmount(Math.min(activeItem.quantity, selectedAmount + 1))}><Plus className="w-3 h-3" /></button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <span className="text-[10px] font-bold text-green-400 tracking-widest uppercase italic border-l-2 border-green-400 pl-2">Distribute XP</span>
-                      {stats.map((stat) => (
-                        <div 
-                          key={stat.id}
-                          onClick={() => setSelectedStat(stat.id)}
-                          className={cn(
-                            "p-2 border transition-all cursor-pointer",
-                            selectedStat === stat.id ? "bg-green-500/10 border-green-500/50" : "bg-white/5 border-white/10 opacity-60"
-                          )}
-                        >
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-[10px] font-bold uppercase flex items-center gap-2">
-                              {stat.icon} {stat.name}
-                            </span>
-                            <div className="flex items-center gap-2">
-                               <span className="text-[10px] font-bold">LV. {stat.level}</span>
-                               {selectedStat === stat.id && (
-                                 <span className="text-green-400 text-[10px] font-bold flex items-center">
-                                   <ChevronUp className="w-3 h-3" /> +{selectedAmount}
-                                 </span>
-                               )}
-                            </div>
-                          </div>
-                          <div className="h-1 bg-slate-800 w-full overflow-hidden">
-                            <div 
-                              className={cn("h-full transition-all duration-500", selectedStat === stat.id ? "bg-green-500 shadow-[0_0_8px_#22c55e]" : "bg-blue-500")}
-                              style={{ width: `${stat.xpProgress}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                <div className="bg-black/40 border border-slate-700/50 p-4 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-blue-400 tracking-widest uppercase italic border-l-2 border-blue-400 pl-2">Select Quantity</span>
+                    <div className="flex items-center gap-4 bg-white/5 px-2 py-1 border border-white/10">
+                      <button onClick={() => setSelectedAmount(Math.max(1, selectedAmount - 1))}><Minus className="w-3 h-3" /></button>
+                      <span className="text-xs font-bold w-4 text-center">{selectedAmount}</span>
+                      <button onClick={() => setSelectedAmount(Math.min(activeItem.quantity, selectedAmount + 1))}><Plus className="w-3 h-3" /></button>
                     </div>
                   </div>
-                </>
+
+                  {activeItem.type === 'xp_book' && (
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-bold text-green-400 tracking-widest uppercase italic border-l-2 border-green-400 pl-2">Preview Effect</span>
+                      {stats.map((stat) => {
+                        const xpGain = selectedAmount * XP_PER_BOOK;
+                        const previewProgress = getXpProgress(stat.xp + (selectedStat === stat.id ? xpGain : 0));
+                        
+                        return (
+                          <div 
+                            key={stat.id} 
+                            onClick={() => setSelectedStat(stat.id)} 
+                            className={cn(
+                              "p-2 border transition-all cursor-pointer", 
+                              selectedStat === stat.id ? "bg-green-500/10 border-green-500/50" : "bg-white/5 border-white/10 opacity-60"
+                            )}
+                          >
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[10px] font-bold uppercase flex items-center gap-2">
+                                {stat.icon} {stat.name}
+                              </span>
+                              {selectedStat === stat.id && (
+                                <span className="text-green-400 text-[10px] font-bold flex items-center gap-1">
+                                  <ChevronUp className="w-3 h-3" /> +{xpGain} XP
+                                </span>
+                              )}
+                            </div>
+                            <div className="h-1 bg-slate-800 w-full overflow-hidden">
+                              <div 
+                                className={cn("h-full transition-all duration-500", selectedStat === stat.id ? "bg-green-500" : "bg-blue-500")}
+                                style={{ width: `${selectedStat === stat.id ? previewProgress : stat.xpProgress}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               )}
 
               <div className="pt-2">
                 <button 
-                  onClick={() => { useItem(activeItem.id, selectedAmount, selectedStat); closeModal(); }}
+                  onClick={() => {
+                    const finalXpGain = activeItem.type === 'xp_book' ? selectedAmount * XP_PER_BOOK : 0;
+                    useItem(activeItem.id, selectedAmount, selectedStat, finalXpGain); 
+                    closeModal(); 
+                  }}
                   className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:brightness-90 active:scale-95 transition-all"
                 >
-                  {isScanning ? "Confirm Analysis" : "Initiate Consumption"}
+                  Initiate Consumption
                 </button>
               </div>
             </div>
@@ -194,7 +212,6 @@ const Stats = () => {
         </div>
       )}
 
-      {/* Main UI (No Change except buttons) */}
       <main className="relative z-10 max-w-md mx-auto space-y-6">
         <div className="flex gap-2 mb-6">
           {['stats', 'equipment'].map((tab) => (
@@ -213,7 +230,7 @@ const Stats = () => {
 
         {activeTab === 'stats' && (
           <div className="space-y-8 animate-in fade-in duration-500">
-             <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)] text-center">
+            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)] text-center">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
                 <div className="border border-slate-400/50 px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                   <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">Class: <span className="text-blue-400">Shadow Monarch</span></h2>
@@ -239,42 +256,45 @@ const Stats = () => {
 
         {activeTab === 'equipment' && (
           <div className="space-y-12 animate-in fade-in duration-500">
-            {gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
-              <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
-                <div className="flex justify-center mb-4 mt-[-1.5rem]">
+            {gameState.inventory.filter(i => i.quantity > 0).length === 0 ? (
+              <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50"><Package className="w-12 h-12 mx-auto mb-4 text-slate-600" /><p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p></div>
+            ) : (
+              gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
+                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+                  <div className="flex justify-center mb-4 mt-[-1.5rem]">
                     <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                       <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">ITEM: <span className="text-blue-400">{item.name}</span></h2>
                     </div>
-                </div>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40">
-                      <span className="text-4xl filter grayscale brightness-200 opacity-90">{item.icon || '📦'}</span>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
+                        <span className="text-4xl filter grayscale brightness-200 opacity-90">{item.icon || '📦'}</span>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p><p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p></div>
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
+                      </div>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p><p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p></div>
-                      <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
+                    <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <button
+                        onClick={() => openModal(item, 'scan')}
+                        className="py-3 bg-slate-500/10 border border-slate-500/40 text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95] transition-all"
+                      >
+                        Analysis
+                      </button>
+                      <button
+                        onClick={() => openModal(item, 'use')}
+                        className="py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95] shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:bg-blue-500/20 transition-all"
+                      >
+                        Use Item
+                      </button>
                     </div>
                   </div>
-                  
-                  {/* TWO BUTTONS: ANALYSIS & USE */}
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <button
-                      onClick={() => openModal(item, 'scan')}
-                      className="py-3 bg-slate-500/10 border border-slate-500/40 text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95] transition-all"
-                    >
-                      Analysis
-                    </button>
-                    <button
-                      onClick={() => openModal(item, 'use')}
-                      className="py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95] shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:bg-blue-500/20 transition-all"
-                    >
-                      Use Item
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </main>
