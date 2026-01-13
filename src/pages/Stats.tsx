@@ -10,12 +10,15 @@ import {
   Zap,
   Target,
   Coins,
-  Package
+  Package,
+  X
 } from 'lucide-react';
 
 const Stats = () => {
   const { gameState, getXpProgress, useItem, equipTitle, unequipTitle } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
+  // حالة جديدة للتحكم في نافذة كتاب الخبرة
+  const [selectedExpBook, setSelectedExpBook] = useState<any>(null);
 
   const MAX_LEVEL = 100;
 
@@ -77,13 +80,13 @@ const Stats = () => {
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
-      {/* Background Overlay - Matching Market */}
+      {/* Background Overlay */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* Header - Aligned with Market style */}
+      {/* Header */}
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
         <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
           Player Status
@@ -123,7 +126,7 @@ const Stats = () => {
 
         {activeTab === 'stats' && (
           <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Level Window - Matching Market Item Frame */}
+            {/* Level Window */}
             <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
                 <div className="border border-slate-400/50 px-6 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
@@ -145,7 +148,6 @@ const Stats = () => {
               </div>
             </div>
 
-            {/* Analysis Grid */}
             <div className="grid grid-cols-1 gap-6">
               <div className="bg-black/40 border border-blue-500/30 p-4 relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-4 border-l-2 border-blue-400 pl-2">
@@ -157,7 +159,6 @@ const Stats = () => {
                 </div>
               </div>
 
-              {/* Individual Stats */}
               <div className="space-y-3">
                 {stats.map((stat) => (
                   <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3 hover:border-blue-500/50 transition-colors">
@@ -185,6 +186,51 @@ const Stats = () => {
 
         {activeTab === 'equipment' && (
           <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
+            {/* Modal لكتاب الخبرة */}
+            {selectedExpBook && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div className="relative w-full max-w-xs bg-[#0a0f1d] border-2 border-blue-500/50 p-6 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                  <button 
+                    onClick={() => setSelectedExpBook(null)}
+                    className="absolute top-2 right-2 text-slate-500 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  
+                  <div className="text-center mb-6">
+                    <h3 className="text-lg font-bold text-blue-400 uppercase tracking-tighter italic">{selectedExpBook.name}</h3>
+                    <p className="text-[10px] text-slate-400 font-bold">XP GAIN: +{selectedExpBook.xpValue || 500}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {stats.map((s) => (
+                      <div key={s.name} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold text-slate-300">{s.name}</span>
+                        </div>
+                        <div className="h-1 bg-slate-800 w-full overflow-hidden">
+                          <div 
+                            className="h-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]"
+                            style={{ width: `${s.xpProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      useItem(selectedExpBook.id);
+                      setSelectedExpBook(null);
+                    }}
+                    className="w-full mt-6 py-2 bg-blue-600/20 border border-blue-400 text-blue-100 text-[10px] font-bold uppercase tracking-[0.2em]"
+                  >
+                    CONFIRM USE
+                  </button>
+                </div>
+              </div>
+            )}
+
             {gameState.inventory.filter(i => i.quantity > 0).length === 0 ? (
               <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50">
                 <Package className="w-12 h-12 mx-auto mb-4 text-slate-600" />
@@ -205,9 +251,14 @@ const Stats = () => {
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center gap-4">
                         <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                          <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
-                            {item.icon || '📦'}
-                          </span>
+                          {/* تعديل أيقونة جهاز قياس الطاقة */}
+                          {item.id === 'mana-meter' || item.name.includes('قياس الطاقة') ? (
+                            <img src="/ManaDeviceIcon.png" alt="Mana Device" className="w-16 h-16 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
+                          ) : (
+                            <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
+                              {item.icon || '📦'}
+                            </span>
+                          )}
                         </div>
                         <div className="flex-1 space-y-2">
                           <div className="flex justify-between items-center border-b border-white/10 pb-1">
@@ -245,7 +296,14 @@ const Stats = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => useItem(item.id)}
+                          onClick={() => {
+                            // إذا كان العنصر هو كتاب خبرة، يظهر الكارد
+                            if (item.id.includes('exp-book')) {
+                              setSelectedExpBook(item);
+                            } else {
+                              useItem(item.id);
+                            }
+                          }}
                           className="w-full mt-2 py-2 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-500/20 transition-all active:scale-[0.95] drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]"
                         >
                           Use Item
