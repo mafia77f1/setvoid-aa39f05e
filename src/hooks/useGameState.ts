@@ -149,50 +149,94 @@ const getInitialAchievements = (): Achievement[] => [
   { id: 'ach9', name: 'المستوى 100', description: 'وصلت للمستوى 100', requirement: 100, progress: 0, unlocked: false, icon: '🏅', rarity: 'legendary' },
 ];
 
-// Generate random gates for the day based on player level
-const getRandomDailyGates = (playerLevel: number): Gate[] => {
+// نظام البوابات المتغيرة حسب الوقت - تظهر في أوقات مختلفة خلال اليوم
+const getScheduledGates = (playerLevel: number): Gate[] => {
   const allGates: Gate[] = [
     { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: Math.floor(Math.random() * 41) + 10, shadowPoints: 2 } },
     { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: Math.floor(Math.random() * 91) + 50, shadowPoints: 5 } },
     { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: Math.floor(Math.random() * 151) + 100, shadowPoints: 10 } },
     { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: Math.floor(Math.random() * 251) + 250, shadowPoints: 20 } },
-    { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 0, shadowPoints: 50 } }, // Locked in alpha - gold reward would be 1000-3000
-    { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 0, shadowPoints: 200 } }, // Locked in alpha - gold reward would be 3000-5000
+    { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 0, shadowPoints: 50 } },
+    { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 0, shadowPoints: 200 } },
   ];
   
-  // Determine number of gates based on random (1-3 per day)
-  const numGates = Math.floor(Math.random() * 3) + 1; // 1-3 gates
+  const currentHour = new Date().getHours();
   
-  // Filter gates based on player level - higher level = more chance for higher gates
+  // جدول ظهور البوابات حسب الوقت:
+  // الصباح (6-11): بوابات E و D - سهلة للبداية
+  // الظهر (12-15): بوابات D و C - متوسطة
+  // العصر (16-18): بوابات C و B - صعبة
+  // المساء (19-23): بوابات مختلطة - جميع الرتب
+  // الليل (0-5): بوابات نادرة B و A - للمغامرين
+  
+  let availableRanks: string[] = [];
+  let numGates = 1;
+  
+  if (currentHour >= 6 && currentHour < 12) {
+    // الصباح - بوابات سهلة
+    availableRanks = ['E', 'D'];
+    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
+  } else if (currentHour >= 12 && currentHour < 16) {
+    // الظهر - بوابات متوسطة
+    availableRanks = ['D', 'C'];
+    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
+  } else if (currentHour >= 16 && currentHour < 19) {
+    // العصر - بوابات صعبة
+    availableRanks = ['C', 'B'];
+    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
+  } else if (currentHour >= 19 && currentHour < 24) {
+    // المساء - بوابات مختلطة
+    availableRanks = ['E', 'D', 'C', 'B'];
+    numGates = Math.floor(Math.random() * 3) + 1; // 1-3 بوابات
+  } else {
+    // الليل (0-5) - بوابات نادرة
+    availableRanks = ['B', 'A'];
+    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
+  }
+  
+  // فلترة البوابات حسب مستوى اللاعب والوقت
   const availableGates = allGates.filter(gate => {
-    // Always include E gates
+    if (!availableRanks.includes(gate.rank)) return false;
     if (gate.rank === 'E') return true;
-    // D gates available from level 5+
     if (gate.rank === 'D') return playerLevel >= 5;
-    // C gates available from level 15+
     if (gate.rank === 'C') return playerLevel >= 15;
-    // B gates available from level 25+
     if (gate.rank === 'B') return playerLevel >= 25;
     // A gates available from level 40+ (but locked in alpha)
     if (gate.rank === 'A') return playerLevel >= 40;
-    // S gates available from level 50+ (but locked in alpha)
     if (gate.rank === 'S') return playerLevel >= 50;
     return false;
   });
   
-  // Shuffle and pick random gates
+  // خلط عشوائي واختيار البوابات
   const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
   const selectedGates = shuffled.slice(0, numGates);
   
-  // Mark discovered based on player level
+  // تحديد ما إذا كانت مكتشفة بناءً على مستوى اللاعب
   return selectedGates.map(gate => ({
     ...gate,
-    id: `${gate.id}_${Date.now()}_${Math.random()}`, // Unique ID for each daily gate
+    id: `${gate.id}_${Date.now()}_${Math.random()}`,
     discovered: playerLevel >= gate.requiredPower * 0.5,
+    // إضافة معلومات الطاقة المتغيرة
+    energyDensity: getRandomEnergyDensity(gate.rank),
   }));
 };
 
-const getInitialGates = (): Gate[] => getRandomDailyGates(1);
+// توليد كثافة طاقة عشوائية حسب الرتبة
+const getRandomEnergyDensity = (rank: string): string => {
+  const ranges: Record<string, [number, number]> = {
+    'E': [800, 1500],
+    'D': [4000, 7000],
+    'C': [10000, 15000],
+    'B': [25000, 35000],
+    'A': [60000, 80000],
+    'S': [100000, 999999],
+  };
+  const [min, max] = ranges[rank] || [1000, 2000];
+  const value = Math.floor(Math.random() * (max - min + 1)) + min;
+  return value.toLocaleString();
+};
+
+const getInitialGates = (): Gate[] => getScheduledGates(1);
 
 const getInitialBoss = (): Boss => ({
   id: 'boss1',
@@ -209,7 +253,7 @@ const getInitialBoss = (): Boss => ({
 
 const getInitialInventory = (): InventoryItem[] => [
   { id: 'health_potion', name: 'زجاجة الدم', description: 'تزيد الدم بنسبة 25%', type: 'health', category: 'Elixir', effect: 25, price: 100, quantity: 0, icon: '❤️' },
-  { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', category: 'Book', effect: 500, price: 250, quantity: 0, icon: '📚' },
+  { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', category: 'Element', effect: 500, price: 250, quantity: 0, icon: '📚' },
   { id: 'energy_drink', name: 'مشروب الطاقة', description: 'يستعيد 50% من الطاقة', type: 'energy', category: 'Elixir', effect: 50, price: 150, quantity: 0, icon: '⚡' },
 ];
 
@@ -288,14 +332,14 @@ export const useGameState = () => {
       // Check if we need to reset daily quests
       const today = new Date().toISOString().split('T')[0];
       if (mergedState.lastActiveDate !== today) {
-        // Get new rotating quests for today (main + side)
-        mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
-        mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
-          ({ ...p, completed: false })
-        ) || getInitialPrayerQuests();
-        
-        // Generate new random gates for the day based on player level
-        mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
+          // Get new rotating quests for today (main + side)
+          mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
+          mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
+            ({ ...p, completed: false })
+          ) || getInitialPrayerQuests();
+          
+          // Generate scheduled gates based on current time
+          mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
         
         // Update streak
         const lastDate = new Date(mergedState.lastActiveDate);
@@ -312,9 +356,9 @@ export const useGameState = () => {
         mergedState.lastActiveDate = today;
       }
       
-      // Ensure gates exist
+      // Ensure gates exist - regenerate based on current time
       if (!mergedState.gates || mergedState.gates.length === 0) {
-        mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
+        mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
       }
       
       return mergedState;
@@ -353,12 +397,12 @@ export const useGameState = () => {
           // Check if we need to reset daily quests
           const today = new Date().toISOString().split('T')[0];
           if (mergedState.lastActiveDate !== today) {
-            mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
+          mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
             mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
               ({ ...p, completed: false })
             ) || getInitialPrayerQuests();
-            // Generate new random gates
-            mergedState.gates = getRandomDailyGates(mergedState.totalLevel || 1);
+            // Generate scheduled gates based on time
+            mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
             mergedState.lastActiveDate = today;
           }
           
@@ -375,11 +419,11 @@ export const useGameState = () => {
     loadFromSupabase();
   }, [user]);
 
-  // Save to both localStorage and Supabase
+  // Save to both localStorage and Supabase with individual columns
   useEffect(() => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
     
-    // Debounced Supabase sync
+    // Debounced Supabase sync - حفظ فوري للبيانات في الخانات المنفصلة
     if (!user || isSyncingRef.current || !isInitializedRef.current) return;
 
     const timeout = setTimeout(async () => {
@@ -391,20 +435,31 @@ export const useGameState = () => {
           .eq('user_id', user.id)
           .maybeSingle();
 
+        // تحديث البيانات في الخانات المنفصلة + game_data للنسخ الاحتياطي
+        const updateData = {
+          player_name: gameState.playerName,
+          equipped_title: gameState.equippedTitle || null,
+          gold: gameState.gold,
+          hp: gameState.hp,
+          max_hp: gameState.maxHp,
+          energy: gameState.energy,
+          max_energy: gameState.maxEnergy,
+          shadow_points: gameState.shadowPoints,
+          game_data: JSON.parse(JSON.stringify(gameState)),
+          updated_at: new Date().toISOString(),
+        };
+
         if (existing) {
           await supabase
             .from('game_states')
-            .update({
-              game_data: JSON.parse(JSON.stringify(gameState)),
-              updated_at: new Date().toISOString(),
-            })
+            .update(updateData)
             .eq('user_id', user.id);
         } else {
           await supabase
             .from('game_states')
             .insert([{
               user_id: user.id,
-              game_data: JSON.parse(JSON.stringify(gameState)),
+              ...updateData,
             }]);
         }
       } catch (err) {
@@ -412,7 +467,7 @@ export const useGameState = () => {
       } finally {
         isSyncingRef.current = false;
       }
-    }, 2000);
+    }, 1000); // تقليل الوقت للحفظ الأسرع
 
     return () => clearTimeout(timeout);
   }, [gameState, user]);
@@ -758,6 +813,7 @@ export const useGameState = () => {
 
   // Market items configuration - used for purchasing items not in initial inventory
   const MARKET_ITEMS: InventoryItem[] = [
+    { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP موزعة على جميع الإحصائيات', type: 'xp', category: 'Element', effect: 500, price: 250, quantity: 0, icon: '📚' },
     { id: 'hp_potion', name: 'Blood Elixir', description: 'يستعيد 50% من الصحة القصوى', type: 'health', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '🧪' },
     { id: 'mp_potion', name: 'Energy Elixir', description: 'يستعيد 50% من الطاقة القصوى', type: 'energy', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '⚡' },
     { id: 'mana_meter', name: 'Mana Gauge', description: 'جهاز قياس طاقة البوابات والعناصر', type: 'tool', category: 'Tool', effect: 0, price: 2000, quantity: 0, icon: '📊' },
