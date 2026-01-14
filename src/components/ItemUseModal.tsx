@@ -43,8 +43,9 @@ export const ItemUseModal = ({
 
   const handleStatChange = (stat: StatType, delta: number) => {
     const currentVal = statAllocation[stat];
-    const step = 50;
+    const step = 50; 
     const newVal = Math.max(0, currentVal + (delta * step));
+    
     const otherStats = Object.entries(statAllocation)
       .filter(([key]) => key !== stat)
       .reduce((sum, [_, val]) => sum + val, 0);
@@ -76,19 +77,18 @@ export const ItemUseModal = ({
   };
 
   const statLabels: Record<StatType, { label: string; icon: string; color: string }> = {
-    strength: { label: 'STRENGTH', icon: '💪', color: 'text-red-400' },
-    mind: { label: 'MIND', icon: '🧠', color: 'text-blue-400' },
-    spirit: { label: 'SPIRIT', icon: '✨', color: 'text-purple-400' },
-    agility: { label: 'AGILITY', icon: '⚡', color: 'text-green-400' }
+    strength: { label: 'القوة', icon: '💪', color: 'text-red-400' },
+    mind: { label: 'العقل', icon: '🧠', color: 'text-blue-400' },
+    spirit: { label: 'الروح', icon: '✨', color: 'text-purple-400' },
+    agility: { label: 'اللياقة', icon: '⚡', color: 'text-green-400' }
   };
 
   const getItemTypeContent = () => {
-    // التصميم الموحد لكل الأنواع بناءً على نمط تحليل المتجر
     return (
-      <div className="w-full space-y-4">
-        {/* القسم العلوي: معلومات البيانات الأساسية */}
+      <div className="space-y-4 font-mono text-right" dir="rtl">
+        {/* تصميم البيانات الأساسية بنفس نمط الـ Market */}
         <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
+          <div className="absolute top-0 left-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
           <div className="mb-3 border-b border-blue-500/30 pb-2">
             <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
             <span className="text-sm font-bold text-white tracking-wider drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]">
@@ -97,75 +97,101 @@ export const ItemUseModal = ({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-[9px] text-blue-400 block mb-1">CLASSIFICATION:</span>
-              <span className="text-xs font-bold text-blue-300 uppercase">{item.category || item.type}</span>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase text-left">Category:</span>
+              <span className="text-xs font-bold text-blue-300 uppercase">{item.type}</span>
             </div>
             <div>
-              <span className="text-[9px] text-blue-400 block mb-1">QUANTITY:</span>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase text-left">Quantity:</span>
               <span className="text-xs font-bold text-white uppercase drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">x{item.quantity}</span>
             </div>
           </div>
         </div>
 
-        {/* قسم التحكم بالكمية (فقط للأنواع القابلة للاستهلاك) */}
-        {(item.type === 'xp' || item.type === 'health' || item.type === 'energy') && (
-           <div className="p-3 bg-blue-950/30 border border-blue-500/30 rounded flex items-center justify-between">
-              <span className="text-[9px] text-blue-400 font-bold tracking-widest uppercase italic">Adjustment:</span>
-              <div className="flex items-center gap-3">
-                <button onClick={() => handleQuantityChange(-1)} className="w-7 h-7 flex items-center justify-center bg-slate-900 border border-blue-500/30 rounded text-blue-400 active:scale-90 transition-all"><Minus className="w-3 h-3" /></button>
-                <span className="text-lg font-mono font-bold text-white w-8 text-center">{quantity}</span>
-                <button onClick={() => handleQuantityChange(1)} className="w-7 h-7 flex items-center justify-center bg-slate-900 border border-blue-500/30 rounded text-blue-400 active:scale-90 transition-all"><Plus className="w-3 h-3" /></button>
-              </div>
-           </div>
-        )}
-
-        {/* قسم تحليل القوة الهيكلية (التأثيرات) */}
+        {/* محتوى النوع - تم دمج شروطك الأصلية بالكامل هنا */}
         <div className="w-full border border-blue-900/40 p-3 bg-blue-950/10 space-y-3">
           <div className="flex items-center gap-2 border-b border-blue-900/20 pb-1">
             <Zap className="w-3 h-3 text-blue-500" />
-            <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Structural Power Analysis</span>
+            <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Structural Analysis</span>
           </div>
           
-          {item.type === 'xp' ? (
-            <div className="space-y-4">
-               {(Object.keys(statLabels) as StatType[]).map(stat => (
-                 <div key={stat} className="space-y-1">
-                   <div className="flex justify-between text-[10px] items-center">
-                     <span className={cn("font-bold", statLabels[stat].color)}>{statLabels[stat].label} (Lv.{gameState.levels[stat]})</span>
-                     <div className="flex items-center gap-2">
-                        <button onClick={() => handleStatChange(stat, -1)} className="text-red-500/50 hover:text-red-500"><Minus className="w-3 h-3" /></button>
-                        <span className="text-white font-mono min-w-[30px] text-center">+{statAllocation[stat]}</span>
-                        <button onClick={() => handleStatChange(stat, 1)} className="text-green-500/50 hover:text-green-500"><Plus className="w-3 h-3" /></button>
-                     </div>
-                   </div>
-                   <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                     <div className="h-full bg-blue-600 shadow-[0_0_8px_blue]" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
-                   </div>
-                 </div>
-               ))}
-               <div className="text-center pt-1 border-t border-blue-500/10">
-                  <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-tighter">Remaining XP: {remainingXP}</span>
-               </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 border border-blue-500/20 flex items-center justify-center bg-black/40">
-                <span className="text-2xl drop-shadow-[0_0_8px_white]">{item.icon}</span>
+          <div className="p-1">
+            <p className="text-xs text-slate-400 mb-3">{item.description}</p>
+            
+            {/* عرض الـ XP في حال كان العنصر من نوع XP */}
+            {item.type === 'xp' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between bg-blue-900/20 p-2 border border-blue-500/20">
+                  <span className="text-xs text-blue-300">الكمية المختارة:</span>
+                  <div className="flex items-center gap-3" dir="ltr">
+                    <button onClick={() => handleQuantityChange(-1)} className="p-1 bg-slate-800 border border-slate-600 rounded"><Minus className="w-3 h-3" /></button>
+                    <span className="text-white font-bold">{quantity}</span>
+                    <button onClick={() => handleQuantityChange(1)} className="p-1 bg-slate-800 border border-slate-600 rounded"><Plus className="w-3 h-3" /></button>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {(Object.keys(statLabels) as StatType[]).map(stat => (
+                    <div key={stat} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1">
+                          <span>{statLabels[stat].icon}</span>
+                          <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
+                          <span className="text-[10px] text-slate-500">Lv.{gameState.levels[stat]}</span>
+                        </div>
+                        <div className="flex items-center gap-2" dir="ltr">
+                          <button onClick={() => handleStatChange(stat, -1)} className="w-5 h-5 flex items-center justify-center bg-red-900/30 border border-red-500/30 rounded text-red-400"><Minus className="w-3 h-3" /></button>
+                          <span className="w-10 text-center font-bold text-white">{statAllocation[stat]}</span>
+                          <button onClick={() => handleStatChange(stat, 1)} className="w-5 h-5 flex items-center justify-center bg-green-900/30 border border-green-500/30 rounded text-green-400"><Plus className="w-3 h-3" /></button>
+                        </div>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-600" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {remainingXP > 0 && <p className="text-[10px] text-yellow-500 text-center italic">XP متبقي: {remainingXP}</p>}
               </div>
-              <div className="flex-1">
-                <p className="text-[10px] text-slate-300 italic leading-tight">
-                  {item.description}
-                </p>
+            )}
+
+            {/* عرض الصحة */}
+            {item.type === 'health' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase">
+                  <span>Health Recovery Output:</span>
+                  <span className="text-green-500 font-bold tracking-widest">+{Math.floor(gameState.maxHp * item.effect / 100) * quantity} HP</span>
+                </div>
+                <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-600 shadow-[0_0_8px_green]" style={{ width: `${(gameState.hp / gameState.maxHp) * 100}%` }} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* عرض الطاقة */}
+            {item.type === 'energy' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase">
+                  <span>Energy Recovery Output:</span>
+                  <span className="text-cyan-500 font-bold tracking-widest">+{Math.floor(gameState.maxEnergy * item.effect / 100) * quantity} EP</span>
+                </div>
+                <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                  <div className="h-full bg-cyan-600 shadow-[0_0_8px_cyan]" style={{ width: `${(gameState.energy / gameState.maxEnergy) * 100}%` }} />
+                </div>
+              </div>
+            )}
+            
+            {/* اللقب */}
+            {item.type === 'title' && (
+              <div className="p-2 border border-purple-500/30 bg-purple-900/10 text-center">
+                <p className="text-xs text-purple-300">{item.equipped ? "اللقب مُجهز حالياً" : "جاهز للتجهيز"}</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* تنبيه الحالة */}
-        <div className="text-left bg-blue-950/20 border border-blue-900/50 p-3">
+        <div className="text-right bg-blue-950/20 border border-blue-900/50 p-3">
           <p className="text-[10px] text-blue-400 leading-relaxed font-bold uppercase tracking-tighter">
-            System Message: Ready to initiate process. Integrity verified at 100%. 
-            Target: Player ID [{gameState.totalLevel}]
+            System: User ID [{gameState.totalLevel}] Authorized. Ready for execution.
           </p>
         </div>
       </div>
@@ -175,52 +201,48 @@ export const ItemUseModal = ({
   const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl bg-black/90">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90 transition-all duration-500">
       <div className="absolute inset-0" onClick={onClose} />
       
-      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.3)] max-w-sm w-full font-mono overflow-hidden animate-scale-in origin-center">
-        {/* الخطوط العلوية والسفلية من الـ Market */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] scale-x-100" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] scale-x-100" />
-
+      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-in">
+        {/* الخطوط البيضاء المضيئة من المتجر */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white]" />
+        
         {/* Header */}
         <div className="p-4 border-b border-blue-500/30 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-blue-400" />
-            <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
-              Process Analysis
-            </h2>
-          </div>
-          <X className="w-5 h-5 text-slate-500 cursor-pointer hover:text-white" onClick={onClose} />
+          <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+            Analyzing Item...
+          </h2>
+          <X className="w-5 h-5 text-slate-400 cursor-pointer hover:text-white transition-colors" onClick={onClose} />
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
+        <div className="p-6">
           {getItemTypeContent()}
         </div>
 
-        {/* Footer */}
+        {/* Action Button - بنفس نمط زر الشراء/التأكيد في المتجر */}
         <div className="p-6 pt-0">
           {canUse ? (
-            <button 
+            <button
               onClick={handleUse}
-              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:brightness-90 active:scale-95 transition-all"
+              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all"
             >
-              Initiate Consumption
+              Confirm & Use ({quantity})
             </button>
           ) : item.type === 'title' && !item.equipped ? (
-            <button 
+            <button
               onClick={() => { onEquipTitle?.(item.id); onClose(); }}
-              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:brightness-90 active:scale-95 transition-all"
+              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
               Equip Title
             </button>
           ) : (
-            <button 
+            <button
               onClick={onClose}
-              className="w-full py-4 bg-blue-900/40 text-blue-400 font-black text-[11px] tracking-[0.5em] uppercase border border-blue-500/30 hover:bg-blue-900/60 transition-all"
+              className="w-full py-4 bg-slate-900 text-white font-black text-[11px] tracking-[0.5em] uppercase border border-slate-700"
             >
-              Terminate Session
+              Close Data
             </button>
           )}
         </div>
