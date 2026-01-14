@@ -316,37 +316,35 @@ export const useGameState = () => {
     return () => clearTimeout(timeout);
   }, [gameState, user]);
 
+  // --- نظام الخبرة المطور (المنحنى الأسّي) ---
   const getXpRequiredForLevel = (level: number): number => {
-    if (level < 5) return BASE_XP_PER_LEVEL;
-    if (level < 10) return BASE_XP_PER_LEVEL * 1.5;
-    if (level < 15) return BASE_XP_PER_LEVEL * 2;
-    if (level < 20) return BASE_XP_PER_LEVEL * 3;
-    if (level < 30) return BASE_XP_PER_LEVEL * 5;
-    if (level < 40) return BASE_XP_PER_LEVEL * 8;
-    return BASE_XP_PER_LEVEL * 12;
+    if (level >= MAX_LEVEL) return 999999999;
+    const baseXP = 100;
+    // زيادة الصعوبة بنسبة 22% تراكمياً لكل مستوى
+    return Math.floor(baseXP * Math.pow(1.22, level - 1));
   };
 
   const calculateLevel = useCallback((xp: number): number => {
     let level = 1;
-    let totalXpRequired = 0;
+    let accumulatedXp = 0;
     while (level < MAX_LEVEL) {
-      const xpForThisLevel = getXpRequiredForLevel(level);
-      if (xp < totalXpRequired + xpForThisLevel) break;
-      totalXpRequired += xpForThisLevel;
+      const required = getXpRequiredForLevel(level);
+      if (xp < accumulatedXp + required) break;
+      accumulatedXp += required;
       level++;
     }
-    return Math.min(level, MAX_LEVEL);
+    return level;
   }, []);
 
   const getXpProgress = (xp: number): number => {
     let level = 1;
-    let totalXpRequired = 0;
+    let accumulatedXp = 0;
     while (level < MAX_LEVEL) {
-      const xpForThisLevel = getXpRequiredForLevel(level);
-      if (xp < totalXpRequired + xpForThisLevel) {
-        return ((xp - totalXpRequired) / xpForThisLevel) * 100;
+      const required = getXpRequiredForLevel(level);
+      if (xp < accumulatedXp + required) {
+        return ((xp - accumulatedXp) / required) * 100;
       }
-      totalXpRequired += xpForThisLevel;
+      accumulatedXp += required;
       level++;
     }
     return 100;
@@ -507,7 +505,6 @@ export const useGameState = () => {
     setGameState(prev => ({ ...prev, inventory: prev.inventory.map(i => ({ ...i, equipped: i.type === 'title' ? false : i.equipped })), equippedTitle: undefined }));
   }, []);
 
-  // دالة استخدام العناصر المحدثة لدعم الكمية وتوزيع نقاط الخبرة
   const useItem = useCallback((itemId: string, quantity: number = 1, statAllocation?: Partial<Record<StatType, number>>) => {
     setGameState(prev => {
       const item = prev.inventory.find(i => i.id === itemId);
