@@ -8,6 +8,7 @@ import { SystemNotification } from '@/components/SystemNotification';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { MaxLevelModal } from '@/components/MaxLevelModal';
 import { GateDiscoveryNotification } from '@/components/GateDiscoveryNotification';
+import { NewGateNotification } from '@/components/NewGateNotification';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Zap, Trophy, Skull, Sparkles, ShoppingBag, Target } from 'lucide-react';
@@ -36,6 +37,8 @@ const Index = () => {
   const [showMaxLevelModal, setShowMaxLevelModal] = useState(false);
   const [showGateNotification, setShowGateNotification] = useState(false);
   const [discoveredGate, setDiscoveredGate] = useState<Gate | null>(null);
+  const [showNewGateNotification, setShowNewGateNotification] = useState(false);
+  const [newGate, setNewGate] = useState<Gate | null>(null);
 
   // Check for max level - المستوى الأقصى هو 50
   const maxLevel = Math.max(
@@ -105,6 +108,20 @@ const Index = () => {
       const updatedShown = [...shownGates, ...newGates.map(g => g.id)];
       localStorage.setItem('shownGateNotifications', JSON.stringify(updatedShown));
     }
+  }, [gameState.gates]);
+
+  // الاستماع لإشعار البوابات الجديدة
+  useEffect(() => {
+    const handleNewGate = () => {
+      const gates = gameState.gates || [];
+      if (gates.length > 0) {
+        setNewGate(gates[0]);
+        setShowNewGateNotification(true);
+      }
+    };
+
+    window.addEventListener('newGateAppeared', handleNewGate);
+    return () => window.removeEventListener('newGateAppeared', handleNewGate);
   }, [gameState.gates]);
 
   const handleTaskComplete = (taskId: string) => {
@@ -348,6 +365,13 @@ const Index = () => {
         playerPower={gameState.totalLevel || 1}
         onClose={() => setShowGateNotification(false)}
         onEnter={() => setShowGateNotification(false)}
+      />
+
+      {/* New Gate Notification with Sound */}
+      <NewGateNotification
+        show={showNewGateNotification}
+        gate={newGate}
+        onClose={() => setShowNewGateNotification(false)}
       />
     </div>
   );

@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { X, Package, Zap, Eye, Key, FlaskConical, Crown, Star, Lock } from 'lucide-react';
+import { X, Package, Zap, Eye, Key, FlaskConical, Crown, Star, Lock, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ItemUseModal } from './ItemUseModal';
+import { ItemAnalysisModal } from './ItemAnalysisModal';
+import { GameState, StatType, InventoryItem } from '@/types/game';
 
 // نظام ألوان الندرة
 const RARITY_CONFIG = {
@@ -161,15 +164,17 @@ const SHOP_ITEMS: ShopItem[] = [
 ];
 
 interface InventoryPanelProps {
-  inventory: Array<{
-    id: string;
-    quantity: number;
-  }>;
-  onUseItem?: (itemId: string) => void;
+  inventory: InventoryItem[];
+  gameState: GameState;
+  onUseItem?: (itemId: string, quantity: number, statAllocation?: Partial<Record<StatType, number>>) => void;
+  onEquipTitle?: (itemId: string) => void;
 }
 
-export const InventoryPanel = ({ inventory, onUseItem }: InventoryPanelProps) => {
+export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle }: InventoryPanelProps) => {
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
+  const [showUseModal, setShowUseModal] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
 
   // الحصول على كمية العنصر في المخزون
   const getItemQuantity = (itemId: string): number => {
@@ -390,28 +395,93 @@ export const InventoryPanel = ({ inventory, onUseItem }: InventoryPanelProps) =>
                 </span>
               </div>
 
-              {/* Use button for consumables */}
-              {getItemQuantity(selectedItem.id) > 0 && !selectedItem.isTitle && onUseItem && (
-                <button
-                  onClick={() => {
-                    onUseItem(selectedItem.id);
-                    setSelectedItem(null);
-                  }}
-                  className={cn(
-                    "w-full py-3 font-bold text-sm uppercase tracking-wider transition-all active:scale-95 border",
-                    rarityConfig.border,
-                    rarityConfig.text,
-                    "bg-gradient-to-r",
-                    rarityConfig.color,
-                    "hover:brightness-110"
+              {/* Buttons for items */}
+              {getItemQuantity(selectedItem.id) > 0 && (
+                <div className="flex gap-2">
+                  {/* Use button */}
+                  {!selectedItem.isTitle && onUseItem && (
+                    <button
+                      onClick={() => {
+                        // تحويل العنصر لنوع InventoryItem
+                        const invItem = inventory.find(i => i.id === selectedItem.id);
+                        if (invItem) {
+                          setSelectedInventoryItem(invItem);
+                          setShowUseModal(true);
+                          setSelectedItem(null);
+                        }
+                      }}
+                      className={cn(
+                        "flex-1 py-3 font-bold text-sm uppercase tracking-wider transition-all active:scale-95 border",
+                        rarityConfig.border,
+                        rarityConfig.text,
+                        "bg-gradient-to-r",
+                        rarityConfig.color,
+                        "hover:brightness-110"
+                      )}
+                    >
+                      استخدام
+                    </button>
                   )}
-                >
-                  استخدام العنصر
-                </button>
+                  
+                  {/* Analyze button */}
+                  {!selectedItem.isTitle && (
+                    <button
+                      onClick={() => {
+                        const invItem = inventory.find(i => i.id === selectedItem.id);
+                        if (invItem) {
+                          setSelectedInventoryItem(invItem);
+                          setShowAnalysisModal(true);
+                          setSelectedItem(null);
+                        }
+                      }}
+                      className="px-4 py-3 bg-cyan-600/20 border border-cyan-500/50 hover:bg-cyan-600/30 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4 text-cyan-400" />
+                      <span className="text-cyan-400 text-sm font-bold">تحليل</span>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Item Use Modal */}
+      {showUseModal && selectedInventoryItem && (
+        <ItemUseModal
+          item={selectedInventoryItem}
+          gameState={gameState}
+          onClose={() => {
+            setShowUseModal(false);
+            setSelectedInventoryItem(null);
+          }}
+          onUseItem={(itemId, quantity, statAllocation) => {
+            onUseItem?.(itemId, quantity, statAllocation);
+            setShowUseModal(false);
+            setSelectedInventoryItem(null);
+          }}
+          onEquipTitle={(itemId) => {
+            onEquipTitle?.(itemId);
+            setShowUseModal(false);
+            setSelectedInventoryItem(null);
+          }}
+          onAnalyze={() => {
+            setShowUseModal(false);
+            setShowAnalysisModal(true);
+          }}
+        />
+      )}
+
+      {/* Item Analysis Modal */}
+      {showAnalysisModal && selectedInventoryItem && (
+        <ItemAnalysisModal
+          item={selectedInventoryItem}
+          onClose={() => {
+            setShowAnalysisModal(false);
+            setSelectedInventoryItem(null);
+          }}
+        />
       )}
     </div>
   );
