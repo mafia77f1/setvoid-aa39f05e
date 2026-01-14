@@ -3,17 +3,14 @@ import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, Inv
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-const MAX_LEVEL = 50; // الحد الأقصى للمستوى في نسخة Alpha
+const MAX_LEVEL = 50; 
 const BASE_XP_PER_LEVEL = 100;
 
-// Get day of week: 0=Sunday, 1=Monday... 6=Saturday
 const getDayOfWeek = () => new Date().getDay();
 
-// Daily rotating quests based on day of week - with requiredTime for time-based progress
 const getRotatingQuests = (): Quest[] => {
   const day = getDayOfWeek();
   
-  // STR - rotating muscle groups with requiredTime
   const strQuests: Record<number, Quest> = {
     0: { id: 'str_daily', title: 'تمرين صدر', description: '100 ضغط على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 0, requiredTime: 25, isMainQuest: true },
     1: { id: 'str_daily', title: 'تمرين كتف', description: '60 تمرين كتف على 5 مجاميع', category: 'strength', xpReward: 45, completed: false, dailyReset: true, difficulty: 'medium', sets: 5, repsPerSet: 12, dayOfWeek: 1, requiredTime: 20, isMainQuest: true },
@@ -24,7 +21,6 @@ const getRotatingQuests = (): Quest[] => {
     6: { id: 'str_daily', title: 'تمرين رجل', description: '100 سكوات على 5 مجاميع', category: 'strength', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 5, repsPerSet: 20, dayOfWeek: 6, requiredTime: 25, isMainQuest: true },
   };
 
-  // INT - rotating mental quests with requiredTime
   const intQuests: Record<number, Quest> = {
     0: { id: 'int_daily', title: 'مراجعة أسبوع', description: 'راجع ما تعلمته هذا الأسبوع', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', dayOfWeek: 0, requiredTime: 15, isMainQuest: true },
     1: { id: 'int_daily', title: 'لغز منطقي', description: 'حل لغز لتحسين المنطق', category: 'mind', xpReward: 40, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 1, requiredTime: 20, isMainQuest: true },
@@ -35,7 +31,6 @@ const getRotatingQuests = (): Quest[] => {
     6: { id: 'int_daily', title: 'تأمل + مراجعة', description: '15 دقيقة تأمل وتركيز', category: 'mind', xpReward: 35, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 6, requiredTime: 15, isMainQuest: true },
   };
 
-  // SPR - rotating spiritual quests with requiredTime
   const sprQuests: Record<number, Quest> = {
     0: { id: 'spr_daily', title: 'تسبيح 2000 مرة', description: '1000 سبحان الله + 1000 الحمد لله', category: 'spirit', xpReward: 60, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 0, requiredTime: 30, isMainQuest: true },
     1: { id: 'spr_daily', title: 'صيام الاثنين', description: 'صم يوم الاثنين أو سبح 25 مرة', category: 'spirit', xpReward: 70, completed: false, dailyReset: true, difficulty: 'legendary', dayOfWeek: 1, requiredTime: 60, isMainQuest: true },
@@ -46,63 +41,36 @@ const getRotatingQuests = (): Quest[] => {
     6: { id: 'spr_daily', title: 'ذكر 1000 مرة', description: 'سبحان الله وبحمده 1000 مرة', category: 'spirit', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', dayOfWeek: 6, requiredTime: 25, isMainQuest: true },
   };
 
-  // AGI - rotating agility quests with requiredTime
   const agiQuests: Record<number, Quest[]> = {
-    0: [
-      { id: 'agi_run', title: 'الركض 20 دقيقة', description: 'اركض لمدة 20 دقيقة متواصلة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 20, dayOfWeek: 0, requiredTime: 20, isMainQuest: true },
-    ],
-    1: [
-      { id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 1, requiredTime: 15, isMainQuest: true },
-    ],
-    2: [
-      { id: 'agi_sprint', title: 'سباق السرعة', description: '10 جولات سباق 100 متر', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', sets: 10, dayOfWeek: 2, requiredTime: 25, isMainQuest: true },
-    ],
-    3: [
-      { id: 'agi_jump', title: 'القفز 300 مرة', description: '6 مجاميع × 50 قفزة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 6, repsPerSet: 50, dayOfWeek: 3, requiredTime: 20, isMainQuest: true },
-    ],
-    4: [
-      { id: 'agi_run', title: 'الركض 25 دقيقة', description: 'اركض لمدة 25 دقيقة', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 4, requiredTime: 25, isMainQuest: true },
-    ],
-    5: [
-      { id: 'agi_hiit', title: 'تمرين HIIT', description: '20 دقيقة تمرين عالي الكثافة', category: 'agility', xpReward: 65, completed: false, dailyReset: true, difficulty: 'legendary', timeLimit: 20, dayOfWeek: 5, requiredTime: 20, isMainQuest: true },
-    ],
-    6: [
-      { id: 'agi_walk', title: 'المشي السريع', description: '30 دقيقة مشي سريع', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 30, dayOfWeek: 6, requiredTime: 30, isMainQuest: true },
-    ],
+    0: [{ id: 'agi_run', title: 'الركض 20 دقيقة', description: 'اركض لمدة 20 دقيقة متواصلة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 20, dayOfWeek: 0, requiredTime: 20, isMainQuest: true }],
+    1: [{ id: 'agi_run', title: 'الركض 15 دقيقة', description: 'اركض لمدة 15 دقيقة متواصلة', category: 'agility', xpReward: 40, completed: false, dailyReset: true, difficulty: 'medium', timeLimit: 15, dayOfWeek: 1, requiredTime: 15, isMainQuest: true }],
+    2: [{ id: 'agi_sprint', title: 'سباق السرعة', description: '10 جولات سباق 100 متر', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', sets: 10, dayOfWeek: 2, requiredTime: 25, isMainQuest: true }],
+    3: [{ id: 'agi_jump', title: 'القفز 300 مرة', description: '6 مجاميع × 50 قفزة', category: 'agility', xpReward: 50, completed: false, dailyReset: true, difficulty: 'hard', sets: 6, repsPerSet: 50, dayOfWeek: 3, requiredTime: 20, isMainQuest: true }],
+    4: [{ id: 'agi_run', title: 'الركض 25 دقيقة', description: 'اركض لمدة 25 دقيقة', category: 'agility', xpReward: 55, completed: false, dailyReset: true, difficulty: 'hard', timeLimit: 25, dayOfWeek: 4, requiredTime: 25, isMainQuest: true }],
+    5: [{ id: 'agi_hiit', title: 'تمرين HIIT', description: '20 دقيقة تمرين عالي الكثافة', category: 'agility', xpReward: 65, completed: false, dailyReset: true, difficulty: 'legendary', timeLimit: 20, dayOfWeek: 5, requiredTime: 20, isMainQuest: true }],
+    6: [{ id: 'agi_walk', title: 'المشي السريع', description: '30 دقيقة مشي سريع', category: 'agility', xpReward: 35, completed: false, dailyReset: true, difficulty: 'easy', timeLimit: 30, dayOfWeek: 6, requiredTime: 30, isMainQuest: true }],
   };
 
-  // Main quests (one per category)
-  const mainQuests = [
-    strQuests[day],
-    intQuests[day],
-    sprQuests[day],
-    agiQuests[day][0],
-  ];
-
-  return mainQuests;
+  return [strQuests[day], intQuests[day], sprQuests[day], agiQuests[day][0]];
 };
 
-// Side quests - different from main quests, with time-based completion and gold/XP rewards based on difficulty
 const getSideQuests = (): Quest[] => {
   const day = getDayOfWeek();
-  
-  // Gold rewards based on difficulty: easy 25-50, medium 50-100, hard 100-175, legendary 175-250
   const getGoldReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary'): number => {
     switch (difficulty) {
-      case 'easy': return Math.floor(Math.random() * 26) + 25; // 25-50
-      case 'medium': return Math.floor(Math.random() * 51) + 50; // 50-100
-      case 'hard': return Math.floor(Math.random() * 76) + 100; // 100-175
-      case 'legendary': return Math.floor(Math.random() * 76) + 175; // 175-250
+      case 'easy': return Math.floor(Math.random() * 26) + 25;
+      case 'medium': return Math.floor(Math.random() * 51) + 50;
+      case 'hard': return Math.floor(Math.random() * 76) + 100;
+      case 'legendary': return Math.floor(Math.random() * 76) + 175;
     }
   };
 
-  // XP rewards based on difficulty - كلما زادت الصعوبة زادت المكافأة
   const getXpReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary'): number => {
     switch (difficulty) {
-      case 'easy': return Math.floor(Math.random() * 11) + 20; // 20-30
-      case 'medium': return Math.floor(Math.random() * 21) + 35; // 35-55
-      case 'hard': return Math.floor(Math.random() * 26) + 55; // 55-80
-      case 'legendary': return Math.floor(Math.random() * 31) + 80; // 80-110
+      case 'easy': return Math.floor(Math.random() * 11) + 20;
+      case 'medium': return Math.floor(Math.random() * 21) + 35;
+      case 'hard': return Math.floor(Math.random() * 26) + 55;
+      case 'legendary': return Math.floor(Math.random() * 31) + 80;
     }
   };
   
@@ -117,13 +85,8 @@ const getSideQuests = (): Quest[] => {
     { id: 'side_quran', title: 'قراءة 5 صفحات قرآن', description: 'اقرأ 5 صفحات من القرآن بتدبر', category: 'spirit', xpReward: getXpReward('legendary'), completed: false, dailyReset: true, difficulty: 'legendary', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('legendary'), active: false, claimed: false },
   ];
 
-  // Rotate side quests based on day - show 3 random quests
   const startIndex = day % sideQuests.length;
-  return [
-    sideQuests[startIndex],
-    sideQuests[(startIndex + 1) % sideQuests.length],
-    sideQuests[(startIndex + 2) % sideQuests.length],
-  ];
+  return [sideQuests[startIndex], sideQuests[(startIndex + 1) % sideQuests.length], sideQuests[(startIndex + 2) % sideQuests.length]];
 };
 
 const getInitialAbilities = (): Ability[] => [
@@ -149,7 +112,6 @@ const getInitialAchievements = (): Achievement[] => [
   { id: 'ach9', name: 'المستوى 100', description: 'وصلت للمستوى 100', requirement: 100, progress: 0, unlocked: false, icon: '🏅', rarity: 'legendary' },
 ];
 
-// نظام البوابات المتغيرة حسب الوقت - تظهر في أوقات مختلفة خلال اليوم
 const getScheduledGates = (playerLevel: number): Gate[] => {
   const allGates: Gate[] = [
     { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: Math.floor(Math.random() * 41) + 10, shadowPoints: 2 } },
@@ -159,97 +121,39 @@ const getScheduledGates = (playerLevel: number): Gate[] => {
     { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 0, shadowPoints: 50 } },
     { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 0, shadowPoints: 200 } },
   ];
-  
   const currentHour = new Date().getHours();
-  
-  // جدول ظهور البوابات حسب الوقت:
-  // الصباح (6-11): بوابات E و D - سهلة للبداية
-  // الظهر (12-15): بوابات D و C - متوسطة
-  // العصر (16-18): بوابات C و B - صعبة
-  // المساء (19-23): بوابات مختلطة - جميع الرتب
-  // الليل (0-5): بوابات نادرة B و A - للمغامرين
-  
   let availableRanks: string[] = [];
   let numGates = 1;
+  if (currentHour >= 6 && currentHour < 12) { availableRanks = ['E', 'D']; numGates = Math.floor(Math.random() * 2) + 1; }
+  else if (currentHour >= 12 && currentHour < 16) { availableRanks = ['D', 'C']; numGates = Math.floor(Math.random() * 2) + 1; }
+  else if (currentHour >= 16 && currentHour < 19) { availableRanks = ['C', 'B']; numGates = Math.floor(Math.random() * 2) + 1; }
+  else if (currentHour >= 19 && currentHour < 24) { availableRanks = ['E', 'D', 'C', 'B']; numGates = Math.floor(Math.random() * 3) + 1; }
+  else { availableRanks = ['B', 'A']; numGates = Math.floor(Math.random() * 2) + 1; }
   
-  if (currentHour >= 6 && currentHour < 12) {
-    // الصباح - بوابات سهلة
-    availableRanks = ['E', 'D'];
-    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
-  } else if (currentHour >= 12 && currentHour < 16) {
-    // الظهر - بوابات متوسطة
-    availableRanks = ['D', 'C'];
-    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
-  } else if (currentHour >= 16 && currentHour < 19) {
-    // العصر - بوابات صعبة
-    availableRanks = ['C', 'B'];
-    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
-  } else if (currentHour >= 19 && currentHour < 24) {
-    // المساء - بوابات مختلطة
-    availableRanks = ['E', 'D', 'C', 'B'];
-    numGates = Math.floor(Math.random() * 3) + 1; // 1-3 بوابات
-  } else {
-    // الليل (0-5) - بوابات نادرة
-    availableRanks = ['B', 'A'];
-    numGates = Math.floor(Math.random() * 2) + 1; // 1-2 بوابات
-  }
-  
-  // فلترة البوابات حسب مستوى اللاعب والوقت
   const availableGates = allGates.filter(gate => {
     if (!availableRanks.includes(gate.rank)) return false;
     if (gate.rank === 'E') return true;
     if (gate.rank === 'D') return playerLevel >= 5;
     if (gate.rank === 'C') return playerLevel >= 15;
     if (gate.rank === 'B') return playerLevel >= 25;
-    // A gates available from level 40+ (but locked in alpha)
     if (gate.rank === 'A') return playerLevel >= 40;
     if (gate.rank === 'S') return playerLevel >= 50;
     return false;
   });
-  
-  // خلط عشوائي واختيار البوابات
   const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
-  const selectedGates = shuffled.slice(0, numGates);
-  
-  // تحديد ما إذا كانت مكتشفة بناءً على مستوى اللاعب
-  return selectedGates.map(gate => ({
+  return shuffled.slice(0, numGates).map(gate => ({
     ...gate,
     id: `${gate.id}_${Date.now()}_${Math.random()}`,
     discovered: playerLevel >= gate.requiredPower * 0.5,
-    // إضافة معلومات الطاقة المتغيرة
     energyDensity: getRandomEnergyDensity(gate.rank),
   }));
 };
 
-// توليد كثافة طاقة عشوائية حسب الرتبة
 const getRandomEnergyDensity = (rank: string): string => {
-  const ranges: Record<string, [number, number]> = {
-    'E': [800, 1500],
-    'D': [4000, 7000],
-    'C': [10000, 15000],
-    'B': [25000, 35000],
-    'A': [60000, 80000],
-    'S': [100000, 999999],
-  };
+  const ranges: Record<string, [number, number]> = { 'E': [800, 1500], 'D': [4000, 7000], 'C': [10000, 15000], 'B': [25000, 35000], 'A': [60000, 80000], 'S': [100000, 999999] };
   const [min, max] = ranges[rank] || [1000, 2000];
-  const value = Math.floor(Math.random() * (max - min + 1)) + min;
-  return value.toLocaleString();
+  return (Math.floor(Math.random() * (max - min + 1)) + min).toLocaleString();
 };
-
-const getInitialGates = (): Gate[] => getScheduledGates(1);
-
-const getInitialBoss = (): Boss => ({
-  id: 'boss1',
-  name: 'زعيم الكسل',
-  description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف لمدة 3 ساعات ويمنعك من القيام بمهامك!',
-  maxHp: 100,
-  currentHp: 100,
-  requiredQuests: ['str_daily', 'int_daily', 'spr_daily', 'agi_run'],
-  defeated: false,
-  weekStartDate: new Date().toISOString().split('T')[0],
-  level: 1,
-  attackPower: 10,
-});
 
 const getInitialInventory = (): InventoryItem[] => [
   { id: 'health_potion', name: 'زجاجة الدم', description: 'تزيد الدم بنسبة 25%', type: 'health', category: 'Elixir', effect: 25, price: 100, quantity: 0, icon: '❤️' },
@@ -277,20 +181,16 @@ const getDefaultState = (): GameState => ({
   equippedTitle: undefined,
   playerJob: 'غير معروف',
   isOnboarded: false,
-  
   hp: 100,
   maxHp: 100,
   energy: 100,
   maxEnergy: 100,
   gold: 0,
   shadowPoints: 0,
-  
   stats: { strength: 0, mind: 0, spirit: 0, agility: 0 },
   levels: { strength: 1, mind: 1, spirit: 1, agility: 1 },
-  totalLevel: 1, // يبدأ المستخدم بمستوى 1
-  
+  totalLevel: 1,
   quests: [...getRotatingQuests(), ...getSideQuests()],
-  currentBoss: getInitialBoss(),
   abilities: getInitialAbilities(),
   achievements: getInitialAchievements(),
   grandQuest: null,
@@ -298,25 +198,14 @@ const getDefaultState = (): GameState => ({
   prayerQuests: getInitialPrayerQuests(),
   shadowSoldiers: getInitialShadowSoldiers(),
   equipment: [],
-  gates: getInitialGates(),
-  
+  gates: getScheduledGates(1),
   dailyStats: [],
   totalQuestsCompleted: 0,
   streakDays: 0,
   lastActiveDate: new Date().toISOString().split('T')[0],
-  
   punishmentEndTime: null,
   missedQuestsCount: 0,
-  punishment: {
-    active: false,
-    endTime: null,
-    monstersDefeated: 0,
-    currentWave: 1,
-    playerHpInPenalty: 100,
-    maxHpInPenalty: 100,
-  },
-  
-  selectedReciter: 'محمد اللحيدان',
+  punishment: { active: false, endTime: null, monstersDefeated: 0, currentWave: 1, playerHpInPenalty: 100, maxHpInPenalty: 100 },
   soundEnabled: true,
   lastBossAttackTime: null,
 });
@@ -328,39 +217,19 @@ export const useGameState = () => {
       const parsed = JSON.parse(saved);
       const defaultState = getDefaultState();
       const mergedState = { ...defaultState, ...parsed };
-      
-      // Check if we need to reset daily quests
       const today = new Date().toISOString().split('T')[0];
       if (mergedState.lastActiveDate !== today) {
-          // Get new rotating quests for today (main + side)
           mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
-          mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
-            ({ ...p, completed: false })
-          ) || getInitialPrayerQuests();
-          
-          // Generate scheduled gates based on current time
+          mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => ({ ...p, completed: false })) || getInitialPrayerQuests();
           mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
-        
-        // Update streak
         const lastDate = new Date(mergedState.lastActiveDate);
         const todayDate = new Date(today);
         const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 1) {
-          mergedState.streakDays += 1;
-        } else if (diffDays > 1) {
-          mergedState.streakDays = 0;
-          mergedState.hp = Math.max(0, mergedState.hp - (diffDays * 10));
-        }
-        
+        if (diffDays === 1) mergedState.streakDays += 1;
+        else if (diffDays > 1) { mergedState.streakDays = 0; mergedState.hp = Math.max(0, mergedState.hp - (diffDays * 10)); }
         mergedState.lastActiveDate = today;
       }
-      
-      // Ensure gates exist - regenerate based on current time
-      if (!mergedState.gates || mergedState.gates.length === 0) {
-        mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
-      }
-      
+      if (!mergedState.gates || mergedState.gates.length === 0) mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
       return mergedState;
     }
     return getDefaultState();
@@ -371,70 +240,34 @@ export const useGameState = () => {
   const isSyncingRef = useRef(false);
   const isInitializedRef = useRef(false);
 
-  // Load game state from Supabase when user logs in
   useEffect(() => {
     if (!user || isInitializedRef.current) return;
-
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await supabase
-          .from('game_states')
-          .select('game_data')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error loading game state:', error);
-          isInitializedRef.current = true;
-          return;
-        }
-
+        const { data, error } = await supabase.from('game_states').select('game_data').eq('user_id', user.id).maybeSingle();
+        if (error) { isInitializedRef.current = true; return; }
         if (data?.game_data) {
           const savedState = data.game_data as unknown as GameState;
           const defaultState = getDefaultState();
           const mergedState = { ...defaultState, ...savedState, isOnboarded: true };
-          
-          // Check if we need to reset daily quests
           const today = new Date().toISOString().split('T')[0];
           if (mergedState.lastActiveDate !== today) {
-          mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
-            mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => 
-              ({ ...p, completed: false })
-            ) || getInitialPrayerQuests();
-            // Generate scheduled gates based on time
+            mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
+            mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => ({ ...p, completed: false })) || getInitialPrayerQuests();
             mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
             mergedState.lastActiveDate = today;
           }
-          
           setGameState(mergedState);
         }
-        
         isInitializedRef.current = true;
-      } catch (err) {
-        console.error('Failed to load game state:', err);
-        isInitializedRef.current = true;
-      }
+      } catch (err) { isInitializedRef.current = true; }
     };
-
     loadFromSupabase();
   }, [user]);
 
-  // Realtime sync from Supabase - يستمع للتغييرات من قاعدة البيانات
   useEffect(() => {
     if (!user) return;
-
-    const channel = supabase
-      .channel('game-state-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'game_states',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          // تحديث البيانات من Supabase مباشرة
+    const channel = supabase.channel('game-state-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_states', filter: `user_id=eq.${user.id}` }, (payload) => {
           if (payload.new && !isSyncingRef.current) {
             const newData = payload.new as any;
             setGameState(prev => ({
@@ -449,149 +282,83 @@ export const useGameState = () => {
               shadowPoints: newData.shadow_points ?? prev.shadowPoints,
             }));
           }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+        }).subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  // تحديث البوابات كل ساعة تلقائياً
   useEffect(() => {
     const checkAndUpdateGates = () => {
       const lastGateUpdate = localStorage.getItem('lastGateUpdateHour');
       const currentHour = new Date().getHours().toString();
-      
       if (lastGateUpdate !== currentHour) {
-        // تحديث البوابات
-        setGameState(prev => ({
-          ...prev,
-          gates: getScheduledGates(prev.totalLevel || 1)
-        }));
+        setGameState(prev => ({ ...prev, gates: getScheduledGates(prev.totalLevel || 1) }));
         localStorage.setItem('lastGateUpdateHour', currentHour);
-        
-        // إرسال إشعار عبر event
         window.dispatchEvent(new CustomEvent('newGateAppeared'));
       }
     };
-
-    // فحص عند التحميل
     checkAndUpdateGates();
-    
-    // فحص كل دقيقة
     const interval = setInterval(checkAndUpdateGates, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Save to both localStorage and Supabase with individual columns
   useEffect(() => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
-    
-    // Debounced Supabase sync - حفظ فوري للبيانات في الخانات المنفصلة
     if (!user || isSyncingRef.current || !isInitializedRef.current) return;
-
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
-        const { data: existing } = await supabase
-          .from('game_states')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        // تحديث البيانات في الخانات المنفصلة + game_data للنسخ الاحتياطي
-        const updateData = {
-          player_name: gameState.playerName,
-          equipped_title: gameState.equippedTitle || null,
-          gold: gameState.gold,
-          hp: gameState.hp,
-          max_hp: gameState.maxHp,
-          energy: gameState.energy,
-          max_energy: gameState.maxEnergy,
-          shadow_points: gameState.shadowPoints,
-          game_data: JSON.parse(JSON.stringify(gameState)),
-          updated_at: new Date().toISOString(),
-        };
-
-        if (existing) {
-          await supabase
-            .from('game_states')
-            .update(updateData)
-            .eq('user_id', user.id);
-        } else {
-          await supabase
-            .from('game_states')
-            .insert([{
-              user_id: user.id,
-              ...updateData,
-            }]);
-        }
-      } catch (err) {
-        console.error('Failed to sync game state:', err);
-      } finally {
-        isSyncingRef.current = false;
-      }
+        const { data: existing } = await supabase.from('game_states').select('id').eq('user_id', user.id).maybeSingle();
+        const updateData = { player_name: gameState.playerName, equipped_title: gameState.equippedTitle || null, gold: gameState.gold, hp: gameState.hp, max_hp: gameState.maxHp, energy: gameState.energy, max_energy: gameState.maxEnergy, shadow_points: gameState.shadowPoints, game_data: JSON.parse(JSON.stringify(gameState)), updated_at: new Date().toISOString() };
+        if (existing) await supabase.from('game_states').update(updateData).eq('user_id', user.id);
+        else await supabase.from('game_states').insert([{ user_id: user.id, ...updateData }]);
+      } catch (err) {} finally { isSyncingRef.current = false; }
     }, 1000);
-
     return () => clearTimeout(timeout);
   }, [gameState, user]);
 
-  // حساب XP المطلوب للمستوى التالي (يزداد بشكل كبير مع المستوى - صعب جداً 20-50)
   const getXpRequiredForLevel = (level: number): number => {
-    if (level < 5) return BASE_XP_PER_LEVEL; // 100
-    if (level < 10) return BASE_XP_PER_LEVEL * 1.5; // 150
-    if (level < 15) return BASE_XP_PER_LEVEL * 2; // 200
-    if (level < 20) return BASE_XP_PER_LEVEL * 3; // 300
-    if (level < 30) return BASE_XP_PER_LEVEL * 5; // 500 - صعب
-    if (level < 40) return BASE_XP_PER_LEVEL * 8; // 800 - صعب جداً
-    return BASE_XP_PER_LEVEL * 12; // 1200 - صعب جداً جداً (40-50)
+    if (level < 5) return BASE_XP_PER_LEVEL;
+    if (level < 10) return BASE_XP_PER_LEVEL * 1.5;
+    if (level < 15) return BASE_XP_PER_LEVEL * 2;
+    if (level < 20) return BASE_XP_PER_LEVEL * 3;
+    if (level < 30) return BASE_XP_PER_LEVEL * 5;
+    if (level < 40) return BASE_XP_PER_LEVEL * 8;
+    return BASE_XP_PER_LEVEL * 12;
   };
 
-  const calculateLevel = (xp: number): number => {
+  const calculateLevel = useCallback((xp: number): number => {
     let level = 1;
     let totalXpRequired = 0;
-    
     while (level < MAX_LEVEL) {
       const xpForThisLevel = getXpRequiredForLevel(level);
       if (xp < totalXpRequired + xpForThisLevel) break;
       totalXpRequired += xpForThisLevel;
       level++;
     }
-    
     return Math.min(level, MAX_LEVEL);
-  };
+  }, []);
 
   const getXpProgress = (xp: number): number => {
     let level = 1;
     let totalXpRequired = 0;
-    
     while (level < MAX_LEVEL) {
       const xpForThisLevel = getXpRequiredForLevel(level);
       if (xp < totalXpRequired + xpForThisLevel) {
-        const xpInCurrentLevel = xp - totalXpRequired;
-        return (xpInCurrentLevel / xpForThisLevel) * 100;
+        return ((xp - totalXpRequired) / xpForThisLevel) * 100;
       }
       totalXpRequired += xpForThisLevel;
       level++;
     }
-    
-    return 100; // Max level reached
+    return 100;
   };
 
-  // حساب المستوى الكلي - متوسط جميع المستويات الأربعة
-  // كل قسم له حد أقصى 50، المجموع يكون متوسط (str + int + spr + agi) / 4 * (50/50) = المتوسط
-  const getTotalLevel = (levels: typeof gameState.levels): number => {
-    const sum = levels.strength + levels.mind + levels.spirit + levels.agility;
-    // المتوسط: مجموع الأربعة / 4، الحد الأقصى 50
-    const average = sum / 4;
+  const getTotalLevel = useCallback((levels: typeof gameState.levels): number => {
+    const average = (levels.strength + levels.mind + levels.spirit + levels.agility) / 4;
     return Math.min(Math.floor(average), MAX_LEVEL);
-  };
+  }, []);
 
-  // نظام الرتب: E, D, C, B, A (S مقفولة)
   const getRank = (totalLevel: number): string => {
-    if (totalLevel >= 50) return 'A'; // S مقفولة في هذا الإصدار
+    if (totalLevel >= 50) return 'A';
     if (totalLevel >= 35) return 'B';
     if (totalLevel >= 20) return 'C';
     if (totalLevel >= 10) return 'D';
@@ -602,226 +369,72 @@ export const useGameState = () => {
     setGameState(prev => {
       const quest = prev.quests.find(q => q.id === questId);
       if (!quest || quest.completed) return prev;
-
       const newStats = { ...prev.stats };
       newStats[quest.category] += quest.xpReward;
-
       const newLevels = { ...prev.levels };
       const oldLevel = newLevels[quest.category];
       newLevels[quest.category] = calculateLevel(newStats[quest.category]);
       const newTotalLevel = getTotalLevel(newLevels);
-
-      // Check for level up
       if (newLevels[quest.category] > oldLevel) {
-        setTimeout(() => {
-          setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category });
-        }, 100);
+        setTimeout(() => setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category }), 100);
       }
-
-      const newQuests = prev.quests.map(q =>
-        q.id === questId ? { ...q, completed: true } : q
-      );
-
-      // Update boss HP if quest is required
-      let newBoss = prev.currentBoss;
-      if (newBoss && newBoss.requiredQuests.includes(questId)) {
-        const baseDamage = Math.floor(newBoss.maxHp / newBoss.requiredQuests.length);
-        const levelBonus = Math.floor(newTotalLevel * 0.5);
-        const totalDamage = baseDamage + levelBonus;
-        newBoss = {
-          ...newBoss,
-          currentHp: Math.max(0, newBoss.currentHp - totalDamage),
-          defeated: newBoss.currentHp - totalDamage <= 0,
-        };
-      }
-
-      // Update abilities based on category level
+      const newQuests = prev.quests.map(q => q.id === questId ? { ...q, completed: true } : q);
       const newAbilities = prev.abilities.map(ability => {
-        const categoryLevel = newLevels[ability.category];
-        if (!ability.unlocked && categoryLevel >= ability.requiredLevel) {
-          return { ...ability, unlocked: true, level: 1 };
-        }
+        if (!ability.unlocked && newLevels[ability.category] >= ability.requiredLevel) return { ...ability, unlocked: true, level: 1 };
         return ability;
       });
-
-      // Update achievements
       const newAchievements = prev.achievements.map(ach => {
-        if (ach.id === 'ach1' && !ach.unlocked) {
-          return { ...ach, progress: 1, unlocked: true };
-        }
-        if (ach.id === 'ach5') {
-          const newProgress = prev.totalQuestsCompleted + 1;
-          return { ...ach, progress: newProgress, unlocked: newProgress >= ach.requirement };
-        }
-        if (ach.id === 'ach7') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 10 };
-        }
-        if (ach.id === 'ach8') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 50 };
-        }
-        if (ach.id === 'ach9') {
-          return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 100 };
-        }
+        if (ach.id === 'ach1' && !ach.unlocked) return { ...ach, progress: 1, unlocked: true };
+        if (ach.id === 'ach5') { const p = prev.totalQuestsCompleted + 1; return { ...ach, progress: p, unlocked: p >= ach.requirement }; }
+        if (ach.id === 'ach7') return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 10 };
+        if (ach.id === 'ach8') return { ...ach, progress: newTotalLevel, unlocked: newTotalLevel >= 50 };
         return ach;
       });
-
-      // Update daily stats
       const today = new Date().toISOString().split('T')[0];
       const todayStatIndex = prev.dailyStats.findIndex(s => s.date === today);
       let newDailyStats = [...prev.dailyStats];
-      
       if (todayStatIndex >= 0) {
-        newDailyStats[todayStatIndex] = {
-          ...newDailyStats[todayStatIndex],
-          [quest.category]: newDailyStats[todayStatIndex][quest.category] + quest.xpReward,
-          questsCompleted: newDailyStats[todayStatIndex].questsCompleted + 1,
-        };
+        newDailyStats[todayStatIndex] = { ...newDailyStats[todayStatIndex], [quest.category]: newDailyStats[todayStatIndex][quest.category] + quest.xpReward, questsCompleted: newDailyStats[todayStatIndex].questsCompleted + 1 };
       } else {
-        newDailyStats.push({
-          date: today,
-          strength: quest.category === 'strength' ? quest.xpReward : 0,
-          mind: quest.category === 'mind' ? quest.xpReward : 0,
-          spirit: quest.category === 'spirit' ? quest.xpReward : 0,
-          agility: quest.category === 'agility' ? quest.xpReward : 0,
-          questsCompleted: 1,
-        });
+        newDailyStats.push({ date: today, strength: quest.category === 'strength' ? quest.xpReward : 0, mind: quest.category === 'mind' ? quest.xpReward : 0, spirit: quest.category === 'spirit' ? quest.xpReward : 0, agility: quest.category === 'agility' ? quest.xpReward : 0, questsCompleted: 1 });
       }
-
-      // Update gates discovery based on power level
-      const newGates = prev.gates.map(gate => {
-        if (!gate.discovered && newTotalLevel >= gate.requiredPower * 0.5) {
-          return { ...gate, discovered: true };
-        }
-        return gate;
-      });
-
-      // Gain gold and shadow points
-      const goldGain = quest.difficulty === 'legendary' ? 50 : 
-                       quest.difficulty === 'hard' ? 30 : 
-                       quest.difficulty === 'medium' ? 15 : 10;
-      const shadowGain = quest.difficulty === 'legendary' ? 5 : 
-                         quest.difficulty === 'hard' ? 3 : 
-                         quest.difficulty === 'medium' ? 2 : 1;
-
-      return {
-        ...prev,
-        stats: newStats,
-        levels: newLevels,
-        totalLevel: newTotalLevel,
-        quests: newQuests,
-        currentBoss: newBoss,
-        abilities: newAbilities,
-        achievements: newAchievements,
-        dailyStats: newDailyStats.slice(-30),
-        totalQuestsCompleted: prev.totalQuestsCompleted + 1,
-        gold: prev.gold + goldGain,
-        shadowPoints: (prev.shadowPoints || 0) + shadowGain,
-        energy: Math.max(0, prev.energy - 5),
-        gates: newGates,
-      };
+      const newGates = prev.gates.map(gate => (!gate.discovered && newTotalLevel >= gate.requiredPower * 0.5) ? { ...gate, discovered: true } : gate);
+      const goldGain = quest.difficulty === 'legendary' ? 50 : quest.difficulty === 'hard' ? 30 : quest.difficulty === 'medium' ? 15 : 10;
+      const shadowGain = quest.difficulty === 'legendary' ? 5 : quest.difficulty === 'hard' ? 3 : quest.difficulty === 'medium' ? 2 : 1;
+      return { ...prev, stats: newStats, levels: newLevels, totalLevel: newTotalLevel, quests: newQuests, abilities: newAbilities, achievements: newAchievements, dailyStats: newDailyStats.slice(-30), totalQuestsCompleted: prev.totalQuestsCompleted + 1, gold: prev.gold + goldGain, shadowPoints: (prev.shadowPoints || 0) + shadowGain, energy: Math.max(0, prev.energy - 5), gates: newGates };
     });
-  }, []);
+  }, [calculateLevel, getTotalLevel]);
 
   const completePrayerQuest = useCallback((prayerId: string) => {
     setGameState(prev => {
       const prayer = prev.prayerQuests.find(p => p.id === prayerId);
       if (!prayer || prayer.completed) return prev;
-
-      const newPrayerQuests = prev.prayerQuests.map(p =>
-        p.id === prayerId ? { ...p, completed: true } : p
-      );
-
+      const newPrayerQuests = prev.prayerQuests.map(p => p.id === prayerId ? { ...p, completed: true } : p);
       const newStats = { ...prev.stats };
       newStats.spirit += prayer.xpReward;
       const newLevels = { ...prev.levels };
       const oldLevel = newLevels.spirit;
       newLevels.spirit = calculateLevel(newStats.spirit);
-
-      if (newLevels.spirit > oldLevel) {
-        setTimeout(() => {
-          setLevelUpInfo({ show: true, newLevel: newLevels.spirit, category: 'spirit' });
-        }, 100);
-      }
-
-      return {
-        ...prev,
-        prayerQuests: newPrayerQuests,
-        stats: newStats,
-        levels: newLevels,
-        totalLevel: getTotalLevel(newLevels),
-        gold: prev.gold + 25,
-      };
+      if (newLevels.spirit > oldLevel) setTimeout(() => setLevelUpInfo({ show: true, newLevel: newLevels.spirit, category: 'spirit' }), 100);
+      return { ...prev, prayerQuests: newPrayerQuests, stats: newStats, levels: newLevels, totalLevel: getTotalLevel(newLevels), gold: prev.gold + 25 };
     });
-  }, []);
+  }, [calculateLevel, getTotalLevel]);
 
   const startGrandQuest = useCallback((category: StatType, title: string, tasks: string[]) => {
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 30);
-
-    const grandQuest: GrandQuest = {
-      id: `gq_${Date.now()}`,
-      title,
-      description: `تحدي 30 يوم في ${category}`,
-      category,
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      dailyTasks: tasks,
-      completedDays: 0,
-      active: true,
-    };
-
+    const grandQuest: GrandQuest = { id: `gq_${Date.now()}`, title, description: `تحدي 30 يوم في ${category}`, category, startDate: startDate.toISOString().split('T')[0], endDate: endDate.toISOString().split('T')[0], dailyTasks: tasks, completedDays: 0, active: true };
     setGameState(prev => ({ ...prev, grandQuest }));
   }, []);
 
   const completeGrandQuestDay = useCallback(() => {
     setGameState(prev => {
       if (!prev.grandQuest) return prev;
-      
       const newCompletedDays = prev.grandQuest.completedDays + 1;
       const isCompleted = newCompletedDays >= 30;
-
-      const newAchievements = prev.achievements.map(ach => {
-        if (ach.id === 'ach6' && isCompleted && !ach.unlocked) {
-          return { ...ach, progress: 1, unlocked: true };
-        }
-        return ach;
-      });
-
-      return {
-        ...prev,
-        grandQuest: {
-          ...prev.grandQuest,
-          completedDays: newCompletedDays,
-          active: !isCompleted,
-        },
-        achievements: newAchievements,
-      };
-    });
-  }, []);
-
-  const resetBoss = useCallback(() => {
-    const bosses: Boss[] = [
-      { id: 'boss1', name: 'زعيم الكسل', description: 'هذا الزعيم يجعلك تتصفح الإنترنت بلا هدف!', maxHp: 100, currentHp: 100, requiredQuests: ['str_daily', 'int_daily', 'spr_daily', 'agi_run'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 1, attackPower: 10 },
-      { id: 'boss2', name: 'زعيم السهر', description: 'يجبرك على السهر حتى الفجر بلا سبب!', maxHp: 120, currentHp: 120, requiredQuests: ['str_daily', 'int_daily', 'spr_daily'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 2, attackPower: 15 },
-      { id: 'boss3', name: 'زعيم التسويف', description: 'هل حقاً تظن أنك ستنهي هذا؟', maxHp: 150, currentHp: 150, requiredQuests: ['int_daily', 'spr_daily', 'agi_run', 'agi_jump'], defeated: false, weekStartDate: new Date().toISOString().split('T')[0], level: 3, attackPower: 20 },
-    ];
-    
-    const randomBoss = bosses[Math.floor(Math.random() * bosses.length)];
-    setGameState(prev => ({ ...prev, currentBoss: randomBoss }));
-  }, []);
-
-  const setCustomBoss = useCallback((name: string, description: string) => {
-    setGameState(prev => {
-      if (!prev.currentBoss) return prev;
-      return {
-        ...prev,
-        currentBoss: {
-          ...prev.currentBoss,
-          customName: name,
-          description,
-        }
-      };
+      const newAchievements = prev.achievements.map(ach => (ach.id === 'ach6' && isCompleted && !ach.unlocked) ? { ...ach, progress: 1, unlocked: true } : ach);
+      return { ...prev, grandQuest: { ...prev.grandQuest, completedDays: newCompletedDays, active: !isCompleted }, achievements: newAchievements };
     });
   }, []);
 
@@ -841,43 +454,23 @@ export const useGameState = () => {
     setGameState(prev => {
       const ability = prev.abilities.find(a => a.id === abilityId);
       if (!ability || !ability.unlocked) return prev;
-      
       const today = new Date().toISOString().split('T')[0];
-      
       if (ability.lastUsed && ability.cooldownDays > 0) {
-        const lastUsed = new Date(ability.lastUsed);
-        const now = new Date();
-        const diffDays = Math.floor((now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor((new Date().getTime() - new Date(ability.lastUsed).getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays < ability.cooldownDays) return prev;
       }
-
-      const newAbilities = prev.abilities.map(a =>
-        a.id === abilityId ? { ...a, lastUsed: today, level: a.level + 0.1 } : a
-      );
-
-      return { ...prev, abilities: newAbilities };
+      return { ...prev, abilities: prev.abilities.map(a => a.id === abilityId ? { ...a, lastUsed: today, level: a.level + 0.1 } : a) };
     });
   }, []);
 
   const summonShadowSoldier = useCallback((soldierId: string) => {
     setGameState(prev => {
       const soldier = prev.shadowSoldiers?.find(s => s.id === soldierId);
-      if (!soldier || soldier.unlocked) return prev;
-      if ((prev.shadowPoints || 0) < soldier.cost) return prev;
-
-      const newSoldiers = prev.shadowSoldiers.map(s =>
-        s.id === soldierId ? { ...s, unlocked: true } : s
-      );
-
-      return {
-        ...prev,
-        shadowSoldiers: newSoldiers,
-        shadowPoints: (prev.shadowPoints || 0) - soldier.cost,
-      };
+      if (!soldier || soldier.unlocked || (prev.shadowPoints || 0) < soldier.cost) return prev;
+      return { ...prev, shadowSoldiers: prev.shadowSoldiers.map(s => s.id === soldierId ? { ...s, unlocked: true } : s), shadowPoints: (prev.shadowPoints || 0) - soldier.cost };
     });
   }, []);
 
-  // Market items configuration - used for purchasing items not in initial inventory
   const MARKET_ITEMS: InventoryItem[] = [
     { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP موزعة على جميع الإحصائيات', type: 'xp', category: 'Element', effect: 500, price: 250, quantity: 0, icon: '📚' },
     { id: 'hp_potion', name: 'Blood Elixir', description: 'يستعيد 50% من الصحة القصوى', type: 'health', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '🧪' },
@@ -891,136 +484,87 @@ export const useGameState = () => {
 
   const purchaseItem = useCallback((itemId: string) => {
     setGameState(prev => {
-      // First check if item exists in inventory
       let item = prev.inventory.find(i => i.id === itemId);
-      
-      // If not in inventory, check market items
       if (!item) {
         item = MARKET_ITEMS.find(i => i.id === itemId);
         if (!item || prev.gold < item.price) return prev;
-        
-        // Add new item to inventory
-        const newItem = { ...item, quantity: 1 };
-        return {
-          ...prev,
-          inventory: [...prev.inventory, newItem],
-          gold: prev.gold - item.price,
-        };
+        return { ...prev, inventory: [...prev.inventory, { ...item, quantity: 1 }], gold: prev.gold - item.price };
       }
-      
       if (prev.gold < item.price) return prev;
-
-      const newInventory = prev.inventory.map(i =>
-        i.id === itemId ? { ...i, quantity: i.quantity + 1 } : i
-      );
-
-      return {
-        ...prev,
-        inventory: newInventory,
-        gold: prev.gold - item.price,
-      };
+      return { ...prev, inventory: prev.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity + 1 } : i), gold: prev.gold - item.price };
     });
   }, []);
 
-  // Equip a title from inventory
   const equipTitle = useCallback((itemId: string) => {
     setGameState(prev => {
       const item = prev.inventory.find(i => i.id === itemId);
       if (!item || item.type !== 'title' || item.quantity <= 0) return prev;
-
-      // Unequip any currently equipped title
-      const newInventory = prev.inventory.map(i => ({
-        ...i,
-        equipped: i.id === itemId ? true : (i.type === 'title' ? false : i.equipped)
-      }));
-
-      return {
-        ...prev,
-        inventory: newInventory,
-        equippedTitle: item.name,
-      };
+      return { ...prev, inventory: prev.inventory.map(i => ({ ...i, equipped: i.id === itemId ? true : (i.type === 'title' ? false : i.equipped) })), equippedTitle: item.name };
     });
   }, []);
 
-  // Unequip title
   const unequipTitle = useCallback(() => {
-    setGameState(prev => {
-      const newInventory = prev.inventory.map(i => ({
-        ...i,
-        equipped: i.type === 'title' ? false : i.equipped
-      }));
-
-      return {
-        ...prev,
-        inventory: newInventory,
-        equippedTitle: undefined,
-      };
-    });
+    setGameState(prev => ({ ...prev, inventory: prev.inventory.map(i => ({ ...i, equipped: i.type === 'title' ? false : i.equipped })), equippedTitle: undefined }));
   }, []);
 
-  const useItem = useCallback((itemId: string) => {
+  // دالة استخدام العناصر المحدثة لدعم الكمية وتوزيع نقاط الخبرة
+  const useItem = useCallback((itemId: string, quantity: number = 1, statAllocation?: Partial<Record<StatType, number>>) => {
     setGameState(prev => {
       const item = prev.inventory.find(i => i.id === itemId);
-      if (!item || item.quantity <= 0) return prev;
+      if (!item || item.quantity < quantity) return prev;
 
       let updates: Partial<GameState> = {};
 
       if (item.type === 'health') {
-        updates.hp = Math.min(prev.maxHp, prev.hp + (prev.maxHp * item.effect / 100));
+        updates.hp = Math.min(prev.maxHp, prev.hp + (prev.maxHp * item.effect / 100) * quantity);
       } else if (item.type === 'energy') {
-        updates.energy = Math.min(prev.maxEnergy, prev.energy + (prev.maxEnergy * item.effect / 100));
+        updates.energy = Math.min(prev.maxEnergy, prev.energy + (prev.maxEnergy * item.effect / 100) * quantity);
       } else if (item.type === 'xp') {
-        const xpPerStat = Math.floor(item.effect / 4);
-        updates.stats = {
-          strength: prev.stats.strength + xpPerStat,
-          mind: prev.stats.mind + xpPerStat,
-          spirit: prev.stats.spirit + xpPerStat,
-          agility: prev.stats.agility + xpPerStat,
+        if (statAllocation) {
+          updates.stats = {
+            strength: prev.stats.strength + (statAllocation.strength || 0),
+            mind: prev.stats.mind + (statAllocation.mind || 0),
+            spirit: prev.stats.spirit + (statAllocation.spirit || 0),
+            agility: prev.stats.agility + (statAllocation.agility || 0),
+          };
+        } else {
+          const xpPerStat = Math.floor((item.effect * quantity) / 4);
+          updates.stats = {
+            strength: prev.stats.strength + xpPerStat,
+            mind: prev.stats.mind + xpPerStat,
+            spirit: prev.stats.spirit + xpPerStat,
+            agility: prev.stats.agility + xpPerStat,
+          };
+        }
+        const newLevels = {
+          strength: calculateLevel(updates.stats.strength),
+          mind: calculateLevel(updates.stats.mind),
+          spirit: calculateLevel(updates.stats.spirit),
+          agility: calculateLevel(updates.stats.agility),
         };
-      } else if (item.type === 'title') {
-        // Titles are equipped, not consumed
-        return prev;
-      } else if (item.type === 'tool' || item.type === 'key') {
-        // Tools and keys don't get consumed on use, they just activate
+        updates.levels = newLevels;
+        updates.totalLevel = getTotalLevel(newLevels);
+      } else if (item.type === 'title' || item.type === 'tool' || item.type === 'key') {
         return prev;
       }
 
-      const newInventory = prev.inventory.map(i =>
-        i.id === itemId ? { ...i, quantity: i.quantity - 1 } : i
-      );
-
+      const newInventory = prev.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - quantity } : i);
       return { ...prev, ...updates, inventory: newInventory };
     });
-  }, []);
+  }, [calculateLevel, getTotalLevel]);
 
   const takeDamage = useCallback((damage: number) => {
-    setGameState(prev => ({
-      ...prev,
-      hp: Math.max(0, prev.hp - damage),
-    }));
+    setGameState(prev => ({ ...prev, hp: Math.max(0, prev.hp - damage) }));
   }, []);
 
   const applyPunishment = useCallback(() => {
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + 4);
-    
-    setGameState(prev => ({
-      ...prev,
-      punishmentEndTime: endTime.toISOString(),
-      hp: Math.max(0, prev.hp - 30),
-    }));
+    setGameState(prev => ({ ...prev, punishmentEndTime: endTime.toISOString(), hp: Math.max(0, prev.hp - 30) }));
   }, []);
 
   const clearPunishment = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      punishmentEndTime: null,
-      missedQuestsCount: 0,
-    }));
-  }, []);
-
-  const setSelectedReciter = useCallback((reciter: string) => {
-    setGameState(prev => ({ ...prev, selectedReciter: reciter }));
+    setGameState(prev => ({ ...prev, punishmentEndTime: null, missedQuestsCount: 0 }));
   }, []);
 
   const toggleSound = useCallback(() => {
@@ -1032,197 +576,57 @@ export const useGameState = () => {
     setGameState(getDefaultState());
   }, []);
 
-  // تحديث بيانات اللاعب بشكل مباشر (للإعدادات والتعديل اليدوي)
-  const updatePlayerData = useCallback((data: {
-    playerName?: string;
-    title?: string;
-    gold?: number;
-    hp?: number;
-    maxHp?: number;
-    stats?: {
-      strength: number;
-      mind: number;
-      spirit: number;
-      agility: number;
-    };
-    streakDays?: number;
-  }) => {
+  const updatePlayerData = useCallback((data: { playerName?: string; title?: string; gold?: number; hp?: number; maxHp?: number; stats?: { strength: number; mind: number; spirit: number; agility: number; }; streakDays?: number; }) => {
     setGameState(prev => {
       const newState = { ...prev };
-      
       if (data.playerName !== undefined) newState.playerName = data.playerName;
       if (data.title !== undefined) newState.equippedTitle = data.title === '-' ? undefined : data.title;
       if (data.gold !== undefined) newState.gold = data.gold;
       if (data.hp !== undefined) newState.hp = data.hp;
       if (data.maxHp !== undefined) newState.maxHp = data.maxHp;
       if (data.streakDays !== undefined) newState.streakDays = data.streakDays;
-      
       if (data.stats) {
         newState.stats = data.stats;
-        // إعادة حساب المستويات بناءً على XP الجديد
-        newState.levels = {
-          strength: calculateLevel(data.stats.strength),
-          mind: calculateLevel(data.stats.mind),
-          spirit: calculateLevel(data.stats.spirit),
-          agility: calculateLevel(data.stats.agility),
-        };
+        newState.levels = { strength: calculateLevel(data.stats.strength), mind: calculateLevel(data.stats.mind), spirit: calculateLevel(data.stats.spirit), agility: calculateLevel(data.stats.agility) };
         newState.totalLevel = getTotalLevel(newState.levels);
       }
-      
       return newState;
     });
   }, [calculateLevel, getTotalLevel]);
 
-  const dismissLevelUp = useCallback(() => {
-    setLevelUpInfo(null);
-  }, []);
+  const dismissLevelUp = useCallback(() => setLevelUpInfo(null), []);
 
-  // Start a side quest timer - marks as active and records start time
   const startSideQuest = useCallback((questId: string) => {
-    setGameState(prev => {
-      const newQuests = prev.quests.map(q => {
-        if (q.id === questId && !q.active && !q.startedAt) {
-          return { 
-            ...q, 
-            startedAt: new Date().toISOString(), 
-            timeProgress: q.timeProgress || 0,
-            active: true,
-            claimed: false
-          };
-        }
-        return q;
-      });
-      return { ...prev, quests: newQuests };
-    });
+    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => (q.id === questId && !q.active && !q.startedAt) ? { ...q, startedAt: new Date().toISOString(), timeProgress: q.timeProgress || 0, active: true, claimed: false } : q) }));
   }, []);
 
-  // حساب الوقت المنقضي تلقائياً للمهمات النشطة (يعمل حتى لو كان التطبيق مغلقاً)
-  const calculateQuestProgress = useCallback((quest: Quest): number => {
-    if (!quest.startedAt) return quest.timeProgress || 0;
-    
-    const startTime = new Date(quest.startedAt).getTime();
-    const now = Date.now();
-    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-    const savedProgress = quest.timeProgress || 0;
-    
-    return savedProgress + elapsedSeconds;
-  }, []);
-
-  // تحديث تقدم المهمات تلقائياً عند تحميل التطبيق
-  useEffect(() => {
-    const updateActiveQuests = () => {
-      setGameState(prev => {
-        let hasChanges = false;
-        const newQuests = prev.quests.map(q => {
-          if (q.startedAt && !q.completed) {
-            const startTime = new Date(q.startedAt).getTime();
-            const now = Date.now();
-            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-            const totalProgress = (q.timeProgress || 0) + elapsedSeconds;
-            const requiredSeconds = (q.requiredTime || 0) * 60;
-            
-            if (totalProgress >= requiredSeconds && !q.completed) {
-              hasChanges = true;
-              return {
-                ...q,
-                timeProgress: totalProgress,
-                completed: true,
-                active: false,
-                startedAt: undefined // إيقاف العداد
-              };
-            } else if (elapsedSeconds > 0) {
-              hasChanges = true;
-              return {
-                ...q,
-                timeProgress: totalProgress,
-                startedAt: new Date().toISOString() // إعادة تعيين وقت البداية
-              };
-            }
-          }
-          return q;
-        });
-        
-        return hasChanges ? { ...prev, quests: newQuests } : prev;
-      });
-    };
-
-    // تحديث عند تحميل التطبيق
-    updateActiveQuests();
-
-    // تحديث كل 10 ثواني
-    const interval = setInterval(updateActiveQuests, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update time progress for side quests - called periodically, also checks for completion
   const updateSideQuestProgress = useCallback((questId: string, progress: number) => {
-    setGameState(prev => {
-      const newQuests = prev.quests.map(q => {
+    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => {
         if (q.id === questId) {
-          const requiredSeconds = (q.requiredTime || 0) * 60;
-          const isComplete = progress >= requiredSeconds;
-          return { 
-            ...q, 
-            timeProgress: progress,
-            // Mark completed when time is reached (but not claimed yet)
-            completed: isComplete ? true : q.completed,
-            active: isComplete ? false : q.active
-          };
+          const isComplete = progress >= (q.requiredTime || 0) * 60;
+          return { ...q, timeProgress: progress, completed: isComplete ? true : q.completed, active: isComplete ? false : q.active };
         }
         return q;
-      });
-      return { ...prev, quests: newQuests };
-    });
+      }) }));
   }, []);
 
-  // Claim completed side quest - gets rewards
   const claimSideQuest = useCallback((questId: string) => {
     setGameState(prev => {
       const quest = prev.quests.find(q => q.id === questId);
       if (!quest || quest.claimed) return prev;
-
       const newStats = { ...prev.stats };
       newStats[quest.category] += quest.xpReward;
-
       const newLevels = { ...prev.levels };
       const oldLevel = newLevels[quest.category];
       newLevels[quest.category] = Math.min(calculateLevel(newStats[quest.category]), MAX_LEVEL);
-      const newTotalLevel = Math.min(getTotalLevel(newLevels), MAX_LEVEL * 4);
-
-      // Check for level up (only if not at max)
-      if (newLevels[quest.category] > oldLevel && newLevels[quest.category] < MAX_LEVEL) {
-        setTimeout(() => {
-          setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category });
-        }, 100);
-      }
-
-      const newQuests = prev.quests.map(q =>
-        q.id === questId ? { ...q, completed: true, claimed: true, active: false } : q
-      );
-
-      return {
-        ...prev,
-        stats: newStats,
-        levels: newLevels,
-        totalLevel: newTotalLevel,
-        quests: newQuests,
-        gold: prev.gold + (quest.goldReward || 10),
-        totalQuestsCompleted: prev.totalQuestsCompleted + 1,
-      };
+      const newTotalLevel = getTotalLevel(newLevels);
+      if (newLevels[quest.category] > oldLevel && newLevels[quest.category] < MAX_LEVEL) setTimeout(() => setLevelUpInfo({ show: true, newLevel: newLevels[quest.category], category: quest.category }), 100);
+      return { ...prev, stats: newStats, levels: newLevels, totalLevel: newTotalLevel, quests: prev.quests.map(q => q.id === questId ? { ...q, completed: true, claimed: true, active: false } : q), gold: prev.gold + (quest.goldReward || 10), totalQuestsCompleted: prev.totalQuestsCompleted + 1 };
     });
-  }, []);
+  }, [calculateLevel, getTotalLevel]);
 
-  // Close/dismiss side quest without claiming
   const closeSideQuest = useCallback((questId: string) => {
-    setGameState(prev => {
-      const newQuests = prev.quests.map(q => {
-        if (q.id === questId) {
-          return { ...q, startedAt: undefined, timeProgress: 0 };
-        }
-        return q;
-      });
-      return { ...prev, quests: newQuests };
-    });
+    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => q.id === questId ? { ...q, startedAt: undefined, timeProgress: 0 } : q) }));
   }, []);
 
   return {
@@ -1232,8 +636,6 @@ export const useGameState = () => {
     completePrayerQuest,
     startGrandQuest,
     completeGrandQuestDay,
-    resetBoss,
-    setCustomBoss,
     updatePlayerInfo,
     setPlayerJob,
     completeOnboarding,
@@ -1246,7 +648,6 @@ export const useGameState = () => {
     takeDamage,
     applyPunishment,
     clearPunishment,
-    setSelectedReciter,
     toggleSound,
     resetGame,
     dismissLevelUp,
