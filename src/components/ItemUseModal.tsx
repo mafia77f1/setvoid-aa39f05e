@@ -45,7 +45,6 @@ export const ItemUseModal = ({
     const currentVal = statAllocation[stat];
     const step = 50; 
     const newVal = Math.max(0, currentVal + (delta * step));
-    
     const otherStats = Object.entries(statAllocation)
       .filter(([key]) => key !== stat)
       .reduce((sum, [_, val]) => sum + val, 0);
@@ -85,113 +84,119 @@ export const ItemUseModal = ({
 
   const getItemTypeContent = () => {
     return (
-      <div className="space-y-4 font-mono text-right" dir="rtl">
-        {/* تصميم البيانات الأساسية بنفس نمط الـ Market */}
-        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-          <div className="absolute top-0 left-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
+      <div className="space-y-4 py-2">
+        {/* صندوق البيانات العلوي - DATA_STREAM */}
+        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative font-mono">
+          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
           <div className="mb-3 border-b border-blue-500/30 pb-2">
             <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
-            <span className="text-sm font-bold text-white tracking-wider drop-shadow-[0_0_8px_rgba(255,255,255,0.7)]">
+            <span className="text-sm font-bold text-white tracking-wider drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] uppercase">
               {item.name}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-[9px] text-blue-400 block mb-1 uppercase text-left">Category:</span>
-              <span className="text-xs font-bold text-blue-300 uppercase">{item.type}</span>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase">Category:</span>
+              <span className="text-xs font-bold text-blue-300 uppercase italic">{item.type}</span>
             </div>
             <div>
-              <span className="text-[9px] text-blue-400 block mb-1 uppercase text-left">Quantity:</span>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase">Available:</span>
               <span className="text-xs font-bold text-white uppercase drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">x{item.quantity}</span>
             </div>
           </div>
         </div>
 
-        {/* محتوى النوع - تم دمج شروطك الأصلية بالكامل هنا */}
-        <div className="w-full border border-blue-900/40 p-3 bg-blue-950/10 space-y-3">
-          <div className="flex items-center gap-2 border-b border-blue-900/20 pb-1">
+        {/* صندوق تحليل القوة الهيكلية - Structural Power Analysis */}
+        <div className="w-full border border-blue-900/40 p-4 bg-[#050b18] space-y-4 font-mono">
+          <div className="flex items-center gap-2 border-b border-blue-900/20 pb-2">
             <Zap className="w-3 h-3 text-blue-500" />
             <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Structural Analysis</span>
           </div>
-          
-          <div className="p-1">
-            <p className="text-xs text-slate-400 mb-3">{item.description}</p>
-            
-            {/* عرض الـ XP في حال كان العنصر من نوع XP */}
-            {item.type === 'xp' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between bg-blue-900/20 p-2 border border-blue-500/20">
-                  <span className="text-xs text-blue-300">الكمية المختارة:</span>
-                  <div className="flex items-center gap-3" dir="ltr">
-                    <button onClick={() => handleQuantityChange(-1)} className="p-1 bg-slate-800 border border-slate-600 rounded"><Minus className="w-3 h-3" /></button>
-                    <span className="text-white font-bold">{quantity}</span>
-                    <button onClick={() => handleQuantityChange(1)} className="p-1 bg-slate-800 border border-slate-600 rounded"><Plus className="w-3 h-3" /></button>
-                  </div>
+
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 border border-blue-500/20 flex items-center justify-center bg-black/40 flex-shrink-0">
+              <span className="text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">{item.icon}</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] text-slate-300 italic leading-relaxed text-right">
+                {item.description}
+              </p>
+            </div>
+          </div>
+
+          {/* منطق النوع: XP */}
+          {item.type === 'xp' && (
+            <div className="space-y-4 pt-2 border-t border-blue-900/20">
+              {/* اختيار الكمية */}
+              <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold">SET QUANTITY</span>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
+                  <span className="text-white font-bold">{quantity}</span>
+                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
                 </div>
-                
-                <div className="space-y-3">
-                  {(Object.keys(statLabels) as StatType[]).map(stat => (
-                    <div key={stat} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1">
-                          <span>{statLabels[stat].icon}</span>
-                          <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
-                          <span className="text-[10px] text-slate-500">Lv.{gameState.levels[stat]}</span>
-                        </div>
-                        <div className="flex items-center gap-2" dir="ltr">
-                          <button onClick={() => handleStatChange(stat, -1)} className="w-5 h-5 flex items-center justify-center bg-red-900/30 border border-red-500/30 rounded text-red-400"><Minus className="w-3 h-3" /></button>
-                          <span className="w-10 text-center font-bold text-white">{statAllocation[stat]}</span>
-                          <button onClick={() => handleStatChange(stat, 1)} className="w-5 h-5 flex items-center justify-center bg-green-900/30 border border-green-500/30 rounded text-green-400"><Plus className="w-3 h-3" /></button>
-                        </div>
+              </div>
+
+              {/* توزيع الإحصائيات */}
+              <div className="space-y-3">
+                {(Object.keys(statLabels) as StatType[]).map(stat => (
+                  <div key={stat} className="space-y-1">
+                    <div className="flex justify-between items-center text-[10px]">
+                      <div className="flex items-center gap-2">
+                        <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
+                        <span className="text-slate-500 text-[8px]">LV.{gameState.levels[stat]}</span>
                       </div>
-                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-600" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleStatChange(stat, -1)} className="text-red-500/50 hover:text-red-500"><Minus className="w-3 h-3" /></button>
+                        <span className="text-white font-bold min-w-[20px] text-center">{statAllocation[stat]}</span>
+                        <button onClick={() => handleStatChange(stat, 1)} className="text-green-500/50 hover:text-green-500"><Plus className="w-3 h-3" /></button>
                       </div>
                     </div>
-                  ))}
-                </div>
-                {remainingXP > 0 && <p className="text-[10px] text-yellow-500 text-center italic">XP متبقي: {remainingXP}</p>}
+                    <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.8)]" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+              <div className="text-center bg-yellow-950/20 p-1 border border-yellow-500/20">
+                <span className="text-[9px] text-yellow-500">REMAINING XP: {remainingXP}</span>
+              </div>
+            </div>
+          )}
 
-            {/* عرض الصحة */}
-            {item.type === 'health' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase">
-                  <span>Health Recovery Output:</span>
-                  <span className="text-green-500 font-bold tracking-widest">+{Math.floor(gameState.maxHp * item.effect / 100) * quantity} HP</span>
-                </div>
-                <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-600 shadow-[0_0_8px_green]" style={{ width: `${(gameState.hp / gameState.maxHp) * 100}%` }} />
-                </div>
-              </div>
-            )}
-
-            {/* عرض الطاقة */}
-            {item.type === 'energy' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase">
-                  <span>Energy Recovery Output:</span>
-                  <span className="text-cyan-500 font-bold tracking-widest">+{Math.floor(gameState.maxEnergy * item.effect / 100) * quantity} EP</span>
-                </div>
-                <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
-                  <div className="h-full bg-cyan-600 shadow-[0_0_8px_cyan]" style={{ width: `${(gameState.energy / gameState.maxEnergy) * 100}%` }} />
+          {/* منطق النوع: Health & Energy */}
+          {(item.type === 'health' || item.type === 'energy') && (
+            <div className="space-y-4 pt-2 border-t border-blue-900/20">
+               <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold uppercase">Adjust Dosage</span>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400"><Minus className="w-4 h-4" /></button>
+                  <span className="text-white font-bold">{quantity}</span>
+                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400"><Plus className="w-4 h-4" /></button>
                 </div>
               </div>
-            )}
-            
-            {/* اللقب */}
-            {item.type === 'title' && (
-              <div className="p-2 border border-purple-500/30 bg-purple-900/10 text-center">
-                <p className="text-xs text-purple-300">{item.equipped ? "اللقب مُجهز حالياً" : "جاهز للتجهيز"}</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[8px] text-slate-400 uppercase">
+                  <span>Output potential:</span>
+                  <span className={item.type === 'health' ? "text-green-500" : "text-cyan-400"}>
+                    +{item.effect * quantity}% {item.type === 'health' ? 'HP' : 'MP'}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                  <div 
+                    className={cn("h-full transition-all duration-1000 shadow-[0_0_8px]", item.type === 'health' ? "bg-red-600 shadow-red-500" : "bg-blue-600 shadow-blue-500")} 
+                    style={{ width: `${item.type === 'health' ? (gameState.hp/gameState.maxHp)*100 : (gameState.energy/gameState.maxEnergy)*100}%` }} 
+                  />
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <div className="text-right bg-blue-950/20 border border-blue-900/50 p-3">
-          <p className="text-[10px] text-blue-400 leading-relaxed font-bold uppercase tracking-tighter">
-            System: User ID [{gameState.totalLevel}] Authorized. Ready for execution.
+        {/* تذييل التحليل - Warning Message */}
+        <div className="text-left bg-blue-950/10 border border-blue-900/30 p-3 font-mono">
+          <p className="text-[9px] text-blue-500 leading-relaxed uppercase tracking-tighter">
+            System Message: Ready to execute command for player. Integrity check passed. Access level: Authorized.
           </p>
         </div>
       </div>
@@ -201,52 +206,81 @@ export const ItemUseModal = ({
   const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90 transition-all duration-500">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
       <div className="absolute inset-0" onClick={onClose} />
       
-      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-in">
-        {/* الخطوط البيضاء المضيئة من المتجر */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white]" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white]" />
+      {/* الحاوية الرئيسية بنفس انميشن واستايل المتجر */}
+      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-y origin-center">
+        {/* الخطوط البيضاء المضيئة */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
         
         {/* Header */}
-        <div className="p-4 border-b border-blue-500/30 flex items-center justify-between">
-          <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
-            Analyzing Item...
+        <div className="p-4 flex items-center justify-between border-b border-blue-500/30 bg-blue-950/20">
+          <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+            Analyzing Item Data
           </h2>
-          <X className="w-5 h-5 text-slate-400 cursor-pointer hover:text-white transition-colors" onClick={onClose} />
+          <button onClick={onClose} className="p-1 hover:bg-white/10 transition-colors">
+            <X className="w-5 h-5 text-blue-400" />
+          </button>
         </div>
 
-        <div className="p-6">
+        {/* Content Area */}
+        <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {getItemTypeContent()}
         </div>
 
-        {/* Action Button - بنفس نمط زر الشراء/التأكيد في المتجر */}
-        <div className="p-6 pt-0">
+        {/* Footer Buttons بنفس استايل المتجر */}
+        <div className="p-6 pt-0 space-y-3">
           {canUse ? (
             <button
               onClick={handleUse}
-              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all"
+              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
             >
-              Confirm & Use ({quantity})
+              Confirm & Use
             </button>
-          ) : item.type === 'title' && !item.equipped ? (
+          ) : item.type === 'title' ? (
             <button
               onClick={() => { onEquipTitle?.(item.id); onClose(); }}
-              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+              disabled={item.equipped}
+              className={cn(
+                "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase transition-all",
+                item.equipped 
+                  ? "bg-slate-900 text-slate-500 cursor-not-allowed border border-slate-800"
+                  : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02]"
+              )}
             >
-              Equip Title
+              {item.equipped ? 'Title Equipped' : 'Equip Title'}
             </button>
           ) : (
             <button
               onClick={onClose}
-              className="w-full py-4 bg-slate-900 text-white font-black text-[11px] tracking-[0.5em] uppercase border border-slate-700"
+              className="w-full py-4 bg-blue-900/20 border border-blue-500/40 text-blue-300 font-black text-[11px] tracking-[0.5em] uppercase"
             >
-              Close Data
+              Close Entry
             </button>
           )}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes scale-y {
+          from { transform: scaleY(0); opacity: 0; }
+          to { transform: scaleY(1); opacity: 1; }
+        }
+        .animate-scale-y {
+          animation: scale-y 0.6s cubic-bezier(0.2, 1, 0.2, 1) forwards;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.5);
+        }
+      `}</style>
     </div>
   );
 };
