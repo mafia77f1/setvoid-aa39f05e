@@ -3,6 +3,11 @@ import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { cn } from '@/lib/utils';
+
+// استيراد المكونات المطلوبة فقط
+import ItemUseModal from '@/components/ItemUseModal';
+import ItemAnalysisModal from '@/components/ItemAnalysisModal';
+
 import { 
   Dumbbell, 
   Brain, 
@@ -29,7 +34,7 @@ const Stats = () => {
   const [isExiting, setIsExiting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   
-  // حالة جديدة للتحكم في ظهور مودال الاستخدام
+  // حالة التحكم في ظهور مودال الاستخدام
   const [isUsingItem, setIsUsingItem] = useState(false);
 
   const MAX_LEVEL = 100;
@@ -89,101 +94,20 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* ANALYSIS MODAL (Original Logic Kept) */}
+      {/* ANALYSIS MODAL - Using external component */}
       {isScanning && activeItem && (
-        <div className={cn(
-          "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
-          isVisible && !isExiting ? "bg-black/95" : "bg-black/0 pointer-events-none"
-        )}>
-          <div className={cn(
-            "relative bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.3)] max-w-sm w-full font-mono overflow-y-auto max-h-[90vh] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
-            isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1000ms]" : "opacity-0 scale-y-0 duration-[800ms]"
-          )}>
-            <div className={cn("absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
-            
-            <div className={cn("p-6 space-y-6 transition-all duration-1000 delay-700", isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-              <div className="flex justify-between items-center border-b border-blue-500/30 pb-2">
-                <ShieldAlert className="w-5 h-5 text-blue-400" />
-                <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic">System Analysis</h2>
-                <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeAnalysis} />
-              </div>
-
-              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3 shadow-inner">
-                <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
-                  <Info className="w-3 h-3 text-blue-400" />
-                  <span className="text-[10px] font-bold text-blue-100 tracking-widest uppercase italic">Item Properties</span>
-                </div>
-                <div className="space-y-2 text-[11px]">
-                  <div className="flex justify-between"><span className="text-slate-500 uppercase">Identity:</span> <span className="text-white font-bold tracking-wider">{activeItem.name}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 uppercase">Classification:</span> <span className="text-blue-400 font-bold uppercase">{activeItem.category || activeItem.type}</span></div>
-                  <div className="flex justify-between border-t border-white/5 pt-1"><span className="text-slate-500 uppercase">Integrity:</span> <span className="text-white italic">{activeItem.description}</span></div>
-                </div>
-              </div>
-
-              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-1 border-l-2 border-yellow-500 pl-2">
-                  <MapPin className="w-3 h-3 text-yellow-500" />
-                  <span className="text-[10px] font-bold text-yellow-100 tracking-widest uppercase italic">Acquisition Route</span>
-                </div>
-                <div className="grid grid-cols-1 gap-2 text-[10px]">
-                  <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic">
-                    <span>Store Purchase</span>
-                    <span className="text-green-400 font-bold tracking-tighter">AVAILABLE</span>
-                  </div>
-                  <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic opacity-60">
-                    <span>Gate Dungeon Drop</span>
-                    <span className="text-blue-400 font-bold tracking-tighter">CHANCE</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-3 border-l-2 border-green-500 pl-2">
-                  <ImageIcon className="w-3 h-3 text-green-500" />
-                  <span className="text-[10px] font-bold text-green-100 tracking-widest uppercase italic">Visual Reference</span>
-                </div>
-                <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                  {activeItem.id === 'mana_meter' || activeItem.name === 'Mana Gauge' ? (
-                    <img src="/ManaDeviceIcon.png" className="w-[150%] h-[150%] scale-110 object-contain drop-shadow-[0_0_10px_#3b82f6]" />
-                  ) : (
-                    <span className="text-7xl filter grayscale brightness-150 opacity-90">{activeItem.icon || '📦'}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button 
-                  onClick={() => { useItem(activeItem.id); closeAnalysis(); }}
-                  className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:brightness-90 active:scale-95 transition-all"
-                >
-                  Initiate Consumption
-                </button>
-              </div>
-            </div>
-            <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
-          </div>
-        </div>
+        <ItemAnalysisModal 
+          item={activeItem} 
+          onClose={closeAnalysis} 
+        />
       )}
 
-      {/* USE ITEM MODAL - Logic to show from ItemUseModal component */}
+      {/* USE ITEM MODAL - Using external component */}
       {isUsingItem && activeItem && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-           {/* هنا يظهر الكود الموجود في src/components/ItemUseModal.tsx */}
-           <div className="bg-[#0a101f] border border-blue-500/50 p-6 max-w-sm w-full relative">
-              <X className="absolute top-4 right-4 w-5 h-5 text-slate-500 cursor-pointer" onClick={() => setIsUsingItem(false)} />
-              <h3 className="text-blue-400 font-bold mb-4 tracking-widest uppercase italic">Use Item</h3>
-              <div className="text-center space-y-4">
-                <div className="text-4xl">{activeItem.icon || '📦'}</div>
-                <p className="text-sm text-slate-300">Confirm consumption of <span className="text-blue-400 font-bold">{activeItem.name}</span>?</p>
-                <button 
-                  onClick={() => { useItem(activeItem.id); setIsUsingItem(false); }}
-                  className="w-full py-3 bg-blue-600 text-white font-bold uppercase tracking-widest hover:bg-blue-500 transition-colors"
-                >
-                  Confirm Use
-                </button>
-              </div>
-           </div>
-        </div>
+        <ItemUseModal 
+          item={activeItem} 
+          onClose={() => setIsUsingItem(false)} 
+        />
       )}
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
