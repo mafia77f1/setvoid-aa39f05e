@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Plus, Minus, Zap, ShieldAlert, Info, ImageIcon } from 'lucide-react';
+import { useState } from 'react';
+import { X, Plus, Minus, Check, Zap, Heart, Book, Crown, Target, BarChart3, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { InventoryItem, GameState, StatType } from '@/types/game';
 
@@ -20,8 +20,6 @@ export const ItemUseModal = ({
   onEquipTitle,
   onAnalyze
 }: ItemUseModalProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [statAllocation, setStatAllocation] = useState<Record<StatType, number>>({
     strength: 0,
@@ -29,22 +27,6 @@ export const ItemUseModal = ({
     spirit: 0,
     agility: 0
   });
-
-  useEffect(() => {
-    if (item) {
-      const timer = setTimeout(() => setIsVisible(true), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [item]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      setIsExiting(false);
-      onClose();
-    }, 800);
-  };
 
   if (!item) return null;
 
@@ -90,158 +72,215 @@ export const ItemUseModal = ({
     } else {
       onUseItem(item.id, quantity);
     }
-    handleClose();
+    onClose();
   };
 
-  const statLabels: Record<StatType, { label: string; color: string }> = {
-    strength: { label: 'STRENGTH', color: 'text-blue-400' },
-    mind: { label: 'MIND', color: 'text-blue-400' },
-    spirit: { label: 'SPIRIT', color: 'text-blue-400' },
-    agility: { label: 'AGILITY', color: 'text-blue-400' }
+  const statLabels: Record<StatType, { label: string; icon: string; color: string }> = {
+    strength: { label: 'القوة', icon: '💪', color: 'text-red-400' },
+    mind: { label: 'العقل', icon: '🧠', color: 'text-blue-400' },
+    spirit: { label: 'الروح', icon: '✨', color: 'text-purple-400' },
+    agility: { label: 'اللياقة', icon: '⚡', color: 'text-green-400' }
   };
 
-  const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
-
-  return (
-    <div className={cn(
-      "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
-      isVisible && !isExiting ? "bg-black/95" : "bg-black/0 pointer-events-none"
-    )}>
-      <div className="absolute inset-0" onClick={handleClose} />
-      
-      <div className={cn(
-        "relative bg-[#050b18] border-x border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.3)] max-w-sm w-full font-mono overflow-y-auto max-h-[90vh] transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
-        isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1000ms]" : "opacity-0 scale-y-0 duration-[800ms]"
-      )}>
-        {/* الخطوط المتوهجة العلوية والسفلية */}
-        <div className={cn("absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
-        
-        <div className={cn("p-6 space-y-6 transition-all duration-1000 delay-700", isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-          
-          {/* Header */}
-          <div className="flex justify-between items-center border-b border-blue-500/30 pb-2">
-            <ShieldAlert className="w-5 h-5 text-blue-400" />
-            <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic">Item Manipulation</h2>
-            <X className="w-5 h-5 text-slate-500 cursor-pointer hover:text-white" onClick={handleClose} />
+  const getItemTypeContent = () => {
+    return (
+      <div className="space-y-4 py-2">
+        {/* صندوق البيانات العلوي - DATA_STREAM */}
+        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative font-mono">
+          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
+          <div className="mb-3 border-b border-blue-500/30 pb-2">
+            <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
+            <span className="text-sm font-bold text-white tracking-wider drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] uppercase">
+              {item.name}
+            </span>
           </div>
-
-          {/* 1. Information Card */}
-          <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3 shadow-inner">
-            <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
-              <Info className="w-3 h-3 text-blue-400" />
-              <span className="text-[10px] font-bold text-blue-100 tracking-widest uppercase italic">Properties Analysis</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase">Category:</span>
+              <span className="text-xs font-bold text-blue-300 uppercase italic">{item.type}</span>
             </div>
-            <div className="space-y-2 text-[11px]">
-              <div className="flex justify-between"><span className="text-slate-500 uppercase">Identity:</span> <span className="text-white font-bold tracking-wider">{item.name}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500 uppercase">Classification:</span> <span className="text-blue-400 font-bold uppercase">{item.category || item.type}</span></div>
-              <div className="flex justify-between border-t border-white/5 pt-1"><span className="text-slate-500 uppercase">Integrity:</span> <span className="text-white italic">{item.description}</span></div>
+            <div>
+              <span className="text-[9px] text-blue-400 block mb-1 uppercase">Available:</span>
+              <span className="text-xs font-bold text-white uppercase drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">x{item.quantity}</span>
             </div>
           </div>
+        </div>
 
-          {/* 2. Visual Reference Card */}
-          <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-3 border-l-2 border-green-500 pl-2">
-              <ImageIcon className="w-3 h-3 text-green-500" />
-              <span className="text-[10px] font-bold text-green-100 tracking-widest uppercase italic">Visual Reference</span>
+        {/* صندوق تحليل القوة الهيكلية - Structural Power Analysis */}
+        <div className="w-full border border-blue-900/40 p-4 bg-[#050b18] space-y-4 font-mono">
+          <div className="flex items-center gap-2 border-b border-blue-900/20 pb-2">
+            <Zap className="w-3 h-3 text-blue-500" />
+            <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Structural Analysis</span>
+          </div>
+
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 border border-blue-500/20 flex items-center justify-center bg-black/40 flex-shrink-0">
+              <span className="text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">{item.icon}</span>
             </div>
-            <div className="aspect-square bg-slate-900/80 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-              <span className="text-7xl filter grayscale brightness-150 opacity-90 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">{item.icon || '📦'}</span>
+            <div className="flex-1">
+              <p className="text-[10px] text-slate-300 italic leading-relaxed text-right">
+                {item.description}
+              </p>
             </div>
           </div>
 
-          {/* 3. Action / Allocation Card */}
-          <div className="bg-black/40 border border-slate-700/50 p-4 space-y-4">
-            <div className="flex items-center gap-2 mb-1 border-l-2 border-yellow-500 pl-2">
-              <Zap className="w-3 h-3 text-yellow-500" />
-              <span className="text-[10px] font-bold text-yellow-100 tracking-widest uppercase italic">Usage Configuration</span>
-            </div>
-
-            {/* Quantity Selector */}
-            <div className="flex items-center justify-between bg-white/5 p-2 border border-white/10">
-              <span className="text-[10px] text-slate-400 uppercase">Adjust Quantity</span>
-              <div className="flex items-center gap-4">
-                <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white"><Minus className="w-4 h-4" /></button>
-                <span className="text-white font-bold text-sm">x{quantity}</span>
-                <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white"><Plus className="w-4 h-4" /></button>
+          {/* منطق النوع: XP */}
+          {item.type === 'xp' && (
+            <div className="space-y-4 pt-2 border-t border-blue-900/20">
+              {/* اختيار الكمية */}
+              <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold">SET QUANTITY</span>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
+                  <span className="text-white font-bold">{quantity}</span>
+                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+                </div>
               </div>
-            </div>
 
-            {/* XP Allocation Logic Style */}
-            {item.type === 'xp' && (
-              <div className="space-y-3 pt-2">
+              {/* توزيع الإحصائيات */}
+              <div className="space-y-3">
                 {(Object.keys(statLabels) as StatType[]).map(stat => (
                   <div key={stat} className="space-y-1">
                     <div className="flex justify-between items-center text-[10px]">
-                      <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
+                        <span className="text-slate-500 text-[8px]">LV.{gameState.levels[stat]}</span>
+                      </div>
                       <div className="flex items-center gap-3">
                         <button onClick={() => handleStatChange(stat, -1)} className="text-red-500/50 hover:text-red-500"><Minus className="w-3 h-3" /></button>
                         <span className="text-white font-bold min-w-[20px] text-center">{statAllocation[stat]}</span>
                         <button onClick={() => handleStatChange(stat, 1)} className="text-green-500/50 hover:text-green-500"><Plus className="w-3 h-3" /></button>
                       </div>
                     </div>
-                    <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
+                    <div className="w-full h-1 bg-slate-900 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.8)]" style={{ width: `${Math.min((gameState.stats[stat] / 1000) * 100, 100)}%` }} />
                     </div>
                   </div>
                 ))}
-                <div className="text-center bg-blue-500/10 border border-blue-500/20 py-1">
-                  <span className="text-[9px] text-blue-400 font-bold tracking-tighter">REMAINING XP: {remainingXP}</span>
+              </div>
+              <div className="text-center bg-yellow-950/20 p-1 border border-yellow-500/20">
+                <span className="text-[9px] text-yellow-500">REMAINING XP: {remainingXP}</span>
+              </div>
+            </div>
+          )}
+
+          {/* منطق النوع: Health & Energy */}
+          {(item.type === 'health' || item.type === 'energy') && (
+            <div className="space-y-4 pt-2 border-t border-blue-900/20">
+               <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold uppercase">Adjust Dosage</span>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400"><Minus className="w-4 h-4" /></button>
+                  <span className="text-white font-bold">{quantity}</span>
+                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400"><Plus className="w-4 h-4" /></button>
                 </div>
               </div>
-            )}
-
-            {/* Health/Energy Preview Style */}
-            {(item.type === 'health' || item.type === 'energy') && (
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between text-[9px] text-slate-400 uppercase italic">
-                  <span>Output Potential:</span>
-                  <span className="text-blue-400">+{item.effect * quantity}% {item.type === 'health' ? 'HP' : 'MP'}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[8px] text-slate-400 uppercase">
+                  <span>Output potential:</span>
+                  <span className={item.type === 'health' ? "text-green-500" : "text-cyan-400"}>
+                    +{item.effect * quantity}% {item.type === 'health' ? 'HP' : 'MP'}
+                  </span>
                 </div>
-                <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                   <div 
-                    className={cn("h-full transition-all duration-1000", item.type === 'health' ? "bg-red-500" : "bg-blue-500")} 
+                <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                  <div 
+                    className={cn("h-full transition-all duration-1000 shadow-[0_0_8px]", item.type === 'health' ? "bg-red-600 shadow-red-500" : "bg-blue-600 shadow-blue-500")} 
                     style={{ width: `${item.type === 'health' ? (gameState.hp/gameState.maxHp)*100 : (gameState.energy/gameState.maxEnergy)*100}%` }} 
                   />
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Action Button */}
-          <div className="pt-2">
-            {canUse ? (
-              <button 
-                onClick={handleUse}
-                className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:brightness-90 active:scale-95 transition-all"
-              >
-                Execute Consumption
-              </button>
-            ) : item.type === 'title' ? (
-              <button
-                onClick={() => { onEquipTitle?.(item.id); handleClose(); }}
-                disabled={item.equipped}
-                className={cn(
-                  "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase transition-all",
-                  item.equipped 
-                    ? "bg-slate-900 text-slate-500 cursor-not-allowed border border-slate-800"
-                    : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                )}
-              >
-                {item.equipped ? 'Synchronized' : 'Equip Title'}
-              </button>
-            ) : (
-              <button 
-                onClick={handleClose}
-                className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-              >
-                Terminate Entry
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
+        {/* تذييل التحليل - Warning Message */}
+        <div className="text-left bg-blue-950/10 border border-blue-900/30 p-3 font-mono">
+          <p className="text-[9px] text-blue-500 leading-relaxed uppercase tracking-tighter">
+            System Message: Ready to execute command for player. Integrity check passed. Access level: Authorized.
+          </p>
+        </div>
       </div>
+    );
+  };
+
+  const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
+      <div className="absolute inset-0" onClick={onClose} />
+      
+      {/* الحاوية الرئيسية بنفس انميشن واستايل المتجر */}
+      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-y origin-center">
+        {/* الخطوط البيضاء المضيئة */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
+        
+        {/* Header */}
+        <div className="p-4 flex items-center justify-between border-b border-blue-500/30 bg-blue-950/20">
+          <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+            Analyzing Item Data
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-white/10 transition-colors">
+            <X className="w-5 h-5 text-blue-400" />
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {getItemTypeContent()}
+        </div>
+
+        {/* Footer Buttons بنفس استايل المتجر */}
+        <div className="p-6 pt-0 space-y-3">
+          {canUse ? (
+            <button
+              onClick={handleUse}
+              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Confirm & Use
+            </button>
+          ) : item.type === 'title' ? (
+            <button
+              onClick={() => { onEquipTitle?.(item.id); onClose(); }}
+              disabled={item.equipped}
+              className={cn(
+                "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase transition-all",
+                item.equipped 
+                  ? "bg-slate-900 text-slate-500 cursor-not-allowed border border-slate-800"
+                  : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02]"
+              )}
+            >
+              {item.equipped ? 'Title Equipped' : 'Equip Title'}
+            </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-blue-900/20 border border-blue-500/40 text-blue-300 font-black text-[11px] tracking-[0.5em] uppercase"
+            >
+              Close Entry
+            </button>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes scale-y {
+          from { transform: scaleY(0); opacity: 0; }
+          to { transform: scaleY(1); opacity: 1; }
+        }
+        .animate-scale-y {
+          animation: scale-y 0.6s cubic-bezier(0.2, 1, 0.2, 1) forwards;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.5);
+        }
+      `}</style>
     </div>
   );
 };
