@@ -4,7 +4,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { cn } from '@/lib/utils';
 
-// استيراد المكونات المطلوبة فقط
+// استيراد المكونات المطلوبة
 import ItemUseModal from '@/components/ItemUseModal';
 import ItemAnalysisModal from '@/components/ItemAnalysisModal';
 
@@ -16,26 +16,18 @@ import {
   Target,
   Coins,
   Package,
-  X,
-  ShieldAlert,
-  Info,
-  MapPin,
-  Image as ImageIcon,
   PlayCircle,
   Search
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle } = useGameState();
+  const { gameState, getXpProgress, useItem } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
+  // توحيد الحالة للعنصر المختار والمودالات لمنع أي Error في الـ Rendering
   const [activeItem, setActiveItem] = useState<any>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  
-  // حالة التحكم في ظهور مودال الاستخدام
-  const [isUsingItem, setIsUsingItem] = useState(false);
+  const [isUseModalOpen, setIsUseModalOpen] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
 
   const MAX_LEVEL = 100;
 
@@ -53,34 +45,12 @@ const Stats = () => {
     agility: Math.min(((gameState.levels.agility || 0) / MAX_LEVEL) * 100, 100),
   };
 
-  const openAnalysis = (item: any) => {
-    setActiveItem(item);
-    setIsScanning(true);
-    setIsExiting(false);
-    setTimeout(() => setIsVisible(true), 50);
-  };
-
-  const closeAnalysis = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsScanning(false);
-      setIsExiting(false);
-      setIsVisible(false);
-      setActiveItem(null);
-    }, 800);
-  };
-
-  // دوال لفتح مودال الاستخدام
-  const openUseModal = (item: any) => {
-    setActiveItem(item);
-    setIsUsingItem(true);
-  };
-
   const totalLevel = gameState.totalLevel;
   const levelConfig = totalLevel >= 40 ? { color: '#c084fc', tier: 'S-RANK' } : totalLevel >= 20 ? { color: '#60a5fa', tier: 'B-RANK' } : { color: '#ffffff', tier: 'E-RANK' };
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
+      {/* Background Effects - No Changes */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
@@ -94,19 +64,18 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* ANALYSIS MODAL - Using external component */}
-      {isScanning && activeItem && (
-        <ItemAnalysisModal 
+      {/* الربط مع المكونات الخارجية */}
+      {isUseModalOpen && activeItem && (
+        <ItemUseModal 
           item={activeItem} 
-          onClose={closeAnalysis} 
+          onClose={() => { setIsUseModalOpen(false); setActiveItem(null); }} 
         />
       )}
 
-      {/* USE ITEM MODAL - Using external component */}
-      {isUsingItem && activeItem && (
-        <ItemUseModal 
+      {isAnalysisModalOpen && activeItem && (
+        <ItemAnalysisModal 
           item={activeItem} 
-          onClose={() => setIsUsingItem(false)} 
+          onClose={() => { setIsAnalysisModalOpen(false); setActiveItem(null); }} 
         />
       )}
 
@@ -180,17 +149,17 @@ const Stats = () => {
                     </div>
                     <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
                     
-                    {/* BUTTONS ROW */}
-                    <div className="flex gap-2 mt-2">
+                    {/* BUTTONS SECTION */}
+                    <div className="grid grid-cols-2 gap-2 mt-2">
                       <button
-                        onClick={() => openUseModal(item)}
-                        className="flex-1 py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] transition-all"
+                        onClick={() => { setActiveItem(item); setIsUseModalOpen(true); }}
+                        className="py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] hover:bg-blue-500/20 transition-all"
                       >
                         <PlayCircle className="w-3 h-3" /> Use Item
                       </button>
                       <button
-                        onClick={() => openAnalysis(item)}
-                        className="flex-1 py-3 bg-slate-800/40 border border-slate-700/50 text-slate-400 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] transition-all"
+                        onClick={() => { setActiveItem(item); setIsAnalysisModalOpen(true); }}
+                        className="py-3 bg-slate-800/40 border border-slate-700/50 text-slate-400 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] hover:bg-slate-800/60 transition-all"
                       >
                         <Search className="w-3 h-3" /> Analysis
                       </button>
