@@ -15,7 +15,9 @@ import {
   ShieldAlert,
   Info,
   MapPin,
-  Image as ImageIcon
+  Image as ImageIcon,
+  PlayCircle,
+  Search
 } from 'lucide-react';
 
 const Stats = () => {
@@ -26,6 +28,9 @@ const Stats = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  
+  // حالة جديدة للتحكم في ظهور مودال الاستخدام
+  const [isUsingItem, setIsUsingItem] = useState(false);
 
   const MAX_LEVEL = 100;
 
@@ -60,6 +65,12 @@ const Stats = () => {
     }, 800);
   };
 
+  // دوال لفتح مودال الاستخدام
+  const openUseModal = (item: any) => {
+    setActiveItem(item);
+    setIsUsingItem(true);
+  };
+
   const totalLevel = gameState.totalLevel;
   const levelConfig = totalLevel >= 40 ? { color: '#c084fc', tier: 'S-RANK' } : totalLevel >= 20 ? { color: '#60a5fa', tier: 'B-RANK' } : { color: '#ffffff', tier: 'E-RANK' };
 
@@ -78,7 +89,7 @@ const Stats = () => {
         </div>
       </header>
 
-      {/* ANALYSIS MODAL */}
+      {/* ANALYSIS MODAL (Original Logic Kept) */}
       {isScanning && activeItem && (
         <div className={cn(
           "fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-[1000ms]",
@@ -97,7 +108,6 @@ const Stats = () => {
                 <X className="w-5 h-5 text-slate-500 cursor-pointer" onClick={closeAnalysis} />
               </div>
 
-              {/* 1. Information Card */}
               <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3 shadow-inner">
                 <div className="flex items-center gap-2 mb-1 border-l-2 border-blue-500 pl-2">
                   <Info className="w-3 h-3 text-blue-400" />
@@ -110,7 +120,6 @@ const Stats = () => {
                 </div>
               </div>
 
-              {/* 2. Acquisition Card */}
               <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-1 border-l-2 border-yellow-500 pl-2">
                   <MapPin className="w-3 h-3 text-yellow-500" />
@@ -125,14 +134,9 @@ const Stats = () => {
                     <span>Gate Dungeon Drop</span>
                     <span className="text-blue-400 font-bold tracking-tighter">CHANCE</span>
                   </div>
-                  <div className="bg-white/5 p-2 border border-white/10 rounded flex justify-between items-center italic opacity-60">
-                    <span>Secret Mission Rewards</span>
-                    <span className="text-purple-400 font-bold tracking-tighter">EVENT</span>
-                  </div>
                 </div>
               </div>
 
-              {/* 3. Visual Reference Card */}
               <div className="bg-black/40 border border-slate-700/50 p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-3 border-l-2 border-green-500 pl-2">
                   <ImageIcon className="w-3 h-3 text-green-500" />
@@ -158,6 +162,27 @@ const Stats = () => {
             </div>
             <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_white] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100" : "scale-x-0")} />
           </div>
+        </div>
+      )}
+
+      {/* USE ITEM MODAL - Logic to show from ItemUseModal component */}
+      {isUsingItem && activeItem && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+           {/* هنا يظهر الكود الموجود في src/components/ItemUseModal.tsx */}
+           <div className="bg-[#0a101f] border border-blue-500/50 p-6 max-w-sm w-full relative">
+              <X className="absolute top-4 right-4 w-5 h-5 text-slate-500 cursor-pointer" onClick={() => setIsUsingItem(false)} />
+              <h3 className="text-blue-400 font-bold mb-4 tracking-widest uppercase italic">Use Item</h3>
+              <div className="text-center space-y-4">
+                <div className="text-4xl">{activeItem.icon || '📦'}</div>
+                <p className="text-sm text-slate-300">Confirm consumption of <span className="text-blue-400 font-bold">{activeItem.name}</span>?</p>
+                <button 
+                  onClick={() => { useItem(activeItem.id); setIsUsingItem(false); }}
+                  className="w-full py-3 bg-blue-600 text-white font-bold uppercase tracking-widest hover:bg-blue-500 transition-colors"
+                >
+                  Confirm Use
+                </button>
+              </div>
+           </div>
         </div>
       )}
 
@@ -230,12 +255,22 @@ const Stats = () => {
                       </div>
                     </div>
                     <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
-                    <button
-                      onClick={() => openAnalysis(item)}
-                      className="w-full mt-2 py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[10px] font-bold uppercase tracking-[0.2em] active:scale-[0.95] drop-shadow-[0_0_5px_rgba(96,165,250,0.3)] hover:bg-blue-500/20 transition-all"
-                    >
-                      Use Item
-                    </button>
+                    
+                    {/* BUTTONS ROW */}
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => openUseModal(item)}
+                        className="flex-1 py-3 bg-blue-500/10 border border-blue-500/40 text-blue-300 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] transition-all"
+                      >
+                        <PlayCircle className="w-3 h-3" /> Use Item
+                      </button>
+                      <button
+                        onClick={() => openAnalysis(item)}
+                        className="flex-1 py-3 bg-slate-800/40 border border-slate-700/50 text-slate-400 text-[9px] font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-2 active:scale-[0.95] transition-all"
+                      >
+                        <Search className="w-3 h-3" /> Analysis
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
