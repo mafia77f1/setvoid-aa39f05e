@@ -419,6 +419,72 @@ export const useGameState = () => {
     loadFromSupabase();
   }, [user]);
 
+  // Realtime sync from Supabase - يستمع للتغييرات من قاعدة البيانات
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('game-state-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'game_states',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          // تحديث البيانات من Supabase مباشرة
+          if (payload.new && !isSyncingRef.current) {
+            const newData = payload.new as any;
+            setGameState(prev => ({
+              ...prev,
+              playerName: newData.player_name || prev.playerName,
+              equippedTitle: newData.equipped_title || prev.equippedTitle,
+              gold: newData.gold ?? prev.gold,
+              hp: newData.hp ?? prev.hp,
+              maxHp: newData.max_hp ?? prev.maxHp,
+              energy: newData.energy ?? prev.energy,
+              maxEnergy: newData.max_energy ?? prev.maxEnergy,
+              shadowPoints: newData.shadow_points ?? prev.shadowPoints,
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // تحديث البوابات كل ساعة تلقائياً
+  useEffect(() => {
+    const checkAndUpdateGates = () => {
+      const lastGateUpdate = localStorage.getItem('lastGateUpdateHour');
+      const currentHour = new Date().getHours().toString();
+      
+      if (lastGateUpdate !== currentHour) {
+        // تحديث البوابات
+        setGameState(prev => ({
+          ...prev,
+          gates: getScheduledGates(prev.totalLevel || 1)
+        }));
+        localStorage.setItem('lastGateUpdateHour', currentHour);
+        
+        // إرسال إشعار عبر event
+        window.dispatchEvent(new CustomEvent('newGateAppeared'));
+      }
+    };
+
+    // فحص عند التحميل
+    checkAndUpdateGates();
+    
+    // فحص كل دقيقة
+    const interval = setInterval(checkAndUpdateGates, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Save to both localStorage and Supabase with individual columns
   useEffect(() => {
     localStorage.setItem('levelUpLife', JSON.stringify(gameState));
@@ -467,7 +533,7 @@ export const useGameState = () => {
       } finally {
         isSyncingRef.current = false;
       }
-    }, 1000); // تقليل الوقت للحفظ الأسرع
+    }, 1000);
 
     return () => clearTimeout(timeout);
   }, [gameState, user]);
