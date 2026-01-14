@@ -18,7 +18,7 @@ import {
   ShieldAlert,
   Info,
   MapPin,
-  Image as ImageIcon,
+  ImageIcon,
   BarChart3 // تم إضافته للأيقونات
 } from 'lucide-react';
 
@@ -65,7 +65,10 @@ const Stats = () => {
           item={selectedItem}
           gameState={gameState}
           onClose={() => setShowUseModal(false)}
-          onUseItem={(itemId, qty, stats) => useItem(itemId, qty, stats)}
+          onUseItem={(itemId, qty, statAlloc) => {
+            // التعديل هنا لضمان إرسال الكمية بشكل صحيح للدالة الأساسية
+            useItem(itemId, qty, statAlloc);
+          }}
           onEquipTitle={equipTitle}
           onAnalyze={() => {
             setShowUseModal(false);
