@@ -37,7 +37,6 @@ const Market = () => {
     { id: 'demon_blood', name: 'Demon King Blood', arabicName: 'دم ملك الشياطين', category: 'Divine Item', difficulty: 'S', price: 5000000, icon: '💀', description: 'جوهر ملك شيطاني رفيع المستوى', rankLevel: 5 },
   ];
 
-  // الحصول على رتبة اللاعب بناءً على المستوى
   const getPlayerRank = () => {
     const level = gameState.totalLevel || 1;
     if (level >= 50) return 'S';
@@ -51,13 +50,11 @@ const Market = () => {
   const rankOrder = { 'E': 0, 'D': 1, 'C': 2, 'B': 3, 'A': 4, 'S': 5 };
   const playerRank = getPlayerRank();
 
-  // يجب أن يكون اللاعب بنفس الرتبة أو أعلى لرؤية العنصر بشكل طبيعي
   const canSeeItem = (item) => {
     const itemRank = item.difficulty;
     return rankOrder[playerRank] >= rankOrder[itemRank];
   };
   
-  // جميع العناصر تظهر الآن
   const visibleItems = SOLO_ITEMS;
 
   const startSystemScan = (item) => {
@@ -92,6 +89,25 @@ const Market = () => {
       purchaseItem(item.id);
       playPurchase();
       toast({ title: 'System: SUCCESS', description: `Acquired ${item.name}` });
+    } else {
+      toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
+    }
+  };
+
+  // وظيفة شراء الحد الأقصى
+  const handleMaxPurchase = (item) => {
+    const isLocked = !canSeeItem(item);
+    if (isLocked) {
+      startSystemScan(item);
+      return;
+    }
+    const maxAffordable = Math.floor(gameState.gold / item.price);
+    if (maxAffordable > 0) {
+      for (let i = 0; i < maxAffordable; i++) {
+        purchaseItem(item.id);
+      }
+      playPurchase();
+      toast({ title: 'System: MAX ACQUIRED', description: `Acquired x${maxAffordable} ${item.name}` });
     } else {
       toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
     }
@@ -294,22 +310,33 @@ const Market = () => {
                     </p>
                   </div>
 
-                  <button
-                    onClick={() => handlePurchase(item)}
-                    disabled={isAlphaLocked && isRevealed}
-                    className={cn(
-                      "w-full mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
-                      !isRevealed 
-                        ? "bg-blue-900/40 border-blue-500/50 text-blue-400 hover:bg-blue-800/60"
-                        : isAlphaLocked
-                          ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed"
-                          : gameState.gold >= item.price
-                            ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
-                            : "bg-red-900/20 border-red-500/30 text-red-400"
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handlePurchase(item)}
+                      disabled={isAlphaLocked && isRevealed}
+                      className={cn(
+                        "flex-1 mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all active:scale-[0.95] border drop-shadow-[0_0_5px_rgba(96,165,250,0.3)]",
+                        !isRevealed 
+                          ? "bg-blue-900/40 border-blue-500/50 text-blue-400 hover:bg-blue-800/60"
+                          : isAlphaLocked
+                            ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed"
+                            : gameState.gold >= item.price
+                              ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20"
+                              : "bg-red-900/20 border-red-500/30 text-red-400"
+                      )}
+                    >
+                      {!isRevealed ? 'Analyze' : isAlphaLocked ? 'Locked' : 'Purchase'}
+                    </button>
+
+                    {isRevealed && !isAlphaLocked && (
+                      <button
+                        onClick={() => handleMaxPurchase(item)}
+                        className="mt-2 px-4 py-2 bg-yellow-600/20 border border-yellow-500/50 text-yellow-500 text-[10px] font-bold uppercase hover:bg-yellow-600/30 transition-all active:scale-[0.95]"
+                      >
+                        MAX
+                      </button>
                     )}
-                  >
-                    {!isRevealed ? 'Analyze Item' : isAlphaLocked ? 'Locked in Alpha' : 'Purchase Item'}
-                  </button>
+                  </div>
                 </div>
               </div>
             </div>
