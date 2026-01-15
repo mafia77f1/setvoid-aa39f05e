@@ -56,19 +56,8 @@ export const ItemUseModal = ({
 
   const handleUse = () => {
     if (item.type === 'xp') {
-      if (allocatedXP < totalXP) {
-        const remaining = totalXP - allocatedXP;
-        const perStat = Math.floor(remaining / 4);
-        const finalAllocation = {
-          strength: statAllocation.strength + perStat,
-          mind: statAllocation.mind + perStat,
-          spirit: statAllocation.spirit + perStat,
-          agility: statAllocation.agility + perStat + (remaining % 4)
-        };
-        onUseItem(item.id, quantity, finalAllocation);
-      } else {
-        onUseItem(item.id, quantity, statAllocation);
-      }
+      // تم التعديل هنا: إرسال التوزيع المختار فقط دون فرض توزيع النقاط المتبقية
+      onUseItem(item.id, quantity, statAllocation);
     } else {
       onUseItem(item.id, quantity);
     }
