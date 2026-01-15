@@ -130,10 +130,18 @@ export const ItemUseModal = ({
               {/* اختيار الكمية */}
               <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
                 <span className="text-[9px] text-blue-300 font-bold">SET QUANTITY</span>
-                <div className="flex items-center gap-4">
-                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
-                  <span className="text-white font-bold">{quantity}</span>
-                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
+                    <span className="text-white font-bold">{quantity}</span>
+                    <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+                  </div>
+                  <button 
+                    onClick={() => { setQuantity(maxQuantity); setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 }); }} 
+                    className="ml-2 px-2 py-0.5 border border-blue-500/50 bg-blue-500/10 text-blue-400 text-[8px] font-bold hover:bg-blue-500/20 transition-all"
+                  >
+                    MAX
+                  </button>
                 </div>
               </div>
 
@@ -169,10 +177,18 @@ export const ItemUseModal = ({
             <div className="space-y-4 pt-2 border-t border-blue-900/20">
                <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
                 <span className="text-[9px] text-blue-300 font-bold uppercase">Adjust Dosage</span>
-                <div className="flex items-center gap-4">
-                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400"><Minus className="w-4 h-4" /></button>
-                  <span className="text-white font-bold">{quantity}</span>
-                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400"><Plus className="w-4 h-4" /></button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => handleQuantityChange(-1)} className="text-blue-400"><Minus className="w-4 h-4" /></button>
+                    <span className="text-white font-bold">{quantity}</span>
+                    <button onClick={() => handleQuantityChange(1)} className="text-blue-400"><Plus className="w-4 h-4" /></button>
+                  </div>
+                  <button 
+                    onClick={() => setQuantity(maxQuantity)} 
+                    className="ml-2 px-2 py-0.5 border border-blue-500/50 bg-blue-500/10 text-blue-400 text-[8px] font-bold hover:bg-blue-500/20 transition-all"
+                  >
+                    MAX
+                  </button>
                 </div>
               </div>
               <div className="space-y-2">
