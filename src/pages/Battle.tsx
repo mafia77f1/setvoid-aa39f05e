@@ -5,120 +5,124 @@ import { useGameState } from '@/hooks/useGameState';
 const Battle = () => {
   const navigate = useNavigate();
   const { gameState } = useGameState();
-  
-  // إحداثيات اللاعب
-  const [playerPos, setPlayerPos] = useState({ x: 50, y: 50 });
+  const [playerPos, setPlayerPos] = useState({ x: 50, y: 70 });
   const [rotation, setRotation] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
 
-  // وظيفة الحركة (تستخدم للكيبورد واللمس)
+  // وظيفة الحركة المحسنة
   const movePlayer = (dx, dy, rot) => {
-    const step = 3;
+    setIsMoving(true);
     setPlayerPos(prev => ({
-      x: Math.max(5, Math.min(95, prev.x + dx * step * 0.5)),
-      y: Math.max(5, Math.min(95, prev.y + dy * step * 0.5))
+      x: Math.max(10, Math.min(90, prev.x + dx * 2.5)),
+      y: Math.max(10, Math.min(90, prev.y + dy * 2.5))
     }));
     setRotation(rot);
+    setTimeout(() => setIsMoving(false), 200);
   };
 
-  // التحكم بالكيبورد
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'w' || e.key === 'ArrowUp') movePlayer(0, -1, 0);
-      if (e.key === 's' || e.key === 'ArrowDown') movePlayer(0, 1, 180);
-      if (e.key === 'a' || e.key === 'ArrowLeft') movePlayer(-1, 0, -90);
-      if (e.key === 'd' || e.key === 'ArrowRight') movePlayer(1, 0, 90);
+      const keys = {
+        'w': [0, -1, 0], 'ArrowUp': [0, -1, 0],
+        's': [0, 1, 180], 'ArrowDown': [0, 1, 180],
+        'a': [-1, 0, -90], 'ArrowLeft': [-1, 0, -90],
+        'd': [1, 0, 90], 'ArrowRight': [1, 0, 90]
+      };
+      if (keys[e.key]) movePlayer(...keys[e.key]);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const HumanoidFigure = ({ color }) => (
-    <div className="relative flex flex-col items-center scale-[0.4] transition-transform duration-200" style={{ transform: `rotate(${rotation}deg) scale(0.4)` }}>
-      <div className={`w-10 h-10 rounded-full mb-1 ${color} border-2 border-white/40 shadow-[0_0_15px_rgba(59,130,246,0.8)]`} />
-      <div className="relative">
-        <div className={`absolute -left-6 top-0 w-4 h-16 ${color} rounded-full opacity-80`} />
-        <div className={`absolute -right-6 top-0 w-4 h-16 ${color} rounded-full opacity-80`} />
-        <div className={`w-14 h-20 ${color} rounded-t-xl`} />
+  // تصميم الشخصية الجديد (Shadow Hunter)
+  const ShadowHunter = () => (
+    <div className={`relative transition-transform duration-300 ${isMoving ? 'scale-110' : 'scale-100'}`} 
+         style={{ transform: `rotate(${rotation}deg)` }}>
+      {/* توهج العيون */}
+      <div className="absolute -top-6 flex gap-3 z-50">
+        <div className="w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]" />
+        <div className="w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee]" />
       </div>
-      <div className="flex gap-2 mt-1">
-        <div className={`w-5 h-20 ${color} rounded-b-full`} />
-        <div className={`w-5 h-20 ${color} rounded-b-full`} />
+      {/* الرأس والوشاح */}
+      <div className="w-6 h-8 bg-zinc-900 rounded-t-full relative">
+        <div className="absolute -bottom-4 -left-2 w-10 h-12 bg-gradient-to-b from-zinc-900 to-transparent clip-path-cloak opacity-80" />
       </div>
+      {/* الجسم الرياضي */}
+      <div className="w-8 h-12 bg-zinc-900 rounded-sm border-x border-white/10 shadow-[0_0_20px_rgba(0,0,0,1)]" />
+      {/* دخان الظل تحت الشخصية */}
+      <div className="absolute -bottom-2 w-12 h-6 bg-cyan-900/20 blur-xl animate-pulse" />
     </div>
   );
 
   return (
-    <div className="relative w-screen h-screen bg-[#020202] overflow-hidden touch-none">
+    <div className="relative w-screen h-screen bg-[#020205] overflow-hidden touch-none font-sans">
       
-      {/* 1. الخريطة المصغرة (Mini-map) - دائرية وصغيرة */}
-      <div className="absolute top-4 left-4 w-24 h-24 bg-black/60 border border-blue-500/30 z-[60] rounded-full overflow-hidden backdrop-blur-md shadow-lg shadow-blue-900/20">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(0deg, #3b82f6 0px, transparent 1px, transparent 10px), repeating-linear-gradient(90deg, #3b82f6 0px, transparent 1px, transparent 10px)' }} />
-        <div 
-          className="absolute w-1.5 h-1.5 bg-blue-400 rounded-full"
-          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
-        />
-      </div>
+      {/* 1. نظام الضباب والإضاءة السينمائية */}
+      <div 
+        className="absolute inset-0 z-20 pointer-events-none"
+        style={{ 
+          background: `radial-gradient(circle at ${playerPos.x}% ${playerPos.y}%, transparent 0%, rgba(0,0,0,0.95) 30%)`
+        }} 
+      />
 
-      {/* 2. بيئة الكهف المتطورة */}
-      <div className="absolute inset-0 z-10">
-        {/* نظام الإضاءة الاستكشافي (كلما تحركت يظهر المكان) */}
+      {/* 2. أرضية الكهف (3D Grid Perspective) */}
+      <div className="absolute inset-0 z-0" style={{ perspective: '1000px' }}>
         <div 
-          className="absolute inset-0 pointer-events-none transition-all duration-300 ease-out"
+          className="absolute inset-0 transition-all duration-500 ease-out"
           style={{ 
-            background: `radial-gradient(circle at ${playerPos.x}% ${playerPos.y}%, transparent 5%, rgba(0,0,0,0.98) 25%)`
+            backgroundImage: `linear-gradient(to right, rgba(34, 211, 238, 0.05) 1px, transparent 1px), 
+                              linear-gradient(to bottom, rgba(34, 211, 238, 0.05) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+            transform: `rotateX(60deg) translateY(${-playerPos.y * 0.5}px)`,
+            transformOrigin: 'top'
           }} 
         />
-        
-        {/* تفاصيل الكهف (صخور ونقوش سحرية) */}
-        <div className="absolute inset-0 opacity-30" style={{ 
-          backgroundImage: `url('https://www.transparenttextures.com/patterns/dark-matter.png')`,
-          backgroundSize: '300px'
-        }} />
-
-        {/* 3. اللاعب */}
-        <div 
-          className="absolute transition-all duration-150 ease-linear z-20"
-          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%`, transform: 'translate(-50%, -50%)' }}
-        >
-          {/* وهج تحت اللاعب لإضاءة الأرضية */}
-          <div className="absolute -inset-20 bg-blue-600/10 blur-[60px] rounded-full" />
-          <HumanoidFigure color="bg-blue-500" />
-          <div className="mt-[-20px] text-[8px] text-blue-300 font-bold text-center tracking-widest uppercase">E-Rank Hunter</div>
-        </div>
-
-        {/* عوائق أو كنوز تظهر عند الاقتراب */}
-        <div className="absolute top-[40%] left-[20%] w-10 h-10 bg-orange-950/20 border border-orange-900/30 blur-sm rounded-lg" />
-        <div className="absolute top-[70%] left-[80%] w-16 h-16 bg-zinc-900/40 border border-white/5 blur-md rotate-45" />
       </div>
 
-      {/* 4. أجهزة التحكم للهاتف (Mobile Joystick/D-Pad) */}
-      <div className="absolute bottom-12 right-12 z-[100] grid grid-cols-3 gap-2 opacity-60">
+      {/* 3. الخريطة المصغرة (Cyber Style) */}
+      <div className="absolute top-6 left-6 w-20 h-20 bg-black/80 border border-cyan-500/30 z-[60] rounded-lg overflow-hidden backdrop-blur-xl">
+          <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] scale-50" />
+          <div className="absolute w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee] transition-all duration-300"
+               style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }} />
+      </div>
+
+      {/* 4. كائن اللاعب */}
+      <div 
+        className="absolute transition-all duration-300 ease-out z-30"
+        style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%`, transform: 'translate(-50%, -50%)' }}
+      >
+        <ShadowHunter />
+      </div>
+
+      {/* 5. التحكم للهاتف (Invisible D-Pad Interface) */}
+      <div className="absolute bottom-10 right-10 z-[100] grid grid-cols-3 gap-3">
         <div />
-        <button 
-          onPointerDown={() => movePlayer(0, -2, 0)}
-          className="w-14 h-14 bg-zinc-800/80 rounded-xl border border-white/20 flex items-center justify-center active:bg-blue-900"
-        >▲</button>
+        <button onPointerDown={() => movePlayer(0, -1, 0)} className="w-16 h-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+          <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_10px_#22d3ee]" />
+        </button>
         <div />
-        <button 
-          onPointerDown={() => movePlayer(-2, 0, -90)}
-          className="w-14 h-14 bg-zinc-800/80 rounded-xl border border-white/20 flex items-center justify-center active:bg-blue-900"
-        >◀</button>
-        <button 
-          onPointerDown={() => movePlayer(0, 2, 180)}
-          className="w-14 h-14 bg-zinc-800/80 rounded-xl border border-white/20 flex items-center justify-center active:bg-blue-900"
-        >▼</button>
-        <button 
-          onPointerDown={() => movePlayer(2, 0, 90)}
-          className="w-14 h-14 bg-zinc-800/80 rounded-xl border border-white/20 flex items-center justify-center active:bg-blue-900"
-        >▶</button>
+        <button onPointerDown={() => movePlayer(-1, 0, -90)} className="w-16 h-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+          <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_10px_#22d3ee]" />
+        </button>
+        <button onPointerDown={() => movePlayer(0, 1, 180)} className="w-16 h-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+          <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_10px_#22d3ee]" />
+        </button>
+        <button onPointerDown={() => movePlayer(1, 0, 90)} className="w-16 h-16 bg-white/5 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center active:scale-90 transition-transform">
+          <div className="w-2 h-2 bg-cyan-400 rotate-45 shadow-[0_0_10px_#22d3ee]" />
+        </button>
       </div>
 
-      {/* شريط معلومات علوي خفيف */}
-      <div className="absolute top-4 right-4 z-[60] text-right">
-        <div className="text-[10px] text-blue-500 font-mono tracking-widest uppercase">Dungeon: C-Rank</div>
-        <div className="text-[8px] text-zinc-500 font-mono">X: {playerPos.x.toFixed(0)} Y: {playerPos.y.toFixed(0)}</div>
+      {/* نصوص النظام */}
+      <div className="absolute top-6 right-6 z-[60] font-mono">
+        <div className="text-cyan-500 text-sm tracking-[0.3em] font-black italic">SYSTEM: EXPLORATION</div>
+        <div className="text-[10px] text-zinc-500">PLAYER_COORD: {playerPos.x.toFixed(0)},{playerPos.y.toFixed(0)}</div>
       </div>
 
+      <style>{`
+        .clip-path-cloak {
+          clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+        }
+      `}</style>
     </div>
   );
 };
