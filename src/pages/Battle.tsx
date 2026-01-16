@@ -1,85 +1,87 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion'; // مكتبة للحركات الجبارة
 
-const BattleApp = () => {
+const SoloLevelingSystem = () => {
   const [bossHP, setBossHP] = useState(85000);
-  const maxBossHP = 100000;
-
-  // قائمة المهارات (مثل الأزرار الدائرية في صورتك)
-  const skills = [
-    { id: 1, icon: "⚡", color: "bg-blue-600" },
-    { id: 2, icon: "🔥", color: "bg-orange-600" },
-    { id: 3, icon: "❄️", color: "bg-cyan-500" },
-    { id: 4, icon: "⚔️", color: "bg-red-700" },
-  ];
-
+  
   return (
-    <div className="h-screen w-full bg-black flex flex-col text-white overflow-hidden font-sans">
-      
-      {/* 1. منطقة القتال العلوية (مثل الصورة) */}
-      <div className="relative h-[45%] w-full bg-[#050505] border-b-2 border-blue-900/30">
-        {/* خلفية الكهف */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(30,58,138,0.2)_0%,transparent_80%)]"></div>
-        
-        {/* شريط صحة الزعيم (فوق) */}
-        <div className="absolute top-6 w-full flex flex-col items-center z-20">
-          <div className="w-[80%] max-w-md">
-            <div className="flex justify-between text-[10px] font-black tracking-tighter text-silver mb-1 uppercase">
-              <span>Snow Spider [S-Rank]</span>
-              <span>{Math.round((bossHP/maxBossHP)*100)}%</span>
-            </div>
-            <div className="h-3 bg-zinc-900 border border-white/10 p-[1px]">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-700 to-white transition-all duration-500"
-                style={{ width: `${(bossHP / maxBossHP) * 100}%` }}
-              ></div>
-            </div>
+    <div className="min-h-screen bg-black text-white font-sans overflow-hidden relative">
+      {/* تأثير الخلفية: ضباب أزرق خفيف يوحي بالغموض */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
+
+      {/* 1. التنبيه العلوي (System Message) */}
+      <div className="absolute top-10 left-0 w-full flex justify-center z-50">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="border-l-4 border-blue-500 bg-blue-900/20 px-6 py-2 skew-x-[-20deg] backdrop-blur-md"
+        >
+          <p className="text-blue-400 font-black italic tracking-widest text-sm uppercase skew-x-[20deg]">
+            Quest: Defeat the Snow Spider
+          </p>
+        </motion.div>
+      </div>
+
+      {/* 2. منطقة القتال (The Arena) */}
+      <div className="relative h-[50vh] flex flex-col items-center justify-center">
+        {/* شريط الـ HP الخاص بالزعيم بستايل حاد */}
+        <div className="w-[80%] max-w-xl mb-10">
+          <div className="flex justify-between items-end mb-1 px-2">
+            <span className="text-[10px] font-bold text-silver/50 tracking-[0.3em]">BOSS VITALITY</span>
+            <span className="text-blue-400 font-mono text-sm tracking-widest">85%</span>
+          </div>
+          <div className="h-2 bg-zinc-900 border border-blue-500/30 relative overflow-hidden">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-blue-700 to-blue-400"
+              initial={{ width: "100%" }}
+              animate={{ width: "85%" }}
+            />
           </div>
         </div>
 
-        {/* الشخصيات */}
-        <div className="relative h-full w-full flex items-end justify-between px-8 pb-10">
-           <img src="/BoosSnowSpider.png" className="w-40 md:w-64 object-contain" alt="Boss" />
-           <img src="/UserPersonality.png" className="w-24 md:w-40 object-contain scale-x-[-1]" alt="Player" />
+        {/* صور الوحش واللاعب (أماكن افتراضية) */}
+        <div className="flex justify-between items-end w-full max-w-4xl px-10">
+           <img src="/BoosSnowSpider.png" className="w-64 drop-shadow-[0_0_30px_rgba(59,130,246,0.3)]" alt="Boss" />
+           <img src="/UserPersonality.png" className="w-40 filter brightness-125" alt="Player" />
         </div>
       </div>
 
-      {/* 2. شريط المهارات (Skills Bar) */}
-      <div className="h-[12%] bg-zinc-900/50 flex items-center justify-center gap-4 border-b border-white/5">
-        {skills.map(skill => (
-          <button 
-            key={skill.id}
-            onClick={() => setBossHP(prev => Math.max(0, prev - 5000))}
-            className={`${skill.color} w-12 h-12 rounded-full border-2 border-white/20 shadow-lg flex items-center justify-center text-xl hover:scale-110 active:scale-95 transition-transform`}
-          >
-            {skill.icon}
-          </button>
-        ))}
-      </div>
+      {/* 3. لوحة التحكم السفلية (The System Interface) */}
+      <div className="absolute bottom-0 w-full p-6 space-y-4">
+        {/* أزرار المهارات (مثل الصورة لكن بستايل سولو ليفلينج) */}
+        <div className="flex justify-center gap-6">
+          {['Skill 1', 'Skill 2', 'Skill 3'].map((skill, index) => (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              key={index}
+              className="w-16 h-16 border-2 border-blue-500/50 bg-blue-950/40 rounded-lg flex items-center justify-center relative group"
+            >
+              <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+              <span className="text-[10px] font-black uppercase tracking-tighter italic text-blue-200">Active</span>
+            </motion.button>
+          ))}
+        </div>
 
-      {/* 3. منطقة المعدات والتطوير (Bottom UI) */}
-      <div className="flex-1 bg-[#0a0a0c] p-4">
-        <div className="grid grid-cols-5 gap-2 h-full">
-          {/* محاكاة لمربعات المعدات في صورتك */}
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="aspect-square bg-zinc-800/50 border border-white/5 rounded-sm flex items-center justify-center relative group overflow-hidden">
-               <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-               <span className="text-zinc-600 text-xs italic">Item {i+1}</span>
-               {/* علبة التطوير الصغير */}
-               <div className="absolute bottom-0 right-0 bg-blue-600 text-[8px] px-1 font-bold">LV.50</div>
+        {/* لوحة المعلومات (Stats Box) */}
+        <div className="grid grid-cols-3 gap-2 max-w-3xl mx-auto">
+          {['Strength', 'Agility', 'Sense'].map((stat) => (
+            <div key={stat} className="bg-zinc-900/80 border border-white/5 p-3 clip-path-sharp flex justify-between items-center group cursor-pointer hover:border-blue-500 transition-colors">
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest group-hover:text-blue-400">{stat}</span>
+              <span className="text-sm font-black italic text-white">42</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 4. شريط التنقل السفلي الرئيسي */}
-      <div className="h-[8%] bg-blue-900/20 border-t border-blue-500/30 flex items-center justify-around px-2">
-         <button className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Inventory</button>
-         <button className="bg-blue-600 px-6 py-1 rounded-sm text-sm font-black italic skew-x-[-10deg]">UPGRADE</button>
-         <button className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Settings</button>
-      </div>
-
+      {/* تنسيقات CSS مخصصة */}
+      <style>{`
+        .clip-path-sharp {
+          clip-path: polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%);
+        }
+      `}</style>
     </div>
   );
 };
 
-export default BattleApp;
+export default SoloLevelingSystem;
