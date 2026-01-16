@@ -1,95 +1,91 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// import { useGameState } from '@/hooks/useGameState'; // فعلها عند الربط الفعلي
 
 const Battle = () => {
-  const [playerPos, setPlayerPos] = useState({ x: 50, y: 80 });
-  const [currentRoom, setCurrentRoom] = useState("Gate Entrance");
-  const [stats, setStats] = useState({ level: 20, mp: 1200 });
-
-  // دالة تحريك بسيطة وسلسة
-  const handleMove = (dir) => {
-    setPlayerPos(prev => {
-      if (dir === 'up') return { ...prev, y: Math.max(20, prev.y - 5) };
-      if (dir === 'down') return { ...prev, y: Math.min(90, prev.y + 5) };
-      if (dir === 'left') return { ...prev, x: Math.max(10, prev.x - 5) };
-      if (dir === 'right') return { ...prev, x: Math.min(90, prev.x + 5) };
-      return prev;
-    });
-  };
+  const navigate = useNavigate();
+  // نفترض وجود بيانات الوحش هنا
+  const boss = { name: "SNOW SPIDER", level: "S-RANK", hp: 85000, maxHp: 100000 }; 
 
   return (
-    <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
+    <div className="min-h-screen bg-[#050505] text-white overflow-hidden flex flex-col items-center justify-start font-sans p-4 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black">
       
-      {/* 1. الطبقة الخلفية: تصميم الكهف (استخدام التدرجات لخلق عمق) */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-black to-black" />
-        {/* جدران الكهف الوهمية */}
-        <div className="absolute top-0 w-full h-1/2 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-40 shadow-[inset_0_-100px_100px_rgba(0,0,0,1)]" />
-      </div>
-
-      {/* 2. واجهة النظام (System UI) - هي اللي تعطي جمال سولو ليفلينج */}
-      <div className="absolute top-0 w-full p-6 z-50 flex justify-between items-start pointer-events-none">
-        <div className="border-l-4 border-cyan-500 pl-4 bg-black/40 backdrop-blur-md p-2">
-            <h1 className="text-cyan-400 font-black italic tracking-tighter text-2xl">CURRENT RAID</h1>
-            <p className="text-xs text-zinc-400 font-mono tracking-widest uppercase">{currentRoom}</p>
-        </div>
-        
-        <div className="text-right">
-            <div className="text-[10px] text-zinc-500 mb-1">MANA POINTS</div>
-            <div className="w-48 h-1.5 bg-zinc-800 rounded-full overflow-hidden border border-white/5">
-                <div className="h-full bg-cyan-500 shadow-[0_0_10px_#22d3ee]" style={{ width: '80%' }} />
-            </div>
-        </div>
-      </div>
-
-      {/* 3. منطقة التحرك (Play Area) */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
-        <div 
-           className="relative transition-all duration-300 ease-out"
-           style={{ left: `${playerPos.x - 50}%`, top: `${playerPos.y - 50}%` }}
-        >
-          {/* شخصية اللاعب (تصميم مينيمايست احترافي) */}
-          <div className="relative flex flex-col items-center">
-            {/* توهج تحت اللاعب */}
-            <div className="absolute -bottom-2 w-16 h-4 bg-cyan-500/20 blur-xl rounded-full animate-pulse" />
-            
-            {/* رأس الشخصية مع العيون */}
-            <div className="w-6 h-7 bg-zinc-900 rounded-t-full relative border-t border-cyan-500/50">
-                <div className="absolute top-3 left-1 w-1 h-0.5 bg-cyan-400 shadow-[0_0_5px_cyan]" />
-                <div className="absolute top-3 right-1 w-1 h-0.5 bg-cyan-400 shadow-[0_0_5px_cyan]" />
-            </div>
-            {/* الجسد مع الوشاح */}
-            <div className="w-8 h-12 bg-zinc-900 relative rounded-b-sm">
-                <div className="absolute -left-2 top-0 w-12 h-16 bg-gradient-to-b from-zinc-900 to-transparent clip-path-cape opacity-70" />
-            </div>
+      {/* HUD العلوي - إحصائيات الوحش بنظام Solo Leveling */}
+      <div className="w-full max-w-4xl mt-10 relative animate-slide-down">
+        {/* إطار الاسم والحواف الحادة */}
+        <div className="relative border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent p-4 clip-path-polygon">
+          <div className="flex justify-between items-end mb-1">
+            <span className="text-blue-400 font-black italic tracking-tighter text-2xl uppercase">
+              {boss.name} <span className="text-white/50 text-sm ml-2">[{boss.level}]</span>
+            </span>
+            <span className="text-xs font-bold text-blue-200 uppercase tracking-widest">Boss Vitality</span>
+          </div>
+          
+          {/* بار الصحة (Health Bar) */}
+          <div className="w-full h-6 bg-zinc-900 border border-silver/30 relative overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-600 via-blue-400 to-white transition-all duration-500 shadow-[inset_0_0_10px_rgba(255,255,255,0.5)]"
+              style={{ width: `${(boss.hp / boss.maxHp) * 100}%` }}
+            />
+            {/* تأثير الخطوط المائلة فوق البار */}
+            <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,black_10px,black_20px)]"></div>
+          </div>
+          
+          <div className="flex justify-between mt-1 text-[10px] font-mono text-blue-300/70 uppercase">
+            <span>HP: {boss.hp.toLocaleString()}</span>
+            <span>100%</span>
           </div>
         </div>
+
+        {/* زخرفة الحواف الحادة (Silver Accents) */}
+        <div className="absolute -top-2 -right-2 w-16 h-[2px] bg-blue-400 rotate-45 shadow-cyan-500 shadow-lg"></div>
+        <div className="absolute -bottom-2 -left-2 w-16 h-[2px] bg-blue-400 rotate-45 shadow-cyan-500 shadow-lg"></div>
       </div>
 
-      {/* 4. أزرار التحكم (التصميم الشفاف) */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 z-[100]">
-        <div className="grid grid-cols-3 gap-2">
-            <div />
-            <button onClick={() => handleMove('up')} className="w-14 h-14 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl active:bg-cyan-500/20 transition-all">▲</button>
-            <div />
-            <button onClick={() => handleMove('left')} className="w-14 h-14 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl active:bg-cyan-500/20 transition-all">◀</button>
-            <button onClick={() => handleMove('down')} className="w-14 h-14 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl active:bg-cyan-500/20 transition-all">▼</button>
-            <button onClick={() => handleMove('right')} className="w-14 h-14 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl active:bg-cyan-500/20 transition-all">▶</button>
+      {/* منطقة القتال المركزية */}
+      <div className="relative flex-1 w-full flex items-center justify-center py-10">
+        
+        {/* هالة خلف الوحش */}
+        <div className="absolute w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] animate-pulse"></div>
+
+        {/* صورة الوحش (التي طلبتها) */}
+        <div className="relative z-10 transform hover:scale-105 transition-transform duration-700">
+          <img 
+            src="/BoosSnowSpider.png" 
+            alt="Boss" 
+            className="max-h-[50vh] drop-shadow-[0_0_50px_rgba(59,130,246,0.3)] filter brightness-110"
+          />
+          {/* تأثير الجليد أسفل الوحش */}
+          <div className="absolute bottom-0 w-full h-20 bg-gradient-to-t from-blue-500/20 to-transparent blur-xl"></div>
         </div>
+
       </div>
 
-      {/* 5. الخريطة (Mini Map) - كأنها شاشة نظام هولوجرام */}
-      <div className="absolute bottom-10 left-10 w-24 h-24 border border-cyan-500/20 bg-cyan-500/5 rounded-full backdrop-blur-sm overflow-hidden z-[100]">
-        <div className="absolute inset-0 flex items-center justify-center opacity-20">
-            <div className="w-full h-[1px] bg-cyan-500" />
-            <div className="h-full w-[1px] bg-cyan-500 absolute" />
+      {/* الجزء السفلي - معلومات المرحلة */}
+      <div className="w-full max-w-5xl mb-8 flex justify-between items-center border-t border-white/10 pt-4">
+        <div className="flex flex-col">
+          <span className="text-blue-500 font-black text-lg tracking-[0.3em]">ARENA</span>
+          <span className="text-white/30 text-[10px] uppercase tracking-[0.5em]">Phase 01: The Frost Descent</span>
         </div>
-        <div className="absolute w-2 h-2 bg-white rounded-full shadow-[0_0_10px_white]" style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%`, transform: 'translate(-50%, -50%)' }} />
+        
+        {/* زر "الهجوم" أو "التفاعل" */}
+        <button className="group relative px-12 py-3 overflow-hidden">
+          <div className="absolute inset-0 bg-blue-600 skew-x-[-20deg] group-hover:bg-blue-400 transition-colors"></div>
+          <span className="relative z-10 font-black italic tracking-widest text-white uppercase group-hover:scale-110 transition-transform inline-block">Execute Task</span>
+        </button>
       </div>
 
+      {/* ستايل إضافي للـ Clip-path (يمكنك وضعه في CSS) */}
       <style>{`
-        .clip-path-cape {
-          clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 50% 80%, 0% 100%);
+        .clip-path-polygon {
+          clip-path: polygon(0 0, 95% 0, 100% 30%, 100% 100%, 5% 100%, 0 70%);
+        }
+        @keyframes slide-down {
+          from { transform: translateY(-50px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-down {
+          animation: slide-down 0.8s cubic-bezier(0.2, 1, 0.3, 1);
         }
       `}</style>
 
