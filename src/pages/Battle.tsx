@@ -5,148 +5,110 @@ import { useGameState } from '@/hooks/useGameState';
 const Battle = () => {
   const navigate = useNavigate();
   const { gameState } = useGameState();
-  const boss = gameState.currentBoss;
+  
+  // نظام الإحداثيات للحركة
+  const [playerPos, setPlayerPos] = useState({ x: 50, y: 50 });
+  const dungeonSize = { width: 1000, height: 1000 }; // حجم الكهف الافتراضي
 
-  // --- الأنظمة الجديدة (Logic States) ---
-  const [playerHP, setPlayerHP] = useState(100);
-  const [enemyHP, setEnemyHP] = useState(boss?.hp || 100);
-  const [isDead, setIsDead] = useState(false);
-  const [canExtract, setCanExtract] = useState(false);
-  const [battleLog, setBattleLog] = useState("A gate has opened...");
+  // معالجة الحركة
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const step = 5;
+      setPlayerPos(prev => {
+        let newPos = { ...prev };
+        if (e.key === 'w' || e.key === 'ArrowUp') newPos.y = Math.max(0, prev.y - step);
+        if (e.key === 's' || e.key === 'ArrowDown') newPos.y = Math.min(100, prev.y + step);
+        if (e.key === 'a' || e.key === 'ArrowLeft') newPos.x = Math.max(0, prev.x - step);
+        if (e.key === 'd' || e.key === 'ArrowRight') newPos.x = Math.min(100, prev.x + step);
+        return newPos;
+      });
+    };
 
-  // دالة الهجوم
-  const handleAttack = () => {
-    if (enemyHP <= 0 || playerHP <= 0) return;
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-    // ضرر اللاعب للوحش
-    const playerDamage = Math.floor(Math.random() * 20) + 10;
-    const newEnemyHP = Math.max(0, enemyHP - playerDamage);
-    setEnemyHP(newEnemyHP);
-    setBattleLog(`You dealt ${playerDamage} damage!`);
-
-    // رد فعل الوحش (تأخير بسيط)
-    if (newEnemyHP > 0) {
-      setTimeout(() => {
-        const enemyDamage = Math.floor(Math.random() * 15) + 5;
-        setPlayerHP(prev => Math.max(0, prev - enemyDamage));
-        setBattleLog(`The enemy struck back for ${enemyDamage}!`);
-      }, 500);
-    } else {
-      setBattleLog("The Boss has fallen. Arise?");
-      setIsDead(true);
-      setCanExtract(true); // تفعيل نظام استخراج الظلال
-    }
-  };
-
-  // دالة المغادرة
-  const handleExit = () => {
-    navigate('/dashboard'); // أو المسار الذي تريده بعد انتهاء القتال
-  };
-
-  if (!boss) {
-    navigate('/boss');
-    return null;
-  }
-
-  const HumanoidFigure = ({ color, isEnemy = false, isDead = false }) => (
-    <div className={`relative flex flex-col items-center transition-all duration-500 ${isEnemy && !isDead ? 'animate-pulse' : ''} ${isDead ? 'rotate-90 opacity-40 translate-y-10' : ''}`}>
+  // مكون مجسم الجسم البشري
+  const HumanoidFigure = ({ color }) => (
+    <div className="relative flex flex-col items-center scale-50">
       <div className={`w-8 h-8 rounded-full mb-1 ${color} border-2 border-white/20`} />
-      <div className={`w-2 h-2 ${color} opacity-80`} />
       <div className="relative">
-        <div className={`absolute -left-6 top-0 w-4 h-16 ${color} rounded-full rotate-12 origin-top border border-white/10`} />
-        <div className={`absolute -right-6 top-0 w-4 h-16 ${color} rounded-full -rotate-12 origin-top border border-white/10`} />
-        <div className={`w-12 h-20 ${color} rounded-t-lg border-x-2 border-white/10`} />
+        <div className={`absolute -left-6 top-0 w-4 h-16 ${color} rounded-full rotate-12 origin-top`} />
+        <div className={`absolute -right-6 top-0 w-4 h-16 ${color} rounded-full -rotate-12 origin-top`} />
+        <div className={`w-12 h-20 ${color} rounded-t-lg`} />
       </div>
-      <div className={`w-12 h-4 ${color} rounded-b-md opacity-90`} />
       <div className="flex gap-2 mt-1">
-        <div className={`w-4 h-20 ${color} rounded-b-full border-b-2 border-white/20`} />
-        <div className={`w-4 h-20 ${color} rounded-b-full border-b-2 border-white/20`} />
+        <div className={`w-4 h-20 ${color} rounded-b-full`} />
+        <div className={`w-4 h-20 ${color} rounded-b-full`} />
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden flex flex-col items-center justify-center font-sans">
+    <div className="relative w-screen h-screen bg-[#050505] overflow-hidden font-sans">
       
-      {/* واجهة النظام (System UI) */}
-      <div className="absolute top-10 flex justify-between w-full px-10 z-20">
-        <div className="flex flex-col">
-          <span className="text-blue-400 text-xs font-bold uppercase tracking-widest">Player HP</span>
-          <div className="w-48 h-2 bg-zinc-900 border border-blue-900/30 mt-1">
-            <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${playerHP}%` }} />
-          </div>
-        </div>
+      {/* 1. الخريطة المصغرة (Mini-map) - أعلى اليسار */}
+      <div className="absolute top-5 left-5 w-40 h-40 bg-black/80 border-2 border-blue-900/50 z-50 rounded-sm overflow-hidden backdrop-blur-md">
+        <div className="absolute inset-0 opacity-20 border-[1px] border-blue-500/20" 
+             style={{ backgroundImage: 'linear-gradient(#1e3a8a 1px, transparent 1px), linear-gradient(90deg, #1e3a8a 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        {/* نقطة اللاعب على الخريطة */}
+        <div 
+          className="absolute w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_10px_#3b82f6]"
+          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%`, transform: 'translate(-50%, -50%)' }}
+        />
+        <div className="absolute bottom-1 left-1 text-[8px] text-blue-400 font-mono uppercase tracking-tighter">Coded Location: B1</div>
+      </div>
+
+      {/* 2. بيئة الكهف (Dungeon Environment) */}
+      <div 
+        className="absolute inset-0 transition-transform duration-100 ease-out"
+        style={{ 
+          background: `radial-gradient(circle at ${playerPos.x}% ${playerPos.y}%, rgba(29, 78, 216, 0.15) 0%, rgba(0,0,0,1) 40%), 
+                       url('https://www.transparenttextures.com/patterns/dark-matter.png')`,
+          backgroundSize: 'cover'
+        }}
+      >
+        {/* عوائق صخرية وهمية لتعزيز شكل الكهف */}
+        <div className="absolute top-[20%] left-[30%] w-32 h-32 bg-zinc-900/50 rounded-full blur-3xl" />
+        <div className="absolute bottom-[10%] right-[20%] w-64 h-64 bg-zinc-900/40 rounded-full blur-3xl" />
         
-        <div className="text-center">
-            <p className="text-zinc-500 text-[10px] uppercase tracking-[0.3em] mb-1">Status Log</p>
-            <p className="text-white font-mono text-sm italic">{battleLog}</p>
-        </div>
+        {/* خطوط الأرضية لإعطاء إحساس بالحركة والعمق */}
+        <div className="absolute inset-0 opacity-10" 
+             style={{ backgroundImage: 'radial-gradient(#ffffff 0.5px, transparent 0.5px)', backgroundSize: '100px 100px' }} />
 
-        <div className="flex flex-col items-end">
-          <span className="text-red-600 text-xs font-bold uppercase tracking-widest">Enemy HP</span>
-          <div className="w-48 h-2 bg-zinc-900 border border-red-900/30 mt-1">
-            <div className="h-full bg-red-600 transition-all duration-300" style={{ width: `${(enemyHP/boss.hp)*100}%` }} />
+        {/* 3. اللاعب (The Player) */}
+        <div 
+          className="absolute transition-all duration-100 ease-linear z-10"
+          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%`, transform: 'translate(-50%, -50%)' }}
+        >
+          <div className="relative">
+            {/* ضوء تحت اللاعب */}
+            <div className="absolute -bottom-2 w-12 h-4 bg-blue-500/20 blur-xl rounded-full" />
+            <HumanoidFigure color="bg-blue-600" />
           </div>
         </div>
-      </div>
 
-      <div className="relative w-full h-[60vh] flex flex-col items-center justify-center">
-        <div className="absolute bottom-[20%] w-full flex flex-col items-center">
-          <div className="w-[90%] h-[3px] bg-red-600 shadow-[0_0_15px_rgba(220,38,38,1)]"></div>
-        </div>
-
-        <div className="relative w-full max-w-2xl flex justify-between items-end px-12 pb-[20%] z-10">
-          <div className="flex flex-col items-center">
-            <span className="mb-4 text-red-600 font-black italic text-xs tracking-widest uppercase opacity-50">
-              {isDead ? 'Defeated' : 'Enemy'}
-            </span>
-            <div className="drop-shadow-[0_0_20px_rgba(255,0,0,0.3)]">
-                <HumanoidFigure color="bg-zinc-900" isEnemy={true} isDead={enemyHP <= 0} />
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <span className="mb-4 text-blue-400 font-black italic text-xs tracking-widest uppercase opacity-50">Player</span>
-            <div className="drop-shadow-[0_0_25px_rgba(59,130,246,0.4)]">
-                <HumanoidFigure color="bg-blue-600" isDead={playerHP <= 0} />
-            </div>
-          </div>
+        {/* وحش مرابط في الكهف (كمثال) */}
+        <div className="absolute top-[30%] left-[70%] opacity-40">
+           <HumanoidFigure color="bg-zinc-800" />
+           <div className="text-red-900 text-[8px] mt-2 font-bold text-center tracking-[0.3em]">STAY AWAY</div>
         </div>
       </div>
 
-      {/* أزرار التحكم (Combat Actions) */}
-      <div className="mt-6 flex gap-4 z-30">
-        {!isDead && playerHP > 0 && (
-          <button 
-            onClick={handleAttack}
-            className="px-8 py-2 border border-blue-500 bg-blue-500/10 hover:bg-blue-500/30 text-blue-400 font-bold uppercase tracking-widest transition-all"
-          >
-            Attack
-          </button>
-        )}
-
-        {canExtract && (
-          <button 
-            onClick={() => { setBattleLog("ARISE!"); setCanExtract(false); }}
-            className="px-8 py-2 border border-purple-500 bg-purple-500/10 hover:bg-purple-500/40 text-purple-400 font-bold uppercase tracking-[0.2em] animate-pulse"
-          >
-            Extract Shadow
-          </button>
-        )}
-
-        {(isDead || playerHP <= 0) && (
-          <button 
-            onClick={handleExit}
-            className="px-8 py-2 border border-zinc-500 bg-zinc-500/10 hover:bg-zinc-500/30 text-zinc-400 font-bold uppercase tracking-widest transition-all"
-          >
-            Exit Dungeon
-          </button>
-        )}
+      {/* واجهة تحكم بسيطة للموبايل أو للتوضيح */}
+      <div className="absolute bottom-10 right-10 flex flex-col items-center gap-2 opacity-30 scale-75">
+        <div className="px-4 py-2 border border-white">W</div>
+        <div className="flex gap-2">
+          <div className="px-4 py-2 border border-white">A</div>
+          <div className="px-4 py-2 border border-white">S</div>
+          <div className="px-4 py-2 border border-white">D</div>
+        </div>
       </div>
 
-      <div className="mt-10 opacity-20 font-mono text-[10px] tracking-[0.5em]">
-        ARENA PHASE 01
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-zinc-600 tracking-[1em] font-mono">
+        EXPLORATION MODE
       </div>
+
     </div>
   );
 };
