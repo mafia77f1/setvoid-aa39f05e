@@ -46,7 +46,6 @@ const Gates = () => {
 
   const handleScanMana = () => {
     setIsScanning(true);
-    // تمديد الوقت إلى 8 ثوانٍ كما طلبت
     setTimeout(() => {
       setIsScanning(false);
       setShowManaDetails(true);
@@ -97,7 +96,8 @@ const Gates = () => {
   };
 
   const isGateLocked = (gate: Gate) => gate.rank === 'S' || gate.rank === 'A';
-  const canSeeGateDetails = (gate: Gate) => playerPower >= gate.requiredPower * 0.5;
+  // تم تعديل الشرط ليكون العرض مرتبطاً بالرتبة فقط
+  const canSeeGateDetails = (gate: Gate) => !isGateLocked(gate);
 
   if (isEntering) {
     return (
@@ -138,7 +138,6 @@ const Gates = () => {
       ) : (
         <main className="relative z-10 px-6 space-y-40 mt-16">
           {gates.map((gate) => {
-            const isHidden = !canSeeGateDetails(gate);
             const locked = isGateLocked(gate);
             
             return (
@@ -161,7 +160,7 @@ const Gates = () => {
                     <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                       <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase">
                         RANK: <span className={gate.rank === 'S' ? "text-red-500" : gate.rank === 'A' ? "text-purple-400" : "text-blue-400"}>
-                          {isHidden ? "?" : gate.rank}
+                          {gate.rank}
                         </span>
                         {locked && <span className="text-slate-500 ml-2">[Alpha]</span>}
                       </h2>
@@ -175,7 +174,7 @@ const Gates = () => {
                         <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Energy Density</p>
                       </div>
                       <p className="text-base font-mono font-bold text-white italic">
-                        {isHidden ? "???,???" : gate.energyDensity} <span className="text-[9px] opacity-40">MP</span>
+                        {gate.energyDensity} <span className="text-[9px] opacity-40">MP</span>
                       </p>
                     </div>
 
@@ -185,13 +184,13 @@ const Gates = () => {
                         <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Danger Level</p>
                       </div>
                       <p className={cn("text-xs font-black uppercase italic tracking-widest", gate.rank === 'S' ? "text-red-500" : gate.rank === 'A' ? "text-purple-400" : "text-blue-400")}>
-                        {isHidden ? "???" : gate.danger}
+                        {gate.danger}
                       </p>
                     </div>
 
                     <div className="mt-2 py-2 px-3 bg-white/5 border-l-2 border-white/20">
                       <p className="text-[9px] text-slate-500 font-bold italic leading-relaxed uppercase tracking-tighter">
-                        {isHidden ? "? ? ?" : "Dimensional crack confirmed. Tap the portal to initiate sequence."}
+                        Dimensional crack confirmed. Tap the portal to initiate sequence.
                       </p>
                     </div>
                   </div>
@@ -231,7 +230,6 @@ const Gates = () => {
               <button onClick={handleCloseModal} className="absolute top-4 left-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-20"><X className="w-4 h-4" /></button>
               
               {isScanning ? (
-                /* تم تحديث قسم الأنيمايشن والخلفية الضبابية */
                 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-xl animate-in fade-in duration-500">
                   <div className="relative">
                     <img src="/AnimationManaAnalysis.gif" alt="Scanning..." className="w-64 h-64 object-contain mb-4 relative z-10" />
@@ -258,7 +256,7 @@ const Gates = () => {
                          <div className="grid grid-cols-2 gap-4 mb-4 border-b border-white/10 pb-4">
                             <div className="space-y-1">
                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Identifier</p>
-                               <p className="text-[11px] text-white font-bold truncate">{selectedGate.name}</p>
+                               <p className="text-[11px] text-white font-bold truncate">{!canSeeGateDetails(selectedGate) ? "UNKNOWN" : selectedGate.name}</p>
                             </div>
                             <div className="space-y-1">
                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Class Rank</p>
@@ -266,18 +264,17 @@ const Gates = () => {
                             </div>
                             <div className="space-y-1">
                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Mana Signature</p>
-                               <p className="text-[11px] text-white font-mono font-bold tracking-widest">{selectedGate.energyDensity.toLocaleString()}</p>
+                               <p className="text-[11px] text-white font-mono font-bold tracking-widest">{!canSeeGateDetails(selectedGate) ? "???,???" : selectedGate.energyDensity.toLocaleString()}</p>
                             </div>
                             <div className="space-y-1">
                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Threat Status</p>
                                <p className="text-[11px] flex items-center gap-1 font-bold">
-                                  {selectedGate.danger} 
+                                  {!canSeeGateDetails(selectedGate) ? "CRITICAL" : selectedGate.danger} 
                                   {(selectedGate.rank === 'S' || selectedGate.rank === 'A') ? <span className="text-red-500">⛔🚫</span> : <span className="text-slate-400">⚠️</span>}
                                 </p>
                             </div>
                          </div>
                          
-                         {/* تم تحديث الخريطة لتشبه المتاهة Labyrinth Mapping */}
                          <div className="mt-2">
                             <div className="flex justify-between items-center mb-2">
                                <div className="flex items-center gap-2">
@@ -289,13 +286,11 @@ const Gates = () => {
                             <div className="h-32 w-full bg-[#050505] rounded-sm border border-blue-500/30 relative overflow-hidden group">
                                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#4f4f4f 1px, transparent 1px), linear-gradient(90deg, #4f4f4f 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
                                
-                               {/* مسارات معقدة تشبه المتاهة */}
                                <svg className="absolute inset-0 w-full h-full opacity-60">
                                   <path d="M 10 120 V 100 H 40 V 80 H 20 V 50 H 60 V 70 H 90 V 40 H 120 V 90 H 150 V 60 H 180 V 100 H 210 V 20 H 250" 
                                         stroke="rgba(59, 130, 246, 0.7)" strokeWidth="1.5" fill="none" strokeDasharray="1000">
                                      <animate attributeName="stroke-dashoffset" from="1000" to="0" dur="8s" repeatCount="indefinite" />
                                   </path>
-                                  {/* مسارات فرعية */}
                                   <path d="M 60 50 V 20 H 100" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="1" fill="none" />
                                   <path d="M 150 90 V 110 H 190" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="1" fill="none" />
                                   
@@ -316,7 +311,7 @@ const Gates = () => {
                     ) : (
                       <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/10 text-white">
                         <span className="flex items-center gap-2 text-sm text-slate-300">كثافة الطاقة</span>
-                        <span className="font-bold">{!hasManaGauge ? selectedGate.energyDensity : '???'} MP</span>
+                        <span className="font-bold">{!canSeeGateDetails(selectedGate) ? '???' : selectedGate.energyDensity} MP</span>
                       </div>
                     )}
                   </div>
@@ -324,8 +319,8 @@ const Gates = () => {
                   <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 mb-6">
                     <h3 className="text-sm font-bold mb-2 text-purple-400 text-center uppercase tracking-widest">المكافآت المتوقعة</h3>
                     <div className="flex justify-around text-sm font-bold text-slate-200">
-                      <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-yellow-400" /> +{selectedGate.rewards.xp} XP</span>
-                      <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-blue-400" /> +{selectedGate.rewards.gold} Gold</span>
+                      <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-yellow-400" /> +{!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rewards.xp} XP</span>
+                      <span className="flex items-center gap-1"><Shield className="w-3 h-3 text-blue-400" /> +{!canSeeGateDetails(selectedGate) ? "?" : selectedGate.rewards.gold} Gold</span>
                     </div>
                   </div>
                 </div>
