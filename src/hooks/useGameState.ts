@@ -130,23 +130,27 @@ const getScheduledGates = (playerLevel: number): Gate[] => {
   else if (currentHour >= 19 && currentHour < 24) { availableRanks = ['E', 'D', 'C', 'B']; numGates = Math.floor(Math.random() * 3) + 1; }
   else { availableRanks = ['B', 'A']; numGates = Math.floor(Math.random() * 2) + 1; }
   
-  const availableGates = allGates.filter(gate => {
-    if (!availableRanks.includes(gate.rank)) return false;
-    if (gate.rank === 'E') return true;
-    if (gate.rank === 'D') return playerLevel >= 5;
-    if (gate.rank === 'C') return playerLevel >= 15;
-    if (gate.rank === 'B') return playerLevel >= 25;
-    if (gate.rank === 'A') return playerLevel >= 40;
-    if (gate.rank === 'S') return playerLevel >= 50;
-    return false;
-  });
+  // اختيار البوابات المتاحة بناءً على الوقت
+  const availableGates = allGates.filter(gate => availableRanks.includes(gate.rank));
   const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, numGates).map(gate => ({
-    ...gate,
-    id: `${gate.id}_${Date.now()}_${Math.random()}`,
-    discovered: playerLevel >= gate.requiredPower * 0.5,
-    energyDensity: getRandomEnergyDensity(gate.rank),
-  }));
+  
+  return shuffled.slice(0, numGates).map(gate => {
+    // تحديد إذا اللاعب مستواه أعلى أو أقل من البوابة
+    const isHigherLevel = playerLevel >= gate.requiredPower;
+    const isSimilarLevel = playerLevel >= gate.requiredPower * 0.5;
+    
+    return {
+      ...gate,
+      id: `${gate.id}_${Date.now()}_${Math.random()}`,
+      discovered: true, // دائماً مكتشفة
+      // إذا اللاعب أقل من مستوى البوابة، نخفي بعض المعلومات
+      name: isHigherLevel ? gate.name : `بوابة ${gate.rank}`,
+      energyDensity: isHigherLevel ? getRandomEnergyDensity(gate.rank) : '???',
+      danger: isHigherLevel ? gate.danger : '???',
+      // إضافة علامة لتحديد إذا البوابة مكشوفة بالكامل
+      isFullyRevealed: isHigherLevel,
+    };
+  });
 };
 
 const getRandomEnergyDensity = (rank: string): string => {
