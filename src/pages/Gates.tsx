@@ -2,18 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
-import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield, Map as MapIcon, LocateFixed } from 'lucide-react';
+import { GateLootModal, generateGateLoot, LootItem } from '@/components/GateLootModal';
+import { AlertTriangle, Zap, Target, Clock, X, Skull, Activity, Scan, Shield, Map as MapIcon, LocateFixed, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Gate } from '@/types/game';
 
 const Gates = () => {
-  const { gameState } = useGameState();
+  const { gameState, completeGate } = useGameState();
   const navigate = useNavigate();
   
   const [selectedGate, setSelectedGate] = useState<Gate | null>(null);
   const [isEntering, setIsEntering] = useState(false);
   const [showManaDetails, setShowManaDetails] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [showLootModal, setShowLootModal] = useState(false);
+  const [currentLoot, setCurrentLoot] = useState<LootItem[]>([]);
+  const [completedGate, setCompletedGate] = useState<Gate | null>(null);
 
   // حالات الأنيمايشن
   const [isVisible, setIsVisible] = useState(false);
@@ -53,10 +57,28 @@ const Gates = () => {
   };
 
   const handleEnterGate = () => {
+    if (!selectedGate) return;
+    
     setIsEntering(true);
+    
+    // محاكاة إتمام البوابة وتوليد الغنائم
     setTimeout(() => {
-      navigate('/battle');
-    }, 3000); 
+      setIsEntering(false);
+      setCompletedGate(selectedGate);
+      setCurrentLoot(generateGateLoot(selectedGate));
+      setShowLootModal(true);
+      handleCloseModal();
+    }, 3000);
+  };
+
+  const handleCollectLoot = () => {
+    if (!completedGate) return;
+    
+    // جمع الغنائم وتحديث حالة اللعبة
+    completeGate(completedGate.id, currentLoot);
+    setShowLootModal(false);
+    setCompletedGate(null);
+    setCurrentLoot([]);
   };
 
   const getGateColor = (rank: string) => {
@@ -362,6 +384,15 @@ const Gates = () => {
           </div>
         </div>
       )}
+
+      {/* Loot Modal */}
+      <GateLootModal
+        show={showLootModal}
+        gate={completedGate}
+        loot={currentLoot}
+        onClose={() => setShowLootModal(false)}
+        onCollect={handleCollectLoot}
+      />
 
       <BottomNav />
 
