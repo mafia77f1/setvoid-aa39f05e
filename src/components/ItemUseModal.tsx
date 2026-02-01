@@ -268,24 +268,6 @@ export const ItemUseModal = ({
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes scale-y {
-          from { transform: scaleY(0); opacity: 0; }
-          to { transform: scaleY(1); opacity: 1; }
-        }
-        .animate-scale-y {
-          animation: scale-y 0.6s cubic-bezier(0.2, 1, 0.2, 1) forwards;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.1);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.5);
-        }
-      `}</style>
     </div>
   );
 };

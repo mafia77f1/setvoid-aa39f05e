@@ -206,7 +206,9 @@ const getDefaultState = (): GameState => ({
   punishmentEndTime: null,
   missedQuestsCount: 0,
   punishment: { active: false, endTime: null, monstersDefeated: 0, currentWave: 1, playerHpInPenalty: 100, maxHpInPenalty: 100 },
+  selectedReciter: 'ar.alafasy',
   soundEnabled: true,
+  currentBoss: null,
   lastBossAttackTime: null,
 });
 
@@ -626,6 +628,75 @@ export const useGameState = () => {
     setGameState(prev => ({ ...prev, quests: prev.quests.map(q => q.id === questId ? { ...q, startedAt: undefined, timeProgress: 0 } : q) }));
   }, []);
 
+  // إكمال البوابة وجمع الغنائم
+  const completeGate = useCallback((gateId: string, loot: { id: string; type: string; quantity: number }[]) => {
+    setGameState(prev => {
+      let newGold = prev.gold;
+      let newShadowPoints = prev.shadowPoints;
+      let newStats = { ...prev.stats };
+      const newInventory = [...prev.inventory];
+
+      // معالجة كل عنصر من الغنائم
+      loot.forEach(item => {
+        if (item.type === 'gold') {
+          newGold += item.quantity;
+        } else if (item.type === 'xp') {
+          // توزيع XP بالتساوي على الإحصائيات
+          const perStat = Math.floor(item.quantity / 4);
+          newStats.strength += perStat;
+          newStats.mind += perStat;
+          newStats.spirit += perStat;
+          newStats.agility += perStat + (item.quantity % 4);
+        } else if (item.id === 'shadow_points') {
+          newShadowPoints += item.quantity;
+        } else if (item.type === 'item' || item.type === 'key') {
+          // إضافة العنصر للمخزون
+          const existingItem = newInventory.find(i => i.id === item.id);
+          if (existingItem) {
+            existingItem.quantity += item.quantity;
+          } else {
+            // إضافة عنصر جديد
+            newInventory.push({
+              id: item.id,
+              name: item.id.replace(/_/g, ' '),
+              description: 'عنصر من غنائم البوابة',
+              type: item.type === 'key' ? 'key' : 'xp',
+              effect: 50,
+              price: 0,
+              quantity: item.quantity,
+              icon: '📦',
+            });
+          }
+        }
+      });
+
+      // تحديث مستويات الإحصائيات
+      const newLevels = {
+        strength: Math.min(calculateLevel(newStats.strength), MAX_LEVEL),
+        mind: Math.min(calculateLevel(newStats.mind), MAX_LEVEL),
+        spirit: Math.min(calculateLevel(newStats.spirit), MAX_LEVEL),
+        agility: Math.min(calculateLevel(newStats.agility), MAX_LEVEL),
+      };
+      const newTotalLevel = getTotalLevel(newLevels);
+
+      // تحديث البوابة كمكتملة
+      const newGates = prev.gates.map(g => 
+        g.id === gateId ? { ...g, completed: true } : g
+      );
+
+      return {
+        ...prev,
+        gold: newGold,
+        shadowPoints: newShadowPoints,
+        stats: newStats,
+        levels: newLevels,
+        totalLevel: newTotalLevel,
+        inventory: newInventory,
+        gates: newGates,
+      };
+    });
+  }, [calculateLevel, getTotalLevel]);
+
   return {
     gameState,
     levelUpInfo,
@@ -657,5 +728,6 @@ export const useGameState = () => {
     claimSideQuest,
     closeSideQuest,
     updatePlayerData,
+    completeGate,
   };
 };
