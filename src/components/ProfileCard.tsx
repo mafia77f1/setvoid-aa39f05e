@@ -28,11 +28,9 @@ const getRankColor = (totalLevel: number) => {
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   
-  const totalLevel = Math.max(
-    gameState.levels.strength,
-    gameState.levels.mind,
-    gameState.levels.spirit,
-    gameState.levels.agility
+  // حساب المستوى الكلي = مجموع المستويات الأربعة / 4
+  const totalLevel = Math.floor(
+    (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility) / 4
   );
   const todayQuests = gameState.quests.filter(q => q.completed && q.isMainQuest !== false).length;
   const totalQuests = gameState.quests.filter(q => q.isMainQuest !== false).length;

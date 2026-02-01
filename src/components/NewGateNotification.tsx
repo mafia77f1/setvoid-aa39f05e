@@ -123,9 +123,19 @@ export const NewGateNotification = ({ show, gate, onClose }: NewGateNotification
                   رتبة {gate.rank}
                 </span>
                 <span className="text-xs text-slate-400">
-                  طاقة: {gate.energyDensity}
+                  {gate.energyDensity === '???' ? (
+                    <span className="text-yellow-400">طاقة: ??? <span className="text-[10px]">(مستوى عالي)</span></span>
+                  ) : (
+                    <>طاقة: {gate.energyDensity}</>
+                  )}
                 </span>
               </div>
+              {gate.danger === '???' && (
+                <div className="mt-1 text-[10px] text-yellow-400 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>معلومات محجوبة - البوابة أعلى من مستواك</span>
+                </div>
+              )}
             </div>
           </div>
 

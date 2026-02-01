@@ -50,6 +50,7 @@ export interface Gate {
   color: string;
   discovered: boolean;
   completed: boolean;
+  isFullyRevealed?: boolean; // إذا اللاعب مستواه أعلى من البوابة
   rewards: {
     xp: number;
     gold: number;
