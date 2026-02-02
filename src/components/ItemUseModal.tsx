@@ -56,9 +56,18 @@ export const ItemUseModal = ({
     }
   };
 
+  const handleMaxStat = (stat: StatType) => {
+    const otherStats = Object.entries(statAllocation)
+      .filter(([key]) => key !== stat)
+      .reduce((sum, [_, val]) => sum + val, 0);
+    const possibleXP = totalXP - otherStats;
+    if (possibleXP > 0) {
+      setStatAllocation(prev => ({ ...prev, [stat]: possibleXP }));
+    }
+  };
+
   const handleUse = () => {
     if (item.type === 'xp') {
-      // تم التعديل هنا: إرسال التوزيع المختار فقط دون فرض توزيع النقاط المتبقية
       onUseItem(item.id, quantity, statAllocation);
     } else {
       onUseItem(item.id, quantity);
@@ -67,16 +76,15 @@ export const ItemUseModal = ({
   };
 
   const statLabels: Record<StatType, { label: string; icon: string; color: string }> = {
-    strength: { label: 'القوة max', icon: '💪', color: 'text-red-400' },
-    mind: { label: 'العقل max', icon: '🧠', color: 'text-blue-400' },
-    spirit: { label: 'الروح max', icon: '✨', color: 'text-purple-400' },
-    agility: { label: 'اللياقة max', icon: '⚡', color: 'text-green-400' }
+    strength: { label: 'القوة', icon: '💪', color: 'text-red-400' },
+    mind: { label: 'العقل', icon: '🧠', color: 'text-blue-400' },
+    spirit: { label: 'الروح', icon: '✨', color: 'text-purple-400' },
+    agility: { label: 'اللياقة', icon: '⚡', color: 'text-green-400' }
   };
 
   const getItemTypeContent = () => {
     return (
       <div className="space-y-4 py-2">
-        {/* صندوق البيانات العلوي - DATA_STREAM */}
         <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative font-mono">
           <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
           <div className="mb-3 border-b border-blue-500/30 pb-2">
@@ -97,7 +105,6 @@ export const ItemUseModal = ({
           </div>
         </div>
 
-        {/* صندوق تحليل القوة الهيكلية - Structural Power Analysis */}
         <div className="w-full border border-blue-900/40 p-4 bg-[#050b18] space-y-4 font-mono">
           <div className="flex items-center gap-2 border-b border-blue-900/20 pb-2">
             <Zap className="w-3 h-3 text-blue-500" />
@@ -115,10 +122,8 @@ export const ItemUseModal = ({
             </div>
           </div>
 
-          {/* منطق النوع: XP */}
           {item.type === 'xp' && (
             <div className="space-y-4 pt-2 border-t border-blue-900/20">
-              {/* اختيار الكمية */}
               <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
                 <span className="text-[9px] text-blue-300 font-bold">SET QUANTITY</span>
                 <div className="flex items-center gap-2">
@@ -136,12 +141,17 @@ export const ItemUseModal = ({
                 </div>
               </div>
 
-              {/* توزيع الإحصائيات */}
               <div className="space-y-3">
                 {(Object.keys(statLabels) as StatType[]).map(stat => (
                   <div key={stat} className="space-y-1">
                     <div className="flex justify-between items-center text-[10px]">
                       <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleMaxStat(stat)}
+                          className="px-1.5 py-0.5 border border-blue-500/30 bg-blue-500/5 text-[7px] text-blue-400 font-bold hover:bg-blue-500/20 transition-all mr-1"
+                        >
+                          MAX
+                        </button>
                         <span className={statLabels[stat].color}>{statLabels[stat].label}</span>
                         <span className="text-slate-500 text-[8px]">LV.{gameState.levels[stat]}</span>
                       </div>
@@ -163,7 +173,6 @@ export const ItemUseModal = ({
             </div>
           )}
 
-          {/* منطق النوع: Health & Energy */}
           {(item.type === 'health' || item.type === 'energy') && (
             <div className="space-y-4 pt-2 border-t border-blue-900/20">
                <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
@@ -200,7 +209,6 @@ export const ItemUseModal = ({
           )}
         </div>
 
-        {/* تذييل التحليل - Warning Message */}
         <div className="text-left bg-blue-950/10 border border-blue-900/30 p-3 font-mono">
           <p className="text-[9px] text-blue-500 leading-relaxed uppercase tracking-tighter">
             System Message: Ready to execute command for player. Integrity check passed. Access level: Authorized.
@@ -210,12 +218,9 @@ export const ItemUseModal = ({
     );
   };
 
-  // نوع إعادة التوزيع
   const getResetContent = () => {
     if (item?.type !== 'reset') return null;
-    
     const totalXP = gameState.stats.strength + gameState.stats.mind + gameState.stats.spirit + gameState.stats.agility;
-    
     return (
       <div className="space-y-4">
         <div className="p-4 bg-gradient-to-br from-cyan-950/50 to-slate-900/50 border border-cyan-500/30 rounded">
@@ -228,7 +233,6 @@ export const ItemUseModal = ({
               <p className="text-xs text-slate-400">{item.description}</p>
             </div>
           </div>
-
           <div className="space-y-2 text-sm">
             <div className="p-2 bg-slate-900/50 rounded flex justify-between">
               <span className="text-slate-400">مجموع XP:</span>
@@ -251,14 +255,9 @@ export const ItemUseModal = ({
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
       <div className="absolute inset-0" onClick={onClose} />
-      
-      {/* الحاوية الرئيسية بنفس انميشن واستايل المتجر */}
       <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-y origin-center">
-        {/* الخطوط البيضاء المضيئة */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
-        
-        {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-blue-500/30 bg-blue-950/20">
           <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
             Analyzing Item Data
@@ -267,13 +266,9 @@ export const ItemUseModal = ({
             <X className="w-5 h-5 text-blue-400" />
           </button>
         </div>
-
-        {/* Content Area */}
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {isResetItem ? getResetContent() : getItemTypeContent()}
         </div>
-
-        {/* Footer Buttons بنفس استايل المتجر */}
         <div className="p-6 pt-0 space-y-3">
           {canUse ? (
             <button
@@ -312,7 +307,6 @@ export const ItemUseModal = ({
           )}
         </div>
       </div>
-
     </div>
   );
 };
