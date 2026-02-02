@@ -67,10 +67,10 @@ export const ItemUseModal = ({
   };
 
   const statLabels: Record<StatType, { label: string; icon: string; color: string }> = {
-    strength: { label: 'القوة', icon: '💪', color: 'text-red-400' },
-    mind: { label: 'العقل', icon: '🧠', color: 'text-blue-400' },
-    spirit: { label: 'الروح', icon: '✨', color: 'text-purple-400' },
-    agility: { label: 'اللياقة', icon: '⚡', color: 'text-green-400' }
+    strength: { label: 'القوة max', icon: '💪', color: 'text-red-400' },
+    mind: { label: 'العقل max', icon: '🧠', color: 'text-blue-400' },
+    spirit: { label: 'الروح max', icon: '✨', color: 'text-purple-400' },
+    agility: { label: 'اللياقة max', icon: '⚡', color: 'text-green-400' }
   };
 
   const getItemTypeContent = () => {
