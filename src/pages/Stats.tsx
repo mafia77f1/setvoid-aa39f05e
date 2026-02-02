@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 // استيراد المودالات الجديدة
 import { ItemAnalysisModal } from '@/components/ItemAnalysisModal'; 
 import { ItemUseModal } from '@/components/ItemUseModal';
+import { XPResetModal } from '@/components/XPResetModal';
 import { 
   Dumbbell, 
   Brain, 
@@ -23,12 +24,13 @@ import {
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle } = useGameState();
+  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
   // حالات التحكم في المودالات الجديدة
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showUseModal, setShowUseModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const MAX_LEVEL = 100;
@@ -66,13 +68,27 @@ const Stats = () => {
           gameState={gameState}
           onClose={() => setShowUseModal(false)}
           onUseItem={(itemId, qty, statAlloc) => {
-            // التعديل هنا لضمان إرسال الكمية بشكل صحيح للدالة الأساسية
             useItem(itemId, qty, statAlloc);
           }}
           onEquipTitle={equipTitle}
           onAnalyze={() => {
             setShowUseModal(false);
             setShowAnalysis(true);
+          }}
+          onResetXP={() => {
+            setShowUseModal(false);
+            setShowResetModal(true);
+          }}
+        />
+      )}
+
+      {showResetModal && (
+        <XPResetModal
+          gameState={gameState}
+          onClose={() => setShowResetModal(false)}
+          onConfirm={(allocation) => {
+            resetAndReallocateXP(allocation);
+            setShowResetModal(false);
           }}
         />
       )}

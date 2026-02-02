@@ -142,7 +142,7 @@ export interface InventoryItem {
   id: string;
   name: string;
   description: string;
-  type: 'health' | 'xp' | 'energy' | 'revive' | 'title' | 'tool' | 'key';
+  type: 'health' | 'xp' | 'energy' | 'revive' | 'title' | 'tool' | 'key' | 'reset';
   category?: string;
   effect: number;
   price: number;

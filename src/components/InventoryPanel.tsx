@@ -168,9 +168,10 @@ interface InventoryPanelProps {
   gameState: GameState;
   onUseItem?: (itemId: string, quantity: number, statAllocation?: Partial<Record<StatType, number>>) => void;
   onEquipTitle?: (itemId: string) => void;
+  onResetXP?: () => void;
 }
 
-export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle }: InventoryPanelProps) => {
+export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, onResetXP }: InventoryPanelProps) => {
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
@@ -469,6 +470,11 @@ export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle }
           onAnalyze={() => {
             setShowUseModal(false);
             setShowAnalysisModal(true);
+          }}
+          onResetXP={() => {
+            onResetXP?.();
+            setShowUseModal(false);
+            setSelectedInventoryItem(null);
           }}
         />
       )}
