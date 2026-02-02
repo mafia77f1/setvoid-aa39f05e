@@ -163,6 +163,7 @@ const getInitialInventory = (): InventoryItem[] => [
   { id: 'health_potion', name: 'زجاجة الدم', description: 'تزيد الدم بنسبة 25%', type: 'health', category: 'Elixir', effect: 25, price: 100, quantity: 0, icon: '❤️' },
   { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', category: 'Element', effect: 500, price: 250, quantity: 0, icon: '📚' },
   { id: 'energy_drink', name: 'مشروب الطاقة', description: 'يستعيد 50% من الطاقة', type: 'energy', category: 'Elixir', effect: 50, price: 150, quantity: 0, icon: '⚡' },
+  { id: 'xp_reset', name: 'حجر إعادة التوزيع', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', type: 'reset', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔄' },
 ];
 
 const getInitialPrayerQuests = (): PrayerQuest[] => [
@@ -484,6 +485,7 @@ export const useGameState = () => {
     { id: 'power_eye_title', name: 'عين القوة', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', type: 'title', category: 'Title', effect: 10, price: 10000, quantity: 0, icon: '👁️' },
     { id: 'storm_hand_title', name: 'يد العاصفة', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', type: 'title', category: 'Title', effect: 10, price: 15000, quantity: 0, icon: '🌩️' },
     { id: 'return_key', name: 'مفتاح العودة', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', type: 'key', category: 'Key', effect: 0, price: 8000, quantity: 0, icon: '🔑' },
+    { id: 'xp_reset', name: 'حجر إعادة التوزيع', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', type: 'reset', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔄' },
   ];
 
   const purchaseItem = useCallback((itemId: string) => {
@@ -547,12 +549,51 @@ export const useGameState = () => {
         };
         updates.levels = newLevels;
         updates.totalLevel = getTotalLevel(newLevels);
-      } else if (item.type === 'title' || item.type === 'tool' || item.type === 'key') {
+      } else if (item.type === 'title' || item.type === 'tool' || item.type === 'key' || item.type === 'reset') {
+        // عناصر لا تُستهلك بالطريقة العادية
         return prev;
       }
 
       const newInventory = prev.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - quantity } : i);
       return { ...prev, ...updates, inventory: newInventory };
+    });
+  }, [calculateLevel, getTotalLevel]);
+
+  // إعادة توزيع نقاط XP - تجمع كل النقاط وتعيد توزيعها
+  const resetAndReallocateXP = useCallback((newAllocation: Record<StatType, number>) => {
+    setGameState(prev => {
+      // إيجاد عنصر إعادة التوزيع
+      const resetItem = prev.inventory.find(i => i.id === 'xp_reset');
+      if (!resetItem || resetItem.quantity <= 0) return prev;
+
+      // جمع كل نقاط XP الحالية
+      const totalXP = prev.stats.strength + prev.stats.mind + prev.stats.spirit + prev.stats.agility;
+      
+      // التأكد من أن التوزيع الجديد يساوي المجموع الكلي
+      const allocatedTotal = Object.values(newAllocation).reduce((sum, val) => sum + val, 0);
+      if (allocatedTotal !== totalXP) return prev;
+
+      // تحديث الإحصائيات
+      const newStats = { ...newAllocation };
+      const newLevels = {
+        strength: calculateLevel(newStats.strength),
+        mind: calculateLevel(newStats.mind),
+        spirit: calculateLevel(newStats.spirit),
+        agility: calculateLevel(newStats.agility),
+      };
+
+      // تقليل كمية العنصر
+      const newInventory = prev.inventory.map(i => 
+        i.id === 'xp_reset' ? { ...i, quantity: i.quantity - 1 } : i
+      );
+
+      return {
+        ...prev,
+        stats: newStats,
+        levels: newLevels,
+        totalLevel: getTotalLevel(newLevels),
+        inventory: newInventory,
+      };
     });
   }, [calculateLevel, getTotalLevel]);
 
@@ -733,5 +774,6 @@ export const useGameState = () => {
     closeSideQuest,
     updatePlayerData,
     completeGate,
+    resetAndReallocateXP,
   };
 };

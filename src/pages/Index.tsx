@@ -92,15 +92,16 @@ const Index = () => {
     }
   }, []);
 
-  // إشعار البوابات الجديدة
+  // إشعار البوابات الجديدة - يظهر فقط للبوابات الموجودة فعلاً
   useEffect(() => {
     const gates = gameState.gates || [];
-    const shownGates = JSON.parse(localStorage.getItem('shownGateNotifications') || '[]');
+    if (gates.length === 0) return;
     
+    const shownGates = JSON.parse(localStorage.getItem('shownGateNotifications') || '[]');
     const newGates = gates.filter(g => !shownGates.includes(g.id) && g.discovered);
     
     if (newGates.length > 0) {
-      // عرض إشعار لأول بوابة جديدة
+      // عرض إشعار لأول بوابة جديدة موجودة
       setDiscoveredGate(newGates[0]);
       setShowGateNotification(true);
       
@@ -110,13 +111,17 @@ const Index = () => {
     }
   }, [gameState.gates]);
 
-  // الاستماع لإشعار البوابات الجديدة
+  // الاستماع لإشعار البوابات الجديدة من التحديث التلقائي
   useEffect(() => {
     const handleNewGate = () => {
+      // جلب البوابات الحالية مباشرة من الـ state
       const gates = gameState.gates || [];
       if (gates.length > 0) {
-        setNewGate(gates[0]);
-        setShowNewGateNotification(true);
+        const firstGate = gates[0];
+        if (firstGate) {
+          setNewGate(firstGate);
+          setShowNewGateNotification(true);
+        }
       }
     };
 

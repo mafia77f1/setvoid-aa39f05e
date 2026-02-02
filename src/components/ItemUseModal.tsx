@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Minus, Check, Zap, Heart, Book, Crown, Target, BarChart3, ShieldAlert } from 'lucide-react';
+import { X, Plus, Minus, Check, Zap, Heart, Book, Crown, Target, BarChart3, ShieldAlert, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { InventoryItem, GameState, StatType } from '@/types/game';
 
@@ -10,6 +10,7 @@ interface ItemUseModalProps {
   onUseItem: (itemId: string, quantity: number, statAllocation?: Partial<Record<StatType, number>>) => void;
   onEquipTitle?: (itemId: string) => void;
   onAnalyze?: () => void;
+  onResetXP?: () => void;
 }
 
 export const ItemUseModal = ({ 
@@ -18,7 +19,8 @@ export const ItemUseModal = ({
   onClose, 
   onUseItem,
   onEquipTitle,
-  onAnalyze
+  onAnalyze,
+  onResetXP
 }: ItemUseModalProps) => {
   const [quantity, setQuantity] = useState(1);
   const [statAllocation, setStatAllocation] = useState<Record<StatType, number>>({
@@ -208,7 +210,43 @@ export const ItemUseModal = ({
     );
   };
 
+  // نوع إعادة التوزيع
+  const getResetContent = () => {
+    if (item?.type !== 'reset') return null;
+    
+    const totalXP = gameState.stats.strength + gameState.stats.mind + gameState.stats.spirit + gameState.stats.agility;
+    
+    return (
+      <div className="space-y-4">
+        <div className="p-4 bg-gradient-to-br from-cyan-950/50 to-slate-900/50 border border-cyan-500/30 rounded">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-16 h-16 bg-cyan-900/50 border border-cyan-500/50 rounded flex items-center justify-center">
+              <RotateCcw className="w-8 h-8 text-cyan-400" />
+            </div>
+            <div>
+              <h4 className="font-bold text-cyan-300 text-lg">{item.name}</h4>
+              <p className="text-xs text-slate-400">{item.description}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className="p-2 bg-slate-900/50 rounded flex justify-between">
+              <span className="text-slate-400">مجموع XP:</span>
+              <span className="text-cyan-400 font-bold">{totalXP.toLocaleString()}</span>
+            </div>
+            <div className="p-2 bg-yellow-900/20 border border-yellow-500/30 rounded">
+              <p className="text-xs text-yellow-400 text-center">
+                ⚠️ سيتم إعادة تعيين جميع إحصائياتك ويمكنك توزيعها من جديد
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
+  const isResetItem = item.type === 'reset';
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
@@ -232,7 +270,7 @@ export const ItemUseModal = ({
 
         {/* Content Area */}
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-          {getItemTypeContent()}
+          {isResetItem ? getResetContent() : getItemTypeContent()}
         </div>
 
         {/* Footer Buttons بنفس استايل المتجر */}
@@ -243,6 +281,13 @@ export const ItemUseModal = ({
               className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
             >
               Confirm & Use
+            </button>
+          ) : isResetItem ? (
+            <button
+              onClick={() => { onResetXP?.(); onClose(); }}
+              className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              إعادة التوزيع
             </button>
           ) : item.type === 'title' ? (
             <button

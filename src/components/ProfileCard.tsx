@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, Flame, Shield, Zap } from 'lucide-react';
-import { GameState } from '@/types/game';
+import { Dumbbell, Brain, Heart, Flame, Shield, Zap, Bell, Target, Scroll, Crown } from 'lucide-react';
+import { GameState, Gate } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
+import { NewGateNotification } from './NewGateNotification';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface ProfileCardProps {
   gameState: GameState;
@@ -27,6 +29,9 @@ const getRankColor = (totalLevel: number) => {
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showTestGateNotif, setShowTestGateNotif] = useState(false);
+  const [testGate, setTestGate] = useState<Gate | null>(null);
+  const { playNotification } = useSoundEffects();
   
   // حساب المستوى الكلي = مجموع المستويات الأربعة / 4
   const totalLevel = Math.floor(
@@ -37,6 +42,26 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
   const rankColor = getRankColor(totalLevel);
   const hpPercentage = (gameState.hp / gameState.maxHp) * 100;
   const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
+
+  // دالة اختبار إشعار البوابة
+  const testGateNotification = () => {
+    const testGateData: Gate = {
+      id: 'test_gate_' + Date.now(),
+      name: 'بوابة اختبار',
+      rank: 'B',
+      requiredPower: 25,
+      energyDensity: '28,500',
+      danger: 'HIGH DANGER',
+      color: 'purple',
+      discovered: true,
+      completed: false,
+      isFullyRevealed: true,
+      rewards: { xp: 1000, gold: 300, shadowPoints: 20 },
+    };
+    setTestGate(testGateData);
+    setShowTestGateNotif(true);
+    playNotification();
+  };
 
   return (
     <>
@@ -152,8 +177,53 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
               );
             })}
           </div>
+
+          {/* أزرار اختبار الإشعارات */}
+          <div className="mt-4 p-3 bg-slate-900/50 border border-primary/20 rounded-lg">
+            <h4 className="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1">
+              <Bell className="w-3 h-3" />
+              اختبار الإشعارات
+            </h4>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={testGateNotification}
+                className="p-2 text-xs bg-purple-900/30 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-900/50 flex items-center justify-center gap-1"
+              >
+                <Target className="w-3 h-3" />
+                بوابة جديدة
+              </button>
+              <button
+                onClick={() => {
+                  playNotification();
+                  if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('🎯 مهمة جديدة!', { body: 'لديك مهمة جديدة متاحة للإكمال', icon: '/favicon.png' });
+                  }
+                }}
+                className="p-2 text-xs bg-blue-900/30 border border-blue-500/30 text-blue-400 rounded hover:bg-blue-900/50 flex items-center justify-center gap-1"
+              >
+                <Scroll className="w-3 h-3" />
+                مهمة جديدة
+              </button>
+            </div>
+            {/* طلب إذن الإشعارات */}
+            {'Notification' in window && Notification.permission === 'default' && (
+              <button
+                onClick={() => Notification.requestPermission()}
+                className="w-full mt-2 p-2 text-xs bg-green-900/30 border border-green-500/30 text-green-400 rounded hover:bg-green-900/50"
+              >
+                تفعيل إشعارات الهاتف
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* إشعار البوابة التجريبي */}
+      <NewGateNotification
+        show={showTestGateNotif}
+        gate={testGate}
+        onClose={() => setShowTestGateNotif(false)}
+      />
     </>
   );
 };
