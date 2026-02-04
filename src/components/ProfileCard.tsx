@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Dumbbell, Brain, Heart, Flame, Shield, Zap, Bell, Target, Scroll, Crown } from 'lucide-react';
+import { Dumbbell, Brain, Heart, Flame, Shield, Zap, Bell, Target, Scroll, Crown, Trophy, Smartphone } from 'lucide-react';
 import { GameState, Gate } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { EditProfileModal } from './EditProfileModal';
 import { NewGateNotification } from './NewGateNotification';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface ProfileCardProps {
   gameState: GameState;
@@ -32,6 +33,15 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
   const [showTestGateNotif, setShowTestGateNotif] = useState(false);
   const [testGate, setTestGate] = useState<Gate | null>(null);
   const { playNotification } = useSoundEffects();
+  const { 
+    permission, 
+    isSupported, 
+    isReady,
+    requestPermission, 
+    notifyNewGate, 
+    notifyNewQuest,
+    notifyAchievement 
+  } = usePushNotifications();
   
   // حساب المستوى الكلي = مجموع المستويات الأربعة / 4
   const totalLevel = Math.floor(
@@ -44,7 +54,7 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
   const energyPercentage = (gameState.energy / gameState.maxEnergy) * 100;
 
   // دالة اختبار إشعار البوابة
-  const testGateNotification = () => {
+  const testGateNotification = async () => {
     const testGateData: Gate = {
       id: 'test_gate_' + Date.now(),
       name: 'بوابة اختبار',
@@ -61,6 +71,24 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
     setTestGate(testGateData);
     setShowTestGateNotif(true);
     playNotification();
+    
+    // إرسال Push Notification
+    await notifyNewGate('بوابة اختبار', 'B');
+  };
+
+  // دالة اختبار إشعار المهمة
+  const testQuestNotification = async (isMain: boolean = false) => {
+    playNotification();
+    await notifyNewQuest(
+      isMain ? 'أكمل تمارين القوة اليومية' : 'اقرأ 10 صفحات من كتاب',
+      isMain
+    );
+  };
+
+  // دالة اختبار إشعار الإنجاز
+  const testAchievementNotification = async () => {
+    playNotification();
+    await notifyAchievement('صياد البوابات - أكملت 10 بوابات');
   };
 
   return (
@@ -179,39 +207,74 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
           </div>
 
           {/* أزرار اختبار الإشعارات */}
-          <div className="mt-4 p-3 bg-slate-900/50 border border-primary/20 rounded-lg">
-            <h4 className="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1">
-              <Bell className="w-3 h-3" />
-              اختبار الإشعارات
+          <div className="mt-4 p-3 bg-card/50 border border-primary/20 rounded-lg">
+            <h4 className="text-xs font-bold text-muted-foreground mb-3 flex items-center gap-2">
+              <Smartphone className="w-4 h-4" />
+              اختبار إشعارات Push
+              {isReady && (
+                <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                  جاهز
+                </span>
+              )}
             </h4>
+            
+            {/* حالة الإذن */}
+            <div className="mb-3 p-2 rounded bg-background/50 text-[10px]">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">حالة الإشعارات:</span>
+                <span className={cn(
+                  "font-bold",
+                  permission === 'granted' ? 'text-green-400' : 
+                  permission === 'denied' ? 'text-destructive' : 'text-yellow-400'
+                )}>
+                  {permission === 'granted' ? '✓ مفعّل' : 
+                   permission === 'denied' ? '✗ مرفوض' : '⚠ غير مفعّل'}
+                </span>
+              </div>
+              {!isSupported && (
+                <p className="text-destructive mt-1">متصفحك لا يدعم الإشعارات</p>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={testGateNotification}
-                className="p-2 text-xs bg-purple-900/30 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-900/50 flex items-center justify-center gap-1"
+                className="p-2 text-xs bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-500/20 flex items-center justify-center gap-1 transition-colors"
               >
                 <Target className="w-3 h-3" />
                 بوابة جديدة
               </button>
               <button
-                onClick={() => {
-                  playNotification();
-                  if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('🎯 مهمة جديدة!', { body: 'لديك مهمة جديدة متاحة للإكمال', icon: '/favicon.png' });
-                  }
-                }}
-                className="p-2 text-xs bg-blue-900/30 border border-blue-500/30 text-blue-400 rounded hover:bg-blue-900/50 flex items-center justify-center gap-1"
+                onClick={() => testQuestNotification(false)}
+                className="p-2 text-xs bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded hover:bg-blue-500/20 flex items-center justify-center gap-1 transition-colors"
               >
                 <Scroll className="w-3 h-3" />
-                مهمة جديدة
+                مهمة جانبية
+              </button>
+              <button
+                onClick={() => testQuestNotification(true)}
+                className="p-2 text-xs bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded hover:bg-orange-500/20 flex items-center justify-center gap-1 transition-colors"
+              >
+                <Crown className="w-3 h-3" />
+                مهمة أساسية
+              </button>
+              <button
+                onClick={testAchievementNotification}
+                className="p-2 text-xs bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded hover:bg-yellow-500/20 flex items-center justify-center gap-1 transition-colors"
+              >
+                <Trophy className="w-3 h-3" />
+                إنجاز جديد
               </button>
             </div>
-            {/* طلب إذن الإشعارات */}
-            {'Notification' in window && Notification.permission === 'default' && (
+            
+            {/* زر تفعيل الإشعارات */}
+            {isSupported && permission !== 'granted' && (
               <button
-                onClick={() => Notification.requestPermission()}
-                className="w-full mt-2 p-2 text-xs bg-green-900/30 border border-green-500/30 text-green-400 rounded hover:bg-green-900/50"
+                onClick={requestPermission}
+                className="w-full mt-3 p-2.5 text-xs bg-primary/10 border border-primary/30 text-primary rounded hover:bg-primary/20 font-bold flex items-center justify-center gap-2 transition-colors"
               >
-                تفعيل إشعارات الهاتف
+                <Bell className="w-4 h-4" />
+                {permission === 'denied' ? 'الإشعارات مرفوضة - فعّل من إعدادات المتصفح' : 'تفعيل إشعارات الهاتف'}
               </button>
             )}
           </div>
