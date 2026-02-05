@@ -18,6 +18,7 @@ import Stats from "./pages/Stats";
 import Achievements from "./pages/Achievements";
 import GrandQuest from "./pages/GrandQuest";
 import Market from "./pages/Market";
+import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,7 @@ const AppContent = () => {
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/grand-quest" element={<GrandQuest />} />
         <Route path="/market" element={<Market />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/onboarding" element={<Navigate to="/" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<NotFound />} />
