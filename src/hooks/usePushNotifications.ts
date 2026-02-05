@@ -18,19 +18,15 @@ export const usePushNotifications = () => {
   const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    // التحقق من دعم الإشعارات - يعمل فقط في البيئة الحقيقية (بعد التصدير)
-    const isRealEnvironment = !window.location.hostname.includes('lovable.app') && 
-                               !window.location.hostname.includes('localhost');
+    // التحقق من دعم الإشعارات
     const supported = 'Notification' in window && 'serviceWorker' in navigator;
     
     setIsSupported(supported);
 
     if (supported) {
       setPermission(Notification.permission);
-      // تسجيل Service Worker فقط في البيئة الحقيقية
-      if (isRealEnvironment || Notification.permission === 'granted') {
-        registerServiceWorker();
-      }
+      // تسجيل Service Worker دائماً
+      registerServiceWorker();
     }
   }, []);
 
