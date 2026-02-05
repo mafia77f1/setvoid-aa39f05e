@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
+import { HolographicProfile } from '@/components/HolographicProfile';
 import { cn } from '@/lib/utils';
 // استيراد المودالات الجديدة
 import { ItemAnalysisModal } from '@/components/ItemAnalysisModal'; 
@@ -20,12 +21,13 @@ import {
   Info,
   MapPin,
   ImageIcon,
-  BarChart3 // تم إضافته للأيقونات
+  BarChart3,
+  User
 } from 'lucide-react';
 
 const Stats = () => {
   const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
-  const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'equipment' | 'profile'>('stats');
 
   // حالات التحكم في المودالات الجديدة
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -108,18 +110,25 @@ const Stats = () => {
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
         <div className="flex gap-2 mb-6">
-          {['stats', 'equipment'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={cn(
-                "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
-                activeTab === tab ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : "bg-black/40 border-slate-700 text-slate-500"
-              )}
-            >
-              {tab === 'stats' ? <><Target className="w-3 h-3" /> Abilities</> : <><Package className="w-3 h-3" /> Inventory</>}
-            </button>
-          ))}
+          {[
+            { key: 'stats', label: 'Abilities', icon: Target },
+            { key: 'equipment', label: 'Inventory', icon: Package },
+            { key: 'profile', label: 'Profile', icon: User },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={cn(
+                  "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
+                  activeTab === tab.key ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : "bg-black/40 border-slate-700 text-slate-500"
+                )}
+              >
+                <Icon className="w-3 h-3" /> {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {activeTab === 'stats' && (
@@ -196,6 +205,10 @@ const Stats = () => {
               ))
             )}
           </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <HolographicProfile gameState={gameState} />
         )}
       </main>
       <BottomNav />
