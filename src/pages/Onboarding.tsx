@@ -5,31 +5,34 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from '@/hooks/useAuth';
 import { AlphaNoticeModal } from '@/components/AlphaNoticeModal';
 import { toast } from '@/hooks/use-toast';
-import { Mail, Loader2, CheckCircle, KeyRound } from 'lucide-react';
+import { Mail, Loader2, CheckCircle, KeyRound, Lock, LogIn } from 'lucide-react';
+
+type OnboardingStep = 'welcome' | 'login_choice' | 'login' | 'name' | 'email' | 'verify_otp' | 'password' | 'loading' | 'alpha';
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { completeOnboarding } = useGameState();
   const { playClick, playLevelUp } = useSoundEffects();
-  const { user, loading: authLoading, signInWithOtp, verifyOtp } = useAuth(); 
-  const [step, setStep] = useState<'welcome' | 'name' | 'email' | 'verify_otp' | 'loading' | 'alpha'>('welcome');
+  const { user, loading: authLoading, signInWithOtp, verifyOtp, signIn, updatePassword } = useAuth(); 
+  const [step, setStep] = useState<OnboardingStep>('welcome');
   const [playerName, setPlayerName] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // الحالة الجديدة للتحكم في الشاشة السوداء عند البداية
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
-    }, 1500); // 1.5 ثانية شاشة سوداء
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   useLayoutEffect(() => {
-    if (isInitialLoading) return; // لا تشغل الصوت أثناء الشاشة السوداء
+    if (isInitialLoading) return;
 
     const systemSound = new Audio('/SystemNotificationSound.wav');
     systemSound.preload = 'auto';
@@ -48,7 +51,11 @@ const Onboarding = () => {
   useEffect(() => {
     if (!authLoading && user) {
       const savedName = localStorage.getItem('pendingPlayerName');
-      if (savedName) {
+      const needsPassword = localStorage.getItem('needsPassword');
+      
+      if (needsPassword === 'true') {
+        setStep('password');
+      } else if (savedName) {
         setStep('alpha');
       } else {
         navigate('/');
@@ -58,11 +65,48 @@ const Onboarding = () => {
 
   const handleAccept = () => {
     playClick();
-    setStep('name');
+    setStep('login_choice');
   };
 
   const handleDecline = () => {
     window.close();
+  };
+
+  const handleNewAccount = () => {
+    playClick();
+    setStep('name');
+  };
+
+  const handleExistingAccount = () => {
+    playClick();
+    setStep('login');
+  };
+
+  const handleLogin = async () => {
+    if (!email.trim() || !loginPassword.trim()) return;
+    setIsSubmitting(true);
+    
+    const { data, error } = await signIn(email.trim(), loginPassword);
+    
+    if (error) {
+      toast({
+        title: 'فشل تسجيل الدخول',
+        description: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (data?.user) {
+      playLevelUp();
+      const playerNameFromMeta = data.user.user_metadata?.player_name;
+      if (playerNameFromMeta) {
+        completeOnboarding(playerNameFromMeta);
+      }
+      navigate('/');
+    }
+    setIsSubmitting(false);
   };
 
   const handleNameNext = () => {
@@ -94,7 +138,7 @@ const Onboarding = () => {
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) return;
     setIsSubmitting(true);
-    const { error } = await verifyOtp(email.trim(), otp);
+    const { data, error } = await verifyOtp(email.trim(), otp);
     if (error) {
       toast({
         title: 'فشل التحقق',
@@ -104,6 +148,52 @@ const Onboarding = () => {
       setIsSubmitting(false);
       return;
     }
+    
+    if (data?.user) {
+      // التحقق إذا كان المستخدم جديد (لا يملك كلمة مرور)
+      localStorage.setItem('needsPassword', 'true');
+      playLevelUp();
+      setStep('password');
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleSetPassword = async () => {
+    if (password.length < 6) {
+      toast({
+        title: 'كلمة المرور قصيرة',
+        description: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: 'كلمات المرور غير متطابقة',
+        description: 'تأكد من تطابق كلمة المرور',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await updatePassword(password);
+    
+    if (error) {
+      toast({
+        title: 'خطأ',
+        description: error.message || 'فشل في تعيين كلمة المرور',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    localStorage.removeItem('needsPassword');
+    playLevelUp();
+    setStep('alpha');
+    setIsSubmitting(false);
   };
 
   const handleAlphaDismiss = () => {
@@ -115,7 +205,6 @@ const Onboarding = () => {
     navigate('/');
   };
 
-  // عرض شاشة سوداء خلال فترة الـ 1.5 ثانية أو أثناء التحميل الأصلي
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
@@ -131,7 +220,6 @@ const Onboarding = () => {
       </div>
 
       <div key={step} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
-        {/* الخطوط العلوية والسفلية المحسنة بأنيميشن تمدد */}
         <div className="absolute -top-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
         <div className="absolute -bottom-6 left-0 right-0 h-[2px] bg-blue-500 shadow-[0_0_25px_#3b82f6,0_0_10px_#fff] z-20 animate-line-expand" />
 
@@ -155,6 +243,50 @@ const Onboarding = () => {
                     <button onClick={handleAccept} className="flex-1 py-2 bg-transparent border border-white/60 text-white font-black text-sm sm:text-lg italic hover:bg-white hover:text-black transition-all">ACCEPT</button>
                     <button onClick={handleDecline} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs sm:text-base italic hover:border-white/40 hover:text-white transition-all">NOT ACCEPT</button>
                   </div>
+                </div>
+              )}
+
+              {step === 'login_choice' && (
+                <div className="w-full text-center flex flex-col items-center">
+                  <LogIn className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">ACCOUNT ACCESS</h2>
+                  <p className="text-white/60 text-xs sm:text-sm mb-8">هل لديك حساب مسبق؟</p>
+                  <div className="flex flex-col gap-3 w-full max-w-[280px]">
+                    <button onClick={handleNewAccount} className="py-3 bg-white text-black font-black text-base italic hover:bg-blue-500 hover:text-white transition-all">حساب جديد</button>
+                    <button onClick={handleExistingAccount} className="py-3 bg-transparent border border-white/40 text-white font-bold text-sm hover:bg-white/10 transition-all">لدي حساب</button>
+                  </div>
+                </div>
+              )}
+
+              {step === 'login' && (
+                <div className="w-full text-center flex flex-col items-center">
+                  <LogIn className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">LOGIN</h2>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">أدخل بيانات حسابك</p>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    placeholder="البريد الإلكتروني" 
+                    className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-base font-medium text-white focus:outline-none focus:border-white transition-all mb-4" 
+                    dir="ltr" 
+                  />
+                  <input 
+                    type="password" 
+                    value={loginPassword} 
+                    onChange={(e) => setLoginPassword(e.target.value)} 
+                    placeholder="كلمة المرور" 
+                    className="w-full max-w-[300px] bg-transparent border-b border-blue-500/50 py-2 text-center text-base font-medium text-white focus:outline-none focus:border-white transition-all" 
+                    dir="ltr" 
+                  />
+                  <button 
+                    onClick={handleLogin} 
+                    disabled={!email.trim() || !loginPassword.trim() || isSubmitting} 
+                    className="mt-8 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'دخول'}
+                  </button>
+                  <button onClick={() => setStep('login_choice')} className="mt-4 text-white/40 text-xs hover:text-white transition-all">رجوع</button>
                 </div>
               )}
 
@@ -191,6 +323,38 @@ const Onboarding = () => {
                 </div>
               )}
 
+              {step === 'password' && (
+                <div className="w-full text-center flex flex-col items-center">
+                  <Lock className="w-12 h-12 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
+                  <h2 className="text-white font-black tracking-[0.3em] text-xs sm:text-sm mb-2 drop-shadow-[0_0_10px_white]">SET PASSWORD</h2>
+                  <p className="text-white/60 text-xs sm:text-sm mb-6">اختر كلمة مرور قوية لحسابك</p>
+                  <input 
+                    type="password" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    placeholder="كلمة المرور" 
+                    className="w-full max-w-[280px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all mb-4" 
+                    dir="ltr" 
+                  />
+                  <input 
+                    type="password" 
+                    value={confirmPassword} 
+                    onChange={(e) => setConfirmPassword(e.target.value)} 
+                    placeholder="تأكيد كلمة المرور" 
+                    className="w-full max-w-[280px] bg-transparent border-b border-blue-500/50 py-2 text-center text-lg font-medium text-white focus:outline-none focus:border-white transition-all" 
+                    dir="ltr" 
+                  />
+                  <p className="text-white/40 text-[10px] mt-2">6 أحرف على الأقل</p>
+                  <button 
+                    onClick={handleSetPassword} 
+                    disabled={password.length < 6 || password !== confirmPassword || isSubmitting} 
+                    className="mt-6 px-10 py-2 bg-white text-black font-black text-lg italic hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'تأكيد'}
+                  </button>
+                </div>
+              )}
+
               {step === 'alpha' && (
                 <div className="w-full text-center flex flex-col items-center">
                   <CheckCircle className="w-16 h-16 text-blue-400 mb-4 drop-shadow-[0_0_20px_#3b82f6]" />
@@ -205,14 +369,12 @@ const Onboarding = () => {
       </div>
 
       <style>{`
-        /* انميشن الفتح السينمائي المحترف */
         @keyframes super-smooth-entry {
           0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
           40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
           100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* انميشن الخطوط المتوهجة */
         @keyframes line-expand {
           0% { width: 0%; left: 50%; opacity: 0; }
           40% { width: 0%; left: 50%; opacity: 1; }

@@ -30,7 +30,6 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // حذف الـ Redirect تماماً يجبر النظام على عدم إنشاء رابط
         emailRedirectTo: undefined, 
         data: {
           player_name: playerName,
@@ -46,7 +45,6 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      // نغير النوع إلى 'email' ليتوافق مع نظام الأكواد الرقمية
       type: 'email', 
     });
     
@@ -55,11 +53,59 @@ export const useAuth = () => {
       setUser(data.session.user);
     }
     
-    return { error };
+    return { data, error };
+  };
+
+  // تسجيل حساب جديد بالإيميل وكلمة المرور
+  const signUp = async (email: string, password: string, playerName: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          player_name: playerName,
+        },
+      },
+    });
+    
+    if (data?.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
+    
+    return { data, error };
+  };
+
+  // تسجيل الدخول بالإيميل وكلمة المرور
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (data?.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+    }
+    
+    return { data, error };
+  };
+
+  // تحديث كلمة المرور للمستخدم الحالي
+  const updatePassword = async (password: string) => {
+    const { data, error } = await supabase.auth.updateUser({
+      password,
+    });
+    
+    return { data, error };
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setUser(null);
+      setSession(null);
+    }
     return { error };
   };
 
@@ -69,6 +115,9 @@ export const useAuth = () => {
     loading,
     signInWithOtp,
     verifyOtp,
+    signUp,
+    signIn,
+    updatePassword,
     signOut,
   };
 };
