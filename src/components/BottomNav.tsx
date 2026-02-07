@@ -7,6 +7,7 @@ const navItems = [
   { path: '/quests', icon: Scroll, label: 'المهمات', description: 'المهمات اليومية' },
   { path: '/gates', icon: Swords, label: 'البوابات', description: 'البوابات' },
   { path: '/stats', icon: BarChart3, label: 'القوى', description: 'إحصائياتك' },
+  { path: '/grand-quest', icon: Target, label: 'الهدف', description: 'هدفك الكبير' },
   { path: '/profile', icon: Sparkles, label: 'البروفايل', description: 'ملفك الشخصي' },
 ];
 
