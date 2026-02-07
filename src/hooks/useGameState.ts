@@ -218,45 +218,75 @@ const getDefaultState = (): GameState => ({
 });
 
 export const useGameState = () => {
-  const [gameState, setGameState] = useState<GameState>(() => {
-    const saved = localStorage.getItem('levelUpLife');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const defaultState = getDefaultState();
-      const mergedState = { ...defaultState, ...parsed };
-      const today = new Date().toISOString().split('T')[0];
-      if (mergedState.lastActiveDate !== today) {
-          mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
-          mergedState.prayerQuests = mergedState.prayerQuests?.map((p: PrayerQuest) => ({ ...p, completed: false })) || getInitialPrayerQuests();
-          mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
-        const lastDate = new Date(mergedState.lastActiveDate);
-        const todayDate = new Date(today);
-        const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays === 1) mergedState.streakDays += 1;
-        else if (diffDays > 1) { mergedState.streakDays = 0; mergedState.hp = Math.max(0, mergedState.hp - (diffDays * 10)); }
-        mergedState.lastActiveDate = today;
-      }
-      if (!mergedState.gates || mergedState.gates.length === 0) mergedState.gates = getScheduledGates(mergedState.totalLevel || 1);
-      return mergedState;
-    }
-    return getDefaultState();
-  });
-
-  const [levelUpInfo, setLevelUpInfo] = useState<{ show: boolean; newLevel: number; category?: StatType } | null>(null);
   const { user } = useAuth();
+  const previousUserIdRef = useRef<string | null>(null);
   const isSyncingRef = useRef(false);
   const isInitializedRef = useRef(false);
 
+  // دالة لجلب مفتاح التخزين المحلي الخاص بالمستخدم
+  const getStorageKey = (userId?: string) => {
+    return userId ? `levelUpLife_${userId}` : 'levelUpLife_guest';
+  };
+
+  const [gameState, setGameState] = useState<GameState>(() => getDefaultState());
+  const [levelUpInfo, setLevelUpInfo] = useState<{ show: boolean; newLevel: number; category?: StatType } | null>(null);
+
+  // مراقبة تغيير المستخدم وإعادة تحميل البيانات
   useEffect(() => {
+    const currentUserId = user?.id || null;
+    
+    // إذا تغير المستخدم، أعد تهيئة البيانات
+    if (previousUserIdRef.current !== currentUserId) {
+      isInitializedRef.current = false;
+      previousUserIdRef.current = currentUserId;
+      
+      // مسح البيانات القديمة من الذاكرة
+      if (!currentUserId) {
+        // تسجيل خروج - إعادة للحالة الافتراضية
+        setGameState(getDefaultState());
+        return;
+      }
+    }
+
     if (!user || isInitializedRef.current) return;
+
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await supabase.from('game_states').select('game_data').eq('user_id', user.id).maybeSingle();
-        if (error) { isInitializedRef.current = true; return; }
+        const { data, error } = await supabase.from('game_states').select('game_data, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title').eq('user_id', user.id).maybeSingle();
+        
+        if (error) { 
+          isInitializedRef.current = true; 
+          // تحميل من localStorage للمستخدم الحالي
+          const localKey = getStorageKey(user.id);
+          const saved = localStorage.getItem(localKey);
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              const defaultState = getDefaultState();
+              setGameState({ ...defaultState, ...parsed, isOnboarded: true });
+            } catch {}
+          }
+          return; 
+        }
+        
         if (data?.game_data) {
           const savedState = data.game_data as unknown as GameState;
           const defaultState = getDefaultState();
-          const mergedState = { ...defaultState, ...savedState, isOnboarded: true };
+          const mergedState = { 
+            ...defaultState, 
+            ...savedState, 
+            isOnboarded: true,
+            // استخدام القيم من الأعمدة المباشرة
+            playerName: data.player_name || savedState.playerName,
+            gold: data.gold ?? savedState.gold,
+            hp: data.hp ?? savedState.hp,
+            maxHp: data.max_hp ?? savedState.maxHp,
+            energy: data.energy ?? savedState.energy,
+            maxEnergy: data.max_energy ?? savedState.maxEnergy,
+            shadowPoints: data.shadow_points ?? savedState.shadowPoints,
+            equippedTitle: data.equipped_title || savedState.equippedTitle,
+          };
+          
           const today = new Date().toISOString().split('T')[0];
           if (mergedState.lastActiveDate !== today) {
             mergedState.quests = [...getRotatingQuests(), ...getSideQuests()];
@@ -265,10 +295,17 @@ export const useGameState = () => {
             mergedState.lastActiveDate = today;
           }
           setGameState(mergedState);
+        } else {
+          // لا توجد بيانات في السيرفر - إنشاء حالة جديدة
+          const defaultState = getDefaultState();
+          setGameState({ ...defaultState, isOnboarded: true });
         }
         isInitializedRef.current = true;
-      } catch (err) { isInitializedRef.current = true; }
+      } catch (err) { 
+        isInitializedRef.current = true; 
+      }
     };
+    
     loadFromSupabase();
   }, [user]);
 
@@ -309,13 +346,28 @@ export const useGameState = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('levelUpLife', JSON.stringify(gameState));
+    // حفظ في localStorage بمفتاح خاص بالمستخدم
+    const storageKey = getStorageKey(user?.id);
+    localStorage.setItem(storageKey, JSON.stringify(gameState));
+    
     if (!user || isSyncingRef.current || !isInitializedRef.current) return;
+    
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
         const { data: existing } = await supabase.from('game_states').select('id').eq('user_id', user.id).maybeSingle();
-        const updateData = { player_name: gameState.playerName, equipped_title: gameState.equippedTitle || null, gold: gameState.gold, hp: gameState.hp, max_hp: gameState.maxHp, energy: gameState.energy, max_energy: gameState.maxEnergy, shadow_points: gameState.shadowPoints, game_data: JSON.parse(JSON.stringify(gameState)), updated_at: new Date().toISOString() };
+        const updateData = { 
+          player_name: gameState.playerName, 
+          equipped_title: gameState.equippedTitle || null, 
+          gold: gameState.gold, 
+          hp: gameState.hp, 
+          max_hp: gameState.maxHp, 
+          energy: gameState.energy, 
+          max_energy: gameState.maxEnergy, 
+          shadow_points: gameState.shadowPoints, 
+          game_data: JSON.parse(JSON.stringify(gameState)), 
+          updated_at: new Date().toISOString() 
+        };
         if (existing) await supabase.from('game_states').update(updateData).eq('user_id', user.id);
         else await supabase.from('game_states').insert([{ user_id: user.id, ...updateData }]);
       } catch (err) {} finally { isSyncingRef.current = false; }

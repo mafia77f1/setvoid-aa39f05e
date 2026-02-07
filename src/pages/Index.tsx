@@ -178,15 +178,11 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-24">
       {/* Header with Burger Menu */}
-      <header className="sticky top-0 z-40 flex justify-between items-center p-4 bg-background/80 backdrop-blur-lg border-b border-primary/20">
-        <h1 className="text-lg font-bold tracking-wider uppercase text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]">
-          SYSTEM
-        </h1>
-        
+      <header className="sticky top-0 z-40 flex justify-end items-center p-4">
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button className="p-3 bg-primary/20 border border-primary/40 rounded-lg hover:bg-primary/30 transition-all">
-              <Menu className="w-5 h-5 text-primary" />
+            <button className="p-2 hover:bg-primary/10 rounded-lg transition-all">
+              <Menu className="w-6 h-6 text-primary" />
             </button>
           </SheetTrigger>
           <SheetContent side="right" className="w-72 bg-card/95 border-l border-primary/30 p-0">
