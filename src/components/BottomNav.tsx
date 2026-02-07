@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-import { User, Swords, Target, BarChart3, Flag, Scroll, Sparkles } from 'lucide-react';
+import { User, Swords, Target, BarChart3, Scroll } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -8,7 +8,6 @@ const navItems = [
   { path: '/gates', icon: Swords, label: 'البوابات', description: 'البوابات' },
   { path: '/stats', icon: BarChart3, label: 'القوى', description: 'إحصائياتك' },
   { path: '/grand-quest', icon: Target, label: 'الهدف', description: 'هدفك الكبير' },
-  { path: '/profile', icon: Sparkles, label: 'البروفايل', description: 'ملفك الشخصي' },
 ];
 
 export const BottomNav = () => {

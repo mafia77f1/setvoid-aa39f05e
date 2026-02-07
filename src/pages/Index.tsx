@@ -11,9 +11,11 @@ import { GateDiscoveryNotification } from '@/components/GateDiscoveryNotificatio
 import { NewGateNotification } from '@/components/NewGateNotification';
 import { BottomNav } from '@/components/BottomNav';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Zap, Trophy, Skull, Sparkles, ShoppingBag, Target } from 'lucide-react';
+import { ChevronRight, Menu, User, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatType, Gate } from '@/types/game';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 
@@ -39,6 +41,12 @@ const Index = () => {
   const [discoveredGate, setDiscoveredGate] = useState<Gate | null>(null);
   const [showNewGateNotification, setShowNewGateNotification] = useState(false);
   const [newGate, setNewGate] = useState<Gate | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuItems = [
+    { key: 'profile', label: 'البروفايل', labelEn: 'Profile', icon: User, color: 'text-blue-400', borderColor: 'border-blue-500/40', bgColor: 'bg-blue-500/10', path: '/profile' },
+    { key: 'market', label: 'السوق', labelEn: 'Market', icon: ShoppingBag, color: 'text-yellow-400', borderColor: 'border-yellow-500/40', bgColor: 'bg-yellow-500/10', path: '/market' },
+  ];
 
   // Check for max level - المستوى الأقصى هو 50
   const maxLevel = Math.max(
@@ -169,6 +177,69 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24">
+      {/* Header with Burger Menu */}
+      <header className="sticky top-0 z-40 flex justify-between items-center p-4 bg-background/80 backdrop-blur-lg border-b border-primary/20">
+        <h1 className="text-lg font-bold tracking-wider uppercase text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]">
+          SYSTEM
+        </h1>
+        
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <SheetTrigger asChild>
+            <button className="p-3 bg-primary/20 border border-primary/40 rounded-lg hover:bg-primary/30 transition-all">
+              <Menu className="w-5 h-5 text-primary" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-72 bg-card/95 border-l border-primary/30 p-0">
+            <SheetHeader className="p-4 border-b border-primary/20">
+              <SheetTitle className="text-sm font-bold tracking-[0.15em] uppercase text-primary text-right">
+                القائمة
+              </SheetTitle>
+            </SheetHeader>
+            
+            <ScrollArea className="flex-1 p-3">
+              <nav className="space-y-2">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.key}
+                      to={item.path}
+                      onClick={() => setMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border transition-all group",
+                        item.borderColor,
+                        item.bgColor,
+                        "hover:scale-[1.02]"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg border flex items-center justify-center",
+                        item.borderColor,
+                        item.bgColor
+                      )}>
+                        <Icon className={cn("w-5 h-5", item.color)} />
+                      </div>
+                      <div className="flex-1 text-right">
+                        <p className={cn("font-bold text-sm", item.color)}>{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.labelEn}</p>
+                      </div>
+                      <ChevronRight className={cn("w-4 h-4", item.color, "rotate-180")} />
+                    </Link>
+                  );
+                })}
+              </nav>
+            </ScrollArea>
+
+            {/* Player Info Mini */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-primary/20 bg-card/90">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-center">
+                <p className="text-xs text-muted-foreground">المستوى الكلي</p>
+                <p className="text-2xl font-black text-primary">{gameState.totalLevel}</p>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </header>
       {/* System Notifications */}
       {showNewQuestNotification && (
         <SystemNotification 
