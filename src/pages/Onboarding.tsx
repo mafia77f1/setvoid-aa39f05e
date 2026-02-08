@@ -49,24 +49,27 @@ const Onboarding = () => {
   }, [step, isInitialLoading]);
 
   useEffect(() => {
-    if (!authLoading && user) {
-      const savedName = localStorage.getItem('pendingPlayerName');
+    if (authLoading) return;
+    
+    if (user) {
       const needsPassword = localStorage.getItem('needsPassword');
+      const savedName = localStorage.getItem('pendingPlayerName');
       
-      // إذا كان المستخدم يحتاج كلمة مرور، لا ننقله للتطبيق
+      // الأولوية القصوى: إذا كان المستخدم يحتاج كلمة مرور
       if (needsPassword === 'true') {
-        setStep('password');
-        return; // منع أي تحويل آخر
+        if (step !== 'password') {
+          setStep('password');
+        }
+        return; // لا تفعل أي شيء آخر - يجب أن يضع كلمة المرور أولاً
       }
       
-      // إذا لم يكمل التسجيل بعد (لا يزال في عملية التسجيل)
-      if (savedName && step !== 'alpha') {
-        // المستخدم أتم كل الخطوات
+      // إذا كان في عملية تسجيل جديدة ولم يصل لشاشة alpha
+      if (savedName && step !== 'alpha' && step !== 'password') {
         setStep('alpha');
         return;
       }
       
-      // فقط إذا لم يكن في عملية تسجيل جديدة، ننقله للصفحة الرئيسية
+      // المستخدم مسجل دخول بشكل طبيعي - ننقله للصفحة الرئيسية
       if (!savedName && !needsPassword) {
         navigate('/');
       }
