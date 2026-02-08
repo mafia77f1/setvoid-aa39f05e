@@ -53,15 +53,25 @@ const Onboarding = () => {
       const savedName = localStorage.getItem('pendingPlayerName');
       const needsPassword = localStorage.getItem('needsPassword');
       
+      // إذا كان المستخدم يحتاج كلمة مرور، لا ننقله للتطبيق
       if (needsPassword === 'true') {
         setStep('password');
-      } else if (savedName) {
+        return; // منع أي تحويل آخر
+      }
+      
+      // إذا لم يكمل التسجيل بعد (لا يزال في عملية التسجيل)
+      if (savedName && step !== 'alpha') {
+        // المستخدم أتم كل الخطوات
         setStep('alpha');
-      } else {
+        return;
+      }
+      
+      // فقط إذا لم يكن في عملية تسجيل جديدة، ننقله للصفحة الرئيسية
+      if (!savedName && !needsPassword) {
         navigate('/');
       }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, step]);
 
   const handleAccept = () => {
     playClick();

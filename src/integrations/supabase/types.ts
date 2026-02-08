@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_states: {
+        Row: {
+          created_at: string
+          energy: number | null
+          equipped_title: string | null
+          game_data: Json | null
+          gold: number | null
+          hp: number | null
+          id: string
+          max_energy: number | null
+          max_hp: number | null
+          player_name: string | null
+          shadow_points: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy?: number | null
+          equipped_title?: string | null
+          game_data?: Json | null
+          gold?: number | null
+          hp?: number | null
+          id?: string
+          max_energy?: number | null
+          max_hp?: number | null
+          player_name?: string | null
+          shadow_points?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy?: number | null
+          equipped_title?: string | null
+          game_data?: Json | null
+          gold?: number | null
+          hp?: number | null
+          id?: string
+          max_energy?: number | null
+          max_hp?: number | null
+          player_name?: string | null
+          shadow_points?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          player_id: string
+          player_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          player_id?: string
+          player_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          player_id?: string
+          player_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
