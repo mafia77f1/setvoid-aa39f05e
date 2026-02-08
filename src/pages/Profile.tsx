@@ -182,7 +182,11 @@ const Profile = () => {
               </div>
               
               <div className="flex flex-col items-center gap-4">
-                {!profileLoading && profile && (
+                {profileLoading ? (
+                  <div className="h-40 flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : profile ? (
                   <>
                     <PlayerQRCode 
                       playerId={profile.player_id} 
@@ -199,11 +203,9 @@ const Profile = () => {
                       نسخ المعرف
                     </Button>
                   </>
-                )}
-                
-                {profileLoading && (
-                  <div className="h-40 flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-muted-foreground text-sm">جاري تحميل بيانات الحساب...</p>
                   </div>
                 )}
               </div>
