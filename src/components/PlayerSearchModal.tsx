@@ -3,8 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useFriendships } from '@/hooks/useFriendships';
 import { toast } from '@/hooks/use-toast';
-import { Search, User, MessageCircle, UserPlus, Swords, Loader2, QrCode, X } from 'lucide-react';
+import { Search, User, MessageCircle, UserPlus, UserCheck, Clock, Swords, Loader2, QrCode, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PlayerProfile {
@@ -22,10 +24,13 @@ interface PlayerSearchModalProps {
 }
 
 export const PlayerSearchModal = ({ open, onOpenChange }: PlayerSearchModalProps) => {
+  const { user } = useAuth();
+  const { getFriendshipStatus, sendFriendRequest, refresh } = useFriendships();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [foundPlayer, setFoundPlayer] = useState<PlayerProfile | null>(null);
   const [mode, setMode] = useState<'search' | 'result'>('search');
+  const [addingFriend, setAddingFriend] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -71,13 +76,64 @@ export const PlayerSearchModal = ({ open, onOpenChange }: PlayerSearchModalProps
     return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const handleAction = (action: 'message' | 'add' | 'battle') => {
-    const messages = {
-      message: 'ميزة المراسلة ستكون متاحة قريباً',
-      add: 'ميزة الإضافة ستكون متاحة قريباً',
-      battle: 'ميزة المبارزة ستكون متاحة قريباً'
-    };
-    toast({ title: 'قريباً', description: messages[action] });
+  const handleAddFriend = async () => {
+    if (!foundPlayer) return;
+    setAddingFriend(true);
+    const { error } = await sendFriendRequest(foundPlayer.user_id);
+    if (error) {
+      const msg = error.message?.includes('duplicate') ? 'طلب الصداقة موجود بالفعل' : 'فشل إرسال الطلب';
+      toast({ title: 'خطأ', description: msg, variant: 'destructive' });
+    } else {
+      toast({ title: 'تم الإرسال', description: 'تم إرسال طلب الصداقة بنجاح' });
+      await refresh();
+    }
+    setAddingFriend(false);
+  };
+
+  const isOwnProfile = foundPlayer && user && foundPlayer.user_id === user.id;
+  const friendStatus = foundPlayer ? getFriendshipStatus(foundPlayer.user_id) : 'none';
+
+  const renderAddButton = () => {
+    if (isOwnProfile) return null;
+
+    if (friendStatus === 'accepted') {
+      return (
+        <Button variant="outline" disabled className="flex flex-col items-center gap-1 h-auto py-3 border-green-500/30">
+          <UserCheck className="w-5 h-5 text-green-400" />
+          <span className="text-[10px] text-green-400">أصدقاء</span>
+        </Button>
+      );
+    }
+
+    if (friendStatus === 'pending_sent') {
+      return (
+        <Button variant="outline" disabled className="flex flex-col items-center gap-1 h-auto py-3 border-yellow-500/30">
+          <Clock className="w-5 h-5 text-yellow-400" />
+          <span className="text-[10px] text-yellow-400">تم الإرسال</span>
+        </Button>
+      );
+    }
+
+    if (friendStatus === 'pending_received') {
+      return (
+        <Button variant="outline" disabled className="flex flex-col items-center gap-1 h-auto py-3 border-blue-500/30">
+          <Clock className="w-5 h-5 text-blue-400" />
+          <span className="text-[10px] text-blue-400">بانتظارك</span>
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        variant="outline"
+        onClick={handleAddFriend}
+        disabled={addingFriend}
+        className="flex flex-col items-center gap-1 h-auto py-3 border-green-500/30 hover:bg-green-500/10"
+      >
+        {addingFriend ? <Loader2 className="w-5 h-5 animate-spin text-green-400" /> : <UserPlus className="w-5 h-5 text-green-400" />}
+        <span className="text-[10px] text-green-400">إضافة</span>
+      </Button>
+    );
   };
 
   return (
@@ -127,7 +183,6 @@ export const PlayerSearchModal = ({ open, onOpenChange }: PlayerSearchModalProps
 
         {mode === 'result' && foundPlayer && (
           <div className="p-4 space-y-4">
-            {/* Player Card */}
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-xl p-4 text-center">
               <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center">
                 {foundPlayer.avatar_url ? (
@@ -142,29 +197,21 @@ export const PlayerSearchModal = ({ open, onOpenChange }: PlayerSearchModalProps
               <p className="text-xs text-muted-foreground">انضم في {formatDate(foundPlayer.created_at)}</p>
             </div>
 
-            {/* Action Buttons */}
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
-                onClick={() => handleAction('message')}
+                onClick={() => toast({ title: 'قريباً', description: 'ميزة المراسلة ستكون متاحة قريباً' })}
                 className="flex flex-col items-center gap-1 h-auto py-3 border-blue-500/30 hover:bg-blue-500/10"
               >
                 <MessageCircle className="w-5 h-5 text-blue-400" />
                 <span className="text-[10px] text-blue-400">مراسلة</span>
               </Button>
 
-              <Button
-                variant="outline"
-                onClick={() => handleAction('add')}
-                className="flex flex-col items-center gap-1 h-auto py-3 border-green-500/30 hover:bg-green-500/10"
-              >
-                <UserPlus className="w-5 h-5 text-green-400" />
-                <span className="text-[10px] text-green-400">إضافة</span>
-              </Button>
+              {renderAddButton()}
 
               <Button
                 variant="outline"
-                onClick={() => handleAction('battle')}
+                onClick={() => toast({ title: 'قريباً', description: 'ميزة المبارزة ستكون متاحة قريباً' })}
                 className="flex flex-col items-center gap-1 h-auto py-3 border-orange-500/30 hover:bg-orange-500/10 relative"
               >
                 <Swords className="w-5 h-5 text-orange-400" />

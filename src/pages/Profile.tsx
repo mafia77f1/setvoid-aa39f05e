@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { User, ShoppingBag, ChevronRight, Menu, Mail, Calendar, LogOut, Key, Settings, Shield, QrCode, Search, Copy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { FriendsPanel } from '@/components/FriendsPanel';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -278,6 +279,9 @@ const Profile = () => {
                 </button>
               </div>
             </section>
+
+            {/* Friends Panel */}
+            <FriendsPanel />
 
             {/* Game Stats Summary */}
             <section className="bg-card/60 backdrop-blur-lg border border-primary/30 rounded-xl p-4">
