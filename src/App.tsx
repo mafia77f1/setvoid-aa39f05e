@@ -38,8 +38,9 @@ const AppContent = () => {
     );
   }
 
-  // If not authenticated, show onboarding
-  if (!user || !gameState.isOnboarded) {
+  // If not authenticated, not onboarded, or needs password setup - show onboarding
+  const needsPassword = typeof window !== 'undefined' && localStorage.getItem('needsPassword') === 'true';
+  if (!user || !gameState.isOnboarded || needsPassword) {
     return <Onboarding />;
   }
 
