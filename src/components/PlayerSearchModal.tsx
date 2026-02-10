@@ -201,9 +201,10 @@ export const PlayerSearchModal = ({ open, onOpenChange }: PlayerSearchModalProps
               <Button
                 variant="outline"
                 onClick={() => toast({ title: 'قريباً', description: 'ميزة المراسلة ستكون متاحة قريباً' })}
-                className="flex flex-col items-center gap-1 h-auto py-3 border-blue-500/30 hover:bg-blue-500/10"
+                className="flex flex-col items-center gap-1 h-auto py-3 border-blue-500/30 hover:bg-blue-500/10 relative"
               >
                 <MessageCircle className="w-5 h-5 text-blue-400" />
+                <span className="absolute -top-1 -left-1 text-[8px] bg-blue-500 text-white px-1 rounded">قريباً</span>
                 <span className="text-[10px] text-blue-400">مراسلة</span>
               </Button>
 
