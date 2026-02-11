@@ -40,7 +40,6 @@ export const useProfile = () => {
 
       // إذا لم يوجد ملف شخصي، ننشئ واحد (للمستخدمين القدامى)
       if (!data) {
-        const newPlayerId = 'SV-' + user.id.substring(0, 8).toUpperCase();
         const playerName = user.user_metadata?.player_name || 'Hunter';
         
         const { data: newProfile, error: insertError } = await supabase
@@ -48,7 +47,6 @@ export const useProfile = () => {
           .insert({
             user_id: user.id,
             player_name: playerName,
-            player_id: newPlayerId,
           })
           .select()
           .single();
