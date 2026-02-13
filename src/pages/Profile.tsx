@@ -27,10 +27,10 @@ const Profile = () => {
   ];
 
   const getRankInfo = (level) => {
-    if (level >= 50) return { name: 'S', color: 'text-orange-500', border: 'border-orange-500/50', glow: 'shadow-[0_0_20px_rgba(249,115,22,0.3)]' };
-    if (level >= 40) return { name: 'A', color: 'text-purple-500', border: 'border-purple-500/50', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.3)]' };
-    if (level >= 30) return { name: 'B', color: 'text-blue-500', border: 'border-blue-500/50', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.3)]' };
-    if (level >= 20) return { name: 'C', color: 'text-green-500', border: 'border-green-500/50', glow: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]' };
+    if (level >= 50) return { name: 'S', color: 'text-orange-500', border: 'border-orange-500/50', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.2)]' };
+    if (level >= 40) return { name: 'A', color: 'text-purple-500', border: 'border-purple-500/50', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.2)]' };
+    if (level >= 30) return { name: 'B', color: 'text-blue-500', border: 'border-blue-500/50', glow: 'shadow-[0_0_30px_rgba(59,130,246,0.2)]' };
+    if (level >= 20) return { name: 'C', color: 'text-green-500', border: 'border-green-500/50', glow: 'shadow-[0_0_30px_rgba(34,197,94,0.2)]' };
     return { name: 'E', color: 'text-gray-400', border: 'border-gray-400/50', glow: '' };
   };
 
@@ -72,92 +72,72 @@ const Profile = () => {
 
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className={cn(
-          "relative w-full max-w-md aspect-[1/1.6] bg-gradient-to-br from-card via-card to-background border-2 rounded-[2rem] p-8 shadow-2xl flex flex-col overflow-hidden transition-all duration-500",
+          "relative w-full max-w-md aspect-[1/1.6] bg-gradient-to-b from-card to-background border-2 rounded-[2.5rem] p-8 shadow-2xl flex flex-col overflow-hidden transition-all duration-500",
           rank.border,
           rank.glow
         )}>
           
           {/* Header Section: QR & Rank */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-primary/20 blur rounded-xl opacity-50"></div>
-              <div className="relative bg-transparent p-1">
+          <div className="flex justify-between items-start mb-10">
+            <div className="relative">
+              <div className="bg-transparent p-0">
                 {profile && (
                   <PlayerQRCode 
                     playerId={profile.player_id} 
                     playerName={profile.player_name}
-                    size={80}
-                    bordered={false}
+                    size={90}
                   />
                 )}
               </div>
             </div>
             
             <div className={cn(
-              "w-20 h-20 rounded-2xl bg-black/40 backdrop-blur-md border-2 flex flex-col items-center justify-center relative overflow-hidden",
+              "w-24 h-24 rounded-3xl bg-black/20 backdrop-blur-xl border-2 flex flex-col items-center justify-center relative overflow-hidden",
               rank.border
             )}>
-              <div className="absolute top-0 left-0 w-full h-1 bg-primary/30" />
-              <span className="text-[10px] font-black opacity-40 absolute top-1">RANK</span>
+              <span className="text-[9px] font-black opacity-40 absolute top-2 tracking-[0.2em]">RANK</span>
               <span className={cn("text-5xl font-black italic mt-1", rank.color)}>{rank.name}</span>
             </div>
           </div>
 
-          {/* User Info Section - Enhanced Layout */}
-          <div className="mb-10 space-y-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Fingerprint className="w-3 h-3 text-primary/50" />
-              <span className="text-[9px] font-bold text-primary/50 tracking-[0.3em] uppercase">Identity Verified</span>
-            </div>
+          {/* User Info Section */}
+          <div className="mb-8 text-center sm:text-left">
+            <h2 className="text-3xl font-black text-foreground tracking-tight truncate mb-2 uppercase">
+              {gameState.playerName}
+            </h2>
             
-            <div className="space-y-0">
-              <h2 className="text-3xl font-black text-foreground tracking-tight truncate leading-tight">
-                {gameState.playerName}
-              </h2>
-              
-              <div 
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-full cursor-pointer active:scale-95 transition-transform"
-                onClick={() => {
-                  navigator.clipboard.writeText(profile?.player_id);
-                  toast({ title: "تم نسخ المعرف بنجاح" });
-                }}
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-[11px] font-mono text-muted-foreground tracking-wider">
-                  ID: {profile?.player_id?.slice(0, 8)}...{profile?.player_id?.slice(-4)}
-                </span>
-                <Copy className="w-3 h-3 text-primary/40" />
-              </div>
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/10 rounded-xl cursor-pointer hover:bg-white/[0.05] transition-colors"
+              onClick={() => {
+                navigator.clipboard.writeText(profile?.player_id);
+                toast({ title: "تم نسخ المعرف بنجاح" });
+              }}
+            >
+              <Fingerprint className="w-4 h-4 text-primary" />
+              <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">
+                ID: {profile?.player_id?.slice(0, 10)}
+              </span>
+              <Copy className="w-3 h-3 text-primary/40 ml-1" />
             </div>
           </div>
 
-          {/* Stats Section */}
-          <div className="flex-1 space-y-4">
-            <div className="flex items-center gap-3">
+          {/* Stats Section: Grid 2x2 Layout */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">Combat Parameters</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">Parameters</span>
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             </div>
             
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {stats.map((stat) => (
-                <div key={stat.key} className="group relative">
-                  <div className="flex items-center gap-4 bg-white/[0.03] backdrop-blur-sm p-3 rounded-2xl border border-white/5 group-hover:border-primary/20 transition-colors">
-                    <div className={cn("p-2 rounded-xl shadow-inner", stat.bgColor)}>
-                      <stat.icon className={cn("w-5 h-5", stat.color)} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-end mb-1.5">
-                        <span className="text-[11px] font-black text-muted-foreground tracking-tighter">{stat.label}</span>
-                        <span className="text-sm font-black font-mono">{gameState.levels[stat.key]}</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                        <div 
-                          className={cn("h-full rounded-full transition-all duration-1000", stat.color.replace('text', 'bg'))}
-                          style={{ width: `${(gameState.levels[stat.key] / 100) * 100}%` }}
-                        />
-                      </div>
-                    </div>
+                <div key={stat.key} className="bg-white/[0.03] backdrop-blur-md border border-white/10 p-4 rounded-[1.5rem] flex flex-col items-center justify-center text-center gap-2 hover:border-primary/30 transition-all group">
+                  <div className={cn("p-2 rounded-xl mb-1", stat.bgColor)}>
+                    <stat.icon className={cn("w-5 h-5", stat.color)} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{stat.label}</span>
+                    <span className="text-xl font-black">{gameState.levels[stat.key]}</span>
                   </div>
                 </div>
               ))}
@@ -165,19 +145,13 @@ const Profile = () => {
           </div>
 
           {/* Footer Decorative */}
-          <div className="mt-6 pt-4 border-t border-primary/10 flex justify-between items-center opacity-50">
-             <div className="flex flex-col">
-                <span className="text-[7px] font-mono uppercase tracking-widest text-primary">System.Ver_2.0.4</span>
-                <span className="text-[8px] font-bold">HUNTER.OS ACTIVE</span>
-             </div>
-             <div className="text-right">
-                <div className="text-[10px] font-black italic text-foreground tracking-tighter">CLASS {rank.name} LICENSE</div>
-             </div>
+          <div className="mt-6 pt-6 border-t border-primary/10 flex justify-between items-center opacity-30">
+             <div className="text-[8px] font-mono tracking-widest uppercase">Encryption: Active</div>
+             <div className="text-[8px] font-mono tracking-widest uppercase">Hunter License v2.0</div>
           </div>
 
-          {/* Background Overlay Effects */}
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.05),transparent_50%)]" />
-          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[size:100%_4px] opacity-20" />
+          {/* Scanline Effect */}
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[size:100%_4px] opacity-10" />
         </div>
       </main>
 
