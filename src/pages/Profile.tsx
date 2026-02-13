@@ -5,7 +5,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerSearchModal } from '@/components/PlayerSearchModal';
 import { cn } from '@/lib/utils';
-import { User, ShoppingBag, Menu, Search, LogOut, Settings, Shield, QrCode } from 'lucide-react';
+import { User, ShoppingBag, Menu, Search, LogOut, Shield, Copy, Fingerprint } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -19,11 +19,6 @@ const Profile = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-  const menuItems = [
-    { key: 'profile', label: 'البروفايل', labelEn: 'Profile', icon: User, color: 'text-white', borderColor: 'border-white/40', bgColor: 'bg-white/10', path: null },
-    { key: 'market', label: 'السوق', labelEn: 'Market', icon: ShoppingBag, color: 'text-blue-400', borderColor: 'border-blue-500/40', bgColor: 'bg-blue-500/10', path: '/market' },
-  ];
-
   const handleLogout = async () => {
     const { error } = await signOut();
     if (error) {
@@ -33,49 +28,52 @@ const Profile = () => {
     navigate('/');
   };
 
+  const copyPlayerId = () => {
+    if (profile?.player_id) {
+      navigator.clipboard.writeText(profile.player_id);
+      toast({ title: 'System', description: 'ID Copied to Clipboard' });
+    }
+  };
+
   return (
-    // prevent-scroll ensures the page doesn't move
     <div className="h-screen w-full bg-[#020b18] text-white font-sans overflow-hidden fixed inset-0 flex flex-col">
-      
-      {/* Background Tech Grid (Same as the image) */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e40af_1px,transparent_1px),linear-gradient(to_bottom,#1e40af_1px,transparent_1px)] bg-[size:40px_40px]" />
-        <div className="absolute inset-0 bg-radial-gradient from-blue-900/20 to-transparent" />
+      {/* Background Tech Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e40af0a_1px,transparent_1px),linear-gradient(to_bottom,#1e40af0a_1px,transparent_1px)] bg-[size:30px_30px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#1e40af20,transparent_70%)]" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-20 flex justify-between items-center p-6 bg-black/20 backdrop-blur-sm border-b border-blue-500/30">
-        <h1 className="text-xl font-black tracking-[0.2em] uppercase italic text-blue-400 drop-shadow-[0_0_10px_#3b82f6]">
-          System Player ID
-        </h1>
+      {/* Top Header */}
+      <header className="relative z-20 flex justify-between items-center p-5 bg-black/40 border-b border-white/10 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+            <Fingerprint className="text-blue-500 w-5 h-5 animate-pulse" />
+            <h1 className="text-lg font-black tracking-[0.2em] uppercase italic text-white shadow-blue-500/50">
+              Hunter License <span className="text-blue-500 text-xs">v2.0</span>
+            </h1>
+        </div>
         
-        <div className="flex items-center gap-3">
-          <button onClick={() => setSearchModalOpen(true)} className="p-2 bg-blue-500/10 border border-blue-500/40 rounded-sm hover:bg-blue-500/30">
-            <Search className="w-5 h-5 text-blue-400" />
+        <div className="flex items-center gap-2">
+          <button onClick={() => setSearchModalOpen(true)} className="p-2 border border-white/10 bg-white/5 rounded hover:bg-white/20 transition-all">
+            <Search className="w-5 h-5 text-slate-300" />
           </button>
 
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="p-2 bg-blue-500/10 border border-blue-500/40 rounded-sm">
-                <Menu className="w-5 h-5 text-blue-400" />
+              <button className="p-2 border border-white/10 bg-white/5 rounded">
+                <Menu className="w-5 h-5 text-slate-300" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-[#051125]/95 border-l border-blue-500/30 text-white">
+            <SheetContent side="right" className="bg-[#051125] border-l border-blue-500/30 text-white">
               <SheetHeader className="mb-6 border-b border-blue-500/20 pb-4">
-                <SheetTitle className="text-blue-400 uppercase tracking-widest text-right">System Menu</SheetTitle>
+                <SheetTitle className="text-white uppercase tracking-widest text-right">System Console</SheetTitle>
               </SheetHeader>
-              <nav className="space-y-4">
-                {menuItems.map((item) => (
-                  <Link key={item.key} to={item.path || '#'} onClick={() => setSheetOpen(false)} className={cn("flex items-center justify-end gap-3 p-4 border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/20 transition-all")}>
-                    <div className="text-right">
-                      <p className="font-bold text-sm">{item.label}</p>
-                      <p className="text-[10px] opacity-50">{item.labelEn}</p>
-                    </div>
-                    <item.icon className="w-5 h-5" />
-                  </Link>
-                ))}
-                <button onClick={handleLogout} className="w-full flex items-center justify-end gap-3 p-4 border border-red-500/30 bg-red-500/5 text-red-400">
-                  <span>تسجيل الخروج</span>
+              <nav className="space-y-3">
+                <Link to="/market" className="flex items-center justify-end gap-3 p-4 border border-blue-500/10 bg-blue-500/5 hover:bg-blue-500/20">
+                    <div className="text-right"><p className="font-bold text-sm text-blue-400">السوق</p></div>
+                    <ShoppingBag className="w-5 h-5 text-blue-400" />
+                </Link>
+                <button onClick={handleLogout} className="w-full flex items-center justify-end gap-3 p-4 border border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10">
+                  <span className="font-bold">تسجيل الخروج</span>
                   <LogOut className="w-5 h-5" />
                 </button>
               </nav>
@@ -84,71 +82,83 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Main Hunter Card Area (Fixed Center) */}
+      {/* The License Card - Designed to match sedark.png */}
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-[900px] aspect-[16/9] bg-[#0a1a35]/80 border-2 border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.2)] relative overflow-hidden backdrop-blur-md flex">
+        <div className="w-full max-w-4xl bg-[#0a1a35]/90 border border-white/20 shadow-[0_0_60px_rgba(0,0,0,1)] relative flex flex-col md:flex-row overflow-hidden backdrop-blur-xl">
           
-          {/* Card Decorative Elements (Scanning lines) */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-blue-400/50 animate-[scan_3s_linear_infinite]" />
-          
-          {/* Left Side: Avatar Box (Same as Image) */}
-          <div className="w-[40%] p-8 flex flex-col items-center justify-center border-r border-blue-500/20">
-            <div className="w-full aspect-square border-2 border-blue-400/60 p-1 relative group">
-              {/* Inner glowing corners */}
-              <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-white" />
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-white" />
+          {/* Decorative Corner Borders */}
+          <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-blue-600/50" />
+          <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-blue-600/50" />
+
+          {/* Side A: Avatar & Rank */}
+          <div className="w-full md:w-[350px] p-8 bg-gradient-to-b from-blue-900/20 to-transparent border-r border-white/5 flex flex-col items-center justify-center">
+            <div className="w-full aspect-square border border-white/20 p-2 bg-black/40 shadow-inner relative group">
+              <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-transparent transition-all" />
+              <img src="/api/placeholder/400/400" alt="Avatar" className="w-full h-full object-cover opacity-80" />
               
-              <div className="w-full h-full bg-blue-900/40 overflow-hidden relative">
-                 {/* This represents the S-Rank Dagger/Avatar from your image */}
-                 <img 
-                   src="/api/placeholder/400/400" 
-                   alt="Hunter Avatar" 
-                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                 />
-                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a35] to-transparent opacity-60" />
-              </div>
+              {/* Animated Scan Line */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-blue-500/50 shadow-[0_0_15px_#3b82f6] animate-[scan_4s_ease-in-out_infinite]" />
             </div>
             
-            <div className="mt-6 w-full">
-               <p className="text-xs text-blue-400 font-bold uppercase tracking-[0.2em] mb-1 text-left">Class:</p>
-               <p className="text-5xl font-black text-white italic drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">S</p>
+            <div className="mt-8 text-center w-full">
+               <span className="text-[10px] text-blue-400 font-black tracking-[0.4em] uppercase">Player Rank</span>
+               <div className="text-7xl font-black italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">S</div>
             </div>
           </div>
 
-          {/* Right Side: Data Fields (Matching the image layout) */}
-          <div className="flex-1 p-10 flex flex-col justify-center space-y-6 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+          {/* Side B: Comprehensive Data (Strength, Int, Agility, ID) */}
+          <div className="flex-1 p-8 md:p-12 space-y-8 relative">
             
-            <div className="space-y-1 text-left border-l-2 border-blue-500/30 pl-4">
-              <p className="text-[10px] text-blue-400 uppercase tracking-widest font-bold">First Name</p>
-              <p className="text-3xl font-black uppercase tracking-wider">{gameState.playerName || 'SE DARK'}</p>
+            {/* Identity Header */}
+            <div className="space-y-4">
+               <div className="flex justify-between items-end border-b border-white/10 pb-2">
+                  <div className="text-left">
+                    <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Identification Name</p>
+                    <h2 className="text-3xl font-black tracking-tight text-white uppercase">{gameState.playerName || 'SEDARK'}</h2>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Clearance</p>
+                    <p className="text-xs font-bold text-green-400">ACTIVE</p>
+                  </div>
+               </div>
+               
+               <div className="flex items-center gap-3 bg-white/5 p-3 border border-white/10 cursor-pointer hover:bg-white/10 transition-all" onClick={copyPlayerId}>
+                  <div className="flex-1">
+                    <p className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Hunter UUID</p>
+                    <p className="text-xs font-mono text-slate-300 truncate">{profile?.player_id || 'Generating ID...'}</p>
+                  </div>
+                  <Copy className="w-4 h-4 text-slate-500" />
+               </div>
             </div>
 
-            <div className="space-y-1 text-left border-l-2 border-blue-500/30 pl-4">
-              <p className="text-[10px] text-blue-400 uppercase tracking-widest font-bold">Family Name</p>
-              <p className="text-2xl font-bold opacity-80">—</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-1 text-left border-l-2 border-blue-500/30 pl-4">
-                    <p className="text-[10px] text-blue-400 uppercase tracking-widest font-bold">Status:</p>
-                    <p className="text-xl font-bold text-green-400 uppercase tracking-tighter shadow-green-500/20">Awakened</p>
+            {/* Attributes Grid (The Stats you requested) */}
+            <div className="grid grid-cols-2 gap-y-6 gap-x-10">
+                <div className="border-l-2 border-blue-600 pl-4 py-1">
+                    <p className="text-[9px] text-blue-400 uppercase font-black">Strength (القوة)</p>
+                    <p className="text-xl font-bold tracking-widest text-white">{gameState.stats?.strength || 99}</p>
                 </div>
-                <div className="space-y-1 text-left border-l-2 border-blue-500/30 pl-4">
-                    <p className="text-[10px] text-blue-400 uppercase tracking-widest font-bold">Level:</p>
-                    <p className="text-xl font-bold text-white uppercase">{gameState.totalLevel}</p>
+                <div className="border-l-2 border-blue-600 pl-4 py-1">
+                    <p className="text-[9px] text-blue-400 uppercase font-black">Intelligence (الذكاء)</p>
+                    <p className="text-xl font-bold tracking-widest text-white">{gameState.stats?.intelligence || 99}</p>
+                </div>
+                <div className="border-l-2 border-blue-600 pl-4 py-1">
+                    <p className="text-[9px] text-blue-400 uppercase font-black">Agility (الرشاقة)</p>
+                    <p className="text-xl font-bold tracking-widest text-white">{gameState.stats?.agility || 99}</p>
+                </div>
+                <div className="border-l-2 border-blue-600 pl-4 py-1">
+                    <p className="text-[9px] text-blue-400 uppercase font-black">Sense (الحس)</p>
+                    <p className="text-xl font-bold tracking-widest text-white">{gameState.stats?.sense || 99}</p>
                 </div>
             </div>
 
-            <div className="space-y-1 text-left border-l-2 border-blue-500/30 pl-4">
-              <p className="text-[10px] text-blue-400 uppercase tracking-widest font-bold">Nationality:</p>
-              <p className="text-lg font-bold opacity-60 italic">Shadow Realm</p>
-            </div>
-
-            {/* Subtle Tech Decor at the bottom right */}
-            <div className="absolute bottom-4 right-4 flex gap-1 opacity-30">
-                <div className="w-1 h-4 bg-blue-500" />
-                <div className="w-1 h-4 bg-blue-400" />
-                <div className="w-1 h-4 bg-blue-300" />
+            {/* Status Footer */}
+            <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+                <div className="flex gap-2">
+                    <div className="w-8 h-1 bg-blue-600" />
+                    <div className="w-4 h-1 bg-white/20" />
+                    <div className="w-2 h-1 bg-white/10" />
+                </div>
+                <p className="text-[9px] text-slate-500 font-mono italic">AUTHENTICATED BY THE SYSTEM ARCHITECT</p>
             </div>
           </div>
         </div>
@@ -158,12 +168,10 @@ const Profile = () => {
       <BottomNav />
       <PlayerSearchModal open={searchModalOpen} onOpenChange={setSearchModalOpen} />
 
-      {/* Style for the scan animation */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scan {
-          0% { transform: translateY(0); opacity: 0; }
-          50% { opacity: 1; }
-          100% { transform: translateY(500px); opacity: 0; }
+          0%, 100% { top: 0; opacity: 0; }
+          50% { top: 100%; opacity: 1; }
         }
       `}} />
     </div>
