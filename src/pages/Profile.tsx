@@ -1,308 +1,278 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { HolographicProfile } from '@/components/HolographicProfile';
-import { PlayerQRCode } from '@/components/PlayerQRCode';
-import { PlayerSearchModal } from '@/components/PlayerSearchModal';
-import { cn } from '@/lib/utils';
-import { User, ShoppingBag, ChevronRight, Menu, Mail, Calendar, LogOut, Key, Settings, Shield, QrCode, Search, Copy } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FriendsPanel } from '@/components/FriendsPanel';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, Box, ShoppingCart } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-const Profile = () => {
-  const { gameState } = useGameState();
-  const { user, signOut } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
-  const navigate = useNavigate();
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
+const Market = () => {
+  const { gameState, purchaseItem } = useGameState();
+  const { playPurchase } = useSoundEffects();
+  
+  const [isScanning, setIsScanning] = useState(false);
+  const [isExiting, setIsExiting] = useState(false); 
+  const [isVisible, setIsVisible] = useState(false);
+  const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
+  const [activeItem, setActiveItem] = useState(null);
 
-  const menuItems = [
-    { key: 'profile', label: 'البروفايل', labelEn: 'Profile', icon: User, color: 'text-slate-100', borderColor: 'border-slate-200/40', bgColor: 'bg-slate-500/10', path: null },
-    { key: 'market', label: 'السوق', labelEn: 'Market', icon: ShoppingBag, color: 'text-white', borderColor: 'border-white/40', bgColor: 'bg-white/10', path: '/market' },
+  const RARITY_CONFIG = {
+    S: { border: 'border-slate-100', text: 'text-white', glow: 'shadow-[0_0_20px_rgba(255,255,255,0.4)]' },
+    A: { border: 'border-slate-300', text: 'text-slate-200', glow: 'shadow-[0_0_15px_rgba(200,200,200,0.3)]' },
+    B: { border: 'border-blue-400', text: 'text-blue-300', glow: 'shadow-[0_0_10px_rgba(59,130,246,0.2)]' },
+    C: { border: 'border-slate-500', text: 'text-slate-400', glow: '' },
+    E: { border: 'border-slate-700', text: 'text-slate-500', glow: '' },
+  };
+
+  const SOLO_ITEMS = [
+    { id: 'xp_book', name: 'Experience Book', arabicName: 'كتاب الخبرة', category: 'Element', difficulty: 'E', price: 250, icon: '📚', description: 'يزيد خبرة اللاعب 500 XP موزعة على جميع الإحصائيات', rankLevel: 0 },
+    { id: 'hp_potion', name: 'Blood Elixir', arabicName: 'إكسير الدم', category: 'Elixir', difficulty: 'E', price: 500, icon: '🧪', description: 'يستعيد 50% من الصحة القصوى', rankLevel: 0 },
+    { id: 'mp_potion', name: 'Energy Elixir', arabicName: 'إكسير الطاقة', category: 'Elixir', difficulty: 'E', price: 500, icon: '⚡', description: 'يستعيد 50% من الطاقة القصوى', rankLevel: 0 },
+    { id: 'xp_reset', name: 'Redistribution Stone', arabicName: 'حجر إعادة التوزيع', category: 'Special', difficulty: 'C', price: 5000, icon: '🔄', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', rankLevel: 2 },
+    { id: 'mana_meter', name: 'Mana Gauge', arabicName: 'مقياس المانا', category: 'Tool', difficulty: 'D', price: 2000, icon: '/ManaDeviceIcon.png', description: 'جهاز قياس طاقة البوابات والعناصر', rankLevel: 1 },
+    { id: 'awakened_title', name: 'Awakened One', arabicName: 'المستيقظ الواعي', category: 'Title', difficulty: 'C', price: 3000, icon: '👑', description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%', rankLevel: 2 },
+    { id: 'power_eye_title', name: 'Eye of Power', arabicName: 'عين القوة', category: 'Title', difficulty: 'B', price: 10000, icon: '👁️', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', rankLevel: 3 },
+    { id: 'storm_hand_title', name: 'Hand of Storm', arabicName: 'يد العاصفة', category: 'Title', difficulty: 'B', price: 15000, icon: '🌩️', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', rankLevel: 3 },
+    { id: 'return_key', name: 'Return Key', arabicName: 'مفتاح العودة', category: 'Key', difficulty: 'B', price: 8000, icon: '🔑', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', rankLevel: 3 },
+    { id: 'shadow_elixir', name: 'Shadow Monarch Elixir', arabicName: 'إكسير ملك الظلال', category: 'Ancient Grade', difficulty: 'A', price: 150000, icon: '🧪', description: 'إكسير أسطوري مخفي في أرشيف النظام', rankLevel: 4 },
+    { id: 'demon_blood', name: 'Demon King Blood', arabicName: 'دم ملك الشياطين', category: 'Divine Item', difficulty: 'S', price: 5000000, icon: '💀', description: 'جوهر ملك شيطاني رفيع المستوى', rankLevel: 5 },
   ];
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: 'خطأ',
-        description: 'فشل تسجيل الخروج',
-        variant: 'destructive',
-      });
-      setIsLoggingOut(false);
+  const getPlayerRank = () => {
+    const level = gameState.totalLevel || 1;
+    if (level >= 50) return 'S';
+    if (level >= 40) return 'A';
+    if (level >= 25) return 'B';
+    if (level >= 15) return 'C';
+    if (level >= 5) return 'D';
+    return 'E';
+  };
+
+  const rankOrder = { 'E': 0, 'D': 1, 'C': 2, 'B': 3, 'A': 4, 'S': 5 };
+  const playerRank = getPlayerRank();
+
+  const canSeeItem = (item) => {
+    const itemRank = item.difficulty;
+    return rankOrder[playerRank] >= rankOrder[itemRank];
+  };
+  
+  const visibleItems = SOLO_ITEMS;
+
+  const startSystemScan = (item) => {
+    setActiveItem(item);
+    setIsScanning(true);
+    setIsExiting(false);
+    setScanResult('searching');
+    setTimeout(() => setIsVisible(true), 50);
+    setTimeout(() => {
+      setScanResult('failed');
+    }, 3000);
+  };
+
+  const closeScanModal = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setIsExiting(false);
+      setIsVisible(false);
+      setScanResult('idle');
+      setActiveItem(null);
+    }, 800);
+  };
+
+  const handlePurchase = (item) => {
+    const isLocked = !canSeeItem(item);
+    if (isLocked) {
+      startSystemScan(item);
       return;
     }
-    localStorage.removeItem('pendingPlayerName');
-    localStorage.removeItem('needsPassword');
-    navigate('/');
+    if (gameState.gold >= item.price) {
+      purchaseItem(item.id);
+      playPurchase();
+      toast({ title: 'System: SUCCESS', description: `Acquired ${item.name}` });
+    } else {
+      toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
+    }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'غير متوفر';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  const copyPlayerId = () => {
-    if (profile?.player_id) {
-      navigator.clipboard.writeText(profile.player_id);
-      toast({ title: 'تم النسخ', description: 'تم نسخ معرف اللاعب' });
+  const handleMaxPurchase = (item) => {
+    const isLocked = !canSeeItem(item);
+    if (isLocked) {
+      startSystemScan(item);
+      return;
+    }
+    const maxAffordable = Math.floor(gameState.gold / item.price);
+    if (maxAffordable > 0) {
+      for (let i = 0; i < maxAffordable; i++) {
+        purchaseItem(item.id);
+      }
+      playPurchase();
+      toast({ title: 'System: MAX ACQUIRED', description: `Acquired x${maxAffordable} ${item.name}` });
+    } else {
+      toast({ title: 'System: WARNING', description: 'Insufficient Gold', variant: 'destructive' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-100 font-sans pb-24 overflow-x-hidden relative">
-      {/* Solo Leveling Grid Background & Scanlines */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-black/80" />
-        {/* Animated Scanline Effect */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(255,255,255,0.25)_50%),linear-gradient(90deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02),rgba(255,255,255,0.06))] bg-[size:100%_4px,4px_100%]" />
+    <div className="min-h-screen bg-[#05070a] text-white p-4 font-sans selection:bg-white/30 pb-28 relative overflow-x-hidden">
+      {/* Solo Leveling Background Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:30px_30px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 via-transparent to-black" />
       </div>
 
-      <div className="relative z-10 min-h-screen">
-        {/* Cyber Header - Silver/White Style */}
-        <header className="flex justify-between items-center p-6 border-b border-white/20 backdrop-blur-md bg-black/40 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-black tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
-              Status Window
-            </h1>
-            <span className="text-[10px] text-slate-400 tracking-[0.3em] -mt-1 uppercase">Leveling System v4.0</span>
+      {/* Access Denied Modal - System Style */}
+      {isScanning && (
+        <div className={cn(
+          "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-xl transition-all duration-700",
+          isVisible && !isExiting ? "bg-black/80 opacity-100" : "bg-black/0 opacity-0 pointer-events-none"
+        )}>
+          <div className="relative bg-black border border-white/20 p-8 max-w-sm w-full shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+             <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white to-transparent animate-pulse" />
+             <h2 className="text-center text-white font-black tracking-[0.3em] uppercase mb-6 drop-shadow-lg">
+                {scanResult === 'searching' ? 'Authenticating...' : 'Access Denied'}
+             </h2>
+             {scanResult === 'searching' ? (
+                <div className="flex justify-center py-10"><Loader2 className="w-12 h-12 text-white animate-spin" /></div>
+             ) : (
+                <div className="space-y-6">
+                   <div className="p-4 bg-white/5 border border-white/10 text-[10px] text-slate-300 leading-relaxed font-mono uppercase tracking-widest">
+                      Your current rank [{playerRank}] is insufficient to unlock this item. Please increase your level to gain system clearance.
+                   </div>
+                   <button onClick={closeScanModal} className="w-full py-3 bg-white text-black font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-colors">
+                      Back to Store
+                   </button>
+                </div>
+             )}
           </div>
+        </div>
+      )}
+
+      {/* Header - Silver Theme */}
+      <header className="relative z-10 flex justify-between items-end mb-10 border-b border-white/10 pb-4 px-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] text-slate-500 font-bold tracking-[0.4em] uppercase">Inventory Management</span>
+          <h1 className="text-3xl font-black tracking-tighter uppercase italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+            Store <span className="text-slate-500">System</span>
+          </h1>
+        </div>
+        <div className="bg-white/5 border border-white/20 px-4 py-2 flex items-center gap-3 backdrop-blur-md">
+          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse shadow-[0_0_8px_#facc15]" />
+          <span className="font-mono font-bold text-white text-lg leading-none">
+            {gameState.gold.toLocaleString()}
+          </span>
+          <span className="text-[10px] text-slate-500 font-bold uppercase">Gold</span>
+        </div>
+      </header>
+
+      {/* Grid of Hunter-Style Item Cards */}
+      <main className="relative z-10 grid grid-cols-1 gap-12 max-w-md mx-auto">
+        {visibleItems.map((item) => {
+          const isAlphaLocked = item.difficulty === 'S' || item.difficulty === 'A';
+          const rarity = RARITY_CONFIG[item.difficulty] || RARITY_CONFIG.E;
+          const isRevealed = canSeeItem(item);
           
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setSearchModalOpen(true)}
-              className="p-2 bg-white/5 border border-white/20 rounded-sm hover:bg-white/20 transition-all group"
-            >
-              <Search className="w-5 h-5 text-slate-300 group-hover:text-white" />
-            </button>
+          return (
+            <div key={item.id} className="relative group">
+              {/* Card Decoration */}
+              <div className="absolute -top-4 -left-2 text-[40px] font-black text-white/5 select-none pointer-events-none tracking-tighter">
+                {item.difficulty} RANK
+              </div>
 
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild>
-                <button className="p-2 bg-white/5 border border-white/20 rounded-sm hover:bg-white/20 transition-all">
-                  <Menu className="w-6 h-6 text-white" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72 bg-[#0d1117]/95 border-l border-white/20 p-0 backdrop-blur-xl">
-                <SheetHeader className="p-6 border-b border-white/10">
-                  <SheetTitle className="text-sm font-bold tracking-[0.2em] uppercase text-white text-right">
-                    Menu Console
-                  </SheetTitle>
-                </SheetHeader>
+              {/* Main Card Body */}
+              <div className={cn(
+                "relative bg-[#0a0c10] border-t-2 border-x border-b-4 p-6 transition-all duration-300",
+                isRevealed ? "border-white/80" : "border-slate-800 opacity-60",
+                rarity.glow
+              )}>
                 
-                <ScrollArea className="flex-1 p-4">
-                  <nav className="space-y-3">
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-                      
-                      if (item.path) {
-                        return (
-                          <Link
-                            key={item.key}
-                            to={item.path}
-                            onClick={() => setSheetOpen(false)}
-                            className={cn(
-                              "flex items-center gap-4 p-4 rounded-none border-r-2 transition-all group",
-                              "border-white/20 bg-white/5",
-                              "hover:bg-white/10 hover:border-white shadow-inner"
-                            )}
-                          >
-                            <Icon className="w-5 h-5 text-white" />
-                            <div className="flex-1 text-right">
-                              <p className="font-bold text-sm text-white">{item.label}</p>
-                              <p className="text-[10px] text-slate-400">{item.labelEn}</p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-white rotate-180" />
-                          </Link>
-                        );
-                      }
-                      
-                      return (
-                        <div
-                          key={item.key}
-                          className="flex items-center gap-4 p-4 border-r-2 border-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                        >
-                          <Icon className="w-5 h-5 text-white" />
-                          <div className="flex-1 text-right">
-                            <p className="font-bold text-sm text-white">{item.label}</p>
-                            <p className="text-[10px] text-slate-300">{item.labelEn}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </nav>
-                </ScrollArea>
-
-                <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 bg-black/40">
-                  <div className="border border-white/20 p-4 text-center relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform" />
-                    <p className="text-[10px] text-slate-400 relative">TOTAL LEVEL</p>
-                    <p className="text-3xl font-black text-white relative drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                      {gameState.totalLevel}
-                    </p>
+                {/* Header Section */}
+                <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Item Classification</p>
+                    <h3 className="text-xl font-black text-white uppercase italic tracking-tight">
+                      {isRevealed ? (item.arabicName || item.name) : 'Locked Data'}
+                    </h3>
+                  </div>
+                  <div className={cn("px-3 py-1 border-2 font-black text-sm italic", rarity.border, rarity.text)}>
+                    {isRevealed ? item.difficulty : '?'}
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </header>
 
-        {/* Main Content */}
-        <main className="p-6 space-y-8 relative">
-          <div className="max-w-lg mx-auto space-y-8">
-            
-            {/* Holographic Profile Card - Specialized Solo Leveling look */}
-            <div className="relative group">
-               <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/20 to-transparent blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-               <HolographicProfile gameState={gameState} />
-            </div>
-
-            {/* QR Code Section - Silver Tech Style */}
-            <section className="bg-black/40 backdrop-blur-md border border-white/20 rounded-none p-6 shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white" />
-              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white" />
-              <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white" />
-              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white" />
-              
-              <div className="flex items-center gap-3 mb-6">
-                <QrCode className="w-5 h-5 text-white animate-pulse" />
-                <h2 className="text-xs font-black tracking-[0.3em] uppercase text-white/80">Player Authentication</h2>
-              </div>
-              
-              <div className="flex flex-col items-center gap-6">
-                {profileLoading ? (
-                  <div className="h-40 flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                {/* Content Section */}
+                <div className="flex gap-6 mb-6">
+                  <div className="w-24 h-24 bg-white/5 border border-white/10 flex items-center justify-center relative flex-shrink-0 group-hover:bg-white/10 transition-colors">
+                    <div className="absolute inset-1 border border-white/5" />
+                    {!isRevealed ? (
+                      <ShieldAlert className="w-10 h-10 text-slate-700" />
+                    ) : item.id === 'mana_meter' ? (
+                      <img src={item.icon} alt="icon" className="w-16 h-16 object-contain brightness-125" />
+                    ) : (
+                      <span className="text-5xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+                        {item.icon}
+                      </span>
+                    )}
                   </div>
-                ) : profile ? (
-                  <>
-                    <div className="p-2 bg-white rounded-sm shadow-[0_0_25px_rgba(255,255,255,0.2)]">
-                      <PlayerQRCode 
-                        playerId={profile.player_id} 
-                        playerName={profile.player_name}
-                        size={160}
-                      />
+
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="space-y-2">
+                       <div className="flex justify-between text-[10px] font-bold uppercase border-b border-white/5 pb-1">
+                          <span className="text-slate-500">Category</span>
+                          <span className="text-white">{isRevealed ? item.category : 'Unknown'}</span>
+                       </div>
+                       <p className="text-[10px] text-slate-400 leading-tight italic line-clamp-3">
+                        {isRevealed ? item.description : 'Decryption failed. Increase hunter rank to view item properties.'}
+                      </p>
                     </div>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={copyPlayerId}
-                      className="w-full flex items-center justify-center gap-2 border-white/20 bg-white/5 hover:bg-white/10 hover:border-white text-white transition-all rounded-none uppercase text-xs tracking-widest"
+                  </div>
+                </div>
+
+                {/* Price & Action Section */}
+                <div className="flex items-center gap-4 border-t border-white/10 pt-6">
+                  <div className="flex-1">
+                     <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1 tracking-tighter">Exchange Cost</span>
+                     <div className="text-2xl font-black text-white font-mono tracking-tighter">
+                        {isRevealed ? item.price.toLocaleString() : '???,???'}<span className="text-xs ml-1 text-slate-500">G</span>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {isRevealed && !isAlphaLocked && (
+                      <button
+                        onClick={() => handleMaxPurchase(item)}
+                        className="px-3 py-3 border border-white/20 hover:bg-white text-white hover:text-black transition-all text-[10px] font-black uppercase"
+                      >
+                        MAX
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handlePurchase(item)}
+                      disabled={isAlphaLocked && isRevealed}
+                      className={cn(
+                        "px-8 py-3 text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95",
+                        !isRevealed 
+                          ? "bg-white text-black hover:bg-slate-200"
+                          : isAlphaLocked
+                            ? "bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed"
+                            : gameState.gold >= item.price
+                              ? "bg-white text-black hover:bg-slate-200 shadow-white/10"
+                              : "bg-red-900/20 text-red-500 border border-red-500/30"
+                      )}
                     >
-                      <Copy className="w-4 h-4" />
-                      Copy Hunter ID
-                    </Button>
-                  </>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-slate-400 text-[10px] tracking-widest">INITIALIZING DATA...</p>
+                      {!isRevealed ? 'Analyze' : isAlphaLocked ? 'Locked' : 'Acquire'}
+                    </button>
                   </div>
-                )}
-              </div>
-            </section>
+                </div>
 
-            {/* Account Information - The "System" Table Style */}
-            <section className="bg-black/40 backdrop-blur-md border border-white/10 rounded-none p-6 relative">
-              <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-2">
-                <Shield className="w-5 h-5 text-white" />
-                <h2 className="text-xs font-black tracking-[0.3em] uppercase text-white">System Info</h2>
               </div>
-              
-              <div className="space-y-4">
-                {[
-                  { icon: Mail, label: 'Email Address', value: user?.email || 'N/A', dir: 'ltr' },
-                  { icon: Calendar, label: 'Creation Date', value: formatDate(user?.created_at), dir: 'rtl' },
-                  { icon: User, label: 'Hunter Name', value: gameState.playerName, dir: 'rtl' }
-                ].map((info, idx) => (
-                  <div key={idx} className="flex items-center gap-4 p-4 bg-white/5 border-l-2 border-white/20 group hover:border-white transition-all">
-                    <info.icon className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-                    <div className="flex-1 text-right">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-tighter">{info.label}</p>
-                      <p className={cn("text-sm font-bold text-slate-200", info.dir === 'ltr' && "font-mono")}>{info.value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Account Settings - Sharp & Clean */}
-            <section className="bg-black/60 border border-white/10 rounded-none p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Settings className="w-5 h-5 text-white" />
-                <h2 className="text-xs font-black tracking-[0.3em] uppercase text-white">Security Console</h2>
-              </div>
-              
-              <div className="space-y-3">
-                <button 
-                  className="w-full flex items-center gap-4 p-4 bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-right group"
-                  onClick={() => toast({ title: 'System Notice', description: 'This feature is currently locked.' })}
-                >
-                  <Key className="w-5 h-5 text-slate-400 group-hover:text-white" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-white uppercase tracking-tight">Access Key</p>
-                    <p className="text-[10px] text-slate-500">Update security credentials</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-white rotate-180 transition-all" />
-                </button>
-
-                <button 
-                  className="w-full flex items-center gap-4 p-4 bg-red-950/20 border border-red-900/40 hover:bg-red-900/30 transition-all text-right group"
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                >
-                  <LogOut className="w-5 h-5 text-red-500 group-hover:animate-pulse" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-red-500 uppercase tracking-tight">Terminate Session</p>
-                    <p className="text-[10px] text-red-900/70 text-slate-500">Logout from the system</p>
-                  </div>
-                </button>
-              </div>
-            </section>
-
-            {/* Friends Panel */}
-            <div className="friends-panel-silver shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-               <FriendsPanel />
             </div>
-
-            {/* Game Stats Summary - High Contrast White/Silver */}
-            <section className="bg-black/40 backdrop-blur-md border border-white/20 rounded-none p-6 shadow-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-white shadow-[0_0_10px_white]" />
-                <h2 className="text-xs font-black tracking-[0.3em] uppercase text-white">Attribute Stats</h2>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: 'Completed Quests', value: gameState.totalQuestsCompleted, color: 'text-white' },
-                  { label: 'Active Streak', value: gameState.streakDays, color: 'text-slate-200' },
-                  { label: 'Gold Balance', value: gameState.gold, color: 'text-yellow-200' },
-                  { label: 'Shadow Energy', value: gameState.shadowPoints, color: 'text-purple-300' }
-                ].map((stat, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 p-4 text-center group hover:bg-white/10 transition-colors">
-                    <p className={cn("text-2xl font-black mb-1 drop-shadow-sm", stat.color)}>{stat.value}</p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
+          );
+        })}
+      </main>
 
       <BottomNav />
-      <PlayerSearchModal open={searchModalOpen} onOpenChange={setSearchModalOpen} />
     </div>
   );
 };
 
-export default Profile;
+export default Market;
