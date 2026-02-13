@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { StatType } from '@/types/game';
-import { Flag, Check, Calendar, Target, ChevronRight, Zap } from 'lucide-react'; // أضفت Zap لأيقونة المانا
+import { Flag, Check, Calendar, Target, ChevronRight, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -25,8 +25,8 @@ const GrandQuest = () => {
   const [selectedCategory, setSelectedCategory] = useState<StatType>('strength');
   const [questTitle, setQuestTitle] = useState('');
 
-  // استخراج المانا من الـ State (افترضت وجودها في الـ resources أو الـ stats)
-  const manaStones = gameState.manaStones || 0; 
+  // تعديل: إعطاء 100 حجر مانا بشكل افتراضي لأغراض التجربة
+  const manaStones = gameState.manaStones !== undefined ? gameState.manaStones : 100; 
 
   const handleStart = () => {
     if (!questTitle.trim()) {
@@ -34,7 +34,6 @@ const GrandQuest = () => {
       return;
     }
 
-    // شرط تكلفة حجر المانا
     if (manaStones < 1) {
       toast({ 
         title: '⚠️ MANA REQUIRED', 
@@ -65,8 +64,7 @@ const GrandQuest = () => {
         <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
           Grand Quest
         </h1>
-        {/* Mana Stone Display - عرض جبار للمانا */}
-        <div className="mt-2 flex items-center gap-2 bg-blue-500/10 border border-blue-500/40 px-3 py-0.5 rounded-full animate-pulse">
+        <div className="mt-2 flex items-center gap-2 bg-blue-500/10 border border-blue-500/40 px-3 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.2)]">
            <Zap className="w-3 h-3 text-cyan-400 fill-cyan-400" />
            <span className="text-[10px] font-black tracking-widest text-cyan-300">MANA STONES: {manaStones}</span>
         </div>
@@ -75,7 +73,6 @@ const GrandQuest = () => {
       <main className="relative z-10 max-w-md mx-auto">
         {gameState.grandQuest?.active ? (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Active Quest Window */}
             <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_30px_rgba(30,58,138,0.5)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
                 <div className="border border-slate-400/50 px-4 py-1 bg-slate-900/90 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
@@ -95,7 +92,6 @@ const GrandQuest = () => {
                   </p>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-[10px] font-bold tracking-widest text-white/70">
                     <span>PROGRESS</span>
@@ -111,7 +107,6 @@ const GrandQuest = () => {
                   </div>
                 </div>
 
-                {/* Daily Tasks List */}
                 <div className="bg-blue-950/20 border border-white/10 p-4 space-y-3 backdrop-blur-sm">
                   <p className="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-2">Daily Requirements:</p>
                   {gameState.grandQuest.dailyTasks.map((task, index) => (
@@ -132,7 +127,6 @@ const GrandQuest = () => {
             </div>
           </div>
         ) : (
-          /* Create New Quest View */
           <div className="space-y-8 animate-in zoom-in-95 slide-in-from-top-4 duration-500">
             <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_25px_rgba(30,58,138,0.4)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
@@ -144,7 +138,6 @@ const GrandQuest = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Mana Cost Alert - تنبيه التكلفة */}
                 <div className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/20 rounded-sm">
                    <div className="flex items-center gap-2">
                      <Zap className="w-4 h-4 text-red-500" />
@@ -153,7 +146,6 @@ const GrandQuest = () => {
                    <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 MANA STONE</span>
                 </div>
 
-                {/* Title Input */}
                 <div className="space-y-2">
                   <label className="text-[9px] font-bold text-blue-400 tracking-widest uppercase ml-1">Mission Title</label>
                   <input
@@ -164,7 +156,6 @@ const GrandQuest = () => {
                   />
                 </div>
 
-                {/* Category Selection */}
                 <div className="space-y-3">
                   <label className="text-[9px] font-bold text-blue-400 tracking-widest uppercase ml-1">Select Type</label>
                   <div className="grid grid-cols-1 gap-2">
@@ -187,7 +178,6 @@ const GrandQuest = () => {
                   </div>
                 </div>
 
-                {/* Suggested Tasks Preview */}
                 <div className="p-4 bg-blue-950/30 border border-blue-500/20 backdrop-blur-md">
                    <p className="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-2 italic underline decoration-blue-500/50">System Suggestions:</p>
                    <ul className="grid grid-cols-2 gap-2">
