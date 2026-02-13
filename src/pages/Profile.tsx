@@ -26,6 +26,21 @@ const Profile = () => {
     { key: 'agility', label: 'AGI', icon: Zap, color: 'text-amber-600', bgColor: 'bg-amber-500/10' },
   ];
 
+  // منطق حساب حالة التشفير بناءً على التفاعل
+  const getEncryptionStatus = () => {
+    if (!profile?.last_active) return { label: 'Active', color: 'text-emerald-500' };
+    
+    const lastActive = new Date(profile.last_active);
+    const now = new Date();
+    const diffDays = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 1) return { label: 'Active', color: 'text-emerald-500' };
+    if (diffDays < 14) return { label: 'Progress', color: 'text-amber-500' };
+    return { label: 'Failed', color: 'text-red-500' };
+  };
+
+  const encryption = getEncryptionStatus();
+
   const getRankInfo = (level) => {
     if (level >= 50) return { name: 'S', color: 'text-orange-500', border: 'border-orange-500/50', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.15)]' };
     if (level >= 40) return { name: 'A', color: 'text-purple-500', border: 'border-purple-500/50', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.15)]' };
@@ -156,6 +171,20 @@ const Profile = () => {
                   <span className="text-xl font-black text-slate-800">{gameState.levels[stat.key]}</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* FOOTER: VERSION & ENCRYPTION STATUS */}
+          <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center relative z-10">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">التشفير</span>
+              <span className={cn("text-[10px] font-bold uppercase", encryption.color)}>
+                {encryption.label}
+              </span>
+            </div>
+            <div className="text-right flex flex-col">
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">اصدار الرخصة</span>
+              <span className="text-[10px] font-bold text-slate-600">v0.1</span>
             </div>
           </div>
 
