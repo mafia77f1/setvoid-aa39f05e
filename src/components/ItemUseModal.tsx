@@ -43,18 +43,14 @@ export const ItemUseModal = ({
     setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 });
   };
 
-  const handleManualQuantityChange = (val: string) => {
-    const num = parseInt(val);
-    if (isNaN(num)) {
-      setQuantity(0);
-    } else {
-      const clamped = Math.max(0, Math.min(maxQuantity, num));
-      setQuantity(clamped);
-      setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 });
-    }
+  const handleManualQuantity = (val: string) => {
+    const num = parseInt(val) || 0;
+    const clamped = Math.max(0, Math.min(maxQuantity, num));
+    setQuantity(clamped);
+    setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 });
   };
 
-  const distributeEqually = () => {
+  const handleEqualDistribute = () => {
     const share = Math.floor(totalXP / 4);
     setStatAllocation({
       strength: share,
@@ -106,6 +102,7 @@ export const ItemUseModal = ({
   const getItemTypeContent = () => {
     return (
       <div className="space-y-4 py-2">
+        {/* Item Header Info */}
         <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative font-mono">
           <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-blue-500/50" /></div>
           <div className="mb-3 border-b border-blue-500/30 pb-2">
@@ -126,6 +123,7 @@ export const ItemUseModal = ({
           </div>
         </div>
 
+        {/* Interaction Area */}
         <div className="w-full border border-blue-900/40 p-4 bg-[#050b18] space-y-4 font-mono">
           <div className="flex items-center gap-2 border-b border-blue-900/20 pb-2">
             <Zap className="w-3 h-3 text-blue-500" />
@@ -143,33 +141,38 @@ export const ItemUseModal = ({
             </div>
           </div>
 
-          {/* Quantity Controls - Applied to XP, Health, Energy */}
-          {(item.type === 'xp' || item.type === 'health' || item.type === 'energy') && (
-            <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20 mb-4">
-              <span className="text-[9px] text-blue-300 font-bold uppercase">Set Quantity</span>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
-                  <input 
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => handleManualQuantityChange(e.target.value)}
-                    className="w-12 bg-black/40 border border-blue-500/30 text-white text-center font-bold text-xs focus:outline-none focus:border-blue-400"
-                  />
-                  <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
-                </div>
-                <button 
-                  onClick={() => { setQuantity(maxQuantity); setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 }); }} 
-                  className="ml-2 px-2 py-0.5 border border-blue-500/50 bg-blue-500/10 text-blue-400 text-[8px] font-bold hover:bg-blue-500/20 transition-all"
-                >
-                  MAX
-                </button>
-              </div>
-            </div>
-          )}
-
+          {/* XP Item Logic */}
           {item.type === 'xp' && (
             <div className="space-y-4 pt-2 border-t border-blue-900/20">
+              <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold">SET QUANTITY</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => handleQuantityChange(-1)} className="text-blue-400 hover:text-white transition-colors"><Minus className="w-4 h-4" /></button>
+                    <input 
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => handleManualQuantity(e.target.value)}
+                      className="w-12 bg-transparent text-white font-bold text-center border-b border-blue-500/50 outline-none focus:border-white transition-colors"
+                    />
+                    <button onClick={() => handleQuantityChange(1)} className="text-blue-400 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+                  </div>
+                  <button 
+                    onClick={handleEqualDistribute}
+                    title="توزيع بالتساوي"
+                    className="ml-1 p-1 border border-blue-500/50 bg-blue-500/10 text-blue-400 hover:bg-blue-400 hover:text-white transition-all"
+                  >
+                    <Equal className="w-3 h-3" />
+                  </button>
+                  <button 
+                    onClick={() => { setQuantity(maxQuantity); setStatAllocation({ strength: 0, mind: 0, spirit: 0, agility: 0 }); }} 
+                    className="px-2 py-0.5 border border-blue-500/50 bg-blue-500/10 text-blue-400 text-[8px] font-bold hover:bg-blue-500/20 transition-all"
+                  >
+                    MAX
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 {(Object.keys(statLabels) as StatType[]).map(stat => (
                   <div key={stat} className="space-y-1">
@@ -196,23 +199,36 @@ export const ItemUseModal = ({
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 text-center bg-yellow-950/20 p-1 border border-yellow-500/20">
-                  <span className="text-[9px] text-yellow-500 uppercase tracking-tighter">Remaining XP: {remainingXP}</span>
-                </div>
-                <button 
-                  onClick={distributeEqually}
-                  title="توزيع بالتساوي"
-                  className="p-1.5 border border-yellow-500/40 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 transition-all"
-                >
-                  <Equal className="w-4 h-4" />
-                </button>
+              <div className="text-center bg-yellow-950/20 p-1 border border-yellow-500/20">
+                <span className="text-[9px] text-yellow-500">REMAINING XP: {remainingXP}</span>
               </div>
             </div>
           )}
 
+          {/* Health/Energy Item Logic */}
           {(item.type === 'health' || item.type === 'energy') && (
             <div className="space-y-4 pt-2 border-t border-blue-900/20">
+               <div className="flex items-center justify-between bg-blue-950/30 p-2 border border-blue-500/20">
+                <span className="text-[9px] text-blue-300 font-bold uppercase">Adjust Dosage</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => handleQuantityChange(-1)} className="text-blue-400"><Minus className="w-4 h-4" /></button>
+                    <input 
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => handleManualQuantity(e.target.value)}
+                      className="w-12 bg-transparent text-white font-bold text-center border-b border-blue-500/50 outline-none focus:border-white transition-colors"
+                    />
+                    <button onClick={() => handleQuantityChange(1)} className="text-blue-400"><Plus className="w-4 h-4" /></button>
+                  </div>
+                  <button 
+                    onClick={() => setQuantity(maxQuantity)} 
+                    className="ml-2 px-2 py-0.5 border border-blue-500/50 bg-blue-500/10 text-blue-400 text-[8px] font-bold hover:bg-blue-500/20 transition-all"
+                  >
+                    MAX
+                  </button>
+                </div>
+              </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-[8px] text-slate-400 uppercase">
                   <span>Output potential:</span>
@@ -240,4 +256,95 @@ export const ItemUseModal = ({
     );
   };
 
-  // ... (getResetContent and Return statement remain the same)
+  const getResetContent = () => {
+    if (item?.type !== 'reset') return null;
+    const totalXP = gameState.stats.strength + gameState.stats.mind + gameState.stats.spirit + gameState.stats.agility;
+    return (
+      <div className="space-y-4">
+        <div className="p-4 bg-gradient-to-br from-cyan-950/50 to-slate-900/50 border border-cyan-500/30 rounded">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-16 h-16 bg-cyan-900/50 border border-cyan-500/50 rounded flex items-center justify-center">
+              <RotateCcw className="w-8 h-8 text-cyan-400" />
+            </div>
+            <div>
+              <h4 className="font-bold text-cyan-300 text-lg">{item.name}</h4>
+              <p className="text-xs text-slate-400">{item.description}</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="p-2 bg-slate-900/50 rounded flex justify-between">
+              <span className="text-slate-400">مجموع XP:</span>
+              <span className="text-cyan-400 font-bold">{totalXP.toLocaleString()}</span>
+            </div>
+            <div className="p-2 bg-yellow-900/20 border border-yellow-500/30 rounded">
+              <p className="text-xs text-yellow-400 text-center">
+                ⚠️ سيتم إعادة تعيين جميع إحصائياتك ويمكنك توزيعها من جديد
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
+  const isResetItem = item.type === 'reset';
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative bg-[#050b18] border-x border-white/40 shadow-[0_0_50px_rgba(59,130,246,0.4)] max-w-sm w-full font-mono overflow-hidden animate-scale-y origin-center">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)]" />
+        <div className="p-4 flex items-center justify-between border-b border-blue-500/30 bg-blue-950/20">
+          <h2 className="text-blue-400 text-sm font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+            Analyzing Item Data
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-white/10 transition-colors">
+            <X className="w-5 h-5 text-blue-400" />
+          </button>
+        </div>
+        <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {isResetItem ? getResetContent() : getItemTypeContent()}
+        </div>
+        <div className="p-6 pt-0 space-y-3">
+          {canUse ? (
+            <button
+              onClick={handleUse}
+              className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Confirm & Use
+            </button>
+          ) : isResetItem ? (
+            <button
+              onClick={() => { onResetXP?.(); onClose(); }}
+              className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              إعادة التوزيع
+            </button>
+          ) : item.type === 'title' ? (
+            <button
+              onClick={() => { onEquipTitle?.(item.id); onClose(); }}
+              disabled={item.equipped}
+              className={cn(
+                "w-full py-4 font-black text-[11px] tracking-[0.5em] uppercase transition-all",
+                item.equipped 
+                  ? "bg-slate-900 text-slate-500 cursor-not-allowed border border-slate-800"
+                  : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-[1.02]"
+              )}
+            >
+              {item.equipped ? 'Title Equipped' : 'Equip Title'}
+            </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-blue-900/20 border border-blue-500/40 text-blue-300 font-black text-[11px] tracking-[0.5em] uppercase"
+            >
+              Close Entry
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
