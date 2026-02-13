@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { StatType } from '@/types/game';
-import { Flag, Check, Calendar, Target, ChevronRight } from 'lucide-react';
+import { Flag, Check, Calendar, Target, ChevronRight, Zap } from 'lucide-react'; // أضفت Zap لأيقونة المانا
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -25,11 +25,25 @@ const GrandQuest = () => {
   const [selectedCategory, setSelectedCategory] = useState<StatType>('strength');
   const [questTitle, setQuestTitle] = useState('');
 
+  // استخراج المانا من الـ State (افترضت وجودها في الـ resources أو الـ stats)
+  const manaStones = gameState.manaStones || 0; 
+
   const handleStart = () => {
     if (!questTitle.trim()) {
       toast({ title: 'SYSTEM: ERROR', description: 'Enter Quest Title', variant: 'destructive' });
       return;
     }
+
+    // شرط تكلفة حجر المانا
+    if (manaStones < 1) {
+      toast({ 
+        title: '⚠️ MANA REQUIRED', 
+        description: 'You need 1 Mana Stone to initialize a Grand Quest!', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     startGrandQuest(selectedCategory, questTitle, suggestedTasks[selectedCategory]);
     toast({ title: '🎯 QUEST STARTED', description: '30-Day Challenge Initialized' });
   };
@@ -47,19 +61,24 @@ const GrandQuest = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      <header className="relative z-10 flex justify-center items-center mb-8 border-b border-blue-500/30 pb-3">
-        <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+      <header className="relative z-10 flex flex-col justify-center items-center mb-8 border-b border-blue-500/30 pb-3">
+        <h1 className="text-xl font-bold tracking-[0.2em] uppercase italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">
           Grand Quest
         </h1>
+        {/* Mana Stone Display - عرض جبار للمانا */}
+        <div className="mt-2 flex items-center gap-2 bg-blue-500/10 border border-blue-500/40 px-3 py-0.5 rounded-full animate-pulse">
+           <Zap className="w-3 h-3 text-cyan-400 fill-cyan-400" />
+           <span className="text-[10px] font-black tracking-widest text-cyan-300">MANA STONES: {manaStones}</span>
+        </div>
       </header>
 
       <main className="relative z-10 max-w-md mx-auto">
         {gameState.grandQuest?.active ? (
-          <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Active Quest Window */}
-            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_30px_rgba(30,58,138,0.5)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
-                <div className="border border-slate-400/50 px-4 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                <div className="border border-slate-400/50 px-4 py-1 bg-slate-900/90 shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                   <h2 className="text-[10px] font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
                     ACTIVE MISSION
                   </h2>
@@ -68,10 +87,10 @@ const GrandQuest = () => {
 
               <div className="space-y-6">
                 <div className="text-center">
-                  <h3 className="text-xl font-black italic tracking-tighter text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)] uppercase">
+                  <h3 className="text-2xl font-black italic tracking-tighter text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] uppercase">
                     {gameState.grandQuest.title}
                   </h3>
-                  <p className="text-[9px] text-blue-400 font-bold tracking-[0.3em] mt-1 uppercase">
+                  <p className="text-[10px] text-blue-400 font-bold tracking-[0.3em] mt-1 uppercase">
                     Category: {categoryLabels[gameState.grandQuest.category]}
                   </p>
                 </div>
@@ -84,20 +103,20 @@ const GrandQuest = () => {
                       {gameState.grandQuest.completedDays} / 30 DAYS
                     </span>
                   </div>
-                  <div className="h-2 bg-slate-900 border border-white/10 rounded-none overflow-hidden p-[1px]">
+                  <div className="h-3 bg-slate-900 border border-white/20 rounded-none overflow-hidden p-[1px] shadow-inner">
                     <div
-                      className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] transition-all duration-1000"
+                      className="h-full bg-gradient-to-r from-blue-400 to-white shadow-[0_0_15px_rgba(255,255,255,0.9)] transition-all duration-1000"
                       style={{ width: `${(gameState.grandQuest.completedDays / 30) * 100}%` }}
                     />
                   </div>
                 </div>
 
                 {/* Daily Tasks List */}
-                <div className="bg-black/40 border border-white/10 p-4 space-y-3">
+                <div className="bg-blue-950/20 border border-white/10 p-4 space-y-3 backdrop-blur-sm">
                   <p className="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-2">Daily Requirements:</p>
                   {gameState.grandQuest.dailyTasks.map((task, index) => (
-                    <div key={index} className="flex items-center gap-3 text-xs text-slate-300 italic">
-                      <div className="w-1 h-1 bg-white shadow-[0_0_5px_white]" />
+                    <div key={index} className="flex items-center gap-3 text-xs text-slate-300 italic group">
+                      <div className="w-1.5 h-1.5 bg-white shadow-[0_0_8px_white] group-hover:scale-125 transition-transform" />
                       {task}
                     </div>
                   ))}
@@ -105,19 +124,19 @@ const GrandQuest = () => {
 
                 <button 
                   onClick={handleCompleteDay} 
-                  className="w-full py-3 bg-blue-500/10 hover:bg-blue-500/20 border border-white/40 text-white text-xs font-bold tracking-[0.2em] uppercase transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95"
+                  className="w-full py-4 bg-gradient-to-b from-blue-500/20 to-blue-900/30 hover:from-blue-500/30 hover:to-blue-900/40 border border-white/40 text-white text-xs font-black tracking-[0.3em] uppercase transition-all shadow-[0_0_20px_rgba(30,58,138,0.4)] active:scale-95 group"
                 >
-                  Complete Today's Tasks
+                  <span className="group-hover:drop-shadow-[0_0_5px_white]">Complete Today's Tasks</span>
                 </button>
               </div>
             </div>
           </div>
         ) : (
           /* Create New Quest View */
-          <div className="space-y-8 animate-in zoom-in-95 duration-300">
-            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_20px_rgba(30,58,138,0.3)]">
+          <div className="space-y-8 animate-in zoom-in-95 slide-in-from-top-4 duration-500">
+            <div className="relative bg-black/60 border-2 border-slate-200/90 p-6 shadow-[0_0_25px_rgba(30,58,138,0.4)]">
               <div className="flex justify-center mb-6 mt-[-2.5rem]">
-                <div className="border border-slate-400/50 px-4 py-1 bg-slate-900/90">
+                <div className="border border-slate-400/50 px-4 py-1 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                   <h2 className="text-[10px] font-bold tracking-widest text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] uppercase">
                     Initialize New Quest
                   </h2>
@@ -125,6 +144,15 @@ const GrandQuest = () => {
               </div>
 
               <div className="space-y-6">
+                {/* Mana Cost Alert - تنبيه التكلفة */}
+                <div className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/20 rounded-sm">
+                   <div className="flex items-center gap-2">
+                     <Zap className="w-4 h-4 text-red-500" />
+                     <span className="text-[10px] font-bold text-red-200 tracking-tighter">INITIALIZATION COST:</span>
+                   </div>
+                   <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 MANA STONE</span>
+                </div>
+
                 {/* Title Input */}
                 <div className="space-y-2">
                   <label className="text-[9px] font-bold text-blue-400 tracking-widest uppercase ml-1">Mission Title</label>
@@ -132,7 +160,7 @@ const GrandQuest = () => {
                     placeholder="Enter mission name..."
                     value={questTitle}
                     onChange={(e) => setQuestTitle(e.target.value)}
-                    className="w-full bg-black/50 border border-slate-700 p-3 text-sm focus:border-white outline-none transition-all italic text-white"
+                    className="w-full bg-black/50 border border-slate-700 p-3 text-sm focus:border-white focus:bg-blue-950/20 outline-none transition-all italic text-white"
                   />
                 </div>
 
@@ -145,34 +173,44 @@ const GrandQuest = () => {
                         key={key}
                         onClick={() => setSelectedCategory(key)}
                         className={cn(
-                          "flex justify-between items-center p-3 border transition-all text-[10px] font-bold tracking-widest uppercase",
+                          "flex justify-between items-center p-3 border transition-all text-[10px] font-bold tracking-widest uppercase relative overflow-hidden",
                           selectedCategory === key 
-                            ? "bg-white/10 border-white text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" 
-                            : "bg-black/20 border-slate-800 text-slate-500 hover:border-slate-600"
+                            ? "bg-white/10 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                            : "bg-black/20 border-slate-800 text-slate-500 hover:border-slate-600 hover:text-slate-300"
                         )}
                       >
-                        {label}
-                        {selectedCategory === key && <ChevronRight className="w-3 h-3 text-white" />}
+                        {selectedCategory === key && <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />}
+                        <span className="relative z-10">{label}</span>
+                        {selectedCategory === key && <ChevronRight className="w-3 h-3 text-white relative z-10" />}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Suggested Tasks Preview */}
-                <div className="p-4 bg-blue-950/20 border border-blue-500/20">
-                   <p className="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-2 italic underline">System Suggestions:</p>
+                <div className="p-4 bg-blue-950/30 border border-blue-500/20 backdrop-blur-md">
+                   <p className="text-[9px] font-bold text-blue-400 tracking-widest uppercase mb-2 italic underline decoration-blue-500/50">System Suggestions:</p>
                    <ul className="grid grid-cols-2 gap-2">
                     {suggestedTasks[selectedCategory].map((task, index) => (
-                      <li key={index} className="text-[9px] text-slate-400 uppercase italic">• {task}</li>
+                      <li key={index} className="text-[9px] text-slate-300 uppercase italic flex items-center gap-1.5">
+                        <span className="w-1 h-1 bg-blue-400 rounded-full shadow-[0_0_3px_cyan]" />
+                        {task}
+                      </li>
                     ))}
                    </ul>
                 </div>
 
                 <button 
                   onClick={handleStart} 
-                  className="w-full py-4 bg-white text-black font-black text-xs tracking-[0.3em] uppercase hover:bg-blue-100 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] active:scale-95"
+                  disabled={manaStones < 1}
+                  className={cn(
+                    "w-full py-4 font-black text-xs tracking-[0.4em] uppercase transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] active:scale-95 border-2",
+                    manaStones >= 1 
+                      ? "bg-white text-black hover:bg-cyan-50 border-white cursor-pointer" 
+                      : "bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed opacity-50"
+                  )}
                 >
-                  Accept Mission
+                  {manaStones >= 1 ? 'Accept Mission' : 'Insufficient Mana'}
                 </button>
               </div>
             </div>
