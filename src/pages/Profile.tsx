@@ -20,18 +20,18 @@ const Profile = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const stats = [
-    { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-red-500', bgColor: 'bg-red-500/10' },
-    { key: 'mind', label: 'INT', icon: Brain, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-    { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-green-500', bgColor: 'bg-green-500/10' },
-    { key: 'agility', label: 'AGI', icon: Zap, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' },
+    { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-red-600', bgColor: 'bg-red-500/10' },
+    { key: 'mind', label: 'INT', icon: Brain, color: 'text-blue-600', bgColor: 'bg-blue-500/10' },
+    { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-emerald-600', bgColor: 'bg-emerald-500/10' },
+    { key: 'agility', label: 'AGI', icon: Zap, color: 'text-amber-600', bgColor: 'bg-amber-500/10' },
   ];
 
   const getRankInfo = (level) => {
-    if (level >= 50) return { name: 'S', color: 'text-orange-500', border: 'border-orange-500/50', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.2)]' };
-    if (level >= 40) return { name: 'A', color: 'text-purple-500', border: 'border-purple-500/50', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.2)]' };
-    if (level >= 30) return { name: 'B', color: 'text-blue-500', border: 'border-blue-500/50', glow: 'shadow-[0_0_30px_rgba(59,130,246,0.2)]' };
-    if (level >= 20) return { name: 'C', color: 'text-green-500', border: 'border-green-500/50', glow: 'shadow-[0_0_30px_rgba(34,197,94,0.2)]' };
-    return { name: 'E', color: 'text-gray-400', border: 'border-gray-400/50', glow: '' };
+    if (level >= 50) return { name: 'S', color: 'text-orange-500', border: 'border-orange-500/50', glow: 'shadow-[0_0_30px_rgba(249,115,22,0.15)]' };
+    if (level >= 40) return { name: 'A', color: 'text-purple-500', border: 'border-purple-500/50', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.15)]' };
+    if (level >= 30) return { name: 'B', color: 'text-blue-500', border: 'border-blue-500/50', glow: 'shadow-[0_0_30px_rgba(59,130,246,0.15)]' };
+    if (level >= 20) return { name: 'C', color: 'text-green-500', border: 'border-green-500/50', glow: 'shadow-[0_0_30px_rgba(34,197,94,0.15)]' };
+    return { name: 'E', color: 'text-slate-400', border: 'border-slate-300', glow: '' };
   };
 
   const rank = getRankInfo(gameState.totalLevel);
@@ -48,18 +48,18 @@ const Profile = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background overflow-hidden flex flex-col font-sans">
+    <div className="h-screen w-full bg-[#f8f9fa] overflow-hidden flex flex-col font-sans">
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.15),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,0,0,0.03),transparent_50%)]" />
       </div>
 
       <header className="relative z-20 flex justify-between items-center p-4">
-        <h1 className="text-lg font-black italic text-primary tracking-tighter uppercase">Hunter License</h1>
+        <h1 className="text-lg font-black italic text-slate-800 tracking-tighter uppercase">Hunter License</h1>
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
-            <button className="p-2 bg-card border border-primary/20 rounded-lg"><Menu className="w-5 h-5" /></button>
+            <button className="p-2 bg-white border border-slate-200 rounded-lg shadow-sm"><Menu className="w-5 h-5 text-slate-700" /></button>
           </SheetTrigger>
-          <SheetContent className="bg-card/95 border-l border-primary/30">
+          <SheetContent className="bg-white/95 border-l border-slate-200">
             <SheetHeader><SheetTitle>الإعدادات</SheetTitle></SheetHeader>
             <div className="mt-10 space-y-4">
                <Button variant="destructive" className="w-full flex gap-2" onClick={handleLogout} disabled={isLoggingOut}>
@@ -71,73 +71,80 @@ const Profile = () => {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
+        {/* Main Card: White & Silver Edition */}
         <div className={cn(
-          "relative w-full max-w-md aspect-[1/1.6] bg-gradient-to-b from-card to-background border-2 rounded-[2.5rem] p-8 shadow-2xl flex flex-col overflow-hidden transition-all duration-500",
-          rank.border,
+          "relative w-full max-w-md aspect-[1/1.6] bg-[linear-gradient(135deg,#ffffff_0%,#e2e8f0_100%)] border-[3px] border-white rounded-[3rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden transition-all duration-500",
           rank.glow
         )}>
           
-          {/* Header Section: QR & Rank */}
-          <div className="flex justify-between items-start mb-10">
-            <div className="relative">
-              <div className="bg-transparent p-0">
-                {profile && (
-                  <PlayerQRCode 
-                    playerId={profile.player_id} 
-                    playerName={profile.player_name}
-                    size={90}
-                  />
-                )}
-              </div>
+          {/* Subtle Silver Texture Overlay */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/brushed-alum.png')]" />
+
+          {/* Header Section */}
+          <div className="flex justify-between items-start mb-10 relative z-10">
+            <div className="p-1 bg-white rounded-2xl shadow-sm border border-slate-100">
+              {profile && (
+                <PlayerQRCode 
+                  playerId={profile.player_id} 
+                  playerName={profile.player_name}
+                  size={90}
+                />
+              )}
             </div>
             
             <div className={cn(
-              "w-24 h-24 rounded-3xl bg-black/20 backdrop-blur-xl border-2 flex flex-col items-center justify-center relative overflow-hidden",
+              "w-24 h-24 rounded-[2rem] bg-white/80 backdrop-blur-md border-2 flex flex-col items-center justify-center shadow-inner",
               rank.border
             )}>
-              <span className="text-[9px] font-black opacity-40 absolute top-2 tracking-[0.2em]">RANK</span>
-              <span className={cn("text-5xl font-black italic mt-1", rank.color)}>{rank.name}</span>
+              <span className="text-[9px] font-black text-slate-400 absolute top-3 tracking-[0.2em]">RANK</span>
+              <span className={cn("text-5xl font-black italic mt-2", rank.color)}>{rank.name}</span>
             </div>
           </div>
 
           {/* User Info Section */}
-          <div className="mb-8 text-center sm:text-left">
-            <h2 className="text-3xl font-black text-foreground tracking-tight truncate mb-2 uppercase">
+          <div className="mb-8 relative z-10">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-[2px] bg-slate-800" />
+              <span className="text-[10px] font-bold text-slate-500 tracking-[0.2em] uppercase">Verified Hunter</span>
+            </div>
+            <h2 className="text-4xl font-black text-slate-900 tracking-tighter truncate leading-none mb-3">
               {gameState.playerName}
             </h2>
             
             <div 
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/10 rounded-xl cursor-pointer hover:bg-white/[0.05] transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors shadow-lg shadow-slate-200"
               onClick={() => {
                 navigator.clipboard.writeText(profile?.player_id);
-                toast({ title: "تم نسخ المعرف بنجاح" });
+                toast({ title: "تم نسخ المعرف" });
               }}
             >
-              <Fingerprint className="w-4 h-4 text-primary" />
-              <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">
-                ID: {profile?.player_id?.slice(0, 10)}
+              <Fingerprint className="w-3.5 h-3.5 text-white" />
+              <span className="text-[10px] font-mono text-slate-200 tracking-widest uppercase">
+                ID: {profile?.player_id?.slice(0, 12)}
               </span>
-              <Copy className="w-3 h-3 text-primary/40 ml-1" />
             </div>
           </div>
 
-          {/* Stats Section: Grid 2x2 Layout */}
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">Parameters</span>
-              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+          {/* Stats Section: 2x2 Jabar Cards */}
+          <div className="flex-1 relative z-10">
+            <div className="grid grid-cols-2 gap-4 h-full max-h-[280px]">
               {stats.map((stat) => (
-                <div key={stat.key} className="bg-white/[0.03] backdrop-blur-md border border-white/10 p-4 rounded-[1.5rem] flex flex-col items-center justify-center text-center gap-2 hover:border-primary/30 transition-all group">
-                  <div className={cn("p-2 rounded-xl mb-1", stat.bgColor)}>
-                    <stat.icon className={cn("w-5 h-5", stat.color)} />
+                <div key={stat.key} className="relative group overflow-hidden bg-white border border-slate-200 p-5 rounded-[2rem] shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 group-hover:bg-slate-200 transition-colors" />
+                  
+                  <div className={cn("p-3 rounded-2xl mb-2 shadow-sm border border-white", stat.bgColor)}>
+                    <stat.icon className={cn("w-6 h-6", stat.color)} />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">{stat.label}</span>
-                    <span className="text-xl font-black">{gameState.levels[stat.key]}</span>
+                  
+                  <span className="text-[9px] font-black text-slate-400 tracking-widest uppercase mb-1">{stat.label}</span>
+                  <span className="text-2xl font-black text-slate-800 tracking-tight">{gameState.levels[stat.key]}</span>
+                  
+                  {/* Miniature Progress Line */}
+                  <div className="w-12 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                    <div 
+                      className={cn("h-full", stat.color.replace('text', 'bg'))}
+                      style={{ width: `${(gameState.levels[stat.key] / 100) * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -145,13 +152,15 @@ const Profile = () => {
           </div>
 
           {/* Footer Decorative */}
-          <div className="mt-6 pt-6 border-t border-primary/10 flex justify-between items-center opacity-30">
-             <div className="text-[8px] font-mono tracking-widest uppercase">Encryption: Active</div>
-             <div className="text-[8px] font-mono tracking-widest uppercase">Hunter License v2.0</div>
+          <div className="mt-6 pt-4 border-t border-slate-200/60 flex justify-between items-end opacity-60 relative z-10">
+             <div className="flex flex-col gap-1">
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map(i => <div key={i} className="w-1 h-1 bg-slate-400 rounded-full" />)}
+                </div>
+                <span className="text-[8px] font-mono text-slate-500 uppercase">Secure Access Terminal</span>
+             </div>
+             <div className="text-[8px] font-black text-slate-400 tracking-widest">© HUNTER ASSOCIATION</div>
           </div>
-
-          {/* Scanline Effect */}
-          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[size:100%_4px] opacity-10" />
         </div>
       </main>
 
