@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BottomNav } from '@/components/BottomNav';
-import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, CreditCard, Bitcoin, Smartphone, ChevronRight } from 'lucide-react';
+import { Coins, Loader2, AlertTriangle, ShieldAlert, X, Zap, CreditCard, Bitcoin, Smartphone, ChevronRight, Upload, CheckCircle2, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -16,22 +16,25 @@ const Market = () => {
   const [scanResult, setScanResult] = useState<'idle' | 'searching' | 'failed'>('idle');
   const [activeItem, setActiveItem] = useState(null);
 
-  // حالات متجر الذهب الجديد
+  // حالات متجر الذهب المطور
   const [showGoldShop, setShowGoldShop] = useState(false);
+  const [shopStep, setShopStep] = useState<'offers' | 'checkout' | 'verify'>('offers');
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const GOLD_OFFERS = [
-    { id: 'g1', amount: 1000, price: 0.5, bonus: '0%' },
-    { id: 'g2', amount: 5000, price: 2.5, bonus: '5%' },
-    { id: 'g3', amount: 10000, price: 4.9, bonus: '10%' },
-    { id: 'g4', amount: 50000, price: 20, bonus: '25%' },
+    { id: 'g1', amount: 1000, price: 0.5, tag: 'Starter' },
+    { id: 'g2', amount: 5000, price: 2.5, tag: 'Popular' },
+    { id: 'g3', amount: 10000, price: 5.0, tag: 'Best Value' },
+    { id: 'g4', amount: 20000, price: 10.0, tag: 'Warrior' },
+    { id: 'g5', amount: 100000, price: 50.0, tag: 'Monarch' },
   ];
 
   const PAYMENT_DETAILS = {
-    bank: { name: 'Bank Transfer', info: 'Account: 0000-1111-2222-3333 | Name: System Admin' },
-    crypto: { name: 'Crypto (USDT)', info: 'Wallet: 0x71C765... (Network: TRC20)' },
-    mobile: { name: 'Zain Cash / AsiaPay', info: 'Phone: +964 780 000 0000' }
+    bank: { name: 'التحويل البنكي', icon: <CreditCard />, info: 'Account: 0000-1111-2222-3333 | Name: Admin' },
+    crypto: { name: 'العملات الرقمية', icon: <Bitcoin />, info: 'Wallet: 0x71C765... (Network: TRC20)' },
+    mobile: { name: 'زين كاش / آسيا حوالة', icon: <Smartphone />, info: 'Phone: +964 780 000 0000' }
   };
 
   const RARITY_CONFIG = {
@@ -73,8 +76,6 @@ const Market = () => {
     const itemRank = item.difficulty;
     return rankOrder[playerRank] >= rankOrder[itemRank];
   };
-  
-  const visibleItems = SOLO_ITEMS;
 
   const startSystemScan = (item) => {
     setActiveItem(item);
@@ -131,6 +132,16 @@ const Market = () => {
     }
   };
 
+  const handleConfirmPayment = () => {
+    setIsUploading(true);
+    setTimeout(() => {
+      setIsUploading(false);
+      setShowGoldShop(false);
+      setShopStep('offers');
+      toast({ title: 'System: PENDING', description: 'Your request is being reviewed by the Monarch.' });
+    }, 2000);
+  };
+
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
       {/* Background Effects */}
@@ -139,80 +150,160 @@ const Market = () => {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       </div>
 
-      {/* Gold Shop Overlay */}
+      {/* --- Gold Shop (جبّار) --- */}
       {showGoldShop && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="relative bg-[#050b18] border border-blue-500/50 w-full max-w-md p-6 overflow-y-auto max-h-[90vh]">
-            <button onClick={() => {setShowGoldShop(false); setSelectedOffer(null); setPaymentMethod('');}} className="absolute top-4 right-4 text-blue-400"><X /></button>
-            
-            <h2 className="text-xl font-bold text-blue-400 mb-6 italic tracking-widest border-b border-blue-500/30 pb-2">GOLD EXCHANGE</h2>
-            
-            {!selectedOffer ? (
-              <div className="grid grid-cols-1 gap-4">
-                {GOLD_OFFERS.map((offer) => (
-                  <div key={offer.id} 
-                    onClick={() => setSelectedOffer(offer)}
-                    className="group flex items-center justify-between p-4 border border-white/10 bg-white/5 hover:border-blue-500/50 cursor-pointer transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Coins className="text-yellow-400 w-6 h-6" />
-                      <div>
-                        <div className="font-bold text-lg">{offer.amount.toLocaleString()} <span className="text-[10px] text-blue-400">GOLD</span></div>
-                        <div className="text-[10px] text-green-400">Bonus: {offer.bonus}</div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="relative bg-[#050b18] border border-blue-500/30 w-full max-w-md overflow-hidden rounded-lg shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+            {/* Header */}
+            <div className="bg-blue-600/10 p-4 border-b border-blue-500/30 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-black text-blue-400 italic tracking-[0.2em]">GOLD MONARCH</h2>
+                <p className="text-[8px] text-blue-300/60 uppercase tracking-widest">System Currency Exchange</p>
+              </div>
+              <button onClick={() => {setShowGoldShop(false); setShopStep('offers');}} className="p-1 hover:bg-white/10 rounded-full transition-colors text-blue-400"><X /></button>
+            </div>
+
+            <div className="p-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              {/* Step 1: Offers */}
+              {shopStep === 'offers' && (
+                <div className="space-y-4 animate-in slide-in-from-bottom-5 duration-500">
+                  <div className="grid grid-cols-1 gap-3">
+                    {GOLD_OFFERS.map((offer) => (
+                      <div 
+                        key={offer.id} 
+                        onClick={() => {setSelectedOffer(offer); setShopStep('checkout');}}
+                        className="group relative bg-gradient-to-r from-blue-950/40 to-black border border-white/5 p-4 cursor-pointer hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all"
+                      >
+                        <div className="absolute top-0 right-0 px-2 py-0.5 bg-blue-600 text-[8px] font-bold uppercase">{offer.tag}</div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 group-hover:scale-110 transition-transform">
+                              <Coins className="text-yellow-500 w-6 h-6 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+                            </div>
+                            <div>
+                              <div className="text-lg font-bold text-white font-mono">{offer.amount.toLocaleString()} <span className="text-blue-400 text-xs">GOLD</span></div>
+                              <div className="text-[10px] text-slate-400">Rate: 1000g = $0.5</div>
+                            </div>
+                          </div>
+                          <div className="text-xl font-black text-blue-300 font-mono">${offer.price}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Checkout (The جبّار Card) */}
+              {shopStep === 'checkout' && (
+                <div className="space-y-6 animate-in slide-in-from-right-5 duration-500">
+                  <div className="relative p-6 bg-gradient-to-br from-blue-900/20 via-[#050b18] to-blue-900/20 border border-blue-500/40 rounded-xl overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 p-2 opacity-10"><Coins className="w-20 h-20 rotate-12" /></div>
+                    
+                    <div className="relative space-y-4">
+                      <div className="flex justify-between items-center border-b border-blue-500/20 pb-4">
+                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest italic">Invoice Details</span>
+                        <div className="px-3 py-1 bg-blue-500/20 rounded-full border border-blue-500/40 text-[10px] font-bold text-blue-200">#TRX-{Math.floor(Math.random() * 90000)}</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                        <div className="space-y-1">
+                          <p className="text-[8px] text-slate-500 uppercase">Player Name</p>
+                          <p className="text-xs font-bold text-white truncate">{gameState.playerName || 'RE-AWAKENED'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[8px] text-slate-500 uppercase">System ID</p>
+                          <p className="text-xs font-bold text-blue-300 font-mono">#{gameState.userId || '00982'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[8px] text-slate-500 uppercase">Gold Amount</p>
+                          <div className="flex items-center gap-1">
+                             <Coins className="w-3 h-3 text-yellow-500" />
+                             <p className="text-sm font-black text-yellow-500">{selectedOffer?.amount.toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[8px] text-slate-500 uppercase">Grand Total</p>
+                          <p className="text-lg font-black text-white">${selectedOffer?.price}</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 space-y-3">
+                        <p className="text-[9px] text-blue-400 font-bold uppercase text-center">Select Payment Gateway</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {Object.entries(PAYMENT_DETAILS).map(([key, data]) => (
+                            <button 
+                              key={key}
+                              onClick={() => setPaymentMethod(key)}
+                              className={cn(
+                                "flex flex-col items-center gap-2 p-3 border transition-all duration-300",
+                                paymentMethod === key ? "bg-blue-600/20 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]" : "bg-black/40 border-white/5 opacity-60"
+                              )}
+                            >
+                              <div className={cn(paymentMethod === key ? "text-blue-400" : "text-white")}>{data.icon}</div>
+                              <span className="text-[7px] font-bold uppercase text-center leading-tight">{data.name}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-blue-200 font-mono font-bold">${offer.price}</span>
-                      <ChevronRight className="w-4 h-4 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                  </div>
+
+                  {paymentMethod && (
+                    <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+                       <div className="p-4 bg-red-950/20 border border-red-900/40 rounded-lg">
+                          <p className="text-[9px] text-red-400 font-bold mb-2 uppercase">Copy Details:</p>
+                          <div className="flex items-center justify-between bg-black/40 p-2 border border-white/5 rounded">
+                            <code className="text-[10px] text-blue-100 font-mono break-all">{PAYMENT_DETAILS[paymentMethod].info}</code>
+                            <Copy className="w-3 h-3 text-slate-500 hover:text-white cursor-pointer ml-2" />
+                          </div>
+                       </div>
+                       <button 
+                        onClick={() => setShopStep('verify')}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs tracking-[0.3em] uppercase transition-all"
+                       >
+                         Next: Verify Transfer
+                       </button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4 animate-in slide-in-from-right duration-300">
-                <div className="bg-blue-900/20 border border-blue-500/30 p-4 space-y-2">
-                  <div className="flex justify-between text-xs"><span className="text-blue-400">ACCOUNT NAME:</span> <span>{gameState.playerName || 'PLAYER_01'}</span></div>
-                  <div className="flex justify-between text-xs"><span className="text-blue-400">ACCOUNT ID:</span> <span className="font-mono">#{gameState.userId || 'N/A'}</span></div>
-                  <div className="flex justify-between text-xs"><span className="text-blue-400">GOLD AMOUNT:</span> <span className="text-yellow-400 font-bold">{selectedOffer.amount.toLocaleString()}</span></div>
-                  <div className="flex justify-between text-xs border-t border-white/10 pt-2"><span className="text-blue-400">TOTAL PRICE:</span> <span className="text-xl font-bold">${selectedOffer.price}</span></div>
+                  )}
+                  
+                  <button onClick={() => setShopStep('offers')} className="w-full text-[10px] text-slate-500 uppercase hover:text-white transition-colors">Cancel & Return</button>
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <p className="text-[10px] text-blue-300 uppercase font-bold">Select Payment Method:</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    <button onClick={() => setPaymentMethod('bank')} className={cn("flex items-center gap-3 p-3 border text-xs transition-all", paymentMethod === 'bank' ? "border-blue-500 bg-blue-500/20" : "border-white/10")}>
-                      <CreditCard className="w-4 h-4" /> Bank Transfer
-                    </button>
-                    <button onClick={() => setPaymentMethod('crypto')} className={cn("flex items-center gap-3 p-3 border text-xs transition-all", paymentMethod === 'crypto' ? "border-blue-500 bg-blue-500/20" : "border-white/10")}>
-                      <Bitcoin className="w-4 h-4" /> Cryptocurrency (USDT)
-                    </button>
-                    <button onClick={() => setPaymentMethod('mobile')} className={cn("flex items-center gap-3 p-3 border text-xs transition-all", paymentMethod === 'mobile' ? "border-blue-500 bg-blue-500/20" : "border-white/10")}>
-                      <Smartphone className="w-4 h-4" /> Zain Cash / AsiaPay
-                    </button>
+              {/* Step 3: Verify (Upload Invoice) */}
+              {shopStep === 'verify' && (
+                <div className="space-y-6 animate-in slide-in-from-right-5 duration-500 py-4">
+                  <div className="text-center space-y-2">
+                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+                      <Upload className="text-blue-400 w-8 h-8 animate-bounce" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white tracking-widest italic">VERIFICATION REQUIRED</h3>
+                    <p className="text-[10px] text-slate-400 px-8 leading-relaxed">Please upload a clear screenshot of your transfer receipt to confirm the transaction.</p>
                   </div>
+
+                  <div className="border-2 border-dashed border-blue-500/30 bg-blue-900/5 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:bg-blue-900/10 transition-all cursor-pointer group">
+                    <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center group-hover:scale-110 transition-transform">
+                       <CheckCircle2 className="text-slate-600 w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] text-blue-300 font-bold uppercase">Click to browse files</span>
+                  </div>
+
+                  <button 
+                    onClick={handleConfirmPayment}
+                    disabled={isUploading}
+                    className="w-full py-4 bg-gradient-to-r from-blue-700 to-blue-500 text-white font-black text-xs tracking-[0.3em] uppercase shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:opacity-50"
+                  >
+                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Confirm Submission'}
+                  </button>
+                  <button onClick={() => setShopStep('checkout')} className="w-full text-[10px] text-slate-500 uppercase text-center">Back to Details</button>
                 </div>
-
-                {paymentMethod && (
-                  <div className="bg-red-950/20 border border-red-900/50 p-3 animate-in fade-in zoom-in duration-300">
-                    <p className="text-[9px] text-red-400 font-bold uppercase mb-1">Payment Instructions:</p>
-                    <p className="text-[11px] text-white font-mono break-all">{PAYMENT_DETAILS[paymentMethod].info}</p>
-                    <p className="text-[8px] text-slate-400 mt-2 italic">* Send screenshot of receipt to admin to confirm.</p>
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => setSelectedOffer(null)} 
-                  className="w-full py-2 text-[10px] border border-white/10 text-slate-400 uppercase"
-                >
-                  Back to Offers
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* System Scan Modal (No Changes) */}
+      {/* --- System Scan Modal (No Changes) --- */}
       {isScanning && (
         <div className={cn(
           "fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md transition-all duration-[1000ms]",
@@ -226,62 +317,21 @@ const Market = () => {
             <div className={cn("absolute bottom-0 left-0 right-0 h-[1px] bg-white shadow-[0_0_15px_rgba(255,255,255,1)] transition-all duration-[1500ms] delay-500", isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0")} />
             
             <div className={cn("p-6 text-center space-y-4 transition-all duration-1000 delay-700", isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-              <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
-                {scanResult === 'searching' ? 'Analyzing Data...' : '[Access Denied]'}
-              </h2>
+              <h2 className="text-blue-400 text-lg font-bold tracking-[0.2em] uppercase italic">{scanResult === 'searching' ? 'Analyzing Data...' : '[Access Denied]'}</h2>
               {scanResult === 'searching' ? (
                 <div className="py-10 flex flex-col items-center gap-4">
-                  <div className="relative">
-                    <Loader2 className="w-16 h-16 text-blue-500 animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                       <span className="text-[8px] animate-pulse text-blue-300">SCN</span>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-blue-200 animate-pulse tracking-[0.3em] uppercase">Bypassing Encryption...</p>
+                  <div className="relative"><Loader2 className="w-16 h-16 text-blue-500 animate-spin" /></div>
+                  <p className="text-[10px] text-blue-200 animate-pulse uppercase">Bypassing Encryption...</p>
                 </div>
               ) : (
                 <div className="py-2 flex flex-col items-start gap-4 w-full">
-                  {(() => {
-                    const playerLevel = gameState.totalLevel || 1;
-                    const requiredLevel = (activeItem?.rankLevel || 0) * 10;
-                    const levelDiff = requiredLevel - playerLevel;
-                    const revealText = (text, diff) => {
-                      if (diff <= 5) return text;
-                      if (diff <= 15) return text.substring(0, 3) + ".".repeat(text.length - 3);
-                      if (diff <= 30) return text[0] + "?".repeat(text.length - 1);
-                      return "UNKNOWN DATA";
-                    };
-                    const powerLevels = { 'S': '80%', 'A': '70%', 'B': '50%', 'C': '30%' };
-                    const itemPower = powerLevels[activeItem?.difficulty] || '20%';
-
-                    return (
-                      <div className="w-full space-y-4">
-                        <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative">
-                          <div className="absolute top-0 right-0 p-1"><ShieldAlert className="w-4 h-4 text-red-500/50" /></div>
-                          <div className="mb-3 border-b border-blue-500/30 pb-2">
-                            <span className="text-[9px] text-blue-400 block mb-1">DATA_STREAM_NAME:</span>
-                            <span className="text-sm font-bold text-white tracking-wider">
-                              {revealText(activeItem?.name || "???", levelDiff)}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <span className="text-[9px] text-blue-400 block mb-1">DIFFICULTY:</span>
-                              <span className="text-xs font-bold text-red-400">{levelDiff <= 15 ? activeItem?.difficulty : '??'}</span>
-                            </div>
-                            <div>
-                              <span className="text-[9px] text-blue-400 block mb-1">CATEGORY:</span>
-                              <span className="text-xs font-bold text-white uppercase">{revealText(activeItem?.category || "???", levelDiff)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-left bg-red-950/20 border border-red-900/50 p-3 font-bold uppercase tracking-tighter">
-                          <p className="text-[10px] text-red-400">Warning: Level [{playerLevel}] insufficient. Min required: {requiredLevel}.</p>
-                        </div>
-                        <button onClick={closeScanModal} className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase">Confirm & Terminate</button>
-                      </div>
-                    );
-                  })()}
+                  <div className="w-full border border-blue-500/30 p-4 bg-blue-950/20 relative text-left">
+                    <div className="mb-3 border-b border-blue-500/30 pb-2">
+                       <span className="text-[9px] text-blue-400 block mb-1 uppercase">Data Entry:</span>
+                       <span className="text-sm font-bold text-white tracking-wider">{activeItem?.name || "???"}</span>
+                    </div>
+                  </div>
+                  <button onClick={closeScanModal} className="w-full py-4 bg-white text-black font-black text-[11px] tracking-[0.5em] uppercase">Confirm & Terminate</button>
                 </div>
               )}
             </div>
@@ -291,17 +341,13 @@ const Market = () => {
 
       {/* Header with Clickable Gold */}
       <header className="relative z-10 flex justify-between items-center mb-6 border-b border-blue-500/30 pb-3">
-        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">
-          System Store
-        </h1>
+        <h1 className="text-xl font-bold tracking-[0.1em] uppercase italic text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]">System Store</h1>
         <button 
           onClick={() => setShowGoldShop(true)}
-          className="bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2 hover:bg-blue-800/40 transition-colors active:scale-95"
+          className="group bg-blue-950/40 border border-blue-400/50 px-3 py-1 flex items-center gap-2 hover:bg-blue-800/40 transition-all active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]"
         >
-          <Coins className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="font-mono font-bold text-blue-100 text-sm">
-            {gameState.gold.toLocaleString()}
-          </span>
+          <Coins className="w-3.5 h-3.5 text-yellow-400 group-hover:rotate-12 transition-transform" />
+          <span className="font-mono font-bold text-blue-100 text-sm">{gameState.gold.toLocaleString()}</span>
           <div className="ml-1 bg-blue-500 rounded-full w-3 h-3 flex items-center justify-center text-[8px] text-white font-bold">+</div>
         </button>
       </header>
@@ -318,26 +364,21 @@ const Market = () => {
               <div className="absolute -inset-0.5 bg-blue-500/20 blur-sm opacity-0 group-hover:opacity-100 transition duration-500" />
               <div className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all active:scale-[0.98]">
                 <div className="flex justify-center mb-4 mt-[-1.5rem]">
-                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90">
+                  <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                     <h2 className="text-xs font-bold tracking-widest text-white uppercase">
                       ITEM: <span className="text-blue-100">{isRevealed ? (item.arabicName || item.name) : 'NOT FOUND'}</span>
                     </h2>
                   </div>
                 </div>
-
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
-                      {!isRevealed ? (
-                        <span className="text-4xl opacity-20 grayscale">❓</span>
-                      ) : (
-                        <span className="text-4xl filter grayscale brightness-200 opacity-90">{item.icon}</span>
-                      )}
+                      {!isRevealed ? ( <span className="text-4xl opacity-20 grayscale">❓</span> ) : ( <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">{item.icon}</span> )}
                     </div>
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-2 text-right">
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Rank:</p>
-                        <p className={cn("text-xs font-bold italic uppercase", rarity.text)}>{isRevealed ? item.difficulty : '??'}</p>
+                        <p className={cn("text-xs font-bold italic uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]", rarity.text)}>{isRevealed ? item.difficulty : '??'}</p>
                       </div>
                       <div className="flex justify-between items-center border-b border-white/10 pb-1">
                         <p className="text-[9px] text-slate-400 uppercase font-bold">Type:</p>
@@ -345,16 +386,14 @@ const Market = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="py-2 border-t border-slate-700/50">
-                    <p className="text-lg font-bold text-center text-blue-50 font-mono tracking-tighter">Gold: {isRevealed ? item.price.toLocaleString() : '????'}</p>
+                  <div className="py-2 border-t border-slate-700/50 text-center">
+                    <p className="text-lg font-bold text-blue-50 font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">Gold: {isRevealed ? item.price.toLocaleString() : '????'}</p>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => handlePurchase(item)} disabled={isAlphaLocked && isRevealed} className={cn("flex-1 mt-2 py-2 text-[10px] font-bold tracking-[0.2em] uppercase transition-all border", !isRevealed ? "bg-blue-900/40 border-blue-500/50 text-blue-400 hover:bg-blue-800/60" : isAlphaLocked ? "bg-slate-900/50 border-slate-800 text-slate-600 cursor-not-allowed" : gameState.gold >= item.price ? "bg-blue-500/10 border-blue-500/40 text-blue-300 hover:bg-blue-500/20" : "bg-red-900/20 border-red-500/30 text-red-400")}>
                       {!isRevealed ? 'Analyze' : isAlphaLocked ? 'Locked' : 'Purchase'}
                     </button>
-                    {isRevealed && !isAlphaLocked && (
-                      <button onClick={() => handleMaxPurchase(item)} className="mt-2 px-4 py-2 bg-yellow-600/20 border border-yellow-500/50 text-yellow-500 text-[10px] font-bold uppercase hover:bg-yellow-600/30">MAX</button>
-                    )}
+                    {isRevealed && !isAlphaLocked && ( <button onClick={() => handleMaxPurchase(item)} className="mt-2 px-4 py-2 bg-yellow-600/20 border border-yellow-500/50 text-yellow-500 text-[10px] font-bold uppercase hover:bg-yellow-600/30">MAX</button> )}
                   </div>
                 </div>
               </div>
