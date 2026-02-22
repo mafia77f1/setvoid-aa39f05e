@@ -26,25 +26,27 @@ export const GateDiscoveryNotification = ({
   const [isExiting, setIsExiting] = useState(false);
   const [showManaDetails, setShowManaDetails] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const [alreadySeen, setAlreadySeen] = useState(false);
+  const [isPermanentlyHidden, setIsPermanentlyHidden] = useState(false);
 
-  // --- حل مشكلة الظهور المتكرر ---
+  // --- حل مشكلة الظهور المتكرر نهائياً ---
   useEffect(() => {
     if (show && gate) {
-      const seenGates = JSON.parse(localStorage.getItem('discovered_gates_log') || '[]');
+      const seenGates = JSON.parse(localStorage.getItem('system_seen_gates') || '[]');
       if (seenGates.includes(gate.id)) {
-        setAlreadySeen(true);
+        setIsPermanentlyHidden(true);
       } else {
-        setAlreadySeen(false);
+        setIsPermanentlyHidden(false);
         setIsExiting(false);
         setTimeout(() => setIsVisible(true), 50);
-        // حفظ البوابة فور ظهورها لضمان عدم تكرارها
-        localStorage.setItem('discovered_gates_log', JSON.stringify([...seenGates, gate.id]));
       }
     }
   }, [show, gate]);
 
   const handleClose = () => {
+    if (gate) {
+      const seenGates = JSON.parse(localStorage.getItem('system_seen_gates') || '[]');
+      localStorage.setItem('system_seen_gates', JSON.stringify([...seenGates, gate.id]));
+    }
     setIsExiting(true);
     setTimeout(() => {
       setIsVisible(false);
@@ -54,6 +56,10 @@ export const GateDiscoveryNotification = ({
   };
 
   const handleEnter = () => {
+    if (gate) {
+      const seenGates = JSON.parse(localStorage.getItem('system_seen_gates') || '[]');
+      localStorage.setItem('system_seen_gates', JSON.stringify([...seenGates, gate.id]));
+    }
     setIsExiting(true);
     setTimeout(() => {
       setIsVisible(false);
@@ -71,16 +77,17 @@ export const GateDiscoveryNotification = ({
     }, 2000);
   };
 
-  if (!show || !gate || alreadySeen) return null;
+  // التحقق من الحجب قبل الرندر
+  if (!show || !gate || isPermanentlyHidden) return null;
 
   const isLocked = gate.rank === 'S' || gate.rank === 'A';
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[300] flex items-center justify-center p-4 transition-all duration-1000",
-      isVisible && !isExiting ? "bg-black/90 backdrop-blur-md" : "bg-black/0 pointer-events-none"
+      "fixed inset-0 z-[300] flex items-center justify-center p-4 transition-all duration-[800ms]",
+      isVisible && !isExiting ? "bg-black/95 backdrop-blur-md" : "bg-black/0 pointer-events-none"
     )}>
-      {/* Background Portal Effect */}
+      {/* الأنميشن القديم للبوابة في الخلفية */}
       <div className={cn(
         "absolute inset-0 flex items-center justify-center overflow-hidden transition-opacity duration-1000",
         isVisible && !isExiting ? "opacity-30" : "opacity-0"
@@ -88,111 +95,116 @@ export const GateDiscoveryNotification = ({
         <img 
           src="/portal.gif" 
           alt="Gate Portal" 
-          className="w-[800px] h-[800px] object-cover mix-blend-screen"
+          className="w-[600px] h-[600px] object-cover mix-blend-screen"
           style={{ filter: `hue-rotate(${gate.rank === 'S' ? '0deg' : '200deg'})` }}
         />
       </div>
 
-      {/* Main Card - Matching Market Style */}
+      {/* الكارد الرئيسي بالأنميشن القديم (scale-y) */}
       <div className={cn(
-        "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-        isVisible && !isExiting ? "opacity-100 scale-100 translate-y-0 duration-[1000ms]" : "opacity-0 scale-95 translate-y-20 duration-[700ms]"
+        "relative max-w-sm w-full bg-[#050a14] border-x border-white/40 transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
+        isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[600ms]"
       )}>
-        
-        {/* Floating Header Label - Exactly like Market Item */}
-        <div className="flex justify-center mt-[-1rem]">
-          <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+        {/* خطوط التوهج الأصلية */}
+        <div className={cn(
+          "absolute top-0 left-0 right-0 h-[2px] bg-white shadow-[0_0_20px_rgba(255,255,255,1)] transition-all duration-[1200ms] delay-300",
+          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
+        )} />
+        <div className={cn(
+          "absolute bottom-0 left-0 right-0 h-[2px] bg-white shadow-[0_0_20px_rgba(255,255,255,1)] transition-all duration-[1200ms] delay-300",
+          isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
+        )} />
+
+        {/* العنوان المرفوع (ستايل المتجر) */}
+        <div className="flex justify-center mt-[-1.2rem]">
+          <div className="border-2 border-slate-200 px-6 py-1 bg-[#050a14] shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase italic flex items-center gap-2">
               <AlertTriangle className="w-3 h-3 text-red-500 animate-pulse" />
-              Emergency: <span className="text-blue-400">Gate Detected</span>
+              Gate <span className="text-blue-400">Detected</span>
             </h2>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Rank Hexagon - Visual Focus */}
-          <div className="flex justify-center py-2">
+        <div className={cn(
+          "p-6 space-y-6 transition-all duration-1000 delay-500",
+          isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        )}>
+          
+          {/* أيقونة الرتبة */}
+          <div className="flex justify-center">
              <div className={cn(
-               "w-20 h-20 rounded-xl rotate-45 border-2 border-white/20 flex items-center justify-center bg-gradient-to-br",
-               gate.rank === 'S' ? "from-red-600 to-red-900" : "from-blue-600 to-blue-900"
+               "w-20 h-20 border-2 border-white/30 flex items-center justify-center bg-gradient-to-br shadow-xl",
+               gate.rank === 'S' ? "from-red-600 to-red-900 shadow-red-500/20" : "from-blue-600 to-blue-900 shadow-blue-500/20"
              )}>
-                <span className="text-4xl font-black text-white -rotate-45 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                <span className="text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
                   {gate.rank}
                 </span>
              </div>
           </div>
 
-          {/* Gate Information - List Style from Market */}
-          <div className="space-y-[2px] border border-white/5 rounded overflow-hidden">
+          {/* معلومات البوابة الصحيحة والمدمجة */}
+          <div className="space-y-[2px] border border-white/10 bg-black rounded overflow-hidden">
             
-            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+            <div className="flex justify-between items-center p-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Info className="w-3.5 h-3.5 text-slate-500" />
-                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">اسم البوابه</span>
+                <span className="text-[9px] text-slate-500 uppercase font-black">اسم البوابه</span>
               </div>
               <span className="text-xs font-bold text-white italic">{gate.name}</span>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+            <div className="flex justify-between items-center p-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Target className="w-3.5 h-3.5 text-slate-500" />
-                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">رتبة البوابه</span>
+                <span className="text-[9px] text-slate-500 uppercase font-black">رتبة البوابه</span>
               </div>
-              <span className={cn("text-xs font-black", gate.rank === 'S' ? "text-red-500" : "text-blue-400")}>
+              <span className={cn("text-xs font-black", gate.rank === 'S' ? "text-red-500" : "text-white")}>
                 Rank {gate.rank}
               </span>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+            <div className="flex justify-between items-center p-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5 text-yellow-500" />
-                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">الطاقة المنبعثة</span>
+                <span className="text-[9px] text-slate-500 uppercase font-black">الطاقة المنبعثة</span>
               </div>
-              <span className="text-xs font-mono font-bold text-cyan-400 leading-none">
-                {showManaDetails ? `${gate.energyDensity} MP` : 'Locked'}
+              <span className="text-xs font-mono font-bold text-cyan-400">
+                {showManaDetails ? `${gate.energyDensity} MP` : '?????'}
               </span>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+            <div className="flex justify-between items-center p-3">
               <div className="flex items-center gap-2">
                 <Fingerprint className="w-3.5 h-3.5 text-slate-500" />
-                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">نوع البوابه</span>
+                <span className="text-[9px] text-slate-500 uppercase font-black">نوع البوابه</span>
               </div>
               <span className="text-xs font-bold text-white uppercase tracking-tighter">
-                 {showManaDetails ? (gate.type || 'Standard') : 'Analysis Required'}
+                 {showManaDetails ? (gate.type || 'Standard') : 'Locked'}
               </span>
             </div>
           </div>
 
-          {/* Description Block */}
-          <div className="text-center px-2">
-            <p className="text-[10px] text-slate-400 italic leading-relaxed">
-              System analysis: High mana concentration detected in the area. 
-              Unauthorized entry is punishable by the Hunter Law.
-            </p>
-          </div>
-
-          {/* Action Buttons - Market Style */}
+          {/* الأزرار */}
           <div className="space-y-3">
             {hasManaGauge && !showManaDetails && (
               <button
                 onClick={handleScanMana}
                 disabled={isScanning}
                 className={cn(
-                  "w-full py-3 text-[10px] font-black uppercase tracking-[0.3em] border-2 transition-all",
+                  "w-full py-4 text-[10px] font-black uppercase tracking-[0.3em] border-2 transition-all",
                   isScanning 
-                    ? "bg-blue-900/20 border-blue-800 text-blue-500 cursor-wait"
-                    : "bg-blue-600/10 border-blue-500/50 text-blue-400 hover:bg-blue-500 hover:text-white"
+                    ? "bg-slate-900 border-slate-800 text-slate-700 cursor-wait"
+                    : "bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
                 )}
               >
-                {isScanning ? "جاري المسح..." : "كشف بيانات البوابة"}
+                {isScanning ? "Analyzing..." : "كشف بيانات البوابة"}
               </button>
             )}
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleClose}
-                className="flex-1 py-3 bg-slate-900 border border-slate-800 text-slate-500 text-[10px] font-bold uppercase tracking-widest"
+                className="py-3 bg-transparent border border-white/10 text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-all"
               >
                 تجاهل
               </button>
@@ -200,13 +212,13 @@ export const GateDiscoveryNotification = ({
                 onClick={handleEnter}
                 disabled={isLocked}
                 className={cn(
-                  "flex-[2] py-3 text-[10px] font-black uppercase tracking-widest transition-all",
+                  "py-3 text-[10px] font-black uppercase tracking-widest transition-all",
                   isLocked 
-                    ? "bg-red-900/10 border border-red-900/30 text-red-900/50 cursor-not-allowed"
-                    : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95"
+                    ? "bg-slate-800 text-slate-600 cursor-not-allowed"
+                    : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] active:scale-95"
                 )}
               >
-                {isLocked ? 'Locked' : 'دخول البوابة'}
+                {isLocked ? 'Locked' : 'دخول'}
               </button>
             </div>
           </div>
