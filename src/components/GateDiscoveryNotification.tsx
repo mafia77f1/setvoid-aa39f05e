@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gate } from '@/types/game';
 import { cn } from '@/lib/utils';
-import { X, Target, Zap, AlertTriangle, Skull, Activity, Scan, Shield } from 'lucide-react';
+import { X, Target, Zap, AlertTriangle, Skull, Activity, Scan, Shield, Layers, Radio } from 'lucide-react';
 
 interface GateDiscoveryNotificationProps {
   show: boolean;
@@ -26,13 +26,24 @@ export const GateDiscoveryNotification = ({
   const [isExiting, setIsExiting] = useState(false);
   const [showManaDetails, setShowManaDetails] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [alreadySeen, setAlreadySeen] = useState(false);
 
+  // نظام التحقق من رؤية البوابة مسبقاً
   useEffect(() => {
-    if (show) {
-      setIsExiting(false);
-      setTimeout(() => setIsVisible(true), 50);
+    if (show && gate) {
+      const seenGates = JSON.parse(localStorage.getItem('seen_gates') || '[]');
+      if (seenGates.includes(gate.id)) {
+        setAlreadySeen(true);
+      } else {
+        setAlreadySeen(false);
+        setIsExiting(false);
+        setTimeout(() => setIsVisible(true), 50);
+        
+        // إضافة البوابة لقائمة "تمت رؤيتها"
+        localStorage.setItem('seen_gates', JSON.stringify([...seenGates, gate.id]));
+      }
     }
-  }, [show]);
+  }, [show, gate]);
 
   const handleClose = () => {
     setIsExiting(true);
@@ -61,7 +72,8 @@ export const GateDiscoveryNotification = ({
     }, 2000);
   };
 
-  if (!show || !gate) return null;
+  // لا تظهر الكارد إذا كانت قد شوهدت من قبل أو لا يوجد بيانات
+  if (!show || !gate || alreadySeen) return null;
 
   const getGateColor = (rank: string) => {
     switch (rank) {
@@ -186,44 +198,59 @@ export const GateDiscoveryNotification = ({
               </span>
             </div>
 
-            {/* رتبة البوابة - تظهر فقط إذا كان المسح قد تم */}
+            {/* قسم تحليل البوابة الجبار */}
             {showManaDetails && (
-              <div className="p-3 bg-purple-500/10 border border-purple-500/30 animate-fade-in">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-purple-400" />
-                  <span className="text-[10px] text-purple-300 uppercase font-bold">Gate Analysis</span>
+              <div className="relative overflow-hidden p-4 bg-gradient-to-b from-purple-900/20 to-blue-900/20 border border-purple-500/40 rounded-lg animate-in fade-in zoom-in duration-500">
+                <div className="absolute top-0 right-0 p-1">
+                   <Radio className="w-3 h-3 text-purple-400 animate-ping" />
                 </div>
-                <div className="space-y-2">
-                  {/* إظهار الرتبة فقط إذا كانت منخفضة أو متوسطة */}
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400">Rank:</span>
+                
+                <div className="flex items-center gap-2 mb-4 border-b border-purple-500/20 pb-2">
+                  <Scan className="w-5 h-5 text-purple-400" />
+                  <span className="text-[11px] text-purple-200 font-black uppercase tracking-tighter">System Analysis Complete</span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] text-purple-400 uppercase font-bold">اسم البوابه</span>
+                    <span className="text-sm font-bold text-white tracking-wide">{gate.name}</span>
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <span className="text-[9px] text-purple-400 uppercase font-bold">رتبة البوابه</span>
                     <span className={cn(
-                      "text-sm font-bold",
-                      gate.rank === 'S' || gate.rank === 'A' ? "text-red-500" : "text-white"
+                      "text-sm font-black",
+                      gate.rank === 'S' || gate.rank === 'A' ? "text-red-500 animate-pulse" : "text-white"
                     )}>
-                      {gate.rank === 'S' || gate.rank === 'A' ? 
-                        '⚠️ لا يمكن قياسها - طاقة هائلة!' : 
-                        gate.rank}
+                      {gate.rank} { (gate.rank === 'S' || gate.rank === 'A') && "— [قوة تدميرية]" }
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400">Required Power:</span>
-                    <span className={cn(
-                      "text-sm font-bold",
-                      canEnter ? "text-green-400" : "text-red-400"
-                    )}>
-                      {gate.rank === 'S' || gate.rank === 'A' ? '???' : gate.requiredPower}
-                    </span>
+
+                  <div className="flex flex-col">
+                    <span className="text-[9px] text-purple-400 uppercase font-bold">الطاقة المنبعثة من البوابه</span>
+                    <span className="text-sm font-bold text-cyan-400">{gate.energyDensity} Mana Points</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400">Status:</span>
-                    <span className={cn(
-                      "text-xs font-bold",
-                      canEnter ? "text-green-400" : "text-red-400"
-                    )}>
-                      {canEnter ? '✓ مستوى كافٍ' : '✗ مستوى غير كافٍ'}
-                    </span>
+
+                  <div className="flex flex-col">
+                    <span className="text-[9px] text-purple-400 uppercase font-bold">نوع البوابه</span>
+                    <div className="flex items-center gap-2">
+                        <Layers className="w-3 h-3 text-white/50" />
+                        <span className="text-sm font-bold text-white uppercase">{gate.type || 'عادية'}</span>
+                    </div>
                   </div>
+                </div>
+
+                {/* Status Bar */}
+                <div className="mt-4 pt-2 border-t border-purple-500/20">
+                    <div className="flex justify-between items-center">
+                        <span className="text-[9px] text-slate-400 font-bold uppercase">Entry Status</span>
+                        <span className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-full font-black uppercase",
+                        canEnter ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                        )}>
+                        {canEnter ? 'صلاحية الدخول ممنوحة' : 'الدخول خطر جداً'}
+                        </span>
+                    </div>
                 </div>
               </div>
             )}
