@@ -27,7 +27,6 @@ export const GateDiscoveryNotification = ({
   const [showManaDetails, setShowManaDetails] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
-  // --- حل مشكلة الظهور: تظهر مرة واحدة فقط عند تسجيل الدخول (Session) ---
   useEffect(() => {
     if (show && gate) {
       const hasSeenInSession = sessionStorage.getItem('gate_notif_session_seen');
@@ -66,7 +65,6 @@ export const GateDiscoveryNotification = ({
     }, 2000);
   };
 
-  // التحقق من الجلسة قبل الرندر
   const alreadySeenInSession = sessionStorage.getItem('gate_notif_session_seen') === 'true' && !isVisible;
   if (!show || !gate || alreadySeenInSession) return null;
 
@@ -77,7 +75,6 @@ export const GateDiscoveryNotification = ({
       "fixed inset-0 z-[300] flex items-center justify-center p-4 transition-all duration-[800ms]",
       isVisible && !isExiting ? "bg-black/95 backdrop-blur-md" : "bg-black/0 pointer-events-none"
     )}>
-      {/* الأنميشن القديم للبوابة في الخلفية */}
       <div className={cn(
         "absolute inset-0 flex items-center justify-center overflow-hidden transition-opacity duration-1000",
         isVisible && !isExiting ? "opacity-30" : "opacity-0"
@@ -90,12 +87,10 @@ export const GateDiscoveryNotification = ({
         />
       </div>
 
-      {/* الكارد الرئيسي بالأنميشن القديم (scale-y) والشفافية الأصلية */}
       <div className={cn(
         "relative max-w-sm w-full bg-[#050a14]/80 border-x border-white/40 transition-all ease-[cubic-bezier(0.2,1,0.2,1)] origin-center",
         isVisible && !isExiting ? "opacity-100 scale-y-100 duration-[1200ms]" : "opacity-0 scale-y-0 duration-[600ms]"
       )}>
-        {/* خطوط التوهج الأصلية */}
         <div className={cn(
           "absolute top-0 left-0 right-0 h-[2px] bg-white shadow-[0_0_20px_rgba(255,255,255,1)] transition-all duration-[1200ms] delay-300",
           isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
@@ -105,8 +100,8 @@ export const GateDiscoveryNotification = ({
           isVisible && !isExiting ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
         )} />
 
-        {/* العنوان المرفوع (ستايل المتجر) */}
-        <div className="flex justify-center mt-[-1.2rem]">
+        {/* تعديل مكان العنوان ليكون ملتصقاً بالأعلى تماماً ومرفوعاً قليلاً */}
+        <div className="flex justify-center mt-[-1.5rem] relative z-50">
           <div className="border-2 border-slate-200 px-6 py-1 bg-[#050a14] shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase italic flex items-center gap-2">
               <AlertTriangle className="w-3 h-3 text-red-500 animate-pulse" />
@@ -120,12 +115,10 @@ export const GateDiscoveryNotification = ({
           isVisible && !isExiting ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )}>
           
-          {/* أيقونة البوابة المصغرة بدلاً من الحرف */}
+          {/* تكبير شكل البوابة المصغرة (w-32 h-32) */}
           <div className="flex justify-center">
-             <div className={cn(
-               "relative w-20 h-20 flex items-center justify-center transition-all duration-500",
-             )}>
-                <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.2)] bg-black">
+             <div className="relative w-32 h-32 flex items-center justify-center transition-all duration-500">
+                <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-black">
                   <img 
                     src="/portal.gif" 
                     alt="Portal Icon" 
@@ -133,15 +126,13 @@ export const GateDiscoveryNotification = ({
                     style={{ filter: `hue-rotate(${gate.rank === 'S' ? '0deg' : '200deg'})` }} 
                   />
                 </div>
-                <div className="absolute -bottom-1 bg-white text-black px-1.5 py-0.5 text-[8px] font-black italic">
+                <div className="absolute -bottom-2 bg-white text-black px-2 py-0.5 text-[9px] font-black italic shadow-lg">
                    RANK {gate.rank}
                 </div>
              </div>
           </div>
 
-          {/* معلومات البوابة الصحيحة والمدمجة */}
           <div className="space-y-[2px] border border-white/10 bg-black/60 rounded overflow-hidden">
-            
             <div className="flex justify-between items-center p-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Info className="w-3.5 h-3.5 text-slate-500" />
@@ -181,7 +172,6 @@ export const GateDiscoveryNotification = ({
             </div>
           </div>
 
-          {/* الأزرار */}
           <div className="space-y-3">
             {hasManaGauge && !showManaDetails && (
               <button
@@ -199,10 +189,7 @@ export const GateDiscoveryNotification = ({
             )}
 
             <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={handleClose}
-                className="py-3 bg-transparent border border-white/10 text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-all"
-              >
+              <button onClick={handleClose} className="py-3 bg-transparent border border-white/10 text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-all">
                 تجاهل
               </button>
               <button
