@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gate } from '@/types/game';
 import { cn } from '@/lib/utils';
-import { X, Target, Zap, AlertTriangle, Skull, Activity, Scan, Shield, Fingerprint, Info } from 'lucide-react';
+import { X, Target, Zap, AlertTriangle, Skull, Activity, Scan, Info, Fingerprint } from 'lucide-react';
 
 interface GateDiscoveryNotificationProps {
   show: boolean;
@@ -28,18 +28,18 @@ export const GateDiscoveryNotification = ({
   const [isScanning, setIsScanning] = useState(false);
   const [alreadySeen, setAlreadySeen] = useState(false);
 
-  // حل مشكلة التكرار: تظهر فقط للبوابات الجديدة
+  // --- حل مشكلة الظهور المتكرر ---
   useEffect(() => {
     if (show && gate) {
-      const seenGates = JSON.parse(localStorage.getItem('seen_gates_ids') || '[]');
+      const seenGates = JSON.parse(localStorage.getItem('discovered_gates_log') || '[]');
       if (seenGates.includes(gate.id)) {
         setAlreadySeen(true);
       } else {
         setAlreadySeen(false);
         setIsExiting(false);
         setTimeout(() => setIsVisible(true), 50);
-        // حفظ البوابة كـ "تمت رؤيتها"
-        localStorage.setItem('seen_gates_ids', JSON.stringify([...seenGates, gate.id]));
+        // حفظ البوابة فور ظهورها لضمان عدم تكرارها
+        localStorage.setItem('discovered_gates_log', JSON.stringify([...seenGates, gate.id]));
       }
     }
   }, [show, gate]);
@@ -73,166 +73,126 @@ export const GateDiscoveryNotification = ({
 
   if (!show || !gate || alreadySeen) return null;
 
-  const getGateColor = (rank: string) => {
-    switch (rank) {
-      case 'S': return 'from-red-600 to-red-900';
-      case 'A': return 'from-purple-600 to-purple-900';
-      case 'B': return 'from-blue-600 to-blue-900';
-      case 'C': return 'from-cyan-600 to-cyan-900';
-      case 'D': return 'from-green-600 to-green-900';
-      case 'E': return 'from-gray-600 to-gray-900';
-      default: return 'from-blue-600 to-blue-900';
-    }
-  };
-
-  const getRankGlow = (rank: string) => {
-    switch (rank) {
-      case 'S': return 'shadow-[0_0_60px_rgba(239,68,68,0.4)] border-red-500/50';
-      case 'A': return 'shadow-[0_0_60px_rgba(168,85,247,0.4)] border-purple-500/50';
-      case 'B': return 'shadow-[0_0_50px_rgba(59,130,246,0.3)] border-blue-500/50';
-      default: return 'shadow-[0_0_40px_rgba(255,255,255,0.1)] border-white/20';
-    }
-  };
-
-  const canEnter = playerPower >= gate.requiredPower * 0.5;
   const isLocked = gate.rank === 'S' || gate.rank === 'A';
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-[800ms]",
-      isVisible && !isExiting ? "bg-black/90 backdrop-blur-xl" : "bg-black/0 pointer-events-none"
+      "fixed inset-0 z-[300] flex items-center justify-center p-4 transition-all duration-1000",
+      isVisible && !isExiting ? "bg-black/90 backdrop-blur-md" : "bg-black/0 pointer-events-none"
     )}>
+      {/* Background Portal Effect */}
       <div className={cn(
         "absolute inset-0 flex items-center justify-center overflow-hidden transition-opacity duration-1000",
-        isVisible && !isExiting ? "opacity-40" : "opacity-0"
+        isVisible && !isExiting ? "opacity-30" : "opacity-0"
       )}>
         <img 
           src="/portal.gif" 
           alt="Gate Portal" 
-          className="w-[800px] h-[800px] object-cover mix-blend-screen animate-pulse"
-          style={{ filter: `hue-rotate(${gate.rank === 'S' ? '0deg' : gate.rank === 'A' ? '270deg' : '200deg'}) brightness(1.5)` }}
+          className="w-[800px] h-[800px] object-cover mix-blend-screen"
+          style={{ filter: `hue-rotate(${gate.rank === 'S' ? '0deg' : '200deg'})` }}
         />
       </div>
 
+      {/* Main Card - Matching Market Style */}
       <div className={cn(
-        "relative max-w-sm w-full bg-gradient-to-b from-[#0a0f1a] to-[#050a14] border-t border-b transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
-        isVisible && !isExiting ? "opacity-100 scale-100 translate-y-0 duration-[1000ms]" : "opacity-0 scale-95 translate-y-10 duration-[600ms]",
-        getRankGlow(gate.rank)
+        "relative max-w-sm w-full bg-black/80 border-2 border-slate-200/90 shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all ease-[cubic-bezier(0.23,1,0.32,1)]",
+        isVisible && !isExiting ? "opacity-100 scale-100 translate-y-0 duration-[1000ms]" : "opacity-0 scale-95 translate-y-20 duration-[700ms]"
       )}>
-        {/* الزينة العلوية */}
-        <div className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_15px_#fff]" />
         
-        <div className="p-1 px-6 pt-8 pb-8 space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              <span className="text-[9px] font-bold tracking-[0.4em] text-white/70 uppercase">Emergency Alert</span>
-            </div>
-            
-            <div className={cn(
-              "w-28 h-28 mx-auto rounded-full bg-gradient-to-br flex items-center justify-center relative group",
-              getGateColor(gate.rank)
-            )}>
-              <div className="absolute inset-0 rounded-full animate-ping bg-inherit opacity-20" />
-              <span className="text-5xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] z-10">
-                {gate.rank}
-              </span>
-            </div>
+        {/* Floating Header Label - Exactly like Market Item */}
+        <div className="flex justify-center mt-[-1rem]">
+          <div className="border border-slate-400/50 px-6 py-1 bg-slate-900 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <h2 className="text-[10px] font-black tracking-[0.3em] text-white uppercase italic flex items-center gap-2">
+              <AlertTriangle className="w-3 h-3 text-red-500 animate-pulse" />
+              Emergency: <span className="text-blue-400">Gate Detected</span>
+            </h2>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Rank Hexagon - Visual Focus */}
+          <div className="flex justify-center py-2">
+             <div className={cn(
+               "w-20 h-20 rounded-xl rotate-45 border-2 border-white/20 flex items-center justify-center bg-gradient-to-br",
+               gate.rank === 'S' ? "from-red-600 to-red-900" : "from-blue-600 to-blue-900"
+             )}>
+                <span className="text-4xl font-black text-white -rotate-45 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                  {gate.rank}
+                </span>
+             </div>
           </div>
 
-          {/* معلومات البوابة المدمجة */}
-          <div className="space-y-[2px] rounded-lg overflow-hidden border border-white/5 bg-white/[0.02]">
+          {/* Gate Information - List Style from Market */}
+          <div className="space-y-[2px] border border-white/5 rounded overflow-hidden">
             
-            {/* اسم البوابة */}
-            <div className="flex justify-between items-center p-4 bg-white/[0.03]">
-              <div className="flex items-center gap-3">
-                <Info className="w-4 h-4 text-slate-400" />
-                <span className="text-[10px] text-slate-400 uppercase font-black">اسم البوابه</span>
+            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+              <div className="flex items-center gap-2">
+                <Info className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">اسم البوابه</span>
               </div>
-              <span className="text-sm font-bold text-white italic">{gate.name}</span>
+              <span className="text-xs font-bold text-white italic">{gate.name}</span>
             </div>
 
-            {/* رتبة البوابة */}
-            <div className="flex justify-between items-center p-4 bg-white/[0.03]">
-              <div className="flex items-center gap-3">
-                <Target className="w-4 h-4 text-slate-400" />
-                <span className="text-[10px] text-slate-400 uppercase font-black">رتبة البوابه</span>
+            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+              <div className="flex items-center gap-2">
+                <Target className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">رتبة البوابه</span>
               </div>
-              <span className={cn("text-sm font-black", gate.rank === 'S' ? "text-red-500" : "text-white")}>
+              <span className={cn("text-xs font-black", gate.rank === 'S' ? "text-red-500" : "text-blue-400")}>
                 Rank {gate.rank}
               </span>
             </div>
 
-            {/* الطاقة المنبعثة */}
-            <div className="flex justify-between items-center p-4 bg-white/[0.03]">
-              <div className="flex items-center gap-3">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-[10px] text-slate-400 uppercase font-black">الطاقة المنبعثة</span>
+            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+              <div className="flex items-center gap-2">
+                <Zap className="w-3.5 h-3.5 text-yellow-500" />
+                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">الطاقة المنبعثة</span>
               </div>
-              <span className="text-sm font-bold text-cyan-400">
-                {showManaDetails ? `${gate.energyDensity} MP` : '---'}
+              <span className="text-xs font-mono font-bold text-cyan-400 leading-none">
+                {showManaDetails ? `${gate.energyDensity} MP` : 'Locked'}
               </span>
             </div>
 
-            {/* نوع البوابة */}
-            <div className="flex justify-between items-center p-4 bg-white/[0.03]">
-              <div className="flex items-center gap-3">
-                <Fingerprint className="w-4 h-4 text-slate-400" />
-                <span className="text-[10px] text-slate-400 uppercase font-black">نوع البوابه</span>
+            <div className="flex justify-between items-center p-3 bg-white/[0.03]">
+              <div className="flex items-center gap-2">
+                <Fingerprint className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">نوع البوابه</span>
               </div>
-              <span className="text-sm font-bold text-white uppercase tracking-tighter">
-                 {showManaDetails ? (gate.type || 'Standard') : 'Locked'}
+              <span className="text-xs font-bold text-white uppercase tracking-tighter">
+                 {showManaDetails ? (gate.type || 'Standard') : 'Analysis Required'}
               </span>
             </div>
           </div>
 
-          {/* المكافآت - بتصميم أرقى */}
-          <div className="flex gap-2">
-            <div className="flex-1 p-2 rounded bg-blue-500/5 border border-blue-500/20 text-center">
-               <div className="text-[8px] text-blue-400 font-bold uppercase">Exp Gain</div>
-               <div className="text-sm font-black text-white">+{gate.rewards.xp}</div>
-            </div>
-            <div className="flex-1 p-2 rounded bg-yellow-500/5 border border-yellow-500/20 text-center">
-               <div className="text-[8px] text-yellow-400 font-bold uppercase">Gold Reward</div>
-               <div className="text-sm font-black text-white">+{gate.rewards.gold}</div>
-            </div>
+          {/* Description Block */}
+          <div className="text-center px-2">
+            <p className="text-[10px] text-slate-400 italic leading-relaxed">
+              System analysis: High mana concentration detected in the area. 
+              Unauthorized entry is punishable by the Hunter Law.
+            </p>
           </div>
 
-          {/* الأزرار */}
-          <div className="space-y-3 pt-2">
+          {/* Action Buttons - Market Style */}
+          <div className="space-y-3">
             {hasManaGauge && !showManaDetails && (
               <button
                 onClick={handleScanMana}
                 disabled={isScanning}
                 className={cn(
-                  "w-full py-4 rounded-sm border-2 text-[11px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group",
+                  "w-full py-3 text-[10px] font-black uppercase tracking-[0.3em] border-2 transition-all",
                   isScanning 
-                    ? "bg-slate-900 border-slate-800 text-slate-500 cursor-wait"
-                    : "bg-transparent border-cyan-500/50 text-cyan-400 hover:bg-cyan-500 hover:text-black"
+                    ? "bg-blue-900/20 border-blue-800 text-blue-500 cursor-wait"
+                    : "bg-blue-600/10 border-blue-500/50 text-blue-400 hover:bg-blue-500 hover:text-white"
                 )}
               >
-                {isScanning ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Scan className="w-4 h-4 animate-spin" />
-                    Analyzing Flux...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Scan className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    كشف بيانات البوابة
-                  </span>
-                )}
+                {isScanning ? "جاري المسح..." : "كشف بيانات البوابة"}
               </button>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex gap-2">
               <button
                 onClick={handleClose}
-                className="py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                className="flex-1 py-3 bg-slate-900 border border-slate-800 text-slate-500 text-[10px] font-bold uppercase tracking-widest"
               >
                 تجاهل
               </button>
@@ -240,13 +200,13 @@ export const GateDiscoveryNotification = ({
                 onClick={handleEnter}
                 disabled={isLocked}
                 className={cn(
-                  "py-3 rounded-sm text-[11px] font-black uppercase tracking-widest transition-all",
+                  "flex-[2] py-3 text-[10px] font-black uppercase tracking-widest transition-all",
                   isLocked 
-                    ? "bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed"
-                    : "bg-white text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-95"
+                    ? "bg-red-900/10 border border-red-900/30 text-red-900/50 cursor-not-allowed"
+                    : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95"
                 )}
               >
-                {isLocked ? 'Locked' : 'دخول'}
+                {isLocked ? 'Locked' : 'دخول البوابة'}
               </button>
             </div>
           </div>
@@ -255,4 +215,3 @@ export const GateDiscoveryNotification = ({
     </div>
   );
 };
- 
