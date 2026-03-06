@@ -10,115 +10,11 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
-      friendships: {
-        Row: {
-          created_at: string
-          id: string
-          receiver_id: string
-          sender_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          receiver_id: string
-          sender_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          receiver_id?: string
-          sender_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      game_states: {
-        Row: {
-          created_at: string
-          energy: number | null
-          equipped_title: string | null
-          game_data: Json | null
-          gold: number | null
-          hp: number | null
-          id: string
-          max_energy: number | null
-          max_hp: number | null
-          player_name: string | null
-          shadow_points: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          energy?: number | null
-          equipped_title?: string | null
-          game_data?: Json | null
-          gold?: number | null
-          hp?: number | null
-          id?: string
-          max_energy?: number | null
-          max_hp?: number | null
-          player_name?: string | null
-          shadow_points?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          energy?: number | null
-          equipped_title?: string | null
-          game_data?: Json | null
-          gold?: number | null
-          hp?: number | null
-          id?: string
-          max_energy?: number | null
-          max_hp?: number | null
-          player_name?: string | null
-          shadow_points?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          id: string
-          player_id: string
-          player_name: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          id?: string
-          player_id?: string
-          player_name?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          id?: string
-          player_id?: string
-          player_name?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
