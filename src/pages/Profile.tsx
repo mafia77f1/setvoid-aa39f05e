@@ -37,7 +37,7 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        await updateProfile({ avatar_url: reader.result });
+        await updateProfile({ avatar_url: reader.result as string });
         toast({ title: "تم تحديث الصورة الشخصية" });
       };
       reader.readAsDataURL(file);
