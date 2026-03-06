@@ -32,8 +32,8 @@ export const useFriendships = () => {
     if (!user) return;
     setLoading(true);
 
-    const { data: friendships, error } = await supabase
-      .from('friendships')
+    const { data: friendships, error } = await (supabase.from as any)('friendships')
+      .select('*')
       .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
