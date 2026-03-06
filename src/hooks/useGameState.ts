@@ -252,7 +252,7 @@ export const useGameState = () => {
 
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await supabase.from('game_states').select('game_data, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title').eq('user_id', user.id).maybeSingle();
+        const { data, error } = await (supabase.from as any)('profiles').select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
         
         if (error) { 
           isInitializedRef.current = true; 
@@ -269,22 +269,45 @@ export const useGameState = () => {
           return; 
         }
         
-        if (data?.game_data) {
-          const savedState = data.game_data as unknown as GameState;
+        if (data) {
+          const savedState = data as any;
           const defaultState = getDefaultState();
           const mergedState = { 
             ...defaultState, 
-            ...savedState, 
             isOnboarded: true,
-            // استخدام القيم من الأعمدة المباشرة
-            playerName: data.player_name || savedState.playerName,
-            gold: data.gold ?? savedState.gold,
-            hp: data.hp ?? savedState.hp,
-            maxHp: data.max_hp ?? savedState.maxHp,
-            energy: data.energy ?? savedState.energy,
-            maxEnergy: data.max_energy ?? savedState.maxEnergy,
-            shadowPoints: data.shadow_points ?? savedState.shadowPoints,
-            equippedTitle: data.equipped_title || savedState.equippedTitle,
+            playerName: savedState.player_name || defaultState.playerName,
+            gold: savedState.gold ?? defaultState.gold,
+            hp: savedState.hp ?? defaultState.hp,
+            maxHp: savedState.max_hp ?? defaultState.maxHp,
+            energy: savedState.energy ?? defaultState.energy,
+            maxEnergy: savedState.max_energy ?? defaultState.maxEnergy,
+            shadowPoints: savedState.shadow_points ?? defaultState.shadowPoints,
+            equippedTitle: savedState.equipped_title || defaultState.equippedTitle,
+            stats: savedState.stats || defaultState.stats,
+            levels: savedState.levels || defaultState.levels,
+            totalLevel: savedState.total_level || defaultState.totalLevel,
+            playerTitle: savedState.player_title || defaultState.playerTitle,
+            playerJob: savedState.player_job || defaultState.playerJob,
+            quests: savedState.quests || defaultState.quests,
+            currentBoss: savedState.current_boss || defaultState.currentBoss,
+            abilities: savedState.abilities || defaultState.abilities,
+            achievements: savedState.achievements || defaultState.achievements,
+            inventory: savedState.inventory || defaultState.inventory,
+            equipment: savedState.equipment || defaultState.equipment,
+            prayerQuests: savedState.prayer_quests || defaultState.prayerQuests,
+            shadowSoldiers: savedState.shadow_soldiers || defaultState.shadowSoldiers,
+            gates: savedState.gates || defaultState.gates,
+            grandQuest: savedState.grand_quest || defaultState.grandQuest,
+            dailyStats: savedState.daily_stats || defaultState.dailyStats,
+            totalQuestsCompleted: savedState.total_quests_completed ?? defaultState.totalQuestsCompleted,
+            streakDays: savedState.streak_days ?? defaultState.streakDays,
+            lastActiveDate: savedState.last_active_date || defaultState.lastActiveDate,
+            punishment: savedState.punishment || defaultState.punishment,
+            punishmentEndTime: savedState.punishment_end_time || defaultState.punishmentEndTime,
+            missedQuestsCount: savedState.missed_quests_count ?? defaultState.missedQuestsCount,
+            selectedReciter: savedState.selected_reciter || defaultState.selectedReciter,
+            soundEnabled: savedState.sound_enabled ?? defaultState.soundEnabled,
+            lastBossAttackTime: savedState.last_boss_attack_time || defaultState.lastBossAttackTime,
           };
           
           const today = new Date().toISOString().split('T')[0];
@@ -311,7 +334,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     if (!user) return;
-    const channel = supabase.channel('game-state-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_states', filter: `user_id=eq.${user.id}` }, (payload) => {
+    const channel = supabase.channel('game-state-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, (payload) => {
           if (payload.new && !isSyncingRef.current) {
             const newData = payload.new as any;
             setGameState(prev => ({
@@ -355,7 +378,7 @@ export const useGameState = () => {
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
-        const { data: existing } = await supabase.from('game_states').select('id').eq('user_id', user.id).maybeSingle();
+        const { data: existing } = await (supabase.from as any)('profiles').select('id').eq('user_id', user.id).maybeSingle();
         const updateData = { 
           player_name: gameState.playerName, 
           equipped_title: gameState.equippedTitle || null, 
@@ -364,12 +387,34 @@ export const useGameState = () => {
           max_hp: gameState.maxHp, 
           energy: gameState.energy, 
           max_energy: gameState.maxEnergy, 
-          shadow_points: gameState.shadowPoints, 
-          game_data: JSON.parse(JSON.stringify(gameState)), 
-          updated_at: new Date().toISOString() 
+          shadow_points: gameState.shadowPoints,
+          stats: gameState.stats,
+          levels: gameState.levels,
+          total_level: gameState.totalLevel,
+          player_title: gameState.playerTitle,
+          player_job: gameState.playerJob,
+          quests: gameState.quests,
+          current_boss: gameState.currentBoss,
+          abilities: gameState.abilities,
+          achievements: gameState.achievements,
+          inventory: gameState.inventory,
+          equipment: gameState.equipment,
+          prayer_quests: gameState.prayerQuests,
+          shadow_soldiers: gameState.shadowSoldiers,
+          gates: gameState.gates,
+          grand_quest: gameState.grandQuest,
+          daily_stats: gameState.dailyStats,
+          total_quests_completed: gameState.totalQuestsCompleted,
+          streak_days: gameState.streakDays,
+          last_active_date: gameState.lastActiveDate,
+          punishment: gameState.punishment,
+          missed_quests_count: gameState.missedQuestsCount,
+          selected_reciter: gameState.selectedReciter,
+          sound_enabled: gameState.soundEnabled,
+          is_onboarded: gameState.isOnboarded,
         };
-        if (existing) await supabase.from('game_states').update(updateData).eq('user_id', user.id);
-        else await supabase.from('game_states').insert([{ user_id: user.id, ...updateData }]);
+        if (existing) await (supabase.from as any)('profiles').update(updateData).eq('user_id', user.id);
+        else await (supabase.from as any)('profiles').insert([{ user_id: user.id, ...updateData }]);
       } catch (err) {} finally { isSyncingRef.current = false; }
     }, 1000);
     return () => clearTimeout(timeout);

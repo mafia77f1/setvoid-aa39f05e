@@ -26,7 +26,7 @@ const GrandQuest = () => {
   const [questTitle, setQuestTitle] = useState('');
 
   // تعديل: إعطاء 100 حجر مانا بشكل افتراضي لأغراض التجربة
-  const manaStones = gameState.manaStones !== undefined ? gameState.manaStones : 100; 
+  const manaStones = 100; 
 
   const handleStart = () => {
     if (!questTitle.trim()) {

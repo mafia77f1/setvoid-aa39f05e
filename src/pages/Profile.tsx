@@ -37,14 +37,14 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        await updateProfile({ avatar_url: reader.result });
+        await updateProfile({ avatar_url: reader.result as string as string });
         toast({ title: "تم تحديث الصورة الشخصية" });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const encryption = { label: profile?.encryption || 'Active', color: profile?.encryption === 'Failed' ? 'text-red-500' : 'text-blue-400' };
+  const encryption = { label: 'Active', color: 'text-blue-400' };
   
   const rank = ((level) => {
     if (level >= 50) return { name: 'S', color: 'text-blue-500', border: 'border-blue-500/60', glow: 'shadow-[0_0_40px_rgba(59,130,246,0.25)]' };

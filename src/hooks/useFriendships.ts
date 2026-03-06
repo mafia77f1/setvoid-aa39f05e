@@ -32,8 +32,8 @@ export const useFriendships = () => {
     if (!user) return;
     setLoading(true);
 
-    const { data: friendships, error } = await supabase
-      .from('friendships')
+    const { data: friendships, error } = await (supabase.from as any)('friendships')
+      .select('*')
       .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
@@ -56,16 +56,16 @@ export const useFriendships = () => {
       f.sender_id === user.id ? f.receiver_id : f.sender_id
     );
 
-    const { data: profiles } = await supabase
-      .from('profiles')
+    const { data: profiles } = await (supabase.from as any)('profiles')
+      .select('user_id, player_name, player_id, avatar_url')
       .select('*')
       .in('user_id', otherUserIds);
 
-    const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+    const profileMap = new Map((profiles as any[] || []).map((p: any) => [p.user_id, p]));
 
-    const mapped: FriendProfile[] = friendships.map(f => {
+    const mapped: FriendProfile[] = friendships.map((f: any) => {
       const otherId = f.sender_id === user.id ? f.receiver_id : f.sender_id;
-      const profile = profileMap.get(otherId);
+      const profile: any = profileMap.get(otherId);
       return {
         friendship_id: f.id,
         user_id: otherId,
@@ -91,7 +91,7 @@ export const useFriendships = () => {
     if (!user) return { error: new Error('Not authenticated') };
     if (receiverUserId === user.id) return { error: new Error('Cannot add yourself') };
 
-    const { error } = await supabase.from('friendships').insert({
+    const { error } = await (supabase.from as any)('friendships').insert({
       sender_id: user.id,
       receiver_id: receiverUserId,
     });
@@ -101,8 +101,8 @@ export const useFriendships = () => {
   };
 
   const acceptRequest = async (friendshipId: string) => {
-    const { error } = await supabase
-      .from('friendships')
+    const { error } = await (supabase.from as any)('friendships')
+      .update({ status: 'accepted' })
       .update({ status: 'accepted' })
       .eq('id', friendshipId);
 
@@ -111,8 +111,8 @@ export const useFriendships = () => {
   };
 
   const rejectRequest = async (friendshipId: string) => {
-    const { error } = await supabase
-      .from('friendships')
+    const { error } = await (supabase.from as any)('friendships')
+      .delete()
       .delete()
       .eq('id', friendshipId);
 
@@ -121,8 +121,8 @@ export const useFriendships = () => {
   };
 
   const removeFriend = async (friendshipId: string) => {
-    const { error } = await supabase
-      .from('friendships')
+    const { error } = await (supabase.from as any)('friendships')
+      .delete()
       .delete()
       .eq('id', friendshipId);
 

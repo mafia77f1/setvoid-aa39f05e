@@ -26,8 +26,7 @@ export const useProfile = () => {
 
     const fetchProfile = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase.from as any)('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -42,8 +41,7 @@ export const useProfile = () => {
       if (!data) {
         const playerName = user.user_metadata?.player_name || 'Hunter';
         
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
+        const { data: newProfile, error: insertError } = await (supabase.from as any)('profiles')
           .insert({
             user_id: user.id,
             player_name: playerName,
@@ -67,8 +65,7 @@ export const useProfile = () => {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    const { data, error } = await supabase
-      .from('profiles')
+    const { data, error } = await (supabase.from as any)('profiles')
       .update(updates)
       .eq('user_id', user.id)
       .select()
