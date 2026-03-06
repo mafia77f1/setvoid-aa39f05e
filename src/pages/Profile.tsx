@@ -44,7 +44,7 @@ const Profile = () => {
     }
   };
 
-  const encryption ='Active', color-red-500' : 'text-blue-400' };
+  const encryption = { label: 'Active', color: 'text-blue-400' };
   
   const rank = ((level) => {
     if (level >= 50) return { name: 'S', color: 'text-blue-500', border: 'border-blue-500/60', glow: 'shadow-[0_0_40px_rgba(59,130,246,0.25)]' };
