@@ -91,7 +91,7 @@ export const useFriendships = () => {
     if (!user) return { error: new Error('Not authenticated') };
     if (receiverUserId === user.id) return { error: new Error('Cannot add yourself') };
 
-    const { error } = await supabase.from('friendships').insert({
+    const { error } = await (supabase.from as any)('friendships').insert({
       sender_id: user.id,
       receiver_id: receiverUserId,
     });
