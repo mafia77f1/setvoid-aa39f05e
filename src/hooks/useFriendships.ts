@@ -101,8 +101,8 @@ export const useFriendships = () => {
   };
 
   const acceptRequest = async (friendshipId: string) => {
-    const { error } = await supabase
-      .from('friendships')
+    const { error } = await (supabase.from as any)('friendships')
+      .update({ status: 'accepted' })
       .update({ status: 'accepted' })
       .eq('id', friendshipId);
 
