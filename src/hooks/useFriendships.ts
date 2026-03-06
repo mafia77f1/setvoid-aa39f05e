@@ -61,7 +61,7 @@ export const useFriendships = () => {
       .select('*')
       .in('user_id', otherUserIds);
 
-    const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+    const profileMap = new Map((profiles as any[])?.map((p: any) => [p.user_id, p]) || []);
 
     const mapped: FriendProfile[] = friendships.map(f => {
       const otherId = f.sender_id === user.id ? f.receiver_id : f.sender_id;
