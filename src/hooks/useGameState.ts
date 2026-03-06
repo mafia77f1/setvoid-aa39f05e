@@ -311,7 +311,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     if (!user) return;
-    const channel = supabase.channel('game-state-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_states', filter: `user_id=eq.${user.id}` }, (payload) => {
+    const channel = supabase.channel('game-state-changes').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, (payload) => {
           if (payload.new && !isSyncingRef.current) {
             const newData = payload.new as any;
             setGameState(prev => ({
