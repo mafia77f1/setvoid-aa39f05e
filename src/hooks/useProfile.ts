@@ -26,8 +26,7 @@ export const useProfile = () => {
 
     const fetchProfile = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase.from as any)('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
