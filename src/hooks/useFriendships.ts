@@ -121,8 +121,8 @@ export const useFriendships = () => {
   };
 
   const removeFriend = async (friendshipId: string) => {
-    const { error } = await supabase
-      .from('friendships')
+    const { error } = await (supabase.from as any)('friendships')
+      .delete()
       .delete()
       .eq('id', friendshipId);
 
