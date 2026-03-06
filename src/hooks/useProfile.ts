@@ -65,8 +65,7 @@ export const useProfile = () => {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    const { data, error } = await supabase
-      .from('profiles')
+    const { data, error } = await (supabase.from as any)('profiles')
       .update(updates)
       .eq('user_id', user.id)
       .select()
