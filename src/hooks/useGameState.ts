@@ -252,7 +252,7 @@ export const useGameState = () => {
 
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await supabase.from('game_states').select('game_data, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title').eq('user_id', user.id).maybeSingle();
+        const { data, error } = await (supabase.from as any)('profiles').select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
         
         if (error) { 
           isInitializedRef.current = true; 
