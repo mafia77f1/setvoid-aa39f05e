@@ -198,7 +198,7 @@ const Market = () => {
                       <div className="space-y-3 relative z-10">
                         <div className="flex justify-between items-center border-b border-white/5 pb-2">
                           <span className="text-[10px] text-slate-500 uppercase font-bold">Player Identity</span>
-                          <span className="text-xs font-mono text-blue-200">{gameState.user?.name || "Player_Unknown"}</span>
+                          <span className="text-xs font-mono text-blue-200">{gameState.playerName || "Player_Unknown"}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-white/5 pb-2">
                           <span className="text-[10px] text-slate-500 uppercase font-bold">System ID</span>
