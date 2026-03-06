@@ -56,8 +56,8 @@ export const useFriendships = () => {
       f.sender_id === user.id ? f.receiver_id : f.sender_id
     );
 
-    const { data: profiles } = await supabase
-      .from('profiles')
+    const { data: profiles } = await (supabase.from as any)('profiles')
+      .select('user_id, player_name, player_id, avatar_url')
       .select('*')
       .in('user_id', otherUserIds);
 
