@@ -61,11 +61,11 @@ export const useFriendships = () => {
       .select('*')
       .in('user_id', otherUserIds);
 
-    const profileMap = new Map((profiles as any[])?.map((p: any)y[])?.map((p: any) => [p.user_id, p]) || []);
+    const profileMap = new Map((profiles as any[] || []).map((p: any) => [p.user_id, p]));
 
-    const mapped: FriendProfile[] = friendships.map(f => {
+    const mapped: FriendProfile[] = friendships.map((f: any) => {
       const otherId = f.sender_id === user.id ? f.receiver_id : f.sender_id;
-      const profile = profi as anyleMap.get(otherId);
+      const profile: any = profileMap.get(otherId);
       return {
         friendship_id: f.id,
         user_id: otherId,
