@@ -41,8 +41,7 @@ export const useProfile = () => {
       if (!data) {
         const playerName = user.user_metadata?.player_name || 'Hunter';
         
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
+        const { data: newProfile, error: insertError } = await (supabase.from as any)('profiles')
           .insert({
             user_id: user.id,
             player_name: playerName,
