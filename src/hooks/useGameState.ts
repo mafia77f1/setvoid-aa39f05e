@@ -269,8 +269,8 @@ export const useGameState = () => {
           return; 
         }
         
-        if (data?.game_data) {
-          const savedState = data.game_data as unknown as GameState;
+        if (data) {
+          const savedState = data as any;
           const defaultState = getDefaultState();
           const mergedState = { 
             ...defaultState, 
