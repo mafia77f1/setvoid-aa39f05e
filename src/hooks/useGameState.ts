@@ -355,7 +355,7 @@ export const useGameState = () => {
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
-        const { data: existing } = await supabase.from('game_states').select('id').eq('user_id', user.id).maybeSingle();
+        const { data: existing } = await (supabase.from as any)('profiles').select('id').eq('user_id', user.id).maybeSingle();
         const updateData = { 
           player_name: gameState.playerName, 
           equipped_title: gameState.equippedTitle || null, 
@@ -364,12 +364,34 @@ export const useGameState = () => {
           max_hp: gameState.maxHp, 
           energy: gameState.energy, 
           max_energy: gameState.maxEnergy, 
-          shadow_points: gameState.shadowPoints, 
-          game_data: JSON.parse(JSON.stringify(gameState)), 
-          updated_at: new Date().toISOString() 
+          shadow_points: gameState.shadowPoints,
+          stats: gameState.stats,
+          levels: gameState.levels,
+          total_level: gameState.totalLevel,
+          player_title: gameState.playerTitle,
+          player_job: gameState.playerJob,
+          quests: gameState.quests,
+          current_boss: gameState.currentBoss,
+          abilities: gameState.abilities,
+          achievements: gameState.achievements,
+          inventory: gameState.inventory,
+          equipment: gameState.equipment,
+          prayer_quests: gameState.prayerQuests,
+          shadow_soldiers: gameState.shadowSoldiers,
+          gates: gameState.gates,
+          grand_quest: gameState.grandQuest,
+          daily_stats: gameState.dailyStats,
+          total_quests_completed: gameState.totalQuestsCompleted,
+          streak_days: gameState.streakDays,
+          last_active_date: gameState.lastActiveDate,
+          punishment: gameState.punishment,
+          missed_quests_count: gameState.missedQuestsCount,
+          selected_reciter: gameState.selectedReciter,
+          sound_enabled: gameState.soundEnabled,
+          is_onboarded: gameState.isOnboarded,
         };
-        if (existing) await supabase.from('game_states').update(updateData).eq('user_id', user.id);
-        else await supabase.from('game_states').insert([{ user_id: user.id, ...updateData }]);
+        if (existing) await (supabase.from as any)('profiles').update(updateData).eq('user_id', user.id);
+        else await (supabase.from as any)('profiles').insert([{ user_id: user.id, ...updateData }]);
       } catch (err) {} finally { isSyncingRef.current = false; }
     }, 1000);
     return () => clearTimeout(timeout);
