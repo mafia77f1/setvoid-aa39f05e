@@ -1,199 +1,435 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { BottomNav } from '@/components/BottomNav';
 import { PlayerQRCode } from '@/components/PlayerQRCode';
 import { cn } from '@/lib/utils';
-import { User, Dumbbell, Brain, Heart, Zap, Shield, Menu, Copy, LogOut, Fingerprint, Activity, Star, Search, ScanLine, UserPlus, MessageSquare, Sword, ShieldCheck, Camera, ChevronRight, Settings, History, Users, Scan, QrCode, Sparkles } from 'lucide-react';
+import { 
+  User, Dumbbell, Brain, Heart, Zap, Shield, Menu, Copy, LogOut, 
+  Fingerprint, Activity, Star, Search, ScanLine, UserPlus, MessageSquare, 
+  Sword, ShieldCheck, Camera, ChevronRight, Settings, History, Users, 
+  Scan, QrCode, Sparkles, Crown, Target, Flame, Award, Swords, Eye
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
+// Floating particle component
+const FloatingParticles = () => {
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 5}s`,
+    duration: `${3 + Math.random() * 4}s`,
+    size: `${1 + Math.random() * 2}px`,
+    opacity: 0.1 + Math.random() * 0.3,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full bg-primary animate-float"
+          style={{
+            left: p.left,
+            bottom: '-10px',
+            width: p.size,
+            height: p.size,
+            opacity: p.opacity,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const getRankData = (level: number) => {
+  if (level >= 50) return { name: 'S', title: 'Shadow Monarch', gradient: 'from-orange-500 via-amber-400 to-yellow-500', glow: 'shadow-[0_0_80px_rgba(245,158,11,0.4)]', textColor: 'text-amber-400', borderColor: 'border-amber-500/50', auraColor: 'rgba(245,158,11,0.15)' };
+  if (level >= 40) return { name: 'A', title: 'S-Rank Hunter', gradient: 'from-purple-500 via-violet-400 to-fuchsia-500', glow: 'shadow-[0_0_60px_rgba(168,85,247,0.35)]', textColor: 'text-purple-400', borderColor: 'border-purple-500/50', auraColor: 'rgba(168,85,247,0.12)' };
+  if (level >= 30) return { name: 'B', title: 'A-Rank Hunter', gradient: 'from-blue-500 via-cyan-400 to-blue-600', glow: 'shadow-[0_0_50px_rgba(59,130,246,0.3)]', textColor: 'text-blue-400', borderColor: 'border-blue-500/40', auraColor: 'rgba(59,130,246,0.1)' };
+  if (level >= 20) return { name: 'C', title: 'B-Rank Hunter', gradient: 'from-emerald-500 via-green-400 to-teal-500', glow: 'shadow-[0_0_40px_rgba(16,185,129,0.25)]', textColor: 'text-emerald-400', borderColor: 'border-emerald-500/40', auraColor: 'rgba(16,185,129,0.08)' };
+  if (level >= 10) return { name: 'D', title: 'C-Rank Hunter', gradient: 'from-yellow-500 via-amber-400 to-orange-400', glow: 'shadow-[0_0_30px_rgba(234,179,8,0.2)]', textColor: 'text-yellow-400', borderColor: 'border-yellow-500/30', auraColor: 'rgba(234,179,8,0.06)' };
+  return { name: 'E', title: 'E-Rank Hunter', gradient: 'from-slate-400 via-gray-300 to-slate-500', glow: '', textColor: 'text-slate-400', borderColor: 'border-slate-600/30', auraColor: 'rgba(148,163,184,0.05)' };
+};
 
 const Profile = () => {
   const { gameState } = useGameState();
   const { signOut } = useAuth();
   const { profile, loading: profileLoading, updateProfile } = useProfile();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showResult, setShowResult] = useState(false);
   const [searchMode, setSearchMode] = useState('main');
+  const [showResult, setShowResult] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
 
-  const statsIcons = [
-    { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-    { key: 'mind', label: 'INT', icon: Brain, color: 'text-blue-400', bgColor: 'bg-blue-400/10' },
-    { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-slate-300', bgColor: 'bg-slate-300/10' },
-    { key: 'agility', label: 'AGI', icon: Zap, color: 'text-blue-300', bgColor: 'bg-blue-300/10' },
+  useEffect(() => {
+    setTimeout(() => setAnimateIn(true), 100);
+  }, []);
+
+  const rankData = getRankData(gameState.totalLevel);
+  const completedGates = gameState.gates?.filter((g: any) => g.completed).length || 0;
+  const completedQuests = gameState.quests?.filter((q: any) => q.completed).length || 0;
+
+  const stats = [
+    { key: 'strength', label: 'STR', icon: Dumbbell, value: gameState.levels.strength, color: 'from-red-600 to-red-400', textColor: 'text-red-400', bgColor: 'bg-red-500' },
+    { key: 'mind', label: 'INT', icon: Brain, value: gameState.levels.mind, color: 'from-blue-600 to-blue-400', textColor: 'text-blue-400', bgColor: 'bg-blue-500' },
+    { key: 'spirit', label: 'SPR', icon: Heart, value: gameState.levels.spirit, color: 'from-violet-600 to-violet-400', textColor: 'text-violet-400', bgColor: 'bg-violet-500' },
+    { key: 'agility', label: 'AGI', icon: Zap, value: gameState.levels.agility || 0, color: 'from-emerald-600 to-emerald-400', textColor: 'text-emerald-400', bgColor: 'bg-emerald-500' },
   ];
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        await updateProfile({ avatar_url: reader.result as string as string });
+        await updateProfile({ avatar_url: reader.result as string });
         toast({ title: "تم تحديث الصورة الشخصية" });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const encryption = { label: 'Active', color: 'text-blue-400' };
-  
-  const rank = ((level) => {
-    if (level >= 50) return { name: 'S', color: 'text-blue-500', border: 'border-blue-500/60', glow: 'shadow-[0_0_40px_rgba(59,130,246,0.25)]' };
-    return { name: 'E', color: 'text-slate-500', border: 'border-slate-500/50', glow: '' };
-  })(gameState.totalLevel);
-
   return (
-    <div className="h-[100dvh] w-full bg-[#050505] overflow-hidden flex flex-col font-sans text-white">
-      <header className="relative z-20 flex justify-between items-center p-4">
-        <h1 className="text-lg font-black italic text-blue-500 tracking-tighter uppercase">Hunter License</h1>
+    <div className="h-[100dvh] w-full bg-background overflow-hidden flex flex-col">
+      {/* Cinematic Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.15),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsl(var(--secondary)/0.1),transparent_60%)]" />
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(hsl(var(--primary)/0.03) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--primary)/0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px'
+        }} />
+        <FloatingParticles />
+      </div>
+
+      {/* Header */}
+      <header className={cn(
+        "relative z-20 flex justify-between items-center px-5 py-4 transition-all duration-700",
+        animateIn ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+      )}>
+        <div className="flex items-center gap-2">
+          <div className={cn("w-2 h-2 rounded-full animate-pulse", rankData.textColor.replace('text-', 'bg-'))} />
+          <h1 className="text-sm font-black tracking-[0.3em] uppercase text-foreground/80">Hunter License</h1>
+        </div>
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
-            <button className="p-2 bg-white/5 rounded-xl backdrop-blur-md transition-all active:scale-90"><Menu className="w-5 h-5 text-blue-400" /></button>
+            <button className="p-2.5 bg-card/50 border border-border/50 rounded-xl backdrop-blur-md transition-all active:scale-90 hover:border-primary/50">
+              <Menu className="w-5 h-5 text-muted-foreground" />
+            </button>
           </SheetTrigger>
-          <SheetContent className="bg-[#050505] border-l border-blue-500/30 shadow-2xl">
-            <Button variant="destructive" className="w-full mt-10 rounded-2xl" onClick={signOut}>تسجيل الخروج</Button>
+          <SheetContent className="bg-background/95 backdrop-blur-xl border-l border-border">
+            <div className="mt-10 space-y-4">
+              <Button variant="ghost" className="w-full justify-start gap-3 h-14 rounded-2xl" onClick={() => navigate('/stats')}>
+                <Activity className="w-5 h-5 text-primary" /> <span>الإحصائيات</span>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start gap-3 h-14 rounded-2xl">
+                <Settings className="w-5 h-5 text-muted-foreground" /> <span>الإعدادات</span>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start gap-3 h-14 rounded-2xl">
+                <Users className="w-5 h-5 text-muted-foreground" /> <span>الأصدقاء</span>
+              </Button>
+              <div className="pt-4 border-t border-border/50">
+                <Button variant="destructive" className="w-full rounded-2xl h-12" onClick={signOut}>
+                  <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
+                </Button>
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-3 relative z-10">
-        <div className={cn("relative w-full max-w-sm h-[88vh] bg-[#0a0a0c] border border-white/5 rounded-[3.5rem] p-7 shadow-2xl flex flex-col overflow-hidden", rank.glow)}>
+      {/* Scrollable Content */}
+      <main className="flex-1 overflow-y-auto z-10 px-4 pb-24 space-y-5">
+
+        {/* ═══════════════ HERO CARD ═══════════════ */}
+        <div className={cn(
+          "relative rounded-3xl overflow-hidden transition-all duration-1000",
+          rankData.glow,
+          animateIn ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        )}>
+          {/* Aura Effect */}
+          <div className="absolute inset-0 rounded-3xl" style={{ background: `radial-gradient(ellipse at 50% 0%, ${rankData.auraColor}, transparent 70%)` }} />
           
-          {/* Top Bar with LARGE RANK CARD */}
-          <div className="flex justify-between items-start mb-6">
-            <div className="p-2 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-xl">
-              {profile && <PlayerQRCode playerId={profile.player_id} playerName={profile.player_name} size={40} />}
+          {/* Card Body */}
+          <div className={cn("relative border-2 bg-card/80 backdrop-blur-xl rounded-3xl p-6", rankData.borderColor)}>
+            {/* Scan line */}
+            <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+              <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-scan-line" />
             </div>
-            {/* BIGGER RANK CARD */}
-            <div className={cn("w-20 h-20 rounded-3xl border-2 flex flex-col items-center justify-center bg-white/[0.03] shadow-inner", rank.border)}>
-              <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">Rank</span>
-              <span className={cn("text-4xl font-black italic tracking-tighter", rank.color)}>{rank.name}</span>
-            </div>
-          </div>
 
-          {/* Identity Section with LARGE CIRCULAR IMAGE */}
-          <div className="flex justify-between items-center gap-4 mb-8">
-            <div className="flex-1 space-y-3">
-              <div className="space-y-0.5">
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Hunter Name</p>
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight truncate">{gameState.playerName}</h2>
+            {/* Top: QR + Rank Badge */}
+            <div className="flex justify-between items-start mb-6">
+              <div className="p-1.5 bg-card/80 rounded-xl border border-border/50">
+                {profile && <PlayerQRCode playerId={profile.player_id} playerName={profile.player_name} size={36} />}
               </div>
-              <div className="space-y-0.5">
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Combat Level</p>
-                <span className="text-5xl font-black text-blue-500 tabular-nums leading-none drop-shadow-[0_0_15px_rgba(59,130,246,0.4)]">{gameState.totalLevel}</span>
-              </div>
-            </div>
-            {/* LARGE CIRCULAR AVATAR - NO BORDER */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-900 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                <img src={profile?.avatar_url || "/setvoid.png"} className="w-full h-full object-cover" />
-              </div>
-              <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-1 right-1 p-2.5 bg-blue-600 rounded-full shadow-xl border-2 border-[#0a0a0c] active:scale-90 transition-transform">
-                <Camera className="w-4 h-4 text-white" />
-              </button>
-              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
-            </div>
-          </div>
-
-          <div className="mb-6 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
-            <p className="text-[8px] font-bold text-slate-600 uppercase flex items-center gap-1 mb-1 font-mono"><Fingerprint className="w-3 h-3 text-blue-500/50" /> System-ID</p>
-            <div className="flex items-center justify-between group cursor-pointer" onClick={() => {navigator.clipboard.writeText(profile?.player_id); toast({title: "Copied"});}}>
-              <span className="text-[10px] font-mono font-bold text-blue-400/80 italic truncate pr-2">{profile?.player_id}</span>
-              <Copy className="w-3 h-3 text-slate-700 group-hover:text-blue-400 transition-colors" />
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="flex-1 space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              {statsIcons.map((stat) => (
-                <div key={stat.key} className="bg-white/[0.03] p-3 rounded-3xl transition-all border border-transparent hover:border-white/5">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <stat.icon className={cn("w-4 h-4", stat.color)} />
-                    <span className="text-xl font-black">{gameState.levels[stat.key]}</span>
-                  </div>
-                  <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                    <div className={cn("h-full transition-all duration-1000", stat.color.replace('text', 'bg'))} style={{ width: `${gameState.levels[stat.key]}%` }} />
-                  </div>
+              
+              {/* Rank Badge - Dramatic */}
+              <div className={cn("relative group")}>
+                <div className={cn(
+                  "absolute inset-0 rounded-2xl bg-gradient-to-br opacity-20 blur-xl transition-all group-hover:opacity-40",
+                  rankData.gradient
+                )} />
+                <div className={cn(
+                  "relative w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm",
+                  rankData.borderColor
+                )}>
+                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-muted-foreground mb-0.5">Rank</span>
+                  <span className={cn(
+                    "text-4xl font-black italic bg-gradient-to-br bg-clip-text text-transparent drop-shadow-lg",
+                    rankData.gradient
+                  )}>
+                    {rankData.name}
+                  </span>
                 </div>
-              ))}
+              </div>
             </div>
 
-            {/* RELAXED MODERN BUTTONS GRID */}
-            <div className="grid grid-cols-2 gap-4 pb-2">
-              <Dialog onOpenChange={(open) => !open && (setSearchMode('main'), setShowResult(false))}>
-                <DialogTrigger asChild>
-                  <Button className="h-16 bg-blue-600 hover:bg-blue-500 rounded-[2rem] border-none shadow-[0_10px_25px_rgba(59,130,246,0.3)] transition-all active:scale-95 flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-full"><Scan className="w-5 h-5 text-white" /></div>
-                    <span className="text-xs font-black uppercase tracking-widest text-white">Scan</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-[95vw] bg-[#08080a] border-white/10 rounded-[3rem] p-0 overflow-hidden text-white shadow-2xl">
-                  {/* Search UI كما تمت برمجته مسبقاً */}
-                  {searchMode === 'main' && (
-                    <div className="p-8 space-y-6">
-                      <h2 className="text-center font-black text-blue-500 italic text-2xl tracking-tighter">SEARCH HUB</h2>
-                      <div className="grid grid-cols-1 gap-4">
-                        <button onClick={() => setSearchMode('id')} className="h-28 bg-white/[0.03] border border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                          <span className="text-3xl">🆔</span>
-                          <span className="text-xs font-black tracking-widest uppercase">ID Entry</span>
-                        </button>
-                        <button onClick={() => setSearchMode('qr')} className="h-28 bg-white/[0.03] border border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                          <span className="text-3xl">🤳</span>
-                          <span className="text-xs font-black tracking-widest uppercase">QR Scanner</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {showResult && (
-                    <div className="p-6">
-                       <div className="bg-white/5 border border-white/10 rounded-[3rem] p-8 text-center">
-                          <div className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-blue-500/30 overflow-hidden shadow-2xl">
-                             <img src="/setvoid.png" className="w-full h-full object-cover" />
-                          </div>
-                          <h3 className="text-2xl font-black mb-6 uppercase italic">Shadow Hunter</h3>
-                          <div className="grid grid-cols-3 gap-3">
-                             <Button className="h-14 bg-blue-600 rounded-2xl"><UserPlus /></Button>
-                             <Button className="h-14 bg-white/5 rounded-2xl"><MessageSquare /></Button>
-                             <Button className="h-14 bg-red-600/20 rounded-2xl text-red-500"><Sword /></Button>
-                          </div>
-                       </div>
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
+            {/* Avatar + Identity */}
+            <div className="flex items-center gap-5 mb-6">
+              {/* Avatar with Aura Ring */}
+              <div className="relative flex-shrink-0">
+                <div className={cn(
+                  "absolute -inset-1 rounded-full bg-gradient-to-br opacity-60 blur-sm animate-glow-pulse",
+                  rankData.gradient
+                )} />
+                <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-card bg-card">
+                  <img src={profile?.avatar_url || "/setvoid.png"} className="w-full h-full object-cover" alt="avatar" />
+                </div>
+                <button 
+                  onClick={() => fileInputRef.current?.click()} 
+                  className="absolute -bottom-1 -right-1 p-2 bg-primary rounded-full shadow-lg border-2 border-card active:scale-90 transition-transform hover:bg-primary/80"
+                >
+                  <Camera className="w-3.5 h-3.5 text-primary-foreground" />
+                </button>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+              </div>
 
-              <Button className="h-16 bg-white/[0.04] border border-white/5 rounded-[2rem] flex items-center gap-3 transition-all active:scale-95 hover:bg-white/10">
-                <div className="p-2 bg-slate-800 rounded-full"><Settings className="w-5 h-5 text-slate-300" /></div>
-                <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Account</span>
-              </Button>
-              <Button className="h-16 bg-white/[0.04] border border-white/5 rounded-[2rem] flex items-center gap-3 transition-all active:scale-95 hover:bg-white/10">
-                <div className="p-2 bg-slate-800 rounded-full"><History className="w-5 h-5 text-slate-300" /></div>
-                <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">History</span>
-              </Button>
-              <Button className="h-16 bg-white/[0.04] border border-white/5 rounded-[2rem] flex items-center gap-3 transition-all active:scale-95 hover:bg-white/10">
-                <div className="p-2 bg-slate-800 rounded-full"><Users className="w-5 h-5 text-slate-300" /></div>
-                <span className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Friends</span>
-              </Button>
+              {/* Name + Title + Level */}
+              <div className="flex-1 min-w-0 space-y-1">
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Hunter Name</p>
+                <h2 className="text-xl font-black text-foreground uppercase tracking-tight truncate">
+                  {gameState.playerName}
+                </h2>
+                <p className={cn("text-xs font-bold italic", rankData.textColor)}>
+                  {rankData.title}
+                </p>
+                {gameState.equippedTitle && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Crown className="w-3 h-3 text-amber-400" />
+                    <span className="text-[10px] font-bold text-amber-400/80">{gameState.equippedTitle}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center z-10 opacity-60">
-            <div className="flex flex-col"><span className="text-[7px] text-slate-500 font-black uppercase">Encryption</span><span className={cn("text-[9px] font-bold uppercase", encryption.color)}>{encryption.label}</span></div>
-            <div className="text-right flex flex-col"><span className="text-[7px] text-slate-500 font-black uppercase tracking-widest">Protocol</span><span className="text-[9px] font-bold text-blue-500/80 uppercase">0.1-DARK</span></div>
+            {/* Level Display - Cinematic */}
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Combat Level</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase">LV.</span>
+                  <span className={cn(
+                    "text-5xl font-black tabular-nums leading-none bg-gradient-to-b bg-clip-text text-transparent",
+                    rankData.gradient
+                  )}>
+                    {gameState.totalLevel}
+                  </span>
+                </div>
+              </div>
+
+              {/* System ID */}
+              <div 
+                className="flex items-center gap-2 px-3 py-1.5 bg-card/60 rounded-xl border border-border/50 cursor-pointer hover:border-primary/30 transition-all group"
+                onClick={() => { navigator.clipboard.writeText(profile?.player_id || ''); toast({ title: "Copied!" }); }}
+              >
+                <Fingerprint className="w-3.5 h-3.5 text-primary/50" />
+                <span className="text-[10px] font-mono font-bold text-muted-foreground">{profile?.player_id}</span>
+                <Copy className="w-3 h-3 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+              </div>
+            </div>
+
+            {/* HP & Energy Bars */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card/60 border border-border/30 rounded-2xl p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">HP</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-foreground tabular-nums">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(239,68,68,0.4)]" style={{ width: `${(gameState.hp / gameState.maxHp) * 100}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-card/60 border border-border/30 rounded-2xl p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Energy</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-foreground tabular-nums">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(245,158,11,0.4)]" style={{ width: `${(gameState.energy / gameState.maxEnergy) * 100}%` }} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* ═══════════════ POWER STATS ═══════════════ */}
+        <div className={cn(
+          "transition-all duration-700 delay-200",
+          animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        )}>
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Swords className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/70">Power Levels</h3>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat, i) => (
+              <div 
+                key={stat.key}
+                className={cn(
+                  "relative bg-card/60 border border-border/30 rounded-2xl p-4 transition-all duration-500 hover:border-primary/30 group",
+                )}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className={cn("p-2 rounded-xl bg-card border border-border/50 transition-all group-hover:scale-110", )}>
+                    <stat.icon className={cn("w-4 h-4", stat.textColor)} />
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-foreground tabular-nums">{stat.value}</span>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.15em]">{stat.label}</span>
+                <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-1000", stat.color)}
+                    style={{ width: `${Math.min(stat.value, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══════════════ BATTLE RECORDS ═══════════════ */}
+        <div className={cn(
+          "transition-all duration-700 delay-300",
+          animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        )}>
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Activity className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/70">Battle Records</h3>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { icon: Flame, label: 'Streak', value: gameState.streakDays, suffix: 'd', color: 'text-orange-400' },
+              { icon: Target, label: 'Gates', value: completedGates, suffix: '', color: 'text-purple-400' },
+              { icon: Award, label: 'Quests', value: completedQuests, suffix: '', color: 'text-blue-400' },
+              { icon: Crown, label: 'Gold', value: gameState.gold, suffix: '', color: 'text-amber-400' },
+            ].map((item, i) => (
+              <div key={item.label} className="bg-card/60 border border-border/30 rounded-2xl p-3 text-center transition-all hover:border-primary/20">
+                <item.icon className={cn("w-4 h-4 mx-auto mb-1.5", item.color)} />
+                <p className="text-lg font-black text-foreground tabular-nums leading-none">{item.value}{item.suffix}</p>
+                <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1 tracking-wider">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══════════════ ACTION BUTTONS ═══════════════ */}
+        <div className={cn(
+          "grid grid-cols-2 gap-3 transition-all duration-700 delay-400",
+          animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        )}>
+          <Dialog onOpenChange={(open) => !open && (setSearchMode('main'), setShowResult(false))}>
+            <DialogTrigger asChild>
+              <Button className="h-16 bg-primary hover:bg-primary/90 rounded-2xl border-none shadow-[0_8px_30px_hsl(var(--primary)/0.3)] transition-all active:scale-95 flex items-center gap-3">
+                <div className="p-2 bg-primary-foreground/20 rounded-xl"><Scan className="w-5 h-5 text-primary-foreground" /></div>
+                <span className="text-xs font-black uppercase tracking-[0.15em] text-primary-foreground">Scan</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] bg-card border-border rounded-3xl p-0 overflow-hidden text-foreground shadow-2xl">
+              {searchMode === 'main' && (
+                <div className="p-8 space-y-6">
+                  <h2 className="text-center font-black text-primary italic text-2xl tracking-tighter">SEARCH HUB</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <button onClick={() => setSearchMode('id')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all">
+                      <Fingerprint className="w-8 h-8 text-primary" />
+                      <span className="text-xs font-black tracking-widest uppercase text-foreground/80">ID Entry</span>
+                    </button>
+                    <button onClick={() => setSearchMode('qr')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all">
+                      <QrCode className="w-8 h-8 text-primary" />
+                      <span className="text-xs font-black tracking-widest uppercase text-foreground/80">QR Scanner</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+              {showResult && (
+                <div className="p-6">
+                  <div className="bg-card border border-border rounded-3xl p-8 text-center">
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-primary/30 overflow-hidden shadow-2xl">
+                      <img src="/setvoid.png" className="w-full h-full object-cover" alt="result" />
+                    </div>
+                    <h3 className="text-2xl font-black mb-6 uppercase italic text-foreground">Shadow Hunter</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Button className="h-14 bg-primary rounded-2xl"><UserPlus /></Button>
+                      <Button variant="secondary" className="h-14 rounded-2xl"><MessageSquare /></Button>
+                      <Button variant="destructive" className="h-14 rounded-2xl"><Sword /></Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {[
+            { icon: Settings, label: 'Settings', action: () => {} },
+            { icon: History, label: 'History', action: () => {} },
+            { icon: Users, label: 'Friends', action: () => {} },
+          ].map((btn) => (
+            <Button 
+              key={btn.label}
+              variant="ghost" 
+              className="h-16 bg-card/40 border border-border/30 rounded-2xl flex items-center gap-3 transition-all active:scale-95 hover:bg-card hover:border-primary/20"
+              onClick={btn.action}
+            >
+              <div className="p-2 bg-card rounded-xl border border-border/50"><btn.icon className="w-4 h-4 text-muted-foreground" /></div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{btn.label}</span>
+            </Button>
+          ))}
+        </div>
+
+        {/* Footer Protocol */}
+        <div className={cn(
+          "flex justify-between items-center px-2 py-3 border-t border-border/20 text-muted-foreground/40 transition-all duration-700 delay-500",
+          animateIn ? "opacity-100" : "opacity-0"
+        )}>
+          <div className="flex items-center gap-1.5">
+            <Eye className="w-3 h-3" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Encryption Active</span>
+          </div>
+          <span className="text-[8px] font-mono font-bold uppercase">Protocol 0.1-DARK</span>
+        </div>
       </main>
+
       <BottomNav />
     </div>
   );
