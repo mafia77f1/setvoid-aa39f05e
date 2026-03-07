@@ -68,10 +68,10 @@ interface QuestModalProps {
 }
 
 const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: QuestModalProps) => {
-  // استخدام التقدم المحفوظ من المهمة مباشرة
   const savedProgress = quest.timeProgress || 0;
   const [timeProgress, setTimeProgress] = useState<number>(savedProgress);
   const [isRunning, setIsRunning] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const config = categoryConfig[quest.category];
   const diffConfig = difficultyConfig[quest.difficulty];
   const Icon = config.icon;
@@ -79,37 +79,31 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
   const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
   const isCompleted = timeProgress >= requiredTimeInSeconds;
 
-  // تحديث التقدم من المهمة عند فتح الـ modal
+  useEffect(() => {
+    setTimeout(() => setIsVisible(true), 50);
+  }, []);
+
   useEffect(() => {
     const currentProgress = quest.timeProgress || 0;
     setTimeProgress(currentProgress);
   }, [quest.timeProgress]);
 
-  // استمرار العداد إذا كانت المهمة قد بدأت وليست مكتملة
   useEffect(() => {
     if (quest.startedAt && !quest.completed && !isCompleted) {
       setIsRunning(true);
     }
   }, [quest.startedAt, quest.completed, isCompleted]);
 
-  // عداد الوقت - يعمل فقط عندما يكون الـ modal مفتوحاً
   useEffect(() => {
     if (!isRunning || isCompleted) return;
-
     const timer = setInterval(() => {
       setTimeProgress(prev => {
         const newProgress = prev + 1;
-        // حفظ التقدم كل ثانية
-        if (onUpdateProgress) {
-          onUpdateProgress(newProgress);
-        }
-        if (newProgress >= requiredTimeInSeconds) {
-          setIsRunning(false);
-        }
+        if (onUpdateProgress) onUpdateProgress(newProgress);
+        if (newProgress >= requiredTimeInSeconds) setIsRunning(false);
         return newProgress;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [isRunning, requiredTimeInSeconds, onUpdateProgress, isCompleted]);
 
@@ -128,158 +122,226 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
     ? Math.min((timeProgress / requiredTimeInSeconds) * 100, 100) 
     : 0;
 
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 400);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
-        className="absolute inset-0 bg-black/95 backdrop-blur-md"
-        onClick={onClose}
+        className={cn(
+          "absolute inset-0 backdrop-blur-md transition-all duration-500",
+          isVisible ? "bg-black/90" : "bg-black/0"
+        )}
+        onClick={handleClose}
       />
       
-      <div className="relative w-full max-w-sm overflow-hidden animate-scale-in">
-        {/* Outer glow */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-white/20 via-slate-300/30 to-white/20 blur-xl opacity-50" />
+      <div className={cn(
+        "relative w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.2,1,0.2,1)]",
+        isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
+      )}>
+        {/* Outer glow - Solo Leveling cyan/blue */}
+        <div className="absolute -inset-2 bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-cyan-500/20 blur-xl opacity-60" />
         
-        <div className="relative bg-gradient-to-b from-slate-900 via-slate-950 to-black border border-white/20 rounded-sm">
-          {/* Top decorative line */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent" />
+        {/* Main Panel */}
+        <div className="relative overflow-hidden" style={{
+          background: 'linear-gradient(180deg, rgba(8,20,40,0.98) 0%, rgba(4,12,28,0.99) 50%, rgba(8,20,40,0.98) 100%)',
+          border: '2px solid rgba(56,189,248,0.4)',
+          boxShadow: '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
+        }}>
+          {/* Grid background pattern */}
+          <div className="absolute inset-0 opacity-[0.07]" style={{
+            backgroundImage: `
+              linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(56,189,248,0.5) 1px, transparent 1px)
+            `,
+            backgroundSize: '24px 24px'
+          }} />
+
+          {/* Top glow line */}
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
           
-          {/* Corner decorations */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/40" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/40" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/40" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/40" />
+          {/* Bottom glow line */}
+          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+
+          {/* Corner accents - metallic style */}
+          <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-cyan-400/70" />
+          <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-cyan-400/70" />
+          <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-cyan-400/70" />
+          <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-cyan-400/70" />
 
           {/* Close button */}
           <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors z-10 border border-white/10"
+            onClick={handleClose}
+            className="absolute top-4 right-4 z-20 p-1.5 text-slate-500 hover:text-red-400 transition-colors"
           >
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-5 h-5" />
           </button>
 
-          {/* Header */}
-          <div className="px-6 pt-8 pb-6 text-center border-b border-white/10">
-            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 bg-gradient-to-br from-white/10 to-white/5 border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-              <Icon className="w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            </div>
-            
-            <div className="inline-block px-4 py-1 rounded-sm text-[10px] font-black tracking-[0.3em] mb-3 bg-white/10 border border-white/20 text-white">
-              {config.englishName} QUEST
-            </div>
-            
-            <h2 className="text-xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              {quest.title}
-            </h2>
-            
-            <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-sm bg-gradient-to-r from-slate-400/20 to-slate-500/20 border border-slate-400/30">
-              <Crown className="w-3 h-3 text-slate-300" />
-              <span className="text-[10px] font-bold text-slate-300 tracking-wider">
-                RANK {diffConfig.name}
-              </span>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 space-y-4">
-            <div className="p-4 rounded-sm bg-black/40 border border-white/5">
-              <p className="text-sm text-slate-300 text-center leading-relaxed">
-                {quest.description}
-              </p>
-              
-              {quest.sets && quest.repsPerSet && (
-                <div className="mt-4 p-3 rounded-sm bg-white/5 text-center border border-white/10">
-                  <span className="text-2xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-                    {quest.repsPerSet} × {quest.sets}
-                  </span>
-                  <span className="text-[10px] text-slate-400 block mt-1 tracking-wider uppercase">Sets</span>
-                </div>
-              )}
-            </div>
-
-            {/* Time Progress - نظام الوقت الجديد */}
-            {quest.requiredTime && (
-              <div className="p-4 rounded-sm bg-black/40 border border-white/5">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Timer className="w-4 h-4 text-slate-400" />
-                    <span className="text-xs text-slate-400">PROGRESS</span>
-                  </div>
-                  <span className="text-sm font-bold text-white">
-                    {formatTime(timeProgress)} / {formatTime(requiredTimeInSeconds)}
-                  </span>
-                </div>
-                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
-                  <div 
-                    className={cn(
-                      "h-full transition-all duration-300",
-                      isCompleted 
-                        ? "bg-gradient-to-r from-emerald-500 to-emerald-400" 
-                        : "bg-gradient-to-r from-white to-slate-300"
-                    )}
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
-                {isRunning && !isCompleted && (
-                  <p className="text-[10px] text-slate-500 text-center mt-2 animate-pulse">
-                    الوقت يعمل حتى لو أغلقت التطبيق...
-                  </p>
-                )}
+          {/* ═══ HEADER: (!) QUEST INFO ═══ */}
+          <div className="relative px-6 pt-7 pb-5 text-center">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              {/* Alert icon */}
+              <div className="w-9 h-9 border-2 border-slate-400/60 flex items-center justify-center bg-transparent">
+                <span className="text-slate-300 font-black text-lg">!</span>
               </div>
-            )}
-
-            {/* Reward */}
-            <div className="flex items-center justify-between p-4 rounded-sm bg-gradient-to-r from-white/5 to-transparent border border-white/10">
-              <span className="text-xs text-slate-400 uppercase tracking-wider">Reward</span>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-white" />
-                <span className="text-xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-                  +{quest.xpReward} XP
+              {/* QUEST INFO badge */}
+              <div className="border-2 border-slate-400/60 px-5 py-1.5 bg-transparent">
+                <span className="text-sm font-black tracking-[0.3em] text-white uppercase">
+                  QUEST INFO
                 </span>
               </div>
             </div>
+            
+            <p className="text-sm text-slate-400 font-mono">
+              [Daily Quest: <span className="text-cyan-300 font-bold">{quest.title}</span> has arrived.]
+            </p>
           </div>
 
-          {/* Actions */}
-          <div className="p-6 pt-0 flex gap-3">
+          {/* Separator line */}
+          <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+
+          {/* ═══ GOAL SECTION ═══ */}
+          <div className="px-6 py-5">
+            <h3 className="text-center text-lg font-black tracking-[0.2em] text-white mb-5 underline underline-offset-8 decoration-slate-600">
+              GOAL
+            </h3>
+            
+            {/* Quest task details */}
+            <div className="space-y-4 mb-5">
+              {/* Main task */}
+              <div className="flex items-center justify-between px-4">
+                <div className="flex items-center gap-3">
+                  <Icon className="w-5 h-5 text-slate-400" />
+                  <span className="text-sm text-slate-300 font-medium">{quest.title}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {quest.requiredTime ? (
+                    <span className="text-sm text-slate-400 font-mono">
+                      [{formatTime(timeProgress)}/{formatTime(requiredTimeInSeconds)}]
+                    </span>
+                  ) : quest.sets && quest.repsPerSet ? (
+                    <span className="text-sm text-slate-400 font-mono">
+                      [{quest.repsPerSet}×{quest.sets}]
+                    </span>
+                  ) : (
+                    <span className="text-sm text-slate-400 font-mono">[1/1]</span>
+                  )}
+                  <div className={cn(
+                    "w-5 h-5 border flex items-center justify-center",
+                    isCompleted || quest.completed
+                      ? "border-emerald-500/60 bg-emerald-500/10"
+                      : "border-slate-600"
+                  )}>
+                    {(isCompleted || quest.completed) && (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Time progress bar */}
+              {quest.requiredTime && (
+                <div className="px-4">
+                  <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/30">
+                    <div 
+                      className={cn(
+                        "h-full transition-all duration-500",
+                        isCompleted 
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
+                          : "bg-gradient-to-r from-cyan-500 to-blue-400 shadow-[0_0_10px_rgba(56,189,248,0.4)]"
+                      )}
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                  {isRunning && !isCompleted && (
+                    <p className="text-[9px] text-cyan-500/60 text-center mt-1.5 animate-pulse font-mono">
+                      ▸ Timer active...
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Reward info */}
+              <div className="flex items-center justify-between px-4 pt-2 border-t border-slate-700/30">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs text-slate-500 uppercase tracking-wider">Reward</span>
+                </div>
+                <span className="text-sm font-black text-cyan-300 tracking-wider">+{quest.xpReward} XP</span>
+              </div>
+
+              {quest.goldReward && (
+                <div className="flex items-center justify-between px-4">
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-4 h-4 text-yellow-500/70" />
+                    <span className="text-xs text-slate-500 uppercase tracking-wider">Gold</span>
+                  </div>
+                  <span className="text-sm font-black text-yellow-400/80 tracking-wider">+{quest.goldReward} G</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+
+          {/* ═══ WARNING SECTION ═══ */}
+          <div className="px-6 py-4">
+            <p className="text-xs text-slate-500 text-center leading-relaxed">
+              <span className="text-red-400 font-bold">WARNING:</span> Failure to complete the daily quest will result in an appropriate <span className="text-red-400 font-bold">penalty</span>.
+            </p>
+          </div>
+
+          {/* ═══ ACTION BUTTON ═══ */}
+          <div className="px-6 pb-6 pt-2">
             {quest.completed ? (
-              <div className="flex-1 flex items-center justify-center gap-2 py-4 rounded-sm bg-white/10 border border-white/20">
-                <CheckCircle className="w-5 h-5 text-white" />
-                <span className="font-bold text-white tracking-wider">COMPLETED</span>
+              <div className="flex items-center justify-center gap-3 py-4 border border-emerald-500/30 bg-emerald-500/5">
+                <div className="w-7 h-7 border-2 border-emerald-500/50 flex items-center justify-center bg-emerald-500/10">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                </div>
+                <span className="font-black text-emerald-400 tracking-[0.2em] text-sm">COMPLETED</span>
+              </div>
+            ) : !quest.startedAt ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleClose}
+                  className="py-3.5 border border-slate-700/50 text-slate-500 font-bold text-xs tracking-[0.2em] uppercase hover:text-slate-300 hover:border-slate-500/50 transition-all"
+                >
+                  CLOSE
+                </button>
+                <button
+                  onClick={handleStart}
+                  className="py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-xs tracking-[0.2em] uppercase shadow-[0_0_30px_rgba(56,189,248,0.3)] hover:shadow-[0_0_40px_rgba(56,189,248,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Play className="w-4 h-4" />
+                  ACCEPT
+                </button>
               </div>
             ) : (
-              <>
-                {!quest.startedAt ? (
+              <button
+                onClick={onComplete}
+                disabled={!isCompleted}
+                className={cn(
+                  "w-full py-4 font-black text-sm tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
+                  isCompleted
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)] active:scale-95"
+                    : "border border-slate-700/50 text-slate-600 cursor-not-allowed"
+                )}
+              >
+                {isCompleted ? (
                   <>
-                    <button
-                      onClick={onClose}
-                      className="flex-1 py-4 rounded-sm bg-slate-800/50 border border-slate-600/50 text-slate-400 font-bold hover:bg-slate-800/80 transition-all tracking-wider"
-                    >
-                      CLOSE
-                    </button>
-                    <button
-                      onClick={handleStart}
-                      className="flex-1 py-4 rounded-sm bg-gradient-to-r from-white to-slate-200 text-black font-black hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)]"
-                    >
-                      <Play className="w-5 h-5" />
-                      START
-                    </button>
+                    <CheckCircle className="w-5 h-5" />
+                    CLAIM REWARD
                   </>
                 ) : (
-                  <button
-                    onClick={onComplete}
-                    disabled={!isCompleted}
-                    className={cn(
-                      "flex-1 py-4 rounded-sm font-black transition-all flex items-center justify-center gap-2 tracking-wider",
-                      isCompleted
-                        ? "bg-gradient-to-r from-emerald-500 to-emerald-400 text-black shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-                        : "bg-slate-800/50 border border-slate-600/50 text-slate-500 cursor-not-allowed"
-                    )}
-                  >
-                    <CheckCircle className="w-5 h-5" />
-                    {isCompleted ? 'CLAIM' : `${Math.ceil((requiredTimeInSeconds - timeProgress) / 60)}m LEFT`}
-                  </button>
+                  <span className="flex items-center gap-2">
+                    <Timer className="w-4 h-4 animate-pulse" />
+                    {Math.ceil((requiredTimeInSeconds - timeProgress) / 60)}m REMAINING
+                  </span>
                 )}
-              </>
+              </button>
             )}
           </div>
         </div>
