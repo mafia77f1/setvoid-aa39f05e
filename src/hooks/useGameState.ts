@@ -124,30 +124,42 @@ const getScheduledGates = (playerLevel: number): Gate[] => {
   const currentHour = new Date().getHours();
   let availableRanks: string[] = [];
   let numGates = 1;
-  if (currentHour >= 6 && currentHour < 12) { availableRanks = ['E', 'D']; numGates = Math.floor(Math.random() * 2) + 1; }
-  else if (currentHour >= 12 && currentHour < 16) { availableRanks = ['D', 'C']; numGates = Math.floor(Math.random() * 2) + 1; }
-  else if (currentHour >= 16 && currentHour < 19) { availableRanks = ['C', 'B']; numGates = Math.floor(Math.random() * 2) + 1; }
-  else if (currentHour >= 19 && currentHour < 24) { availableRanks = ['E', 'D', 'C', 'B']; numGates = Math.floor(Math.random() * 3) + 1; }
-  else { availableRanks = ['B', 'A']; numGates = Math.floor(Math.random() * 2) + 1; }
+  let periodEndHour = 12;
+  if (currentHour >= 6 && currentHour < 12) { availableRanks = ['E', 'D']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 12; }
+  else if (currentHour >= 12 && currentHour < 16) { availableRanks = ['D', 'C']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 16; }
+  else if (currentHour >= 16 && currentHour < 19) { availableRanks = ['C', 'B']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 19; }
+  else if (currentHour >= 19 && currentHour < 24) { availableRanks = ['E', 'D', 'C', 'B']; numGates = Math.floor(Math.random() * 3) + 1; periodEndHour = 24; }
+  else { availableRanks = ['B', 'A']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 6; }
   
-  // اختيار البوابات المتاحة بناءً على الوقت
+  // حساب وقت إغلاق البوابة
+  const now = new Date();
+  const closingDate = new Date(now);
+  if (periodEndHour === 24) {
+    closingDate.setHours(23, 59, 59, 999);
+  } else if (periodEndHour < currentHour) {
+    // next day (e.g. 0-6 period ends at 6 AM next day)
+    closingDate.setDate(closingDate.getDate() + 1);
+    closingDate.setHours(periodEndHour, 0, 0, 0);
+  } else {
+    closingDate.setHours(periodEndHour, 0, 0, 0);
+  }
+  const closingTime = closingDate.toISOString();
+  
   const availableGates = allGates.filter(gate => availableRanks.includes(gate.rank));
   const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
   
-  return shuffled.slice(0, numGates).map(gate => {
-    // تحديد إذا اللاعب مستواه أعلى أو أقل من البوابة
+  return shuffled.slice(0, numGates).map((gate, index) => {
     const isHigherLevel = playerLevel >= gate.requiredPower;
-    const isSimilarLevel = playerLevel >= gate.requiredPower * 0.5;
     
     return {
       ...gate,
       id: `${gate.id}_${Date.now()}_${Math.random()}`,
-      discovered: true, // دائماً مكتشفة
-      // إذا اللاعب أقل من مستوى البوابة، نخفي بعض المعلومات
+      discovered: true,
+      gateNumber: index + 1,
+      closingTime,
       name: isHigherLevel ? gate.name : `بوابة ${gate.rank}`,
       energyDensity: isHigherLevel ? getRandomEnergyDensity(gate.rank) : '???',
       danger: isHigherLevel ? gate.danger : '???',
-      // إضافة علامة لتحديد إذا البوابة مكشوفة بالكامل
       isFullyRevealed: isHigherLevel,
     };
   });

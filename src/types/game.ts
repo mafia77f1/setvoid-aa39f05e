@@ -50,7 +50,9 @@ export interface Gate {
   color: string;
   discovered: boolean;
   completed: boolean;
-  isFullyRevealed?: boolean; // إذا اللاعب مستواه أعلى من البوابة
+  isFullyRevealed?: boolean;
+  gateNumber?: number;
+  closingTime?: string; // ISO string - when the gate closes
   rewards: {
     xp: number;
     gold: number;
