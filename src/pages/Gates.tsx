@@ -272,7 +272,7 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
           ? "bg-red-950/40 border-red-700/60 shadow-[0_0_40px_rgba(220,38,38,0.3)]"
           : "bg-black/60 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
       )}>
-        {/* Header Badge */}
+        {/* Header Badge - RANK only */}
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <div className={cn(
             "border px-6 py-1 shadow-lg",
@@ -282,7 +282,7 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
           )}>
             <h2 className={cn("text-[10px] font-black tracking-[0.3em] uppercase flex items-center gap-2", isBroken ? "text-red-400" : "text-white")}>
               {isBroken && <Skull className="w-3 h-3 text-red-500 animate-pulse" />}
-              البوابة {gateNum} — RANK: <span className={cn(
+              RANK: <span className={cn(
                 isBroken ? "text-red-500" :
                 gate.rank === 'S' ? "text-red-500" : gate.rank === 'A' ? "text-purple-400" : "text-blue-400"
               )}>{gate.rank}</span>
@@ -292,29 +292,15 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
         </div>
 
         <div className="space-y-4 pt-4">
-          {/* Timer / Status */}
-          <div className={cn(
-            "flex items-center justify-between p-3 border-b",
-            isBroken ? "border-red-800/40" : "border-white/10"
-          )}>
+          {/* Gate Name - first info row */}
+          <div className={cn("flex items-center justify-between p-3 border-b", isBroken ? "border-red-800/40" : "border-white/10")}>
             <div className="flex items-center gap-2">
-              <Clock className={cn("w-3.5 h-3.5", isBroken ? "text-red-500" : "text-cyan-400")} />
-              <p className={cn("text-[10px] uppercase font-black tracking-tighter", isBroken ? "text-red-400" : "text-slate-400")}>
-                {isBroken ? "حالة البوابة" : "وقت الإغلاق"}
-              </p>
+              <Target className={cn("w-3.5 h-3.5", isBroken ? "text-red-500" : "text-slate-400")} />
+              <p className={cn("text-[10px] uppercase font-black tracking-tighter", isBroken ? "text-red-400" : "text-slate-400")}>اسم البوابة</p>
             </div>
-            {isBroken ? (
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-pulse" />
-                <span className="text-xs font-black text-red-500 uppercase tracking-wider animate-[crack-pulse_1.5s_ease-in-out_infinite]">
-                  كُسرت البوابة
-                </span>
-              </div>
-            ) : (
-              <span className="text-base font-mono font-bold text-cyan-400 tracking-widest drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]">
-                {formatted}
-              </span>
-            )}
+            <span className={cn("text-sm font-black italic", isBroken ? "text-red-400" : "text-white")}>
+              البوابة {gateNum}
+            </span>
           </div>
 
           {/* System Message */}
@@ -341,7 +327,7 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
             )}
           </div>
 
-          {/* Energy / Danger */}
+          {/* Energy Density */}
           <div className={cn("flex justify-between items-center border-b pb-2", isBroken ? "border-red-800/40" : "border-white/10")}>
             <div className="flex items-center gap-2">
               <Zap className={cn("w-3.5 h-3.5", isBroken ? "text-red-400" : "text-yellow-400")} />
@@ -352,6 +338,7 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
             </p>
           </div>
 
+          {/* Danger Level */}
           <div className={cn("flex justify-between items-center border-b pb-2", isBroken ? "border-red-800/40" : "border-white/10")}>
             <div className="flex items-center gap-2">
               <AlertTriangle className={cn("w-3.5 h-3.5",
@@ -366,6 +353,28 @@ const GateCard = ({ gate, index, onGateClick, getGateGlow, getGateBorderColor, g
             )}>
               {gate.danger}
             </p>
+          </div>
+
+          {/* Timer / Status - LAST info row */}
+          <div className="flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <Clock className={cn("w-3.5 h-3.5", isBroken ? "text-red-500" : "text-cyan-400")} />
+              <p className={cn("text-[10px] uppercase font-black tracking-tighter", isBroken ? "text-red-400" : "text-slate-400")}>
+                {isBroken ? "حالة البوابة" : "وقت الإغلاق"}
+              </p>
+            </div>
+            {isBroken ? (
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-500 animate-pulse" />
+                <span className="text-xs font-black text-red-500 uppercase tracking-wider animate-[crack-pulse_1.5s_ease-in-out_infinite]">
+                  كُسرت البوابة
+                </span>
+              </div>
+            ) : (
+              <span className="text-base font-mono font-bold text-cyan-400 tracking-widest drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]">
+                {formatted}
+              </span>
+            )}
           </div>
         </div>
       </div>
