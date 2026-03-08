@@ -455,219 +455,200 @@ export const SoloLevelingQuestCard = ({
         </div>
       )}
 
-      {/* Main Quest Card */}
+      {/* Main Quest Card - Solo Leveling System Window */}
       <div className="relative">
-        {/* Outer glow effect */}
+        {/* Outer cyan glow */}
         <div className={cn(
-          "absolute -inset-[2px] rounded-sm blur-sm",
+          "absolute -inset-1 blur-md opacity-40",
           allCompleted 
-            ? "bg-gradient-to-r from-emerald-500/30 via-emerald-400/40 to-emerald-500/30" 
-            : "bg-gradient-to-r from-white/10 via-slate-300/20 to-white/10"
+            ? "bg-emerald-500/30" 
+            : "bg-cyan-500/20"
         )} />
         
-        <div className={cn(
-          "relative overflow-hidden rounded-sm",
-          "bg-gradient-to-b from-slate-900 via-slate-950 to-black",
-          "border",
-          allCompleted ? "border-emerald-500/40" : "border-white/15"
-        )}>
-          {/* Animated top line */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent" />
-          
+        <div className="relative overflow-hidden" style={{
+          background: 'linear-gradient(180deg, rgba(8,20,40,0.98) 0%, rgba(4,12,28,0.99) 50%, rgba(8,20,40,0.98) 100%)',
+          border: '2px solid rgba(56,189,248,0.35)',
+          boxShadow: allCompleted 
+            ? '0 0 60px rgba(16,185,129,0.2), inset 0 0 60px rgba(16,185,129,0.05)'
+            : '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
+        }}>
+          {/* Grid background pattern */}
+          <div className="absolute inset-0 opacity-[0.06]" style={{
+            backgroundImage: `
+              linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(56,189,248,0.5) 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px'
+          }} />
+
           {/* Scan line effect */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent animate-scan-line" />
+            <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent animate-scan-line" />
           </div>
-          
-          {/* Corner decorations */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/30" />
-          <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/30" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/30" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/30" />
-          
-          {/* Header */}
+
+          {/* Top & Bottom glow lines */}
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+
+          {/* Corner accents - metallic */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/70" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/70" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/70" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/70" />
+
+          {/* ═══ HEADER: (!) QUEST INFO ═══ */}
           <div 
-            className="p-5 cursor-pointer"
+            className="relative px-5 pt-6 pb-4 cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-sm bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                    <Target className="w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] animate-pulse" />
+                {/* Alert icon box */}
+                <div className="w-10 h-10 border-2 border-slate-400/60 flex items-center justify-center bg-transparent shadow-[0_0_15px_rgba(56,189,248,0.1)]">
+                  <span className="text-slate-200 font-black text-xl">!</span>
                 </div>
-                <div>
-                  <span className="text-xs font-black text-white tracking-[0.25em] block drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">
-                    DAILY QUEST
+                {/* QUEST INFO badge */}
+                <div className="border-2 border-slate-400/60 px-5 py-1.5 bg-transparent">
+                  <span className="text-sm font-black tracking-[0.3em] text-white uppercase">
+                    QUEST INFO
                   </span>
-                  <span className="text-[10px] text-slate-500">المهمات اليومية</span>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
                 {timeRemaining && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-slate-800/50 border border-slate-600/30">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-xs text-slate-300 font-mono font-bold">{timeRemaining}</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 bg-cyan-500/5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-xs text-cyan-300 font-mono font-bold">{timeRemaining}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-white/5 border border-white/15">
-                  <span className="text-xs font-black text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
-                    {completedTasks}/{displayQuests.length}
-                  </span>
-                </div>
                 {isExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-slate-500" />
+                  <ChevronUp className="w-5 h-5 text-cyan-500/60" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-slate-500" />
+                  <ChevronDown className="w-5 h-5 text-cyan-500/60" />
                 )}
               </div>
             </div>
 
-            {/* System message */}
-            <div className="p-4 rounded-sm bg-black/40 border border-white/5">
-              <p className="text-sm text-slate-300 flex items-start gap-2 font-mono">
-                <span className="text-white">▸</span>
-                <span>[You have received a <span className="text-white font-bold">Daily Quest</span>.]</span>
-              </p>
-              <p className="text-sm text-slate-300 flex items-start gap-2 mt-1 font-mono">
-                <span className="text-white">▸</span>
-                <span>[Complete all tasks for <span className="text-white font-bold">bonus XP</span>.]</span>
-              </p>
-            </div>
+            {/* System arrival message */}
+            <p className="text-sm text-slate-400 font-mono text-center">
+              [Daily Quest: <span className="text-cyan-300 font-bold">Strength Training</span> has arrived.]
+            </p>
           </div>
 
-          {/* Separator */}
-          <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          {/* Separator line */}
+          <div className="mx-5 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
 
-          {/* Quest List */}
+          {/* ═══ GOALS SECTION ═══ */}
           {isExpanded && (
-            <div className="p-5 space-y-3 animate-fade-in">
-              {displayQuests.map((quest, index) => {
-                const config = categoryConfig[quest.category];
-                const diffConfig = difficultyConfig[quest.difficulty];
-                const Icon = config.icon;
+            <div className="px-5 py-5 animate-fade-in">
+              <h3 className="text-center text-base font-black tracking-[0.25em] text-white mb-5 underline underline-offset-8 decoration-slate-600/60">
+                GOALS
+              </h3>
+              
+              <div className="space-y-1">
+                {displayQuests.map((quest, index) => {
+                  const config = categoryConfig[quest.category];
+                  const Icon = config.icon;
 
-                return (
-                  <button
-                    key={quest.id}
-                    onClick={() => handleQuestClick(quest)}
-                    className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-sm transition-all duration-300 text-right group",
-                      "bg-gradient-to-r from-black/40 to-transparent",
-                      "border hover:scale-[1.01]",
-                      quest.completed 
-                        ? "border-emerald-500/30 bg-emerald-500/5" 
-                        : "border-white/10 hover:border-white/25 hover:bg-white/5"
-                    )}
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    {/* Category icon */}
-                    <div className={cn(
-                      "w-14 h-14 rounded-sm flex items-center justify-center shrink-0 transition-all",
-                      quest.completed
-                        ? "bg-emerald-500/10 border border-emerald-500/30"
-                        : "bg-white/5 border border-white/15 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                    )}>
-                      <Icon className={cn(
-                        "w-7 h-7 transition-all",
-                        quest.completed 
-                          ? "text-emerald-400" 
-                          : "text-slate-400 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
-                      )} />
-                    </div>
-                    
-                    {/* Quest info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className={cn(
-                          "text-sm font-bold truncate transition-all",
+                  return (
+                    <button
+                      key={quest.id}
+                      onClick={() => handleQuestClick(quest)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-4 py-3.5 transition-all duration-300 group",
+                        "hover:bg-cyan-500/5",
+                        quest.completed && "opacity-70"
+                      )}
+                    >
+                      {/* Quest name with icon */}
+                      <div className="flex items-center gap-3">
+                        <Icon className={cn(
+                          "w-4.5 h-4.5 transition-all",
                           quest.completed 
-                            ? "line-through text-slate-500" 
-                            : "text-white group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                            ? "text-emerald-400" 
+                            : "text-slate-500 group-hover:text-cyan-400"
+                        )} />
+                        <span className={cn(
+                          "text-sm font-medium transition-all",
+                          quest.completed 
+                            ? "text-slate-500 line-through" 
+                            : "text-slate-300 group-hover:text-white"
                         )}>
                           {quest.title}
                         </span>
-                        <span className={cn(
-                          "text-[10px] font-black px-2 py-0.5 rounded-sm tracking-wider",
-                          quest.completed
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-white/10 text-white/70 border border-white/20"
-                        )}>
-                          {diffConfig.name}
-                        </span>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className={cn(
-                            "text-sm font-black",
-                            quest.completed ? "text-emerald-400" : "text-white"
-                          )}>
-                            +{quest.xpReward} XP
-                          </span>
-                          {quest.timeLimit && (
-                            <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {quest.timeLimit}m
-                            </span>
+
+                      {/* Progress & checkbox */}
+                      <div className="flex items-center gap-3">
+                        <span className={cn(
+                          "text-sm font-mono",
+                          quest.completed ? "text-emerald-400" : "text-slate-500"
+                        )}>
+                          {quest.completed ? (
+                            quest.requiredTime 
+                              ? `[${quest.requiredTime}/${quest.requiredTime}m]`
+                              : quest.sets && quest.repsPerSet
+                                ? `[${quest.repsPerSet}×${quest.sets}/${quest.repsPerSet}×${quest.sets}]`
+                                : '[1/1]'
+                          ) : (
+                            quest.requiredTime 
+                              ? `[${Math.floor((quest.timeProgress || 0) / 60)}/${quest.requiredTime}m]`
+                              : quest.sets && quest.repsPerSet
+                                ? `[0/${quest.repsPerSet}×${quest.sets}]`
+                                : '[0/1]'
                           )}
-                          {quest.startedAt && !quest.completed && (
-                            <span className="text-[10px] text-white flex items-center gap-1 animate-pulse">
-                              <Timer className="w-3 h-3" />
-                              IN PROGRESS
-                            </span>
+                        </span>
+                        
+                        {/* Checkbox */}
+                        <div className={cn(
+                          "w-5 h-5 border flex items-center justify-center transition-all",
+                          quest.completed
+                            ? "border-emerald-500/60 bg-emerald-500/10"
+                            : "border-slate-600 group-hover:border-cyan-500/50"
+                        )}>
+                          {quest.completed && (
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                           )}
                         </div>
-                        <span className="text-[10px] font-bold tracking-wider text-slate-500">
-                          {config.englishName}
-                        </span>
                       </div>
-                    </div>
-
-                    {/* Status indicator */}
-                    <div className={cn(
-                      "w-10 h-10 rounded-sm flex items-center justify-center shrink-0 transition-all",
-                      quest.completed 
-                        ? "bg-emerald-500/20 border border-emerald-500/40" 
-                        : "bg-white/5 border border-white/10 group-hover:border-white/25"
-                    )}>
-                      {quest.completed ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-400" />
-                      ) : (
-                        <Play className="w-4 h-4 text-slate-500 group-hover:text-white" />
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-
-              {/* Warning section */}
-              <div className="mt-4 flex items-center justify-between p-4 rounded-sm bg-slate-900/50 border border-slate-700/30">
-                <div className="flex items-center gap-3">
-                  <Skull className="w-5 h-5 text-slate-500" />
-                  <p className="text-xs text-slate-500">
-                    <span className="text-slate-400 font-bold">WARNING:</span> Boss attacks every hour!
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate('/battle')}
-                  className="text-[10px] px-4 py-2 rounded-sm bg-white/5 border border-white/15 text-white/70 font-bold hover:bg-white/10 hover:text-white transition-all tracking-wider"
-                >
-                  PENALTY ZONE
-                </button>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Total XP */}
-              <div className="mt-2 p-4 rounded-sm bg-gradient-to-r from-white/5 via-white/[0.02] to-transparent border border-white/10">
-                <div className="flex items-center justify-center gap-3">
-                  <Sparkles className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-                  <span className="text-sm font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] tracking-wider">
-                    TOTAL REWARD: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
+              {/* Progress summary */}
+              <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2">
+                <div className="flex items-center gap-2 px-4 py-1.5 border border-cyan-500/20 bg-cyan-500/5">
+                  <Target className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs font-black text-cyan-300 tracking-wider">
+                    {completedTasks}/{displayQuests.length} COMPLETED
                   </span>
                 </div>
+              </div>
+
+              {/* Separator */}
+              <div className="mx-0 my-4 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+
+              {/* ═══ WARNING SECTION ═══ */}
+              <div className="px-2 pb-1">
+                <p className="text-xs text-slate-500 text-center leading-relaxed">
+                  <span className="text-red-400 font-bold">WARNING:</span> Failure to complete
+                  the daily quest will result in an appropriate <span className="text-red-400 font-bold">penalty</span>.
+                </p>
+              </div>
+
+              {/* ═══ TOTAL REWARD ═══ */}
+              <div className="mt-4 flex items-center justify-center">
+                <button
+                  onClick={() => navigate('/battle')}
+                  className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs font-black text-cyan-300 tracking-[0.2em]">
+                    TOTAL: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
+                  </span>
+                </button>
               </div>
             </div>
           )}
