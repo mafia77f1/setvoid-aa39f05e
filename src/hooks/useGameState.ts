@@ -853,6 +853,14 @@ export const useGameState = () => {
     });
   }, [calculateLevel, getTotalLevel]);
 
+  const consumeItem = useCallback((itemId: string, quantity: number = 1) => {
+    setGameState(prev => {
+      const item = prev.inventory.find(i => i.id === itemId);
+      if (!item || item.quantity < quantity) return prev;
+      return { ...prev, inventory: prev.inventory.map(i => i.id === itemId ? { ...i, quantity: i.quantity - quantity } : i) };
+    });
+  }, []);
+
   return {
     gameState,
     levelUpInfo,
@@ -867,6 +875,7 @@ export const useGameState = () => {
     summonShadowSoldier,
     purchaseItem,
     useItem,
+    consumeItem,
     equipTitle,
     unequipTitle,
     takeDamage,
