@@ -27,7 +27,7 @@ const saveSkillLevels = (levels: Record<string, number>) => {
 };
 
 const Abilities = () => {
-  const { gameState, useItem } = useGameState();
+  const { gameState, consumeItem } = useGameState();
   const [skillLevels, setSkillLevels] = useState(getSkillLevels());
 
   const strengthLevel = gameState.levels.strength || 1;
