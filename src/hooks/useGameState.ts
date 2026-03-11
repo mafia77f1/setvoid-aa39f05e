@@ -590,6 +590,8 @@ export const useGameState = () => {
     { id: 'hp_potion', name: 'Blood Elixir', description: 'يستعيد 50% من الصحة القصوى', type: 'health', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '🧪' },
     { id: 'mp_potion', name: 'Energy Elixir', description: 'يستعيد 50% من الطاقة القصوى', type: 'energy', category: 'Elixir', effect: 50, price: 500, quantity: 0, icon: '⚡' },
     { id: 'mana_meter', name: 'Mana Gauge', description: 'جهاز قياس طاقة البوابات والعناصر', type: 'tool', category: 'Tool', effect: 0, price: 2000, quantity: 0, icon: '📊' },
+    { id: 'dagger', name: 'خنجر الظلام', description: 'سلاح قوي يفتح مهارة ضربة الخنجر في المعركة', type: 'tool', category: 'Weapon', effect: 0, price: 3000, quantity: 0, icon: '🗡️' },
+    { id: 'enhancement_stone', name: 'حجر التطوير', description: 'حجر طاقة لتطوير مهارات المعركة - اجمع الأحجار لرفع مستوى المهارات', type: 'tool', category: 'Enhancement', effect: 0, price: 1000, quantity: 0, icon: '💎' },
     { id: 'awakened_title', name: 'المستيقظ الواعي', description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%', type: 'title', category: 'Title', effect: 5, price: 3000, quantity: 0, icon: '👑' },
     { id: 'power_eye_title', name: 'عين القوة', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', type: 'title', category: 'Title', effect: 10, price: 10000, quantity: 0, icon: '👁️' },
     { id: 'storm_hand_title', name: 'يد العاصفة', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', type: 'title', category: 'Title', effect: 10, price: 15000, quantity: 0, icon: '🌩️' },
