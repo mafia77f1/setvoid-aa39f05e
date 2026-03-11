@@ -83,9 +83,7 @@ const Abilities = () => {
       return;
     }
     // Consume stones
-    for (let i = 0; i < cost; i++) {
-      useItem('enhancement_stone', 1);
-    }
+    consumeItem('enhancement_stone', cost);
     const newLevels = { ...skillLevels, [skillId]: currentLevel + 1 };
     setSkillLevels(newLevels);
     saveSkillLevels(newLevels);
