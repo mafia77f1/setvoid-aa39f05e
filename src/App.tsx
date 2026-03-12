@@ -52,6 +52,7 @@ const AppContent = () => {
         <Route path="/quests" element={<Quests />} />
         <Route path="/gates" element={<Gates />} />
         <Route path="/battle" element={<Battle />} />
+        <Route path="/dungeon" element={<Dungeon />} />
         <Route path="/abilities" element={<Abilities />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/achievements" element={<Achievements />} />
