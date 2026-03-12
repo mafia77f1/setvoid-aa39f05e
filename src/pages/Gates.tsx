@@ -82,11 +82,7 @@ const Gates = () => {
     if (!selectedGate) return;
     setIsEntering(true);
     setTimeout(() => {
-      setIsEntering(false);
-      setCompletedGate(selectedGate);
-      setCurrentLoot(generateGateLoot(selectedGate));
-      setShowLootModal(true);
-      handleCloseModal();
+      navigate(`/dungeon?rank=${selectedGate.rank}`);
     }, 3000);
   };
 
