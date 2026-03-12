@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import Quests from "./pages/Quests";
 import Gates from "./pages/Gates";
 import Battle from "./pages/Battle";
+import Dungeon from "./pages/Dungeon";
 import Abilities from "./pages/Abilities";
 import Stats from "./pages/Stats";
 import Achievements from "./pages/Achievements";
