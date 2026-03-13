@@ -112,7 +112,7 @@ const Dungeon = () => {
   const [portalPulse, setPortalPulse] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const touchStart = useRef<Position | null>(null);
-  const moveInterval = useRef<NodeJS.Timeout | null>(null);
+  const moveInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Init items
   useEffect(() => {
