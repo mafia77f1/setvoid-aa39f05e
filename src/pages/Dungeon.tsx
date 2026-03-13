@@ -224,17 +224,21 @@ const Dungeon = () => {
       const hitItem = items.find(i => i.pos.x === nx && i.pos.y === ny && !i.collected);
       if (hitItem) {
         if (hitItem.type === 'loot') {
-          setItems(p => p.map(i => i.id === hitItem.id ? { ...i, collected: true } : i));
-          setCollected(p => [...p, hitItem]);
-          setShowLoot(hitItem);
-          setTimeout(() => setShowLoot(null), 2000);
+          setTimeout(() => {
+            setItems(p => p.map(i => i.id === hitItem.id ? { ...i, collected: true } : i));
+            setCollected(p => [...p, hitItem]);
+            setShowLoot(hitItem);
+            setTimeout(() => setShowLoot(null), 2000);
+          }, 0);
         } else if (hitItem.type === 'portal') {
-          navigate(`/battle?rank=${rank}`);
+          setTimeout(() => navigate(`/battle?rank=${rank}`), 0);
           return prev;
         }
       }
-      setIsMoving(true);
-      setTimeout(() => setIsMoving(false), 150);
+      setTimeout(() => {
+        setIsMoving(true);
+        setTimeout(() => setIsMoving(false), 150);
+      }, 0);
       return { x: nx, y: ny };
     });
   }, [canMove, items, navigate, rank]);
