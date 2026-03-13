@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Swords, Zap, Heart, Battery, ArrowLeft, Shield, Wind, Eye, Flame } from 'lucide-react';
+import { Swords, Zap, Heart, Battery, ArrowLeft, Shield, Wind, Eye, Flame, Star, Trophy, Coins } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '@/hooks/useGameState';
 
 interface DamagePopup {
@@ -13,6 +14,13 @@ interface DamagePopup {
   isDodge?: boolean;
 }
 
+interface LootItem {
+  name: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  amount?: number;
+}
+
 interface BossConfig {
   name: string;
   rank: string;
@@ -21,17 +29,28 @@ interface BossConfig {
   hpMultiplier: number;
   attackPower: number;
   attackSpeed: number;
-  dodgeChance: number; // boss dodge chance
+  dodgeChance: number;
 }
 
 const BOSSES_BY_RANK: Record<string, BossConfig> = {
-  E: { name: 'عنكبوت الظل', rank: 'E', image: '/BoosSnowSpider.png', color: '#6b7280', hpMultiplier: 10, attackPower: 15, attackSpeed: 4000, dodgeChance: 0.08 },
-  D: { name: 'ذئب الصحراء', rank: 'D', image: '/BoosSnowSpider.png', color: '#22c55e', hpMultiplier: 20, attackPower: 30, attackSpeed: 3500, dodgeChance: 0.12 },
+  E: { name: 'عنكبوت الظل', rank: 'E', image: '/BoosSnowSpider.png', color: '#6b7280', hpMultiplier: 10, attackPower: 15, attackSpeed: 3000, dodgeChance: 0.08 },
+  D: { name: 'ذئب الصحراء', rank: 'D', image: '/BoosSnowSpider.png', color: '#22c55e', hpMultiplier: 20, attackPower: 30, attackSpeed: 3000, dodgeChance: 0.12 },
   C: { name: 'فارس الظلام', rank: 'C', image: '/BoosSnowSpider.png', color: '#3b82f6', hpMultiplier: 35, attackPower: 55, attackSpeed: 3000, dodgeChance: 0.18 },
-  B: { name: 'تنين الجليد', rank: 'B', image: '/BoosSnowSpider.png', color: '#a855f7', hpMultiplier: 60, attackPower: 90, attackSpeed: 2500, dodgeChance: 0.22 },
-  A: { name: 'ملك الوحوش', rank: 'A', image: '/BoosSnowSpider.png', color: '#f59e0b', hpMultiplier: 100, attackPower: 150, attackSpeed: 2000, dodgeChance: 0.28 },
-  S: { name: 'إمبراطور الظلام', rank: 'S', image: '/BoosSnowSpider.png', color: '#ef4444', hpMultiplier: 200, attackPower: 250, attackSpeed: 1800, dodgeChance: 0.35 },
+  B: { name: 'تنين الجليد', rank: 'B', image: '/BoosSnowSpider.png', color: '#a855f7', hpMultiplier: 60, attackPower: 90, attackSpeed: 3000, dodgeChance: 0.22 },
+  A: { name: 'ملك الوحوش', rank: 'A', image: '/BoosSnowSpider.png', color: '#f59e0b', hpMultiplier: 100, attackPower: 150, attackSpeed: 3000, dodgeChance: 0.28 },
+  S: { name: 'إمبراطور الظلام', rank: 'S', image: '/BoosSnowSpider.png', color: '#ef4444', hpMultiplier: 200, attackPower: 250, attackSpeed: 3000, dodgeChance: 0.35 },
 };
+
+const LOOT_TABLE: Record<string, LootItem[]> = {
+  E: [{ name: 'ذهب', icon: '🪙', rarity: 'common', amount: 50 }, { name: 'حجر مانا صغير', icon: '💎', rarity: 'common' }],
+  D: [{ name: 'ذهب', icon: '🪙', rarity: 'common', amount: 150 }, { name: 'جرعة شفاء', icon: '🧪', rarity: 'common' }, { name: 'درع خفيف', icon: '🛡️', rarity: 'rare' }],
+  C: [{ name: 'ذهب', icon: '🪙', rarity: 'rare', amount: 400 }, { name: 'سيف العاصفة', icon: '⚔️', rarity: 'rare' }, { name: 'حجر مانا نادر', icon: '💠', rarity: 'rare' }],
+  B: [{ name: 'ذهب', icon: '🪙', rarity: 'epic', amount: 800 }, { name: 'خوذة الظلام', icon: '⛑️', rarity: 'epic' }, { name: 'خاتم القوة', icon: '💍', rarity: 'epic' }],
+  A: [{ name: 'ذهب', icon: '🪙', rarity: 'legendary', amount: 2000 }, { name: 'درع التنين', icon: '🐉', rarity: 'legendary' }, { name: 'عباءة الخفاء', icon: '🧥', rarity: 'epic' }],
+  S: [{ name: 'ذهب', icon: '🪙', rarity: 'legendary', amount: 5000 }, { name: 'سيف القيامة', icon: '⚔️', rarity: 'legendary' }, { name: 'تاج الإمبراطور', icon: '👑', rarity: 'legendary' }],
+};
+
+const RARITY_COLORS: Record<string, string> = { common: '#9ca3af', rare: '#3b82f6', epic: '#a855f7', legendary: '#f59e0b' };
 
 const getBaseDamage = (strengthLevel: number): number => {
   if (strengthLevel <= 1) return 1;
@@ -40,6 +59,7 @@ const getBaseDamage = (strengthLevel: number): number => {
 };
 
 const SKILL_LEVEL_MULTIPLIERS = [1, 1.3, 1.6, 2.0, 2.5, 3.0];
+const DARK_VOID_CHARGE_REQUIRED = 15;
 
 const getSkillLevels = () => {
   try {
@@ -48,9 +68,6 @@ const getSkillLevels = () => {
   } catch {}
   return { basicAttack: 1, thunderDash: 1, daggerStrike: 1, swordStrike: 1, darkVoid: 1 };
 };
-
-// Dark Void charge requirement
-const DARK_VOID_CHARGE_REQUIRED = 15;
 
 const SoloLevelingBattle = () => {
   const navigate = useNavigate();
@@ -67,7 +84,6 @@ const SoloLevelingBattle = () => {
   const skillLevels = getSkillLevels();
   const canUseDarkVoid = playerLevel >= 25;
 
-  // Damage calculations
   const baseDmg = getBaseDamage(strengthLevel);
   const basicDmg = Math.floor(baseDmg * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.basicAttack || 1) - 1, 5)]);
   const swordDmg = Math.floor(baseDmg * 1.8 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.swordStrike || 1) - 1, 5)]);
@@ -75,17 +91,13 @@ const SoloLevelingBattle = () => {
   const daggerDmg = Math.floor(baseDmg * 2 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.daggerStrike || 1) - 1, 5)]);
   const darkVoidDmg = Math.floor(baseDmg * 8 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.darkVoid || 1) - 1, 5)]);
 
-  // Boss state
   const maxBossHP = Math.max(100, baseDmg * bossConfig.hpMultiplier);
   const [bossHP, setBossHP] = useState(maxBossHP);
-
-  // Player state
   const maxPlayerHP = gameState.maxHp || (2000 + playerLevel * 50);
   const maxPlayerMana = gameState.maxEnergy || (150 + playerLevel * 5);
   const [playerHP, setPlayerHP] = useState(maxPlayerHP);
   const [playerMana, setPlayerMana] = useState(maxPlayerMana);
 
-  // Battle state
   const [isAttacking, setIsAttacking] = useState(false);
   const [isBossHit, setIsBossHit] = useState(false);
   const [isPlayerHit, setIsPlayerHit] = useState(false);
@@ -101,227 +113,186 @@ const SoloLevelingBattle = () => {
   const [swordEffect, setSwordEffect] = useState(false);
   const [darkVoidEffect, setDarkVoidEffect] = useState(false);
 
-  // Cooldowns (seconds) - basic has NO cooldown
   const [swordCooldown, setSwordCooldown] = useState(0);
   const [thunderCooldown, setThunderCooldown] = useState(0);
   const [daggerCooldown, setDaggerCooldown] = useState(0);
 
-  // Abilities
   const [ragingSpeedActive, setRagingSpeedActive] = useState(false);
   const [ragingSpeedCooldown, setRagingSpeedCooldown] = useState(0);
   const [ragingSpeedTimer, setRagingSpeedTimer] = useState(0);
   const [dodgedAttack, setDodgedAttack] = useState(false);
 
-  // Dark Void charge counter
   const [darkVoidCharge, setDarkVoidCharge] = useState(0);
-
-  // Boss fury - triggers at <25% HP
   const [bossFury, setBossFury] = useState(0);
   const [ultimateFuryActive, setUltimateFuryActive] = useState(false);
 
-  // Audio
-  const slashSoundRef = useRef<HTMLAudioElement | null>(null);
-  const thunderSoundRef = useRef<HTMLAudioElement | null>(null);
-  const critSoundRef = useRef<HTMLAudioElement | null>(null);
-  const bossDamageSoundRef = useRef<HTMLAudioElement | null>(null);
-  const victorySoundRef = useRef<HTMLAudioElement | null>(null);
-  const daggerSoundRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    slashSoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2803/2803-preview.mp3');
-    thunderSoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1166/1166-preview.mp3');
-    critSoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
-    bossDamageSoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2801/2801-preview.mp3');
-    victorySoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
-    daggerSoundRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2788/2788-preview.mp3');
-  }, []);
-
-  const playAudio = (ref: React.RefObject<HTMLAudioElement | null>, volume = 0.4) => {
-    if (ref.current) { ref.current.volume = volume; ref.current.currentTime = 0; ref.current.play().catch(() => {}); }
-  };
+  // Victory / Loot
+  const [showVictory, setShowVictory] = useState(false);
+  const [showLoot, setShowLoot] = useState(false);
+  const [lootItems, setLootItems] = useState<LootItem[]>([]);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [xpGained, setXpGained] = useState(0);
 
   const bossHPPercent = (bossHP / maxBossHP) * 100;
   const playerHPPercent = (playerHP / maxPlayerHP) * 100;
   const playerManaPercent = (playerMana / maxPlayerMana) * 100;
   const isBossDead = bossHP <= 0;
   const isPlayerDead = playerHP <= 0;
-  const battleOver = isBossDead || isPlayerDead;
+  const battleOver = isBossDead || isPlayerDead || showVictory || showLoot;
+  const isDarkVoidReady = darkVoidCharge >= DARK_VOID_CHARGE_REQUIRED;
 
   const addDamagePopup = useCallback((value: number, isCrit: boolean, isPlayer = false, isDodge = false) => {
     const id = Date.now() + Math.random();
     const x = 20 + Math.random() * 60;
-    const y = 15 + Math.random() * 40;
+    const y = 10 + Math.random() * 50;
     setDamagePopups(prev => [...prev, { id, value, x, y, isCrit, isPlayer, isDodge }]);
     setTimeout(() => setDamagePopups(prev => prev.filter(p => p.id !== id)), 1500);
   }, []);
 
-  // ===== COOLDOWN TIMER =====
+  // Cooldown timer
   useEffect(() => {
     if (battleOver) return;
     const interval = setInterval(() => {
-      setSwordCooldown(prev => Math.max(0, prev - 1));
-      setThunderCooldown(prev => Math.max(0, prev - 1));
-      setDaggerCooldown(prev => Math.max(0, prev - 1));
-      setRagingSpeedCooldown(prev => Math.max(0, prev - 1));
-      setRagingSpeedTimer(prev => {
-        if (prev <= 1) { setRagingSpeedActive(false); return 0; }
-        return prev - 1;
-      });
-      setPlayerMana(prev => Math.min(maxPlayerMana, prev + 2));
+      setSwordCooldown(p => Math.max(0, p - 1));
+      setThunderCooldown(p => Math.max(0, p - 1));
+      setDaggerCooldown(p => Math.max(0, p - 1));
+      setRagingSpeedCooldown(p => Math.max(0, p - 1));
+      setRagingSpeedTimer(p => { if (p <= 1) { setRagingSpeedActive(false); return 0; } return p - 1; });
+      setPlayerMana(p => Math.min(maxPlayerMana, p + 2));
     }, 1000);
     return () => clearInterval(interval);
   }, [battleOver, maxPlayerMana]);
 
-  // ===== BOSS FURY at <25% HP =====
+  // Boss fury at <25%
   useEffect(() => {
     if (battleOver) return;
-    if (bossHPPercent < 25 && bossFury < 100) {
-      setBossFury(100);
-    }
+    if (bossHPPercent < 25 && bossFury < 100) setBossFury(100);
   }, [bossHPPercent, battleOver, bossFury]);
 
   useEffect(() => {
     if (bossFury >= 100 && !ultimateFuryActive && !battleOver) {
       setUltimateFuryActive(true);
       setScreenShake(true);
-      setBattleLog(prev => ['🔥💀 Ultimate Fury! البوس في حالة غضب مطلق!', ...prev.slice(0, 4)]);
+      setBattleLog(p => ['🔥💀 Ultimate Fury! غضب مطلق!', ...p.slice(0, 4)]);
       setTimeout(() => setScreenShake(false), 1000);
-      // Fury stays active until boss dies (rage mode at <25%)
     }
   }, [bossFury, ultimateFuryActive, battleOver]);
 
-  // ===== BOSS AUTO-ATTACK with advance animation =====
+  // Boss auto-attack with advance
   useEffect(() => {
     if (battleOver) return;
     const interval = setInterval(() => {
       if (bossHP <= 0 || playerHP <= 0) return;
-
-      // Boss advances first
       setIsBossAdvancing(true);
       setTimeout(() => {
         setIsBossAdvancing(false);
-        
-        // Check dodge
         if (ragingSpeedActive) {
           const dodgeChance = bossConfig.rank === 'E' || bossConfig.rank === 'D' ? 0.85 : 0.80;
           if (Math.random() < dodgeChance) {
             setDodgedAttack(true);
-            setBattleLog(prev => ['💨 تفادي! Raging Speed نشط!', ...prev.slice(0, 4)]);
+            addDamagePopup(0, false, true, true);
+            setBattleLog(p => ['💨 تفادي!', ...p.slice(0, 4)]);
             setTimeout(() => setDodgedAttack(false), 600);
             return;
           }
         }
-
-        const furyMultiplier = ultimateFuryActive ? 3 : 1;
-        const bossDmg = Math.floor((bossConfig.attackPower + Math.floor(Math.random() * bossConfig.attackPower * 0.5)) * furyMultiplier);
-        
+        const furyMult = ultimateFuryActive ? 3 : 1;
+        const bossDmg = Math.floor((bossConfig.attackPower + Math.floor(Math.random() * bossConfig.attackPower * 0.5)) * furyMult);
         setIsPlayerHit(true);
-        setPlayerHP(prev => Math.max(0, prev - bossDmg));
-        playAudio(bossDamageSoundRef, 0.3);
+        setPlayerHP(p => Math.max(0, p - bossDmg));
         addDamagePopup(bossDmg, ultimateFuryActive, true);
-        setBattleLog(prev => [
-          `${ultimateFuryActive ? '🔥💀 ' : '🕷️ '}${bossConfig.name} هاجم → ${bossDmg} ضرر`,
-          ...prev.slice(0, 4)
-        ]);
-        setTimeout(() => setIsPlayerHit(false), 400);
-      }, 600); // Advance takes 600ms
+        setScreenShake(true);
+        setBattleLog(p => [`${ultimateFuryActive ? '🔥' : '🕷️'} ${bossConfig.name} → ${bossDmg}`, ...p.slice(0, 4)]);
+        setTimeout(() => { setIsPlayerHit(false); setScreenShake(false); }, 400);
+      }, 600);
     }, bossConfig.attackSpeed);
     return () => clearInterval(interval);
   }, [battleOver, bossHP, playerHP, ragingSpeedActive, ultimateFuryActive, bossConfig, addDamagePopup]);
 
-  // Helper: attempt attack with boss dodge check
   const attemptDamage = (dmg: number, isCrit: boolean, label: string) => {
-    // Boss dodge check
     if (Math.random() < bossConfig.dodgeChance) {
       addDamagePopup(0, false, false, true);
-      setBattleLog(prev => [`🛡️ ${bossConfig.name} تفادى الهجوم!`, ...prev.slice(0, 4)]);
+      setBattleLog(p => [`🛡️ ${bossConfig.name} تفادى!`, ...p.slice(0, 4)]);
       return;
     }
     setIsBossHit(true);
-    setBossHP(prev => Math.max(0, prev - dmg));
+    setScreenShake(true);
+    setBossHP(p => Math.max(0, p - dmg));
     addDamagePopup(dmg, isCrit);
-    setComboCount(prev => prev + 1);
-    setDarkVoidCharge(prev => Math.min(DARK_VOID_CHARGE_REQUIRED, prev + 1));
-    setBattleLog(prev => [label, ...prev.slice(0, 4)]);
-    setTimeout(() => setIsBossHit(false), 400);
+    setComboCount(p => p + 1);
+    setDarkVoidCharge(p => Math.min(DARK_VOID_CHARGE_REQUIRED, p + 1));
+    setBattleLog(p => [label, ...p.slice(0, 4)]);
+    setTimeout(() => { setIsBossHit(false); setScreenShake(false); }, 400);
   };
 
-  // ===== BASIC ATTACK (5 MP, NO cooldown) =====
+  // Basic Attack - NO cooldown
   const basicAttack = useCallback(() => {
     if (isAttacking || battleOver || playerMana < 5) return;
     setIsAttacking(true);
-    setPlayerMana(prev => prev - 5);
+    setPlayerMana(p => p - 5);
     const isCrit = Math.random() < 0.15;
     const finalDmg = isCrit ? Math.floor(basicDmg * 2) : basicDmg;
     setSlashEffect(true);
-    playAudio(slashSoundRef, 0.35);
-    if (isCrit) playAudio(critSoundRef, 0.5);
     setTimeout(() => {
-      attemptDamage(finalDmg, isCrit, `${isCrit ? '💥 كريتيكال! ' : '⚔️ '}ضربة → ${finalDmg.toLocaleString()} ضرر`);
+      attemptDamage(finalDmg, isCrit, `${isCrit ? '💥' : '⚔️'} ضربة → ${finalDmg.toLocaleString()}`);
       setTimeout(() => setSlashEffect(false), 400);
-    }, 250);
-    setTimeout(() => setIsAttacking(false), 500);
+    }, 200);
+    setTimeout(() => setIsAttacking(false), 400);
   }, [isAttacking, battleOver, playerMana, basicDmg]);
 
-  // ===== SWORD STRIKE (15 MP, 4s cooldown) =====
+  // Sword Strike
   const swordStrike = useCallback(() => {
     if (isAttacking || battleOver || swordCooldown > 0 || playerMana < 15) return;
     setIsAttacking(true);
-    setPlayerMana(prev => prev - 15);
+    setPlayerMana(p => p - 15);
     const isCrit = Math.random() < 0.2;
     const finalDmg = isCrit ? Math.floor(swordDmg * 2) : swordDmg;
     setSwordEffect(true);
     setScreenShake(true);
-    playAudio(slashSoundRef, 0.45);
-    if (isCrit) playAudio(critSoundRef, 0.5);
     setTimeout(() => {
-      attemptDamage(finalDmg, isCrit, `${isCrit ? '🗡️💥 كريتيكال! ' : '🗡️ '}ضربة السيف → ${finalDmg.toLocaleString()} ضرر`);
+      attemptDamage(finalDmg, isCrit, `${isCrit ? '🗡️💥' : '🗡️'} السيف → ${finalDmg.toLocaleString()}`);
       setTimeout(() => { setSwordEffect(false); setScreenShake(false); }, 400);
     }, 300);
     setSwordCooldown(4);
     setTimeout(() => setIsAttacking(false), 700);
   }, [isAttacking, battleOver, swordCooldown, playerMana, swordDmg]);
 
-  // ===== THUNDER DASH (50 MP, 8s cooldown) =====
+  // Thunder Dash
   const thunderDash = useCallback(() => {
     if (isAttacking || battleOver || thunderCooldown > 0 || playerMana < 50) return;
     setIsAttacking(true);
-    setPlayerMana(prev => prev - 50);
+    setPlayerMana(p => p - 50);
     const isCrit = Math.random() < 0.25;
     const finalDmg = isCrit ? Math.floor(thunderDmg * 2.5) : thunderDmg;
     setThunderBoltEffect(true);
     setScreenShake(true);
-    playAudio(thunderSoundRef, 0.5);
     setTimeout(() => { setThunderFlash(true); setTimeout(() => setThunderFlash(false), 150); }, 200);
     setTimeout(() => {
-      attemptDamage(finalDmg, isCrit, `${isCrit ? '⚡💥 كريتيكال! ' : '⚡ '}اندفاع البرق → ${finalDmg.toLocaleString()} ضرر`);
-      if (isCrit) playAudio(critSoundRef, 0.6);
+      attemptDamage(finalDmg, isCrit, `${isCrit ? '⚡💥' : '⚡'} البرق → ${finalDmg.toLocaleString()}`);
       setTimeout(() => { setScreenShake(false); setThunderBoltEffect(false); }, 500);
     }, 400);
     setThunderCooldown(8);
     setTimeout(() => setIsAttacking(false), 900);
   }, [isAttacking, battleOver, thunderCooldown, playerMana, thunderDmg]);
 
-  // ===== DAGGER STRIKE (25 MP, 5s cooldown) =====
+  // Dagger Strike
   const daggerStrikeAction = useCallback(() => {
     if (!hasDagger || isAttacking || battleOver || daggerCooldown > 0 || playerMana < 25) return;
     setIsAttacking(true);
-    setPlayerMana(prev => prev - 25);
+    setPlayerMana(p => p - 25);
     const isCrit = Math.random() < 0.3;
     const finalDmg = isCrit ? Math.floor(daggerDmg * 2) : daggerDmg;
     setDaggerEffect(true);
     setScreenShake(true);
-    playAudio(daggerSoundRef, 0.45);
-    if (isCrit) playAudio(critSoundRef, 0.5);
     setTimeout(() => {
-      attemptDamage(finalDmg, isCrit, `${isCrit ? '🗡️💥 كريتيكال! ' : '🗡️ '}ضربة الخنجر → ${finalDmg.toLocaleString()} ضرر`);
+      attemptDamage(finalDmg, isCrit, `${isCrit ? '🗡️💥' : '🗡️'} خنجر → ${finalDmg.toLocaleString()}`);
       setTimeout(() => { setDaggerEffect(false); setScreenShake(false); }, 400);
     }, 300);
     setDaggerCooldown(5);
     setTimeout(() => setIsAttacking(false), 700);
   }, [hasDagger, isAttacking, battleOver, daggerCooldown, playerMana, daggerDmg]);
 
-  // ===== DARK VOID (charge-based ultimate, hidden if level < 25) =====
+  // Dark Void
   const darkVoidStrike = useCallback(() => {
     if (!canUseDarkVoid || isAttacking || battleOver || darkVoidCharge < DARK_VOID_CHARGE_REQUIRED) return;
     setIsAttacking(true);
@@ -330,128 +301,186 @@ const SoloLevelingBattle = () => {
     const finalDmg = isCrit ? Math.floor(darkVoidDmg * 3) : darkVoidDmg;
     setDarkVoidEffect(true);
     setScreenShake(true);
-    playAudio(thunderSoundRef, 0.6);
-    playAudio(critSoundRef, 0.7);
     setTimeout(() => {
-      attemptDamage(finalDmg, isCrit, `${isCrit ? '🌑💥 كريتيكال! ' : '🌑 '}ثقب الظلام → ${finalDmg.toLocaleString()} ضرر`);
+      attemptDamage(finalDmg, isCrit, `${isCrit ? '🌑💥' : '🌑'} ثقب الظلام → ${finalDmg.toLocaleString()}`);
       setTimeout(() => { setDarkVoidEffect(false); setScreenShake(false); }, 800);
     }, 500);
     setTimeout(() => setIsAttacking(false), 1200);
   }, [canUseDarkVoid, isAttacking, battleOver, darkVoidCharge, darkVoidDmg]);
 
-  // ===== RAGING SPEED (75 MP, 20s cooldown, 8s) =====
+  // Raging Speed
   const activateRagingSpeed = useCallback(() => {
     if (battleOver || ragingSpeedCooldown > 0 || ragingSpeedActive || playerMana < 75) return;
-    setPlayerMana(prev => prev - 75);
+    setPlayerMana(p => p - 75);
     setRagingSpeedActive(true);
     setRagingSpeedTimer(8);
     setRagingSpeedCooldown(20);
-    setBattleLog(prev => ['💨 Raging Speed! تفادي 80-85% من الهجمات!', ...prev.slice(0, 4)]);
+    setBattleLog(p => ['💨 Raging Speed! تفادي 80-85%!', ...p.slice(0, 4)]);
   }, [battleOver, ragingSpeedCooldown, ragingSpeedActive, playerMana]);
 
   useEffect(() => { const t = setTimeout(() => setComboCount(0), 5000); return () => clearTimeout(t); }, [comboCount]);
-  useEffect(() => { if (isBossDead) playAudio(victorySoundRef, 0.5); }, [isBossDead]);
 
-  const isDarkVoidReady = darkVoidCharge >= DARK_VOID_CHARGE_REQUIRED;
+  // Victory handler
+  useEffect(() => {
+    if (isBossDead && !showVictory) {
+      setTimeout(() => {
+        setShowVictory(true);
+        const xp = Math.floor(maxBossHP * 0.02);
+        setXpGained(xp);
+        const loot = LOOT_TABLE[gateRank] || LOOT_TABLE['E'];
+        setLootItems(loot);
+      }, 1500);
+    }
+  }, [isBossDead, showVictory, maxBossHP, gateRank]);
+
+  const handleShowLoot = () => { setShowVictory(false); setShowLoot(true); };
+  const handleFinish = () => navigate(-1);
+
+  const resetBattle = () => {
+    setPlayerHP(maxPlayerHP); setPlayerMana(maxPlayerMana); setBossHP(maxBossHP);
+    setComboCount(0); setSwordCooldown(0); setThunderCooldown(0); setDaggerCooldown(0);
+    setRagingSpeedCooldown(0); setRagingSpeedActive(false); setRagingSpeedTimer(0);
+    setBossFury(0); setUltimateFuryActive(false); setDarkVoidCharge(0);
+    setShowVictory(false); setShowLoot(false); setShowLevelUp(false);
+    setBattleLog(['⚔️ المعركة بدأت!']);
+    setDamagePopups([]);
+  };
 
   return (
-    <div className={`h-screen bg-black text-white flex flex-col overflow-hidden relative select-none transition-transform duration-75 ${screenShake ? 'animate-screen-shake' : ''}`} dir="ltr">
-      {thunderFlash && <div className="absolute inset-0 z-50 bg-yellow-200/40 pointer-events-none animate-flash" />}
-      
-      {/* Ultimate Fury red overlay */}
+    <div className={`h-screen bg-black text-white flex flex-col overflow-hidden relative select-none ${screenShake ? 'animate-screen-shake' : ''}`} dir="ltr">
+      {/* Flash effects */}
+      {thunderFlash && <div className="absolute inset-0 z-50 bg-yellow-200/40 pointer-events-none" style={{ animation: 'flash 0.1s ease-out 3' }} />}
       {ultimateFuryActive && (
-        <div className="absolute inset-0 z-40 pointer-events-none animate-fury-pulse" 
-          style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.4) 0%, rgba(139,0,0,0.6) 100%)' }} />
+        <motion.div className="absolute inset-0 z-40 pointer-events-none"
+          animate={{ opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 0.8, repeat: Infinity }}
+          style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.4) 0%, rgba(139,0,0,0.6) 100%)' }}
+        />
       )}
+      {dodgedAttack && <div className="absolute inset-0 z-40 pointer-events-none bg-cyan-400/10" style={{ animation: 'flash 0.15s ease-out 2' }} />}
 
-      {dodgedAttack && <div className="absolute inset-0 z-40 pointer-events-none bg-cyan-400/10 animate-flash" />}
+      {/* Dark Void full screen effect */}
+      <AnimatePresence>
+        {darkVoidEffect && (
+          <motion.div className="absolute inset-0 z-45 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-purple-950/70" />
+            <motion.div
+              className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full"
+              initial={{ scale: 0, x: '-50%', y: '-50%' }}
+              animate={{ scale: 2, x: '-50%', y: '-50%' }}
+              transition={{ duration: 1 }}
+              style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(88,28,135,0.5) 40%, transparent 70%)' }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Dark Void Effect */}
-      {darkVoidEffect && (
-        <div className="absolute inset-0 z-45 pointer-events-none">
-          <div className="absolute inset-0 bg-purple-950/60 animate-pulse" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(88,28,135,0.6) 40%, transparent 70%)', animation: 'dark-void-expand 1s ease-out' }} />
-        </div>
-      )}
-
-      {/* BATTLE ARENA */}
+      {/* ====== BATTLE ARENA ====== */}
       <div className="relative flex-1 min-h-0 flex flex-col">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(15,25,60,1)_0%,rgba(5,5,15,1)_70%,#000_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_70%,rgba(6,182,212,0.06)_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(239,68,68,0.06)_0%,transparent_50%)]" />
-        
-        {/* Grid floor */}
-        <div className="absolute bottom-0 left-0 right-0 h-[30%] overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-cyan-950/10 to-transparent" 
-            style={{ backgroundImage: 'linear-gradient(rgba(6,182,212,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px', transform: 'perspective(500px) rotateX(60deg)', transformOrigin: 'bottom' }} />
+        {/* Background */}
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(10,20,50,1) 0%, rgba(3,3,12,1) 60%, #000 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 20% 80%, rgba(6,182,212,0.05) 0%, transparent 50%)' }} />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 80% 70%, rgba(239,68,68,0.04) 0%, transparent 50%)' }} />
+
+        {/* Animated grid floor */}
+        <div className="absolute bottom-0 left-0 right-0 h-[35%] overflow-hidden">
+          <div className="absolute inset-0"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(6,182,212,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.06) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+              transform: 'perspective(500px) rotateX(65deg)',
+              transformOrigin: 'bottom',
+            }}
+          />
+          <motion.div className="absolute inset-0 bg-gradient-to-t from-cyan-950/15 to-transparent"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          />
         </div>
 
         {/* Particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(15)].map((_, i) => (
-            <div key={i} className="absolute rounded-full"
+          {[...Array(20)].map((_, i) => (
+            <motion.div key={i} className="absolute rounded-full"
+              animate={{ y: [0, -20, 0], opacity: [0.2, 0.7, 0.2] }}
+              transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 3 }}
               style={{
                 width: `${1 + Math.random() * 2}px`, height: `${1 + Math.random() * 2}px`,
-                background: i % 3 === 0 ? 'rgba(6,182,212,0.4)' : i % 3 === 1 ? 'rgba(168,85,247,0.3)' : `${bossConfig.color}66`,
+                background: i % 3 === 0 ? 'rgba(6,182,212,0.5)' : i % 3 === 1 ? 'rgba(168,85,247,0.4)' : `${bossConfig.color}55`,
                 left: `${5 + Math.random() * 90}%`, top: `${10 + Math.random() * 80}%`,
-                animation: `float ${3 + Math.random() * 5}s ease-in-out infinite`, animationDelay: `${Math.random() * 3}s`,
               }}
             />
           ))}
         </div>
 
         {/* Back button */}
-        <button onClick={() => navigate(-1)} className="absolute top-3 left-3 z-30 bg-black/60 border border-white/10 p-2 rounded-lg hover:bg-white/10 transition-colors">
+        <button onClick={() => navigate(-1)} className="absolute top-3 left-3 z-30 bg-black/70 border border-white/10 p-2 rounded-xl hover:bg-white/10 transition-all active:scale-90">
           <ArrowLeft size={16} className="text-white/70" />
         </button>
 
-        {/* Boss Rank Badge */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
-          <div className="px-5 py-1.5 text-[10px] font-black tracking-[0.4em] uppercase backdrop-blur-sm rounded-sm border"
-            style={{ borderColor: `${bossConfig.color}50`, backgroundColor: `${bossConfig.color}20`, color: bossConfig.color }}>
-            RANK {bossConfig.rank} GATE
+        {/* Boss Rank */}
+        <motion.div className="absolute top-3 left-1/2 -translate-x-1/2 z-20"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <div className="px-6 py-1.5 text-[10px] font-black tracking-[0.5em] uppercase backdrop-blur-md rounded-lg border"
+            style={{ borderColor: `${bossConfig.color}40`, backgroundColor: `${bossConfig.color}15`, color: bossConfig.color, boxShadow: `0 0 20px ${bossConfig.color}20` }}>
+            RANK {bossConfig.rank}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Boss Fury Bar - shows when HP < 25% */}
+        {/* Fury bar */}
         {bossHPPercent < 50 && (
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 w-40">
+          <motion.div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 w-44"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
             <div className="flex items-center gap-1 mb-0.5">
-              <span className="text-[7px] text-red-400 font-bold tracking-wider">ULTIMATE FURY</span>
+              <span className="text-[7px] text-red-400 font-bold tracking-[0.2em]">ULTIMATE FURY</span>
               <span className="text-[7px] text-red-300 ml-auto">{Math.floor(bossFury)}%</span>
             </div>
             <div className="h-2 bg-zinc-900 border border-red-500/20 rounded-full overflow-hidden">
-              <div className="h-full transition-all duration-500 rounded-full"
-                style={{ 
+              <motion.div className="h-full rounded-full"
+                animate={bossFury >= 100 ? { opacity: [0.7, 1, 0.7] } : {}}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                style={{
                   width: `${bossFury}%`,
                   background: bossFury >= 100 ? 'linear-gradient(90deg, #dc2626, #ff0000, #dc2626)' : 'linear-gradient(90deg, #991b1b, #dc2626)',
-                  boxShadow: bossFury >= 100 ? '0 0 15px rgba(239,68,68,0.8)' : 'none',
+                  boxShadow: bossFury >= 100 ? '0 0 20px rgba(239,68,68,0.8)' : 'none',
                 }}
               />
             </div>
             {ultimateFuryActive && (
-              <div className="text-center mt-1">
-                <span className="text-[8px] font-black text-red-500 animate-pulse tracking-widest">⚠️ RAGE MODE ⚠️</span>
-              </div>
+              <motion.div className="text-center mt-1"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                <span className="text-[8px] font-black text-red-500 tracking-[0.3em]">⚠️ RAGE MODE ⚠️</span>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* Dark Void Charge */}
         {canUseDarkVoid && (
           <div className="absolute top-3 right-3 z-20">
-            <div className="bg-black/70 border border-purple-500/30 px-2 py-1.5 backdrop-blur-sm rounded-sm">
+            <div className="bg-black/80 border border-purple-500/30 px-2.5 py-2 backdrop-blur-md rounded-xl">
               <div className="flex items-center gap-1 text-[7px]">
                 <Eye size={8} className="text-purple-400" />
-                <span className="text-purple-300 font-bold">VOID</span>
+                <span className="text-purple-300 font-bold tracking-wider">VOID</span>
               </div>
               <div className="w-16 h-1.5 bg-zinc-900 rounded-full overflow-hidden mt-1">
-                <div className="h-full transition-all duration-300 rounded-full"
-                  style={{ 
+                <motion.div className="h-full rounded-full"
+                  animate={isDarkVoidReady ? { opacity: [0.6, 1, 0.6] } : {}}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                  style={{
                     width: `${(darkVoidCharge / DARK_VOID_CHARGE_REQUIRED) * 100}%`,
                     background: isDarkVoidReady ? 'linear-gradient(90deg, #7c3aed, #a855f7)' : 'linear-gradient(90deg, #4c1d95, #6d28d9)',
-                    boxShadow: isDarkVoidReady ? '0 0 10px rgba(139,92,246,0.8)' : 'none',
+                    boxShadow: isDarkVoidReady ? '0 0 12px rgba(139,92,246,0.8)' : 'none',
                   }}
                 />
               </div>
@@ -461,259 +490,354 @@ const SoloLevelingBattle = () => {
         )}
 
         {/* Combo */}
-        {comboCount > 1 && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
-            <div className="text-orange-400 font-black italic text-xl drop-shadow-[0_0_15px_rgba(251,146,60,0.9)] animate-bounce">
-              {comboCount}x COMBO!
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {comboCount > 1 && (
+            <motion.div className="absolute top-20 left-1/2 -translate-x-1/2 z-20"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+            >
+              <motion.div className="text-orange-400 font-black italic text-2xl"
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.3, repeat: Infinity }}
+                style={{ textShadow: '0 0 20px rgba(251,146,60,0.9)' }}
+              >
+                {comboCount}x COMBO!
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Raging Speed indicator */}
+        {/* Raging Speed */}
         {ragingSpeedActive && (
-          <div className="absolute bottom-[35%] left-1/2 -translate-x-1/2 z-20">
-            <div className="bg-cyan-500/20 border border-cyan-400/40 px-3 py-1 rounded-full">
-              <span className="text-[9px] text-cyan-300 font-bold animate-pulse">💨 Raging Speed {ragingSpeedTimer}s</span>
+          <motion.div className="absolute bottom-[38%] left-1/2 -translate-x-1/2 z-20"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <div className="bg-cyan-500/15 border border-cyan-400/30 px-4 py-1.5 rounded-full backdrop-blur-sm">
+              <motion.span className="text-[10px] text-cyan-300 font-bold"
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >💨 Raging Speed {ragingSpeedTimer}s</motion.span>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {/* VS */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-          <div className="text-4xl font-black italic text-white/5 tracking-[0.6em]">VS</div>
-        </div>
+        {/* ===== BOSS CENTER ===== */}
+        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center">
+          {/* Boss HP Bar */}
+          <div className="mb-3 w-[200px]">
+            <div className="bg-black/80 border backdrop-blur-md rounded-xl p-2.5" style={{ borderColor: `${bossConfig.color}40` }}>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[9px] font-black tracking-[0.15em]" style={{ color: bossConfig.color }}>{bossConfig.name}</span>
+                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ color: bossConfig.color, backgroundColor: `${bossConfig.color}15` }}>[{bossConfig.rank}]</span>
+              </div>
+              <div className="h-3 bg-zinc-900 border border-white/5 overflow-hidden rounded-full relative">
+                <motion.div className="h-full relative overflow-hidden rounded-full"
+                  animate={{ width: `${bossHPPercent}%` }}
+                  transition={{ duration: 0.5 }}
+                  style={{ background: `linear-gradient(90deg, ${bossConfig.color}99, ${bossConfig.color})` }}
+                >
+                  <motion.div className="absolute inset-0"
+                    animate={{ x: ['-100%', '100%'] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }}
+                  />
+                </motion.div>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[7px] text-zinc-500">{bossHP.toLocaleString()}</span>
+                <span className="text-[7px] text-zinc-500">{maxBossHP.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
 
-        {/* ===== PLAYER (LEFT) ===== */}
-        <div className="absolute left-2 bottom-[10%] z-10 flex flex-col items-center">
-          <div className="mb-2 w-[130px]">
-            <div className="bg-black/80 border border-cyan-500/30 p-2 backdrop-blur-md rounded-sm">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[8px] font-black text-cyan-400 tracking-widest truncate max-w-[70px]">{playerName}</span>
-                <span className="text-[8px] font-bold text-cyan-300/80">LV.{playerLevel}</span>
-              </div>
-              <div className="flex items-center gap-1 mb-1">
-                <Heart size={7} className="text-emerald-400 shrink-0" />
-                <div className="flex-1 h-2 bg-zinc-900 border border-white/5 overflow-hidden rounded-sm">
-                  <div className="h-full transition-all duration-500 rounded-sm"
-                    style={{ width: `${playerHPPercent}%`, background: playerHPPercent > 50 ? 'linear-gradient(90deg, #10b981, #34d399)' : playerHPPercent > 20 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #f87171)' }} />
-                </div>
-                <span className="text-[6px] text-zinc-500 w-7 text-right">{playerHP}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Battery size={7} className="text-blue-400 shrink-0" />
-                <div className="flex-1 h-1.5 bg-zinc-900 border border-white/5 overflow-hidden rounded-sm">
-                  <div className="h-full transition-all duration-500 rounded-sm"
-                    style={{ width: `${playerManaPercent}%`, background: 'linear-gradient(90deg, #3b82f6, #60a5fa)' }} />
-                </div>
-                <span className="text-[6px] text-zinc-500 w-7 text-right">{playerMana}</span>
-              </div>
+          {/* Boss Image */}
+          <motion.div
+            className="relative"
+            animate={{
+              scale: isBossHit ? 0.85 : isBossAdvancing ? 1.15 : isBossDead ? 0.7 : 1,
+              x: isBossAdvancing ? -15 : 0,
+              rotate: isBossDead ? 15 : 0,
+              filter: isBossHit ? 'brightness(3)' : isBossDead ? 'grayscale(1)' : 'brightness(1)',
+            }}
+            transition={{ duration: 0.2 }}
+          >
+            {!isBossDead && (
+              <motion.div className="absolute -inset-12 rounded-full blur-3xl"
+                animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                style={{ backgroundColor: `${bossConfig.color}30` }}
+              />
+            )}
+            {ultimateFuryActive && (
+              <motion.div className="absolute -inset-8 rounded-full blur-2xl"
+                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                transition={{ duration: 0.6, repeat: Infinity }}
+                style={{ backgroundColor: 'rgba(239,68,68,0.4)' }}
+              />
+            )}
+            <img src={bossConfig.image} alt="Boss" className="w-36 h-36 object-contain relative z-10"
+              style={{ filter: `drop-shadow(0 0 40px ${bossConfig.color}80)` }}
+            />
+            {/* Platform glow */}
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[140%] h-8">
+              <div className="w-full h-full rounded-[50%] blur-xl" style={{ backgroundColor: `${bossConfig.color}30` }} />
             </div>
-          </div>
-          <div className={`relative transition-all duration-200 ${isAttacking ? 'translate-x-6 scale-110' : ''} ${isPlayerHit ? '-translate-x-3 brightness-[2]' : ''} ${ragingSpeedActive ? 'animate-raging-speed' : ''}`}>
-            <div className="absolute -inset-10 bg-cyan-500/8 rounded-full blur-3xl animate-pulse" />
-            <img src="/UserPersonality.png" alt="Player" className="w-24 relative z-10 drop-shadow-[0_0_25px_rgba(6,182,212,0.5)]" style={{ transform: 'scaleX(-1)' }} />
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[130%] h-6">
-              <div className="w-full h-full bg-cyan-500/15 rounded-[50%] blur-lg" />
-            </div>
-            {damagePopups.filter(p => p.isPlayer).map(popup => (
-              <div key={popup.id} className="absolute z-30 pointer-events-none" style={{ left: `${popup.x}%`, top: `${popup.y}%` }}>
-                <div className="font-black italic animate-damage-float text-red-400 text-lg" style={{ textShadow: '0 0 12px rgba(239,68,68,0.8)' }}>
-                  -{popup.value.toLocaleString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* ===== BOSS (RIGHT) ===== */}
-        <div className="absolute right-0 bottom-[10%] z-10 flex flex-col items-center">
-          <div className="mb-2 w-[150px]">
-            <div className="bg-black/80 border p-2 backdrop-blur-md rounded-sm" style={{ borderColor: `${bossConfig.color}50` }}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[8px] font-black tracking-widest" style={{ color: bossConfig.color }}>{bossConfig.name}</span>
-                <span className="text-[8px] font-bold" style={{ color: `${bossConfig.color}cc` }}>[{bossConfig.rank}]</span>
-              </div>
-              <div className="h-2.5 bg-zinc-900 border border-white/5 overflow-hidden rounded-sm relative">
-                <div className="h-full transition-all duration-500 relative overflow-hidden"
-                  style={{ width: `${bossHPPercent}%`, background: `linear-gradient(90deg, ${bossConfig.color}99, ${bossConfig.color})` }}>
-                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.3)_50%,transparent_100%)] animate-energy-flow" />
-                </div>
-              </div>
-              <div className="flex justify-between mt-0.5">
-                <span className="text-[6px] text-zinc-500">{bossHP.toLocaleString()}</span>
-                <span className="text-[6px] text-zinc-500">{maxBossHP.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-          <div className={`relative transition-all duration-200 ${isBossHit ? 'scale-90 brightness-[2.5]' : ''} ${isBossDead ? 'opacity-20 grayscale rotate-12 scale-75' : ''} ${ultimateFuryActive ? 'animate-fury-boss' : ''} ${isBossAdvancing ? '-translate-x-8 scale-110' : ''}`}>
-            {!isBossDead && <div className="absolute -inset-10 rounded-full blur-3xl animate-aura-pulse" style={{ backgroundColor: `${bossConfig.color}20` }} />}
-            {ultimateFuryActive && <div className="absolute -inset-6 rounded-full blur-2xl animate-pulse" style={{ backgroundColor: 'rgba(239,68,68,0.4)' }} />}
-            <img src={bossConfig.image} alt="Boss" className="w-32 relative z-10" style={{ filter: `drop-shadow(0 0 30px ${bossConfig.color}80)` }} />
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[130%] h-6">
-              <div className="w-full h-full rounded-[50%] blur-lg" style={{ backgroundColor: `${bossConfig.color}25` }} />
-            </div>
+            {/* Damage popups on boss */}
             {damagePopups.filter(p => !p.isPlayer).map(popup => (
-              <div key={popup.id} className="absolute z-30 pointer-events-none" style={{ left: `${popup.x}%`, top: `${popup.y}%` }}>
+              <motion.div key={popup.id} className="absolute z-30 pointer-events-none"
+                initial={{ opacity: 1, y: 0, scale: 1 }}
+                animate={{ opacity: 0, y: -70, scale: popup.isCrit ? 1.5 : 0.8 }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+                style={{ left: `${popup.x}%`, top: `${popup.y}%` }}
+              >
                 {popup.isDodge ? (
-                  <div className="font-black italic animate-damage-float text-zinc-400 text-lg" style={{ textShadow: '0 0 12px rgba(150,150,150,0.6)' }}>MISS!</div>
+                  <div className="font-black italic text-zinc-400 text-lg" style={{ textShadow: '0 0 12px rgba(150,150,150,0.6)' }}>MISS!</div>
                 ) : (
-                  <div className={`font-black italic animate-damage-float ${popup.isCrit ? 'text-yellow-300 text-2xl' : 'text-white text-lg'}`}
-                    style={{ textShadow: popup.isCrit ? '0 0 25px rgba(250,204,21,0.9)' : '0 0 12px rgba(255,255,255,0.6)' }}>
+                  <div className={`font-black italic ${popup.isCrit ? 'text-yellow-300 text-3xl' : 'text-white text-xl'}`}
+                    style={{ textShadow: popup.isCrit ? '0 0 30px rgba(250,204,21,0.9)' : '0 0 15px rgba(255,255,255,0.7)' }}>
                     -{popup.value.toLocaleString()}
                     {popup.isCrit && <span className="text-sm ml-1 text-yellow-200">CRIT!</span>}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
+
             {isBossDead && (
-              <div className="absolute inset-0 flex items-center justify-center z-30">
-                <div className="font-black italic text-xl tracking-[0.3em] animate-pulse drop-shadow-[0_0_25px_rgba(239,68,68,0.9)]" style={{ color: bossConfig.color }}>DEFEATED</div>
-              </div>
+              <motion.div className="absolute inset-0 flex items-center justify-center z-30"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+              >
+                <div className="font-black italic text-2xl tracking-[0.4em]" style={{ color: bossConfig.color, textShadow: `0 0 30px ${bossConfig.color}` }}>DEFEATED</div>
+              </motion.div>
             )}
+          </motion.div>
+        </div>
+
+        {/* ===== PLAYER (Bottom Left) ===== */}
+        <div className="absolute left-2 bottom-[8%] z-10 flex flex-col items-center">
+          <motion.div
+            className="relative"
+            animate={{
+              x: isAttacking ? 15 : isPlayerHit ? -8 : 0,
+              scale: isAttacking ? 1.1 : 1,
+              filter: isPlayerHit ? 'brightness(2)' : 'brightness(1)',
+            }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="absolute -inset-8 bg-cyan-500/10 rounded-full blur-2xl" />
+            <img src="/UserPersonality.png" alt="Player" className="w-20 relative z-10 drop-shadow-[0_0_20px_rgba(6,182,212,0.5)]" style={{ transform: 'scaleX(-1)' }} />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[130%] h-5">
+              <div className="w-full h-full bg-cyan-500/20 rounded-[50%] blur-lg" />
+            </div>
+            {/* Player damage popups */}
+            {damagePopups.filter(p => p.isPlayer).map(popup => (
+              <motion.div key={popup.id} className="absolute z-30 pointer-events-none"
+                initial={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 0, y: -60 }}
+                transition={{ duration: 1.5 }}
+                style={{ left: `${popup.x}%`, top: `${popup.y}%` }}
+              >
+                {popup.isDodge ? (
+                  <div className="font-black italic text-cyan-300 text-lg" style={{ textShadow: '0 0 12px rgba(6,182,212,0.8)' }}>DODGE!</div>
+                ) : (
+                  <div className="font-black italic text-red-400 text-lg" style={{ textShadow: '0 0 12px rgba(239,68,68,0.8)' }}>
+                    -{popup.value.toLocaleString()}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Player Stats overlay */}
+        <div className="absolute left-2 bottom-[25%] z-20">
+          <div className="bg-black/80 border border-cyan-500/20 p-2 backdrop-blur-md rounded-xl w-[120px]">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[7px] font-black text-cyan-400 tracking-wider truncate max-w-[65px]">{playerName}</span>
+              <span className="text-[7px] font-bold text-cyan-300/70">LV.{playerLevel}</span>
+            </div>
+            <div className="flex items-center gap-1 mb-1">
+              <Heart size={7} className="text-emerald-400 shrink-0" />
+              <div className="flex-1 h-2 bg-zinc-900 border border-white/5 overflow-hidden rounded-sm">
+                <motion.div className="h-full rounded-sm"
+                  animate={{ width: `${playerHPPercent}%` }}
+                  style={{ background: playerHPPercent > 50 ? 'linear-gradient(90deg, #10b981, #34d399)' : playerHPPercent > 20 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #ef4444, #f87171)' }}
+                />
+              </div>
+              <span className="text-[5px] text-zinc-500 w-6 text-right">{playerHP}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Battery size={7} className="text-blue-400 shrink-0" />
+              <div className="flex-1 h-1.5 bg-zinc-900 border border-white/5 overflow-hidden rounded-sm">
+                <motion.div className="h-full rounded-sm"
+                  animate={{ width: `${playerManaPercent}%` }}
+                  style={{ background: 'linear-gradient(90deg, #3b82f6, #60a5fa)' }}
+                />
+              </div>
+              <span className="text-[5px] text-zinc-500 w-6 text-right">{playerMana}</span>
+            </div>
           </div>
         </div>
 
-        {/* Effects */}
-        {slashEffect && (
-          <div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center">
-            <div className="w-[200px] h-[200px] relative animate-slash-strike">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/30 via-transparent to-transparent rotate-45 blur-sm" />
-              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-300 to-transparent transform -rotate-12" />
-              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent transform rotate-12" />
-            </div>
-          </div>
-        )}
-        {swordEffect && (
-          <div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center">
-            <div className="w-[220px] h-[220px] relative animate-slash-strike">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-400/40 via-transparent to-transparent rotate-30 blur-sm" />
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent transform -rotate-20" />
-              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-200 to-transparent transform rotate-25" />
-            </div>
-          </div>
-        )}
-        {daggerEffect && (
-          <div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center">
-            <div className="w-[180px] h-[180px] relative animate-slash-strike">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-400/40 via-transparent to-transparent rotate-30 blur-sm" />
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent transform -rotate-45" />
-            </div>
-          </div>
-        )}
-        {thunderBoltEffect && (
-          <div className="absolute inset-0 z-25 pointer-events-none">
-            <svg className="absolute inset-0 w-full h-full animate-thunder-strike" viewBox="0 0 400 600" fill="none">
-              <path d="M200 0 L180 200 L220 200 L160 400 L210 250 L170 250 L200 0" fill="rgba(250,204,21,0.6)" />
-              <path d="M250 20 L235 180 L260 180 L220 350 L255 220 L230 220 L250 20" fill="rgba(250,204,21,0.3)" />
-            </svg>
-            <div className="absolute inset-0 bg-yellow-400/5 animate-pulse" />
-          </div>
-        )}
+        {/* Slash effects */}
+        <AnimatePresence>
+          {slashEffect && (
+            <motion.div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div className="w-[200px] h-[200px] relative"
+                initial={{ scale: 0.3, rotate: -30, opacity: 0 }}
+                animate={{ scale: 1.3, rotate: 15, opacity: [0, 1, 0] }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-300 to-transparent transform -rotate-12" />
+                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent transform rotate-12" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {swordEffect && (
+            <motion.div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div className="w-[220px] h-[220px] relative"
+                initial={{ scale: 0.3, rotate: -20, opacity: 0 }}
+                animate={{ scale: 1.4, rotate: 20, opacity: [0, 1, 0] }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-transparent to-transparent rotate-30 blur-sm" />
+                <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {daggerEffect && (
+            <motion.div className="absolute inset-0 z-25 pointer-events-none flex items-center justify-center"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div className="w-[180px] h-[180px] relative"
+                initial={{ scale: 0.3, rotate: -45, opacity: 0 }}
+                animate={{ scale: 1.3, rotate: 0, opacity: [0, 1, 0] }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent transform -rotate-45" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {thunderBoltEffect && (
+            <motion.div className="absolute inset-0 z-25 pointer-events-none"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 600" fill="none"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 0.6 }}
+              >
+                <path d="M200 0 L180 200 L220 200 L160 400 L210 250 L170 250 L200 0" fill="rgba(250,204,21,0.6)" />
+                <path d="M250 20 L235 180 L260 180 L220 350 L255 220 L230 220 L250 20" fill="rgba(250,204,21,0.3)" />
+              </motion.svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        {/* Floor line */}
         <div className="absolute bottom-0 left-0 right-0 h-[12%]">
           <div className="w-full h-full bg-gradient-to-t from-cyan-950/15 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
         </div>
       </div>
 
-      {/* ===== CONTROLS ===== */}
-      <div className="relative z-20 bg-gradient-to-b from-[#080818] to-[#050510] border-t border-cyan-500/15">
+      {/* ====== CONTROLS ====== */}
+      <div className="relative z-20 bg-gradient-to-b from-[#080818] to-[#050510] border-t border-cyan-500/10">
         {/* Battle Log */}
-        <div className="px-3 py-1.5 border-b border-white/5 bg-black/50">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-            <span className="text-[7px] text-cyan-500/50 font-bold uppercase shrink-0 tracking-wider">LOG</span>
-            <span className="text-[8px] text-zinc-400 whitespace-nowrap font-medium">{battleLog[0]}</span>
+        <div className="px-3 py-1 border-b border-white/5 bg-black/50">
+          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-[6px] text-cyan-500/40 font-bold uppercase shrink-0 tracking-[0.2em]">LOG</span>
+            <span className="text-[8px] text-zinc-400 whitespace-nowrap">{battleLog[0]}</span>
           </div>
         </div>
 
-        {/* ATTACKS ROW */}
+        {/* ATTACKS */}
         <div className="px-2 pt-2 pb-1">
           <div className="flex items-center gap-1 mb-1">
-            <Swords size={8} className="text-zinc-500" />
-            <span className="text-[7px] text-zinc-600 font-bold uppercase tracking-wider">ATTACKS</span>
+            <Swords size={8} className="text-zinc-600" />
+            <span className="text-[6px] text-zinc-600 font-bold uppercase tracking-[0.2em]">ATTACKS</span>
           </div>
           <div className={`grid gap-1.5 ${hasDagger ? 'grid-cols-4' : 'grid-cols-3'}`}>
-            {/* BASIC - no cooldown */}
-            <SkillButton onClick={basicAttack} disabled={isAttacking || battleOver || playerMana < 5}
+            <SkillBtn onClick={basicAttack} disabled={isAttacking || battleOver || playerMana < 5}
               icon={<Swords size={14} />} name="ضربة" dmg={basicDmg} mpCost={5}
-              colorFrom="from-cyan-950/80" colorTo="to-cyan-900/40" borderColor="border-cyan-500/40" hoverBorder="hover:border-cyan-400/70"
-              iconColor="text-cyan-400" iconBg="bg-cyan-500/20" />
-
-            {/* SWORD STRIKE */}
-            <SkillButton onClick={swordStrike} disabled={isAttacking || battleOver || swordCooldown > 0 || playerMana < 15}
+              color="cyan" />
+            <SkillBtn onClick={swordStrike} disabled={isAttacking || battleOver || swordCooldown > 0 || playerMana < 15}
               icon={<Flame size={14} />} name="السيف" dmg={swordDmg} mpCost={15} cooldown={swordCooldown}
-              colorFrom="from-amber-950/60" colorTo="to-amber-900/30" borderColor="border-amber-500/40" hoverBorder="hover:border-amber-400/70"
-              iconColor="text-amber-400" iconBg="bg-amber-500/20" cooldownColor="text-amber-400" />
-
-            {/* THUNDER */}
-            <SkillButton onClick={thunderDash} disabled={isAttacking || battleOver || thunderCooldown > 0 || playerMana < 50}
+              color="amber" />
+            <SkillBtn onClick={thunderDash} disabled={isAttacking || battleOver || thunderCooldown > 0 || playerMana < 50}
               icon={<Zap size={14} />} name="البرق" dmg={thunderDmg} mpCost={50} cooldown={thunderCooldown}
-              colorFrom="from-yellow-950/60" colorTo="to-yellow-900/30" borderColor="border-yellow-500/40" hoverBorder="hover:border-yellow-400/70"
-              iconColor="text-yellow-400" iconBg="bg-yellow-500/20" cooldownColor="text-yellow-400" />
-
-            {/* DAGGER */}
+              color="yellow" />
             {hasDagger && (
-              <SkillButton onClick={daggerStrikeAction} disabled={!hasDagger || isAttacking || battleOver || daggerCooldown > 0 || playerMana < 25}
+              <SkillBtn onClick={daggerStrikeAction} disabled={!hasDagger || isAttacking || battleOver || daggerCooldown > 0 || playerMana < 25}
                 icon={<Shield size={14} />} name="خنجر" dmg={daggerDmg} mpCost={25} cooldown={daggerCooldown}
-                colorFrom="from-purple-950/60" colorTo="to-purple-900/30" borderColor="border-purple-500/40" hoverBorder="hover:border-purple-400/70"
-                iconColor="text-purple-400" iconBg="bg-purple-500/20" cooldownColor="text-purple-400" />
+                color="purple" />
             )}
           </div>
         </div>
 
-        {/* ABILITIES ROW */}
+        {/* ABILITIES */}
         <div className="px-2 pb-2 pt-1">
           <div className="flex items-center gap-1 mb-1">
-            <Zap size={8} className="text-zinc-500" />
-            <span className="text-[7px] text-zinc-600 font-bold uppercase tracking-wider">ABILITIES</span>
+            <Zap size={8} className="text-zinc-600" />
+            <span className="text-[6px] text-zinc-600 font-bold uppercase tracking-[0.2em]">ABILITIES</span>
           </div>
           <div className={`grid gap-1.5 ${canUseDarkVoid ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {/* RAGING SPEED */}
             <button onClick={activateRagingSpeed}
               disabled={battleOver || ragingSpeedCooldown > 0 || ragingSpeedActive || playerMana < 75}
-              className={`relative flex items-center gap-2 p-2 rounded-xl border-2 transition-all duration-200 overflow-hidden
+              className={`relative flex items-center gap-2 p-2 rounded-xl border-2 transition-all overflow-hidden
                 ${battleOver || ragingSpeedCooldown > 0 || ragingSpeedActive || playerMana < 75
-                  ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-teal-950/60 to-teal-900/30 border-teal-500/40 hover:border-teal-400/70 active:scale-95 cursor-pointer'
+                  ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40'
+                  : 'bg-gradient-to-r from-teal-950/60 to-teal-900/30 border-teal-500/30 hover:border-teal-400/60 active:scale-95'
                 }`}
             >
               <div className="p-1 rounded-lg bg-teal-500/20"><Wind size={14} className="text-teal-400" /></div>
               <div className="text-left">
                 <span className="text-[9px] font-black text-white block">تفادي</span>
-                <span className="text-[6px] text-zinc-500">75 MP · 80-85% تفادي</span>
+                <span className="text-[6px] text-zinc-500">75 MP</span>
               </div>
               {ragingSpeedCooldown > 0 && !ragingSpeedActive && (
-                <div className="absolute inset-0 bg-black/75 rounded-xl flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/80 rounded-xl flex items-center justify-center">
                   <span className="text-teal-400 font-black text-lg">{ragingSpeedCooldown}s</span>
                 </div>
               )}
               {ragingSpeedActive && (
-                <div className="absolute inset-0 bg-teal-500/20 rounded-xl flex items-center justify-center border-2 border-teal-400/60">
-                  <span className="text-teal-300 font-black text-lg animate-pulse">{ragingSpeedTimer}s</span>
+                <div className="absolute inset-0 bg-teal-500/20 rounded-xl flex items-center justify-center border-2 border-teal-400/50">
+                  <motion.span className="text-teal-300 font-black text-lg"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 0.5, repeat: Infinity }}
+                  >{ragingSpeedTimer}s</motion.span>
                 </div>
               )}
             </button>
 
-            {/* DARK VOID */}
             {canUseDarkVoid && (
               <button onClick={darkVoidStrike}
                 disabled={isAttacking || battleOver || !isDarkVoidReady}
-                className={`relative flex items-center gap-2 p-2 rounded-xl border-2 transition-all duration-200 overflow-hidden
+                className={`relative flex items-center gap-2 p-2 rounded-xl border-2 transition-all overflow-hidden
                   ${isAttacking || battleOver || !isDarkVoidReady
-                    ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-950/80 to-violet-900/40 border-purple-500/50 hover:border-purple-400/80 active:scale-95 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)]'
+                    ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40'
+                    : 'bg-gradient-to-r from-purple-950/80 to-violet-900/40 border-purple-500/40 hover:border-purple-400/70 active:scale-95 shadow-[0_0_25px_rgba(139,92,246,0.3)]'
                   }`}
               >
-                <div className={`p-1 rounded-lg ${isDarkVoidReady ? 'bg-purple-500/30 animate-pulse' : 'bg-zinc-800/50'}`}>
+                <div className={`p-1 rounded-lg ${isDarkVoidReady ? 'bg-purple-500/30' : 'bg-zinc-800/50'}`}>
                   <Eye size={14} className={isDarkVoidReady ? 'text-purple-400' : 'text-zinc-600'} />
                 </div>
                 <div className="text-left">
                   <span className={`text-[9px] font-black block ${isDarkVoidReady ? 'text-purple-300' : 'text-zinc-600'}`}>ثقب الظلام</span>
-                  <span className="text-[6px] text-zinc-500">{darkVoidDmg.toLocaleString()} DMG · {darkVoidCharge}/{DARK_VOID_CHARGE_REQUIRED}</span>
+                  <span className="text-[6px] text-zinc-500">{darkVoidCharge}/{DARK_VOID_CHARGE_REQUIRED}</span>
                 </div>
                 {!isDarkVoidReady && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-800">
-                    <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${(darkVoidCharge / DARK_VOID_CHARGE_REQUIRED) * 100}%` }} />
+                    <div className="h-full bg-purple-500 transition-all" style={{ width: `${(darkVoidCharge / DARK_VOID_CHARGE_REQUIRED) * 100}%` }} />
                   </div>
                 )}
               </button>
@@ -722,74 +846,155 @@ const SoloLevelingBattle = () => {
         </div>
       </div>
 
-      {/* Victory */}
-      {isBossDead && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="text-center space-y-4">
-            <div className="text-5xl font-black italic text-cyan-400 tracking-[0.4em] drop-shadow-[0_0_50px_rgba(6,182,212,0.9)]">VICTORY</div>
-            <div className="text-zinc-400 text-sm tracking-[0.3em] uppercase">العدو قد سقط</div>
-            <div className="text-sm mt-2 px-3 py-1 rounded" style={{ color: bossConfig.color, borderColor: `${bossConfig.color}40`, border: '1px solid' }}>
-              {bossConfig.name} [{bossConfig.rank}]
-            </div>
-            <div className="text-yellow-400 font-bold text-xl mt-4">+{(maxBossHP * 0.01).toLocaleString()} XP</div>
-            <button onClick={() => navigate(-1)} className="mt-6 px-8 py-3 bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-bold rounded-lg hover:bg-cyan-500/30 transition-colors">العودة</button>
-          </div>
-        </div>
-      )}
+      {/* ====== VICTORY OVERLAY ====== */}
+      <AnimatePresence>
+        {showVictory && (
+          <motion.div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div className="text-center space-y-5 px-6"
+              initial={{ scale: 0.5, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 12 }}
+            >
+              <motion.div className="text-5xl font-black italic tracking-[0.5em]"
+                animate={{ textShadow: ['0 0 30px rgba(6,182,212,0.5)', '0 0 60px rgba(6,182,212,0.9)', '0 0 30px rgba(6,182,212,0.5)'] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                style={{ color: '#06b6d4' }}
+              >
+                VICTORY
+              </motion.div>
+              <div className="text-zinc-400 text-sm tracking-[0.3em] uppercase">العدو قد سقط</div>
+              <div className="flex items-center justify-center gap-2 text-sm mt-2 px-4 py-2 rounded-xl bg-black/50 border"
+                style={{ color: bossConfig.color, borderColor: `${bossConfig.color}40` }}>
+                <Trophy size={14} />
+                {bossConfig.name} [{bossConfig.rank}]
+              </div>
 
-      {/* Defeat */}
-      {isPlayerDead && !isBossDead && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="text-center space-y-4">
-            <div className="text-5xl font-black italic text-red-500 tracking-[0.3em] drop-shadow-[0_0_40px_rgba(239,68,68,0.8)]">DEFEAT</div>
-            <div className="text-zinc-400 text-sm tracking-[0.2em]">لقد هُزمت...</div>
-            <button onClick={() => {
-              setPlayerHP(maxPlayerHP); setPlayerMana(maxPlayerMana); setBossHP(maxBossHP);
-              setComboCount(0); setSwordCooldown(0); setThunderCooldown(0); setDaggerCooldown(0);
-              setRagingSpeedCooldown(0); setRagingSpeedActive(false); setRagingSpeedTimer(0);
-              setBossFury(0); setUltimateFuryActive(false); setDarkVoidCharge(0);
-              setBattleLog(['⚔️ المعركة بدأت!']);
-            }} className="mt-4 px-8 py-3 bg-red-500/20 border border-red-500/40 text-red-400 font-bold rounded-lg hover:bg-red-500/30 transition-colors">
-              إعادة المحاولة
-            </button>
-          </div>
-        </div>
-      )}
+              {/* XP gained */}
+              <motion.div className="flex items-center justify-center gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Star className="text-yellow-400" size={20} />
+                <span className="text-yellow-400 font-black text-xl">+{xpGained.toLocaleString()} XP</span>
+              </motion.div>
+
+              <motion.button
+                onClick={handleShowLoot}
+                className="px-8 py-3 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold rounded-xl hover:bg-cyan-500/30 transition-all active:scale-95"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                عرض الغنائم
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ====== LOOT POPUP (System Message Style) ====== */}
+      <AnimatePresence>
+        {showLoot && (
+          <motion.div className="absolute inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div className="w-[85%] max-w-sm"
+              initial={{ scale: 0.7, y: 40 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: 'spring', damping: 14 }}
+            >
+              {/* System message header */}
+              <div className="bg-gradient-to-b from-cyan-950/90 to-[#0a0a1a] border border-cyan-500/30 rounded-2xl overflow-hidden" style={{ boxShadow: '0 0 50px rgba(6,182,212,0.2)' }}>
+                <div className="px-4 py-3 border-b border-cyan-500/20 flex items-center gap-2">
+                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>
+                    <Sparkles size={14} className="text-cyan-400" />
+                  </motion.div>
+                  <span className="text-[10px] font-black text-cyan-400 tracking-[0.3em] uppercase">SYSTEM LOOT</span>
+                </div>
+
+                <div className="p-4 space-y-2.5">
+                  {lootItems.map((item, i) => (
+                    <motion.div key={i}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 + i * 0.15 }}
+                      className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border"
+                      style={{ borderColor: `${RARITY_COLORS[item.rarity]}30` }}
+                    >
+                      <motion.span className="text-2xl"
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                      >{item.icon}</motion.span>
+                      <div className="flex-1">
+                        <span className="text-[11px] font-bold block" style={{ color: RARITY_COLORS[item.rarity] }}>{item.name}</span>
+                        <span className="text-[8px] uppercase tracking-[0.2em]" style={{ color: `${RARITY_COLORS[item.rarity]}80` }}>{item.rarity}</span>
+                      </div>
+                      {item.amount && (
+                        <div className="flex items-center gap-1">
+                          <Coins size={10} className="text-yellow-400" />
+                          <span className="text-[10px] font-bold text-yellow-400">+{item.amount}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="px-4 pb-4">
+                  <motion.button
+                    onClick={handleFinish}
+                    className="w-full py-3 bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 font-bold rounded-xl hover:bg-cyan-500/25 transition-all active:scale-95"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 + lootItems.length * 0.15 }}
+                  >
+                    إنهاء
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ====== DEFEAT ====== */}
+      <AnimatePresence>
+        {isPlayerDead && !isBossDead && (
+          <motion.div className="absolute inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          >
+            <motion.div className="text-center space-y-5"
+              initial={{ scale: 0.7 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', damping: 12 }}
+            >
+              <motion.div className="text-5xl font-black italic text-red-500 tracking-[0.4em]"
+                animate={{ textShadow: ['0 0 20px rgba(239,68,68,0.5)', '0 0 50px rgba(239,68,68,0.9)', '0 0 20px rgba(239,68,68,0.5)'] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >DEFEAT</motion.div>
+              <div className="text-zinc-400 text-sm tracking-[0.2em]">لقد هُزمت...</div>
+              <button onClick={resetBattle}
+                className="px-8 py-3 bg-red-500/15 border border-red-500/30 text-red-400 font-bold rounded-xl hover:bg-red-500/25 transition-all active:scale-95">
+                إعادة المحاولة
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
-        @keyframes damage-float { 0% { opacity: 1; transform: translateY(0) scale(1); } 40% { opacity: 1; transform: translateY(-35px) scale(1.3); } 100% { opacity: 0; transform: translateY(-70px) scale(0.7); } }
-        .animate-damage-float { animation: damage-float 1.5s ease-out forwards; }
         @keyframes flash { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-        .animate-flash { animation: flash 0.1s ease-out 3; }
         @keyframes screen-shake { 0%, 100% { transform: translate(0); } 10% { transform: translate(-4px, 2px); } 20% { transform: translate(4px, -2px); } 30% { transform: translate(-3px, -1px); } 40% { transform: translate(3px, 1px); } }
-        .animate-screen-shake { animation: screen-shake 0.5s ease-out; }
-        @keyframes slash-strike { 0% { opacity: 0; transform: scale(0.3) rotate(-30deg); } 30% { opacity: 1; transform: scale(1.2) rotate(0deg); } 100% { opacity: 0; transform: scale(1.5) rotate(15deg); } }
-        .animate-slash-strike { animation: slash-strike 0.4s ease-out forwards; }
-        @keyframes thunder-strike { 0% { opacity: 0; transform: translateY(-20px); } 15% { opacity: 1; transform: translateY(0); } 50% { opacity: 1; } 100% { opacity: 0; } }
-        .animate-thunder-strike { animation: thunder-strike 0.6s ease-out forwards; }
-        @keyframes aura-pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.15); } }
-        .animate-aura-pulse { animation: aura-pulse 3s ease-in-out infinite; }
-        @keyframes energy-flow { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .animate-energy-flow { animation: energy-flow 2s linear infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); opacity: 0.3; } 50% { transform: translateY(-15px); opacity: 0.7; } }
-        @keyframes fury-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
-        .animate-fury-pulse { animation: fury-pulse 0.8s ease-in-out infinite; }
-        @keyframes fury-boss { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.05) translateX(-2px); filter: brightness(1.3) hue-rotate(-10deg); } 75% { transform: scale(1.05) translateX(2px); filter: brightness(1.3) hue-rotate(10deg); } }
-        .animate-fury-boss { animation: fury-boss 0.6s ease-in-out infinite; }
-        @keyframes raging-speed { 0%, 100% { transform: scaleX(-1); } 25% { transform: scaleX(-1) translateX(3px); opacity: 0.7; } 50% { transform: scaleX(-1) translateX(-3px); opacity: 1; } }
-        .animate-raging-speed img { animation: raging-speed 0.3s ease-in-out infinite; }
-        @keyframes dark-void-expand { 0% { transform: translate(-50%,-50%) scale(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; } }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fade-in 0.5s ease-out; }
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .animate-screen-shake { animation: screen-shake 0.4s ease-out; }
       `}</style>
     </div>
   );
 };
 
-// Reusable skill button
-interface SkillButtonProps {
+// Skill Button Component
+interface SkillBtnProps {
   onClick: () => void;
   disabled: boolean;
   icon: React.ReactNode;
@@ -797,34 +1002,38 @@ interface SkillButtonProps {
   dmg: number;
   mpCost: number;
   cooldown?: number;
-  colorFrom: string;
-  colorTo: string;
-  borderColor: string;
-  hoverBorder: string;
-  iconColor: string;
-  iconBg: string;
-  cooldownColor?: string;
+  color: 'cyan' | 'amber' | 'yellow' | 'purple';
 }
 
-const SkillButton = ({ onClick, disabled, icon, name, dmg, mpCost, cooldown, colorFrom, colorTo, borderColor, hoverBorder, iconColor, iconBg, cooldownColor }: SkillButtonProps) => (
-  <button onClick={onClick} disabled={disabled}
-    className={`relative flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all duration-200 overflow-hidden
-      ${disabled ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40 cursor-not-allowed' : `bg-gradient-to-b ${colorFrom} ${colorTo} ${borderColor} ${hoverBorder} active:scale-95 cursor-pointer`}`}>
-    <div className={`mb-0.5 p-1 rounded-lg ${disabled ? 'bg-zinc-800/50' : iconBg}`}>
-      <span className={disabled ? 'text-zinc-600' : iconColor}>{icon}</span>
-    </div>
-    <span className={`text-[8px] font-black ${disabled ? 'text-zinc-600' : 'text-white'}`}>{name}</span>
-    <span className="text-[6px] text-zinc-500">{dmg.toLocaleString()}</span>
-    <div className="flex items-center gap-0.5">
-      <Battery size={5} className="text-blue-400" />
-      <span className="text-[5px] text-blue-400/70">{mpCost}</span>
-    </div>
-    {cooldown !== undefined && cooldown > 0 && (
-      <div className="absolute inset-0 bg-black/75 rounded-xl flex items-center justify-center">
-        <span className={`${cooldownColor || 'text-white'} font-black text-lg`}>{cooldown}s</span>
+const colorMap = {
+  cyan: { from: 'from-cyan-950/60', to: 'to-cyan-900/30', border: 'border-cyan-500/30', hover: 'hover:border-cyan-400/60', text: 'text-cyan-400', bg: 'bg-cyan-500/20', cd: 'text-cyan-400' },
+  amber: { from: 'from-amber-950/60', to: 'to-amber-900/30', border: 'border-amber-500/30', hover: 'hover:border-amber-400/60', text: 'text-amber-400', bg: 'bg-amber-500/20', cd: 'text-amber-400' },
+  yellow: { from: 'from-yellow-950/60', to: 'to-yellow-900/30', border: 'border-yellow-500/30', hover: 'hover:border-yellow-400/60', text: 'text-yellow-400', bg: 'bg-yellow-500/20', cd: 'text-yellow-400' },
+  purple: { from: 'from-purple-950/60', to: 'to-purple-900/30', border: 'border-purple-500/30', hover: 'hover:border-purple-400/60', text: 'text-purple-400', bg: 'bg-purple-500/20', cd: 'text-purple-400' },
+};
+
+const SkillBtn = ({ onClick, disabled, icon, name, dmg, mpCost, cooldown, color }: SkillBtnProps) => {
+  const c = colorMap[color];
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`relative flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all overflow-hidden
+        ${disabled ? 'bg-zinc-900/60 border-zinc-800/40 opacity-40' : `bg-gradient-to-b ${c.from} ${c.to} ${c.border} ${c.hover} active:scale-95`}`}>
+      <div className={`mb-0.5 p-1 rounded-lg ${disabled ? 'bg-zinc-800/50' : c.bg}`}>
+        <span className={disabled ? 'text-zinc-600' : c.text}>{icon}</span>
       </div>
-    )}
-  </button>
-);
+      <span className={`text-[8px] font-black ${disabled ? 'text-zinc-600' : 'text-white'}`}>{name}</span>
+      <span className="text-[6px] text-zinc-500">{dmg.toLocaleString()}</span>
+      <div className="flex items-center gap-0.5">
+        <Battery size={5} className="text-blue-400" />
+        <span className="text-[5px] text-blue-400/70">{mpCost}</span>
+      </div>
+      {cooldown !== undefined && cooldown > 0 && (
+        <div className="absolute inset-0 bg-black/80 rounded-xl flex items-center justify-center">
+          <span className={`${c.cd} font-black text-lg`}>{cooldown}s</span>
+        </div>
+      )}
+    </button>
+  );
+};
 
 export default SoloLevelingBattle;
