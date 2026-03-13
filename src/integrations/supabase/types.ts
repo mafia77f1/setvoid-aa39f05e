@@ -68,6 +68,7 @@ export type Database = {
           max_energy: number
           max_hp: number
           missed_quests_count: number
+          password: string | null
           player_id: string
           player_job: string
           player_name: string
@@ -113,6 +114,7 @@ export type Database = {
           max_energy?: number
           max_hp?: number
           missed_quests_count?: number
+          password?: string | null
           player_id?: string
           player_job?: string
           player_name?: string
@@ -158,6 +160,7 @@ export type Database = {
           max_energy?: number
           max_hp?: number
           missed_quests_count?: number
+          password?: string | null
           player_id?: string
           player_job?: string
           player_name?: string
