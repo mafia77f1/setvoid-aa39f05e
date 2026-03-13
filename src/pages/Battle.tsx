@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Swords, Zap, Heart, Battery, ArrowLeft, Shield, Wind, Eye, Flame, Star, Trophy, Coins } from 'lucide-react';
+import { Swords, Zap, Heart, Battery, ArrowLeft, Shield, Wind, Eye, Flame, Star, Trophy, Coins, Sparkles } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '@/hooks/useGameState';
