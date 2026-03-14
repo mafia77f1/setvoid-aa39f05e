@@ -757,7 +757,7 @@ export const useGameState = () => {
   const dismissLevelUp = useCallback(() => setLevelUpInfo(null), []);
 
   const startSideQuest = useCallback((questId: string) => {
-    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => (q.id === questId && !q.active && !q.startedAt) ? { ...q, startedAt: new Date().toISOString(), timeProgress: q.timeProgress || 0, active: true, claimed: false } : q) }));
+    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => (q.id === questId && !q.active && !q.completed) ? { ...q, startedAt: new Date().toISOString(), timeProgress: q.timeProgress || 0, active: true, claimed: false } : q) }));
   }, []);
 
   const updateSideQuestProgress = useCallback((questId: string, progress: number) => {
