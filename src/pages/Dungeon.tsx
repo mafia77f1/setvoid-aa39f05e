@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Sparkles, ArrowLeft } from 'lucide-react';
+import { Map, Sparkles, ArrowLeft, Swords, Heart, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Position { x: number; y: number; }
@@ -9,11 +9,15 @@ interface Position { x: number; y: number; }
 interface CaveItem {
   id: string;
   pos: Position;
-  type: 'loot' | 'portal';
+  type: 'loot' | 'portal' | 'enemy';
   name: string;
   icon: string;
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   collected?: boolean;
+  hp?: number;
+  maxHp?: number;
+  damage?: number;
+  defeated?: boolean;
 }
 
 const RARITY_COLORS: Record<string, string> = {
