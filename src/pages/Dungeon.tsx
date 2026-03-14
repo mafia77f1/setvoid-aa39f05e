@@ -643,8 +643,8 @@ const Dungeon = () => {
             ))
           )}
 
-          {/* Items */}
-          {items.filter(i => !i.collected).map(item => (
+          {/* Items & Enemies */}
+          {items.filter(i => !i.collected && !i.defeated).map(item => (
             <div key={item.id} className="absolute flex items-center justify-center z-10" style={{
               left: item.pos.x * TILE_SIZE, top: item.pos.y * TILE_SIZE,
               width: TILE_SIZE, height: TILE_SIZE,
@@ -665,6 +665,22 @@ const Dungeon = () => {
                     animate={{ rotate: -360 }}
                     transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                   >🌀</motion.span>
+                </div>
+              ) : item.type === 'enemy' ? (
+                <div className="relative">
+                  <motion.div className="absolute -inset-3 rounded-full"
+                    animate={{ opacity: [0.4, 0.8, 0.4], scale: [0.9, 1.15, 0.9] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.4) 0%, transparent 70%)' }}
+                  />
+                  <motion.span className="text-xl relative z-10 block"
+                    animate={{ y: [0, -3, 0], x: [-2, 2, -2] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  >{item.icon}</motion.span>
+                  {/* Enemy HP bar */}
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${((item.hp || 0) / (item.maxHp || 1)) * 100}%` }} />
+                  </div>
                 </div>
               ) : (
                 <div className="relative">
