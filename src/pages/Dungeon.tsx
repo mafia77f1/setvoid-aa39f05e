@@ -142,6 +142,38 @@ const LOOT_POSITIONS: Position[] = [
   { x: 6, y: 3 },
 ];
 
+const ENEMY_POSITIONS: Position[] = [
+  { x: 10, y: 19 }, { x: 5, y: 15 }, { x: 12, y: 14 },
+  { x: 3, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 3 },
+];
+
+const ENEMIES_BY_RANK: Record<string, { name: string; icon: string; hp: number; damage: number }[]> = {
+  E: [
+    { name: 'جرذ المغارة', icon: '🐀', hp: 20, damage: 3 },
+    { name: 'خفاش الظلام', icon: '🦇', hp: 15, damage: 2 },
+  ],
+  D: [
+    { name: 'عنكبوت سام', icon: '🕷️', hp: 40, damage: 5 },
+    { name: 'هيكل عظمي', icon: '💀', hp: 50, damage: 6 },
+  ],
+  C: [
+    { name: 'غول الظلام', icon: '👹', hp: 80, damage: 10 },
+    { name: 'فارس ميت', icon: '⚔️', hp: 100, damage: 12 },
+  ],
+  B: [
+    { name: 'تنين صغير', icon: '🐲', hp: 150, damage: 18 },
+    { name: 'شيطان ناري', icon: '😈', hp: 130, damage: 20 },
+  ],
+  A: [
+    { name: 'حارس الظلام', icon: '🗿', hp: 250, damage: 30 },
+    { name: 'وحش الهاوية', icon: '👾', hp: 300, damage: 35 },
+  ],
+  S: [
+    { name: 'لورد الظلام', icon: '🌑', hp: 500, damage: 50 },
+    { name: 'إمبراطور الأشباح', icon: '👻', hp: 450, damage: 55 },
+  ],
+};
+
 const PORTAL_POS: Position = { x: 13, y: 2 };
 
 const Dungeon = () => {
