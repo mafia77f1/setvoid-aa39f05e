@@ -21,12 +21,12 @@ const suggestedTasks: Record<StatType, string[]> = {
 };
 
 const GrandQuest = () => {
-  const { gameState, startGrandQuest, completeGrandQuestDay } = useGameState();
+  const { gameState, startGrandQuest, completeGrandQuestDay, consumeItem } = useGameState();
   const [selectedCategory, setSelectedCategory] = useState<StatType>('strength');
   const [questTitle, setQuestTitle] = useState('');
 
-  // تعديل: إعطاء 100 حجر مانا بشكل افتراضي لأغراض التجربة
-  const manaStones = 100; 
+  // Use grand quest stones from inventory
+  const grandQuestStones = gameState.inventory?.find(i => i.id === 'grand_quest_stone')?.quantity || 0;
 
   const handleStart = () => {
     if (!questTitle.trim()) {
@@ -34,15 +34,16 @@ const GrandQuest = () => {
       return;
     }
 
-    if (manaStones < 1) {
+    if (grandQuestStones < 1) {
       toast({ 
-        title: '⚠️ MANA REQUIRED', 
-        description: 'You need 1 Mana Stone to initialize a Grand Quest!', 
+        title: '⚠️ STONE REQUIRED', 
+        description: 'تحتاج حجر المهمة الكبرى لتفعيل Grand Quest!', 
         variant: 'destructive' 
       });
       return;
     }
 
+    consumeItem('grand_quest_stone', 1);
     startGrandQuest(selectedCategory, questTitle, suggestedTasks[selectedCategory]);
     toast({ title: '🎯 QUEST STARTED', description: '30-Day Challenge Initialized' });
   };
