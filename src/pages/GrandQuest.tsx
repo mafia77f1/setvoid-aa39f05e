@@ -21,12 +21,12 @@ const suggestedTasks: Record<StatType, string[]> = {
 };
 
 const GrandQuest = () => {
-  const { gameState, startGrandQuest, completeGrandQuestDay } = useGameState();
+  const { gameState, startGrandQuest, completeGrandQuestDay, consumeItem } = useGameState();
   const [selectedCategory, setSelectedCategory] = useState<StatType>('strength');
   const [questTitle, setQuestTitle] = useState('');
 
-  // تعديل: إعطاء 100 حجر مانا بشكل افتراضي لأغراض التجربة
-  const manaStones = 100; 
+  // Use grand quest stones from inventory
+  const grandQuestStones = gameState.inventory?.find(i => i.id === 'grand_quest_stone')?.quantity || 0;
 
   const handleStart = () => {
     if (!questTitle.trim()) {
@@ -34,15 +34,16 @@ const GrandQuest = () => {
       return;
     }
 
-    if (manaStones < 1) {
+    if (grandQuestStones < 1) {
       toast({ 
-        title: '⚠️ MANA REQUIRED', 
-        description: 'You need 1 Mana Stone to initialize a Grand Quest!', 
+        title: '⚠️ STONE REQUIRED', 
+        description: 'تحتاج حجر المهمة الكبرى لتفعيل Grand Quest!', 
         variant: 'destructive' 
       });
       return;
     }
 
+    consumeItem('grand_quest_stone', 1);
     startGrandQuest(selectedCategory, questTitle, suggestedTasks[selectedCategory]);
     toast({ title: '🎯 QUEST STARTED', description: '30-Day Challenge Initialized' });
   };
@@ -66,7 +67,7 @@ const GrandQuest = () => {
         </h1>
         <div className="mt-2 flex items-center gap-2 bg-blue-500/10 border border-blue-500/40 px-3 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.2)]">
            <Zap className="w-3 h-3 text-cyan-400 fill-cyan-400" />
-           <span className="text-[10px] font-black tracking-widest text-cyan-300">MANA STONES: {manaStones}</span>
+           <span className="text-[10px] font-black tracking-widest text-cyan-300">QUEST STONES: {grandQuestStones}</span>
         </div>
       </header>
 
@@ -143,7 +144,7 @@ const GrandQuest = () => {
                      <Zap className="w-4 h-4 text-red-500" />
                      <span className="text-[10px] font-bold text-red-200 tracking-tighter">INITIALIZATION COST:</span>
                    </div>
-                   <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 MANA STONE</span>
+                   <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 QUEST STONE</span>
                 </div>
 
                 <div className="space-y-2">
@@ -192,15 +193,15 @@ const GrandQuest = () => {
 
                 <button 
                   onClick={handleStart} 
-                  disabled={manaStones < 1}
+                  disabled={grandQuestStones < 1}
                   className={cn(
                     "w-full py-4 font-black text-xs tracking-[0.4em] uppercase transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] active:scale-95 border-2",
-                    manaStones >= 1 
+                    grandQuestStones >= 1 
                       ? "bg-white text-black hover:bg-cyan-50 border-white cursor-pointer" 
                       : "bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed opacity-50"
                   )}
                 >
-                  {manaStones >= 1 ? 'Accept Mission' : 'Insufficient Mana'}
+                  {grandQuestStones >= 1 ? 'Accept Mission' : 'Insufficient Stones'}
                 </button>
               </div>
             </div>

@@ -44,10 +44,14 @@ const Market = () => {
     { id: 'hp_potion', name: 'Blood Elixir', arabicName: 'إكسير الدم', category: 'Elixir', difficulty: 'E', price: 500, icon: '🧪', description: 'يستعيد 50% من الصحة القصوى', rankLevel: 0 },
     { id: 'mp_potion', name: 'Energy Elixir', arabicName: 'إكسير الطاقة', category: 'Elixir', difficulty: 'E', price: 500, icon: '⚡', description: 'يستعيد 50% من الطاقة القصوى', rankLevel: 0 },
     { id: 'enhancement_stone', name: 'Enhancement Stone', arabicName: 'حجر التطوير', category: 'Enhancement', difficulty: 'E', price: 1000, icon: '💎', description: 'حجر طاقة لتطوير مهارات المعركة', rankLevel: 0 },
+    { id: 'rename_stone', name: 'Rename Stone', arabicName: 'حجر إعادة التسمية', category: 'Special', difficulty: 'E', price: 2000, icon: '✏️', description: 'يسمح لك بتغيير اسم شخصيتك', rankLevel: 0 },
     { id: 'dagger', name: 'Shadow Dagger', arabicName: 'خنجر الظلام', category: 'Weapon', difficulty: 'D', price: 3000, icon: '🗡️', description: 'سلاح قوي يفتح مهارة ضربة الخنجر في المعركة', rankLevel: 1 },
+    { id: 'gate_exit_stone', name: 'Gate Exit Stone', arabicName: 'حجر الخروج من البوابة', category: 'Special', difficulty: 'D', price: 3000, icon: '🚪', description: 'يسمح بالخروج الآمن من البوابة دون عقوبة', rankLevel: 1 },
+    { id: 'grand_quest_stone', name: 'Grand Quest Stone', arabicName: 'حجر المهمة الكبرى', category: 'Special', difficulty: 'D', price: 5000, icon: '🔮', description: 'مطلوب لتفعيل مهمة Grand Quest جديدة', rankLevel: 1 },
     { id: 'xp_reset', name: 'Redistribution Stone', arabicName: 'حجر إعادة التوزيع', category: 'Special', difficulty: 'C', price: 5000, icon: '🔄', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', rankLevel: 2 },
     { id: 'mana_meter', name: 'Mana Gauge', arabicName: 'مقياس المانا', category: 'Tool', difficulty: 'D', price: 2000, icon: '/ManaDeviceIcon.png', description: 'جهاز قياس طاقة البوابات والعناصر', rankLevel: 1 },
     { id: 'awakened_title', name: 'Awakened One', arabicName: 'المستيقظ الواعي', category: 'Title', difficulty: 'C', price: 3000, icon: '👑', description: 'لقب يُظهر أنك من المستيقظين - يزيد XP بنسبة 5%', rankLevel: 2 },
+    { id: 'central_activation_stone', name: 'Central Activation Stone', arabicName: 'حجر التفعيل المركزي', category: 'Special', difficulty: 'C', price: 10000, icon: '💬', description: 'يفعّل شات النظام للتواصل مع ذكاء النظام', rankLevel: 2 },
     { id: 'power_eye_title', name: 'Eye of Power', arabicName: 'عين القوة', category: 'Title', difficulty: 'B', price: 10000, icon: '👁️', description: 'لقب نادر يكشف قوة الأعداء ويظهر إحصائياتهم', rankLevel: 3 },
     { id: 'storm_hand_title', name: 'Hand of Storm', arabicName: 'يد العاصفة', category: 'Title', difficulty: 'B', price: 15000, icon: '🌩️', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', rankLevel: 3 },
     { id: 'return_key', name: 'Return Key', arabicName: 'مفتاح العودة', category: 'Key', difficulty: 'B', price: 8000, icon: '🔑', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', rankLevel: 3 },
@@ -57,11 +61,11 @@ const Market = () => {
 
   const getPlayerRank = () => {
     const level = gameState.totalLevel || 1;
-    if (level >= 50) return 'S';
-    if (level >= 40) return 'A';
-    if (level >= 25) return 'B';
-    if (level >= 15) return 'C';
-    if (level >= 5) return 'D';
+    if (level >= 96) return 'S';
+    if (level >= 71) return 'A';
+    if (level >= 46) return 'B';
+    if (level >= 26) return 'C';
+    if (level >= 11) return 'D';
     return 'E';
   };
 

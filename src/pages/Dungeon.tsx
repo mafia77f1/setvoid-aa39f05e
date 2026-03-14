@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Sparkles, ArrowLeft } from 'lucide-react';
+import { Map, Sparkles, ArrowLeft, Swords, Heart, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Position { x: number; y: number; }
@@ -9,11 +9,15 @@ interface Position { x: number; y: number; }
 interface CaveItem {
   id: string;
   pos: Position;
-  type: 'loot' | 'portal';
+  type: 'loot' | 'portal' | 'enemy';
   name: string;
   icon: string;
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   collected?: boolean;
+  hp?: number;
+  maxHp?: number;
+  damage?: number;
+  defeated?: boolean;
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -138,6 +142,38 @@ const LOOT_POSITIONS: Position[] = [
   { x: 6, y: 3 },
 ];
 
+const ENEMY_POSITIONS: Position[] = [
+  { x: 10, y: 19 }, { x: 5, y: 15 }, { x: 12, y: 14 },
+  { x: 3, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 3 },
+];
+
+const ENEMIES_BY_RANK: Record<string, { name: string; icon: string; hp: number; damage: number }[]> = {
+  E: [
+    { name: 'جرذ المغارة', icon: '🐀', hp: 20, damage: 3 },
+    { name: 'خفاش الظلام', icon: '🦇', hp: 15, damage: 2 },
+  ],
+  D: [
+    { name: 'عنكبوت سام', icon: '🕷️', hp: 40, damage: 5 },
+    { name: 'هيكل عظمي', icon: '💀', hp: 50, damage: 6 },
+  ],
+  C: [
+    { name: 'غول الظلام', icon: '👹', hp: 80, damage: 10 },
+    { name: 'فارس ميت', icon: '⚔️', hp: 100, damage: 12 },
+  ],
+  B: [
+    { name: 'تنين صغير', icon: '🐲', hp: 150, damage: 18 },
+    { name: 'شيطان ناري', icon: '😈', hp: 130, damage: 20 },
+  ],
+  A: [
+    { name: 'حارس الظلام', icon: '🗿', hp: 250, damage: 30 },
+    { name: 'وحش الهاوية', icon: '👾', hp: 300, damage: 35 },
+  ],
+  S: [
+    { name: 'لورد الظلام', icon: '🌑', hp: 500, damage: 50 },
+    { name: 'إمبراطور الأشباح', icon: '👻', hp: 450, damage: 55 },
+  ],
+};
+
 const PORTAL_POS: Position = { x: 13, y: 2 };
 
 const Dungeon = () => {
@@ -153,8 +189,13 @@ const Dungeon = () => {
   const [entering, setEntering] = useState(true);
   const [showMap, setShowMap] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
+  const [playerHp, setPlayerHp] = useState(100);
+  const [combatEnemy, setCombatEnemy] = useState<CaveItem | null>(null);
+  const [combatDamageNumbers, setCombatDamageNumbers] = useState<{ id: number; value: number; x: number; y: number; isPlayer?: boolean }[]>([]);
+  const [combatShake, setCombatShake] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const damageCounter = useRef(0);
 
   // Joystick state
   const joystickRef = useRef<HTMLDivElement>(null);
@@ -172,7 +213,7 @@ const Dungeon = () => {
     return () => clearInterval(iv);
   }, []);
 
-  // Init items
+  // Init items + enemies
   useEffect(() => {
     const lootData = LOOT_BY_RANK[rank] || LOOT_BY_RANK['E'];
     const caveItems: CaveItem[] = lootData.map((l, i) => ({
@@ -181,6 +222,25 @@ const Dungeon = () => {
       pos: LOOT_POSITIONS[i % LOOT_POSITIONS.length],
       type: 'loot' as const,
     }));
+    
+    // Add enemies
+    const enemyData = ENEMIES_BY_RANK[rank] || ENEMIES_BY_RANK['E'];
+    const numEnemies = Math.min(ENEMY_POSITIONS.length, rank === 'E' ? 2 : rank === 'D' ? 3 : rank === 'C' ? 4 : 5);
+    for (let i = 0; i < numEnemies; i++) {
+      const template = enemyData[i % enemyData.length];
+      caveItems.push({
+        id: `enemy-${i}`,
+        pos: ENEMY_POSITIONS[i],
+        type: 'enemy',
+        name: template.name,
+        icon: template.icon,
+        hp: template.hp,
+        maxHp: template.hp,
+        damage: template.damage,
+        defeated: false,
+      });
+    }
+    
     caveItems.push({
       id: 'portal',
       pos: PORTAL_POS,
@@ -211,6 +271,7 @@ const Dungeon = () => {
   }, []);
 
   const movePlayer = useCallback((dx: number, dy: number) => {
+    if (combatEnemy) return; // Can't move during combat
     if (dx > 0) setPlayerDir('right');
     else if (dx < 0) setPlayerDir('left');
     else if (dy < 0) setPlayerDir('up');
@@ -221,7 +282,7 @@ const Dungeon = () => {
       const ny = prev.y + dy;
       if (!canMove(nx, ny)) return prev;
 
-      const hitItem = items.find(i => i.pos.x === nx && i.pos.y === ny && !i.collected);
+      const hitItem = items.find(i => i.pos.x === nx && i.pos.y === ny && !i.collected && !i.defeated);
       if (hitItem) {
         if (hitItem.type === 'loot') {
           setTimeout(() => {
@@ -233,6 +294,10 @@ const Dungeon = () => {
         } else if (hitItem.type === 'portal') {
           setTimeout(() => navigate(`/battle?rank=${rank}`), 0);
           return prev;
+        } else if (hitItem.type === 'enemy') {
+          // Start combat
+          setTimeout(() => setCombatEnemy(hitItem), 0);
+          return prev; // Don't move onto enemy
         }
       }
       setTimeout(() => {
@@ -241,7 +306,50 @@ const Dungeon = () => {
       }, 0);
       return { x: nx, y: ny };
     });
-  }, [canMove, items, navigate, rank]);
+  }, [canMove, items, navigate, rank, combatEnemy]);
+
+  // Combat functions
+  const attackEnemy = useCallback(() => {
+    if (!combatEnemy) return;
+    const dmg = 10 + Math.floor(Math.random() * 15);
+    const newHp = Math.max(0, (combatEnemy.hp || 0) - dmg);
+    
+    // Damage number
+    damageCounter.current++;
+    setCombatDamageNumbers(prev => [...prev, { id: damageCounter.current, value: dmg, x: 50 + Math.random() * 20 - 10, y: 30 }]);
+    setTimeout(() => setCombatDamageNumbers(prev => prev.filter(d => d.id !== damageCounter.current)), 1000);
+    
+    setCombatShake(true);
+    setTimeout(() => setCombatShake(false), 200);
+    
+    if (newHp <= 0) {
+      // Enemy defeated
+      setItems(p => p.map(i => i.id === combatEnemy.id ? { ...i, defeated: true, collected: true } : i));
+      setCollected(p => [...p, { ...combatEnemy, name: `هزمت: ${combatEnemy.name}`, icon: '⚔️', rarity: 'rare' }]);
+      setCombatEnemy(null);
+    } else {
+      setCombatEnemy(prev => prev ? { ...prev, hp: newHp } : null);
+      // Enemy attacks back
+      setTimeout(() => {
+        const enemyDmg = combatEnemy.damage || 5;
+        setPlayerHp(prev => Math.max(0, prev - enemyDmg));
+        damageCounter.current++;
+        setCombatDamageNumbers(prev => [...prev, { id: damageCounter.current, value: enemyDmg, x: 50, y: 70, isPlayer: true }]);
+      }, 500);
+    }
+  }, [combatEnemy]);
+
+  const fleeFromCombat = useCallback(() => {
+    setCombatEnemy(null);
+    // Push player back
+    setPlayerPos(prev => {
+      const dirs = [{ x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }];
+      for (const d of dirs) {
+        if (canMove(prev.x + d.x, prev.y + d.y)) return { x: prev.x + d.x, y: prev.y + d.y };
+      }
+      return prev;
+    });
+  }, [canMove]);
 
   // Keyboard
   useEffect(() => {
@@ -411,15 +519,15 @@ const Dungeon = () => {
                 }} />
               ))
             )}
-            {items.filter(i => !i.collected).map(item => (
+            {items.filter(i => !i.collected && !i.defeated).map(item => (
               <motion.div key={item.id} className="absolute rounded-full"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 style={{
                   left: item.pos.x * 4 + 0.5, top: item.pos.y * 4 + 0.5,
                   width: 3, height: 3,
-                  background: item.type === 'portal' ? '#ef4444' : '#f59e0b',
-                  boxShadow: item.type === 'portal' ? '0 0 6px #ef4444' : '0 0 4px #f59e0b',
+                  background: item.type === 'portal' ? '#ef4444' : item.type === 'enemy' ? '#ff6b6b' : '#f59e0b',
+                  boxShadow: item.type === 'portal' ? '0 0 6px #ef4444' : item.type === 'enemy' ? '0 0 4px #ff6b6b' : '0 0 4px #f59e0b',
                 }}
               />
             ))}
@@ -433,10 +541,11 @@ const Dungeon = () => {
               }}
             />
           </div>
-          <div className="flex items-center justify-between mt-1.5 px-0.5">
+          <div className="flex items-center justify-between mt-1.5 px-0.5 flex-wrap gap-0.5">
             <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-cyan-400" /><span className="text-[5px] text-stone-600">أنت</span></div>
             <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-amber-400" /><span className="text-[5px] text-stone-600">غنيمة</span></div>
-            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[5px] text-stone-600">بوابة</span></div>
+            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-400" /><span className="text-[5px] text-stone-600">عدو</span></div>
+            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-600" /><span className="text-[5px] text-stone-600">بوابة</span></div>
           </div>
         </motion.div>
       )}
@@ -535,8 +644,8 @@ const Dungeon = () => {
             ))
           )}
 
-          {/* Items */}
-          {items.filter(i => !i.collected).map(item => (
+          {/* Items & Enemies */}
+          {items.filter(i => !i.collected && !i.defeated).map(item => (
             <div key={item.id} className="absolute flex items-center justify-center z-10" style={{
               left: item.pos.x * TILE_SIZE, top: item.pos.y * TILE_SIZE,
               width: TILE_SIZE, height: TILE_SIZE,
@@ -557,6 +666,22 @@ const Dungeon = () => {
                     animate={{ rotate: -360 }}
                     transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                   >🌀</motion.span>
+                </div>
+              ) : item.type === 'enemy' ? (
+                <div className="relative">
+                  <motion.div className="absolute -inset-3 rounded-full"
+                    animate={{ opacity: [0.4, 0.8, 0.4], scale: [0.9, 1.15, 0.9] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    style={{ background: 'radial-gradient(circle, rgba(239,68,68,0.4) 0%, transparent 70%)' }}
+                  />
+                  <motion.span className="text-xl relative z-10 block"
+                    animate={{ y: [0, -3, 0], x: [-2, 2, -2] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  >{item.icon}</motion.span>
+                  {/* Enemy HP bar */}
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${((item.hp || 0) / (item.maxHp || 1)) * 100}%` }} />
+                  </div>
                 </div>
               ) : (
                 <div className="relative">
@@ -609,6 +734,98 @@ const Dungeon = () => {
           }} />
         </div>
       </div>
+
+      {/* Player HP Bar */}
+      {!entering && (
+        <div className="absolute top-12 right-2 z-40 bg-black/80 border border-stone-700/30 rounded-lg px-3 py-2 backdrop-blur-md">
+          <div className="flex items-center gap-2 mb-1">
+            <Heart className="w-3 h-3 text-red-500" />
+            <span className="text-[9px] text-stone-400 font-bold">{playerHp}/100</span>
+          </div>
+          <div className="w-20 h-1.5 bg-stone-800 rounded-full overflow-hidden">
+            <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${playerHp}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* Combat Overlay */}
+      <AnimatePresence>
+        {combatEnemy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-6"
+          >
+            <motion.div
+              animate={combatShake ? { x: [-5, 5, -5, 5, 0] } : {}}
+              transition={{ duration: 0.2 }}
+              className="text-center mb-8"
+            >
+              <motion.span
+                className="text-7xl block mb-3"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >{combatEnemy.icon}</motion.span>
+              <h3 className="text-lg font-black text-red-400 tracking-wider mb-2">{combatEnemy.name}</h3>
+              <div className="w-48 h-2.5 bg-stone-900 rounded-full overflow-hidden mx-auto border border-red-500/30">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full"
+                  style={{ width: `${((combatEnemy.hp || 0) / (combatEnemy.maxHp || 1)) * 100}%` }}
+                  layout
+                />
+              </div>
+              <p className="text-[10px] text-red-400/70 mt-1 font-mono">{combatEnemy.hp}/{combatEnemy.maxHp} HP</p>
+            </motion.div>
+
+            {/* Damage Numbers */}
+            <AnimatePresence>
+              {combatDamageNumbers.map(d => (
+                <motion.div
+                  key={d.id}
+                  className={cn("absolute text-2xl font-black", d.isPlayer ? "text-red-500" : "text-yellow-400")}
+                  style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                  initial={{ opacity: 1, y: 0, scale: 1.2 }}
+                  animate={{ opacity: 0, y: -60, scale: 0.8 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {d.isPlayer ? `-${d.value}` : `-${d.value}`}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Player HP in combat */}
+            <div className="mb-6 text-center">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs text-cyan-300 font-bold">HP: {playerHp}/100</span>
+              </div>
+              <div className="w-40 h-2 bg-stone-900 rounded-full overflow-hidden border border-cyan-500/30">
+                <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 rounded-full transition-all" style={{ width: `${playerHp}%` }} />
+              </div>
+            </div>
+
+            {/* Combat buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={attackEnemy}
+                className="flex items-center gap-2 px-8 py-4 bg-red-600/80 border border-red-400/50 text-white font-black text-sm tracking-wider rounded-lg active:scale-95 transition-all"
+                style={{ boxShadow: '0 0 20px rgba(239,68,68,0.3)' }}
+              >
+                <Swords className="w-5 h-5" />
+                هجوم
+              </button>
+              <button
+                onClick={fleeFromCombat}
+                className="flex items-center gap-2 px-6 py-4 bg-stone-800/80 border border-stone-600/50 text-stone-300 font-bold text-sm tracking-wider rounded-lg active:scale-95 transition-all"
+              >
+                هروب
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Joystick */}
       {!entering && (

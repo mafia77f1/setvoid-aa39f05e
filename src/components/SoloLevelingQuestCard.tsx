@@ -68,8 +68,7 @@ interface QuestModalProps {
 }
 
 const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: QuestModalProps) => {
-  const savedProgress = quest.timeProgress || 0;
-  const [timeProgress, setTimeProgress] = useState<number>(savedProgress);
+  const [timeProgress, setTimeProgress] = useState<number>(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const config = categoryConfig[quest.category];
@@ -77,23 +76,33 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
   const Icon = config.icon;
 
   const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
-  const isCompleted = timeProgress >= requiredTimeInSeconds;
+
+  // Calculate real elapsed time from startedAt
+  const calcElapsed = useCallback(() => {
+    if (!quest.startedAt) return quest.timeProgress || 0;
+    const started = new Date(quest.startedAt).getTime();
+    const now = Date.now();
+    const elapsedSinceStart = Math.floor((now - started) / 1000);
+    return Math.min(elapsedSinceStart, requiredTimeInSeconds);
+  }, [quest.startedAt, quest.timeProgress, requiredTimeInSeconds]);
+
+  const isCompleted = timeProgress >= requiredTimeInSeconds && requiredTimeInSeconds > 0;
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 50);
   }, []);
 
+  // On mount & when quest changes, calculate real elapsed
   useEffect(() => {
-    const currentProgress = quest.timeProgress || 0;
-    setTimeProgress(currentProgress);
-  }, [quest.timeProgress]);
-
-  useEffect(() => {
-    if (quest.startedAt && !quest.completed && !isCompleted) {
+    const elapsed = calcElapsed();
+    setTimeProgress(elapsed);
+    if (onUpdateProgress) onUpdateProgress(elapsed);
+    if (quest.startedAt && !quest.completed && elapsed < requiredTimeInSeconds) {
       setIsRunning(true);
     }
-  }, [quest.startedAt, quest.completed, isCompleted]);
+  }, [quest.startedAt, quest.completed]);
 
+  // Live timer - increment every second
   useEffect(() => {
     if (!isRunning || isCompleted) return;
     const timer = setInterval(() => {

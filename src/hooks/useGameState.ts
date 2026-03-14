@@ -3,7 +3,7 @@ import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, Inv
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-const MAX_LEVEL = 50; 
+const MAX_LEVEL = 100; 
 const BASE_XP_PER_LEVEL = 100;
 
 const getDayOfWeek = () => new Date().getDay();
@@ -176,6 +176,10 @@ const getInitialInventory = (): InventoryItem[] => [
   { id: 'xp_book', name: 'كتاب الخبرة', description: 'يزيد خبرة اللاعب 500 XP', type: 'xp', category: 'Element', effect: 500, price: 250, quantity: 0, icon: '📚' },
   { id: 'energy_drink', name: 'مشروب الطاقة', description: 'يستعيد 50% من الطاقة', type: 'energy', category: 'Elixir', effect: 50, price: 150, quantity: 0, icon: '⚡' },
   { id: 'xp_reset', name: 'حجر إعادة التوزيع', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', type: 'reset', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔄' },
+  { id: 'rename_stone', name: 'حجر إعادة التسمية', description: 'يسمح لك بتغيير اسم شخصيتك', type: 'tool', category: 'Special', effect: 0, price: 2000, quantity: 1, icon: '✏️' },
+  { id: 'gate_exit_stone', name: 'حجر الخروج من البوابة', description: 'يسمح بالخروج الآمن من البوابة دون عقوبة', type: 'key', category: 'Special', effect: 0, price: 3000, quantity: 1, icon: '🚪' },
+  { id: 'grand_quest_stone', name: 'حجر المهمة الكبرى', description: 'مطلوب لتفعيل مهمة Grand Quest جديدة', type: 'tool', category: 'Special', effect: 0, price: 5000, quantity: 1, icon: '🔮' },
+  { id: 'central_activation_stone', name: 'حجر التفعيل المركزي', description: 'يفعّل شات النظام للتواصل مع ذكاء النظام', type: 'tool', category: 'Special', effect: 0, price: 10000, quantity: 1, icon: '💬' },
 ];
 
 const getInitialPrayerQuests = (): PrayerQuest[] => [
@@ -472,10 +476,11 @@ export const useGameState = () => {
   }, []);
 
   const getRank = (totalLevel: number): string => {
-    if (totalLevel >= 50) return 'A';
-    if (totalLevel >= 35) return 'B';
-    if (totalLevel >= 20) return 'C';
-    if (totalLevel >= 10) return 'D';
+    if (totalLevel >= 96) return 'S';
+    if (totalLevel >= 71) return 'A';
+    if (totalLevel >= 46) return 'B';
+    if (totalLevel >= 26) return 'C';
+    if (totalLevel >= 11) return 'D';
     return 'E';
   };
 
@@ -597,6 +602,10 @@ export const useGameState = () => {
     { id: 'storm_hand_title', name: 'يد العاصفة', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', type: 'title', category: 'Title', effect: 10, price: 15000, quantity: 0, icon: '🌩️' },
     { id: 'return_key', name: 'مفتاح العودة', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', type: 'key', category: 'Key', effect: 0, price: 8000, quantity: 0, icon: '🔑' },
     { id: 'xp_reset', name: 'حجر إعادة التوزيع', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', type: 'reset', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔄' },
+    { id: 'rename_stone', name: 'حجر إعادة التسمية', description: 'يسمح لك بتغيير اسم شخصيتك', type: 'tool', category: 'Special', effect: 0, price: 2000, quantity: 0, icon: '✏️' },
+    { id: 'gate_exit_stone', name: 'حجر الخروج من البوابة', description: 'يسمح بالخروج الآمن من البوابة دون عقوبة', type: 'key', category: 'Special', effect: 0, price: 3000, quantity: 0, icon: '🚪' },
+    { id: 'grand_quest_stone', name: 'حجر المهمة الكبرى', description: 'مطلوب لتفعيل مهمة Grand Quest جديدة', type: 'tool', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔮' },
+    { id: 'central_activation_stone', name: 'حجر التفعيل المركزي', description: 'يفعّل شات النظام للتواصل مع ذكاء النظام', type: 'tool', category: 'Special', effect: 0, price: 10000, quantity: 0, icon: '💬' },
   ];
 
   const purchaseItem = useCallback((itemId: string) => {
@@ -752,7 +761,7 @@ export const useGameState = () => {
   const dismissLevelUp = useCallback(() => setLevelUpInfo(null), []);
 
   const startSideQuest = useCallback((questId: string) => {
-    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => (q.id === questId && !q.active && !q.startedAt) ? { ...q, startedAt: new Date().toISOString(), timeProgress: q.timeProgress || 0, active: true, claimed: false } : q) }));
+    setGameState(prev => ({ ...prev, quests: prev.quests.map(q => (q.id === questId && !q.active && !q.completed) ? { ...q, startedAt: new Date().toISOString(), timeProgress: q.timeProgress || 0, active: true, claimed: false } : q) }));
   }, []);
 
   const updateSideQuestProgress = useCallback((questId: string, progress: number) => {
