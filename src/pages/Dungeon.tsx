@@ -196,12 +196,6 @@ const Dungeon = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const damageCounter = useRef(0);
-  const [combatEnemy, setCombatEnemy] = useState<CaveItem | null>(null);
-  const [combatDamageNumbers, setCombatDamageNumbers] = useState<{ id: number; value: number; x: number; y: number; isPlayer?: boolean }[]>([]);
-  const [combatShake, setCombatShake] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  let damageCounter = useRef(0);
 
   // Joystick state
   const joystickRef = useRef<HTMLDivElement>(null);
