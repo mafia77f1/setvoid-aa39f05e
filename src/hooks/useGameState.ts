@@ -3,7 +3,7 @@ import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, Inv
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-const MAX_LEVEL = 50; 
+const MAX_LEVEL = 100; 
 const BASE_XP_PER_LEVEL = 100;
 
 const getDayOfWeek = () => new Date().getDay();
