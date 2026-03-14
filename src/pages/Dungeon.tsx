@@ -188,7 +188,14 @@ const Dungeon = () => {
   const [showLoot, setShowLoot] = useState<CaveItem | null>(null);
   const [entering, setEntering] = useState(true);
   const [showMap, setShowMap] = useState(true);
+  const [isMoving, setIsMoving] = useState(false);
   const [playerHp, setPlayerHp] = useState(100);
+  const [combatEnemy, setCombatEnemy] = useState<CaveItem | null>(null);
+  const [combatDamageNumbers, setCombatDamageNumbers] = useState<{ id: number; value: number; x: number; y: number; isPlayer?: boolean }[]>([]);
+  const [combatShake, setCombatShake] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const damageCounter = useRef(0);
   const [combatEnemy, setCombatEnemy] = useState<CaveItem | null>(null);
   const [combatDamageNumbers, setCombatDamageNumbers] = useState<{ id: number; value: number; x: number; y: number; isPlayer?: boolean }[]>([]);
   const [combatShake, setCombatShake] = useState(false);
