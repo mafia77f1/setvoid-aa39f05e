@@ -602,6 +602,10 @@ export const useGameState = () => {
     { id: 'storm_hand_title', name: 'يد العاصفة', description: 'لقب نادر يزيد ضرر الهجمات بنسبة 10%', type: 'title', category: 'Title', effect: 10, price: 15000, quantity: 0, icon: '🌩️' },
     { id: 'return_key', name: 'مفتاح العودة', description: 'يتيح الخروج من البوابة دون إكمالها بشكل آمن', type: 'key', category: 'Key', effect: 0, price: 8000, quantity: 0, icon: '🔑' },
     { id: 'xp_reset', name: 'حجر إعادة التوزيع', description: 'يعيد جميع نقاط XP ويسمح لك بإعادة توزيعها', type: 'reset', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔄' },
+    { id: 'rename_stone', name: 'حجر إعادة التسمية', description: 'يسمح لك بتغيير اسم شخصيتك', type: 'tool', category: 'Special', effect: 0, price: 2000, quantity: 0, icon: '✏️' },
+    { id: 'gate_exit_stone', name: 'حجر الخروج من البوابة', description: 'يسمح بالخروج الآمن من البوابة دون عقوبة', type: 'key', category: 'Special', effect: 0, price: 3000, quantity: 0, icon: '🚪' },
+    { id: 'grand_quest_stone', name: 'حجر المهمة الكبرى', description: 'مطلوب لتفعيل مهمة Grand Quest جديدة', type: 'tool', category: 'Special', effect: 0, price: 5000, quantity: 0, icon: '🔮' },
+    { id: 'central_activation_stone', name: 'حجر التفعيل المركزي', description: 'يفعّل شات النظام للتواصل مع ذكاء النظام', type: 'tool', category: 'Special', effect: 0, price: 10000, quantity: 0, icon: '💬' },
   ];
 
   const purchaseItem = useCallback((itemId: string) => {
