@@ -67,7 +67,7 @@ const GrandQuest = () => {
         </h1>
         <div className="mt-2 flex items-center gap-2 bg-blue-500/10 border border-blue-500/40 px-3 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.2)]">
            <Zap className="w-3 h-3 text-cyan-400 fill-cyan-400" />
-           <span className="text-[10px] font-black tracking-widest text-cyan-300">MANA STONES: {manaStones}</span>
+           <span className="text-[10px] font-black tracking-widest text-cyan-300">QUEST STONES: {grandQuestStones}</span>
         </div>
       </header>
 
