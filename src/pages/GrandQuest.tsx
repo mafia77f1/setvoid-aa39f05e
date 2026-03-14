@@ -144,7 +144,7 @@ const GrandQuest = () => {
                      <Zap className="w-4 h-4 text-red-500" />
                      <span className="text-[10px] font-bold text-red-200 tracking-tighter">INITIALIZATION COST:</span>
                    </div>
-                   <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 MANA STONE</span>
+                   <span className="text-xs font-black text-white drop-shadow-[0_0_5px_red]">1 QUEST STONE</span>
                 </div>
 
                 <div className="space-y-2">
