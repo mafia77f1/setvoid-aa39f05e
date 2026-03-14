@@ -193,15 +193,15 @@ const GrandQuest = () => {
 
                 <button 
                   onClick={handleStart} 
-                  disabled={manaStones < 1}
+                  disabled={grandQuestStones < 1}
                   className={cn(
                     "w-full py-4 font-black text-xs tracking-[0.4em] uppercase transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] active:scale-95 border-2",
-                    manaStones >= 1 
+                    grandQuestStones >= 1 
                       ? "bg-white text-black hover:bg-cyan-50 border-white cursor-pointer" 
                       : "bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed opacity-50"
                   )}
                 >
-                  {manaStones >= 1 ? 'Accept Mission' : 'Insufficient Mana'}
+                  {grandQuestStones >= 1 ? 'Accept Mission' : 'Insufficient Stones'}
                 </button>
               </div>
             </div>
