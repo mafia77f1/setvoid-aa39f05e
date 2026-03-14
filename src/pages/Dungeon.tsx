@@ -271,6 +271,7 @@ const Dungeon = () => {
   }, []);
 
   const movePlayer = useCallback((dx: number, dy: number) => {
+    if (combatEnemy) return; // Can't move during combat
     if (dx > 0) setPlayerDir('right');
     else if (dx < 0) setPlayerDir('left');
     else if (dy < 0) setPlayerDir('up');
@@ -281,7 +282,7 @@ const Dungeon = () => {
       const ny = prev.y + dy;
       if (!canMove(nx, ny)) return prev;
 
-      const hitItem = items.find(i => i.pos.x === nx && i.pos.y === ny && !i.collected);
+      const hitItem = items.find(i => i.pos.x === nx && i.pos.y === ny && !i.collected && !i.defeated);
       if (hitItem) {
         if (hitItem.type === 'loot') {
           setTimeout(() => {
@@ -293,6 +294,10 @@ const Dungeon = () => {
         } else if (hitItem.type === 'portal') {
           setTimeout(() => navigate(`/battle?rank=${rank}`), 0);
           return prev;
+        } else if (hitItem.type === 'enemy') {
+          // Start combat
+          setTimeout(() => setCombatEnemy(hitItem), 0);
+          return prev; // Don't move onto enemy
         }
       }
       setTimeout(() => {
@@ -301,7 +306,50 @@ const Dungeon = () => {
       }, 0);
       return { x: nx, y: ny };
     });
-  }, [canMove, items, navigate, rank]);
+  }, [canMove, items, navigate, rank, combatEnemy]);
+
+  // Combat functions
+  const attackEnemy = useCallback(() => {
+    if (!combatEnemy) return;
+    const dmg = 10 + Math.floor(Math.random() * 15);
+    const newHp = Math.max(0, (combatEnemy.hp || 0) - dmg);
+    
+    // Damage number
+    damageCounter.current++;
+    setCombatDamageNumbers(prev => [...prev, { id: damageCounter.current, value: dmg, x: 50 + Math.random() * 20 - 10, y: 30 }]);
+    setTimeout(() => setCombatDamageNumbers(prev => prev.filter(d => d.id !== damageCounter.current)), 1000);
+    
+    setCombatShake(true);
+    setTimeout(() => setCombatShake(false), 200);
+    
+    if (newHp <= 0) {
+      // Enemy defeated
+      setItems(p => p.map(i => i.id === combatEnemy.id ? { ...i, defeated: true, collected: true } : i));
+      setCollected(p => [...p, { ...combatEnemy, name: `هزمت: ${combatEnemy.name}`, icon: '⚔️', rarity: 'rare' }]);
+      setCombatEnemy(null);
+    } else {
+      setCombatEnemy(prev => prev ? { ...prev, hp: newHp } : null);
+      // Enemy attacks back
+      setTimeout(() => {
+        const enemyDmg = combatEnemy.damage || 5;
+        setPlayerHp(prev => Math.max(0, prev - enemyDmg));
+        damageCounter.current++;
+        setCombatDamageNumbers(prev => [...prev, { id: damageCounter.current, value: enemyDmg, x: 50, y: 70, isPlayer: true }]);
+      }, 500);
+    }
+  }, [combatEnemy]);
+
+  const fleeFromCombat = useCallback(() => {
+    setCombatEnemy(null);
+    // Push player back
+    setPlayerPos(prev => {
+      const dirs = [{ x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }];
+      for (const d of dirs) {
+        if (canMove(prev.x + d.x, prev.y + d.y)) return { x: prev.x + d.x, y: prev.y + d.y };
+      }
+      return prev;
+    });
+  }, [canMove]);
 
   // Keyboard
   useEffect(() => {
