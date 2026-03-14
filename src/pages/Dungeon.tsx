@@ -519,15 +519,15 @@ const Dungeon = () => {
                 }} />
               ))
             )}
-            {items.filter(i => !i.collected).map(item => (
+            {items.filter(i => !i.collected && !i.defeated).map(item => (
               <motion.div key={item.id} className="absolute rounded-full"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
                 style={{
                   left: item.pos.x * 4 + 0.5, top: item.pos.y * 4 + 0.5,
                   width: 3, height: 3,
-                  background: item.type === 'portal' ? '#ef4444' : '#f59e0b',
-                  boxShadow: item.type === 'portal' ? '0 0 6px #ef4444' : '0 0 4px #f59e0b',
+                  background: item.type === 'portal' ? '#ef4444' : item.type === 'enemy' ? '#ff6b6b' : '#f59e0b',
+                  boxShadow: item.type === 'portal' ? '0 0 6px #ef4444' : item.type === 'enemy' ? '0 0 4px #ff6b6b' : '0 0 4px #f59e0b',
                 }}
               />
             ))}
