@@ -734,6 +734,98 @@ const Dungeon = () => {
         </div>
       </div>
 
+      {/* Player HP Bar */}
+      {!entering && (
+        <div className="absolute top-12 right-2 z-40 bg-black/80 border border-stone-700/30 rounded-lg px-3 py-2 backdrop-blur-md">
+          <div className="flex items-center gap-2 mb-1">
+            <Heart className="w-3 h-3 text-red-500" />
+            <span className="text-[9px] text-stone-400 font-bold">{playerHp}/100</span>
+          </div>
+          <div className="w-20 h-1.5 bg-stone-800 rounded-full overflow-hidden">
+            <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${playerHp}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* Combat Overlay */}
+      <AnimatePresence>
+        {combatEnemy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-6"
+          >
+            <motion.div
+              animate={combatShake ? { x: [-5, 5, -5, 5, 0] } : {}}
+              transition={{ duration: 0.2 }}
+              className="text-center mb-8"
+            >
+              <motion.span
+                className="text-7xl block mb-3"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >{combatEnemy.icon}</motion.span>
+              <h3 className="text-lg font-black text-red-400 tracking-wider mb-2">{combatEnemy.name}</h3>
+              <div className="w-48 h-2.5 bg-stone-900 rounded-full overflow-hidden mx-auto border border-red-500/30">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full"
+                  style={{ width: `${((combatEnemy.hp || 0) / (combatEnemy.maxHp || 1)) * 100}%` }}
+                  layout
+                />
+              </div>
+              <p className="text-[10px] text-red-400/70 mt-1 font-mono">{combatEnemy.hp}/{combatEnemy.maxHp} HP</p>
+            </motion.div>
+
+            {/* Damage Numbers */}
+            <AnimatePresence>
+              {combatDamageNumbers.map(d => (
+                <motion.div
+                  key={d.id}
+                  className={cn("absolute text-2xl font-black", d.isPlayer ? "text-red-500" : "text-yellow-400")}
+                  style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                  initial={{ opacity: 1, y: 0, scale: 1.2 }}
+                  animate={{ opacity: 0, y: -60, scale: 0.8 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {d.isPlayer ? `-${d.value}` : `-${d.value}`}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Player HP in combat */}
+            <div className="mb-6 text-center">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs text-cyan-300 font-bold">HP: {playerHp}/100</span>
+              </div>
+              <div className="w-40 h-2 bg-stone-900 rounded-full overflow-hidden border border-cyan-500/30">
+                <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 rounded-full transition-all" style={{ width: `${playerHp}%` }} />
+              </div>
+            </div>
+
+            {/* Combat buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={attackEnemy}
+                className="flex items-center gap-2 px-8 py-4 bg-red-600/80 border border-red-400/50 text-white font-black text-sm tracking-wider rounded-lg active:scale-95 transition-all"
+                style={{ boxShadow: '0 0 20px rgba(239,68,68,0.3)' }}
+              >
+                <Swords className="w-5 h-5" />
+                هجوم
+              </button>
+              <button
+                onClick={fleeFromCombat}
+                className="flex items-center gap-2 px-6 py-4 bg-stone-800/80 border border-stone-600/50 text-stone-300 font-bold text-sm tracking-wider rounded-lg active:scale-95 transition-all"
+              >
+                هروب
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Joystick */}
       {!entering && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40">
