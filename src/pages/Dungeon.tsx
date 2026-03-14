@@ -212,7 +212,7 @@ const Dungeon = () => {
     return () => clearInterval(iv);
   }, []);
 
-  // Init items
+  // Init items + enemies
   useEffect(() => {
     const lootData = LOOT_BY_RANK[rank] || LOOT_BY_RANK['E'];
     const caveItems: CaveItem[] = lootData.map((l, i) => ({
@@ -221,6 +221,25 @@ const Dungeon = () => {
       pos: LOOT_POSITIONS[i % LOOT_POSITIONS.length],
       type: 'loot' as const,
     }));
+    
+    // Add enemies
+    const enemyData = ENEMIES_BY_RANK[rank] || ENEMIES_BY_RANK['E'];
+    const numEnemies = Math.min(ENEMY_POSITIONS.length, rank === 'E' ? 2 : rank === 'D' ? 3 : rank === 'C' ? 4 : 5);
+    for (let i = 0; i < numEnemies; i++) {
+      const template = enemyData[i % enemyData.length];
+      caveItems.push({
+        id: `enemy-${i}`,
+        pos: ENEMY_POSITIONS[i],
+        type: 'enemy',
+        name: template.name,
+        icon: template.icon,
+        hp: template.hp,
+        maxHp: template.hp,
+        damage: template.damage,
+        defeated: false,
+      });
+    }
+    
     caveItems.push({
       id: 'portal',
       pos: PORTAL_POS,
