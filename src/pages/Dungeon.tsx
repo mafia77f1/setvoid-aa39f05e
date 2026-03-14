@@ -541,10 +541,11 @@ const Dungeon = () => {
               }}
             />
           </div>
-          <div className="flex items-center justify-between mt-1.5 px-0.5">
+          <div className="flex items-center justify-between mt-1.5 px-0.5 flex-wrap gap-0.5">
             <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-cyan-400" /><span className="text-[5px] text-stone-600">أنت</span></div>
             <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-amber-400" /><span className="text-[5px] text-stone-600">غنيمة</span></div>
-            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[5px] text-stone-600">بوابة</span></div>
+            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-400" /><span className="text-[5px] text-stone-600">عدو</span></div>
+            <div className="flex items-center gap-0.5"><div className="w-2 h-2 rounded-full bg-red-600" /><span className="text-[5px] text-stone-600">بوابة</span></div>
           </div>
         </motion.div>
       )}
