@@ -61,11 +61,11 @@ const Market = () => {
 
   const getPlayerRank = () => {
     const level = gameState.totalLevel || 1;
-    if (level >= 50) return 'S';
-    if (level >= 40) return 'A';
-    if (level >= 25) return 'B';
-    if (level >= 15) return 'C';
-    if (level >= 5) return 'D';
+    if (level >= 96) return 'S';
+    if (level >= 71) return 'A';
+    if (level >= 46) return 'B';
+    if (level >= 26) return 'C';
+    if (level >= 11) return 'D';
     return 'E';
   };
 
