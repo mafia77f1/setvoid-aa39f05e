@@ -9,7 +9,8 @@ import {
   User, Dumbbell, Brain, Heart, Zap, Shield, Menu, Copy, LogOut, 
   Fingerprint, Activity, Star, Search, ScanLine, UserPlus, MessageSquare, 
   Sword, ShieldCheck, Camera, ChevronRight, Settings, History, Users, 
-  Scan, QrCode, Sparkles, Crown, Target, Flame, Award, Swords, Eye
+  Scan, QrCode, Sparkles, Crown, Target, Flame, Award, Swords, Eye,
+  ShieldAlert, ShieldOff, Wifi, WifiOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -76,6 +77,9 @@ const Profile = () => {
   const rankData = getRankData(gameState.totalLevel);
   const completedGates = gameState.gates?.filter((g: any) => g.completed).length || 0;
   const completedQuests = gameState.quests?.filter((q: any) => q.completed).length || 0;
+  
+  // Check if discord is linked (checking if discord_id exists in profile)
+  const isDiscordLinked = !!profile?.discord_id;
 
   const stats = [
     { key: 'strength', label: 'STR', icon: Dumbbell, value: gameState.levels.strength, color: 'from-red-600 to-red-400', textColor: 'text-red-400', bgColor: 'bg-red-500' },
@@ -117,9 +121,17 @@ const Profile = () => {
         "relative z-20 flex justify-between items-center px-5 py-4 transition-all duration-700",
         animateIn ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
       )}>
-        <div className="flex items-center gap-2">
-          <div className={cn("w-2 h-2 rounded-full animate-pulse", rankData.textColor.replace('text-', 'bg-'))} />
-          <h1 className="text-sm font-black tracking-[0.3em] uppercase text-foreground/80">Hunter License</h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className={cn("w-2 h-2 rounded-full animate-pulse", rankData.textColor.replace('text-', 'bg-'))} />
+            <h1 className="text-xs font-black tracking-[0.3em] uppercase text-foreground/80">System.Hunter_License</h1>
+          </div>
+          <div className="flex items-center gap-1 mt-0.5">
+             <div className={cn("w-1 h-1 rounded-full", isDiscordLinked ? "bg-emerald-500" : "bg-red-500 animate-pulse")} />
+             <span className={cn("text-[7px] font-bold uppercase tracking-widest", isDiscordLinked ? "text-emerald-500/70" : "text-red-500/70")}>
+               {isDiscordLinked ? "Mana Sync: Active" : "Mana Sync: Disconnected"}
+             </span>
+          </div>
         </div>
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
@@ -151,6 +163,34 @@ const Profile = () => {
       {/* Scrollable Content */}
       <main className="flex-1 overflow-y-auto z-10 px-4 pb-24 space-y-5">
 
+        {/* ═══════════════ MANA ENCRYPTION STATUS ═══════════════ */}
+        {!isDiscordLinked ? (
+          <div className="animate-in fade-in slide-in-from-top duration-700">
+            <div className="relative overflow-hidden bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-center gap-4">
+              <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
+              <div className="bg-red-500/20 p-2 rounded-lg">
+                <ShieldOff className="w-6 h-6 text-red-500" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-xs font-black text-red-500 uppercase tracking-tighter">تشفير المانا معطل!</h4>
+                <p className="text-[10px] text-red-400/80 font-bold">يرجى ربط حساب الديسكورد لتفعيل تشفير البيانات وتأمين النظام.</p>
+              </div>
+              <Button size="sm" variant="outline" className="h-8 text-[10px] border-red-500/40 text-red-500 hover:bg-red-500/20">تفعيل</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="relative overflow-hidden bg-emerald-500/5 border border-emerald-500/20 rounded-2xl px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+               <ShieldCheck className="w-4 h-4 text-emerald-500" />
+               <span className="text-[9px] font-black text-emerald-500/80 uppercase tracking-[0.1em]">تشفير المانا مفعل</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+               <span className="text-[8px] font-mono text-emerald-500/60 font-bold tracking-widest leading-none">SECURE</span>
+            </div>
+          </div>
+        )}
+
         {/* ═══════════════ HERO CARD ═══════════════ */}
         <div className={cn(
           "relative rounded-3xl overflow-hidden transition-all duration-1000",
@@ -169,7 +209,8 @@ const Profile = () => {
 
             {/* Top: QR + Rank Badge */}
             <div className="flex justify-between items-start mb-6">
-              <div className="p-1.5 bg-card/80 rounded-xl border border-border/50">
+              <div className="p-1.5 bg-card/80 rounded-xl border border-border/50 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-primary/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500" />
                 {profile && <PlayerQRCode playerId={profile.player_id} playerName={profile.player_name} size={36} />}
               </div>
               
@@ -180,7 +221,7 @@ const Profile = () => {
                   rankData.gradient
                 )} />
                 <div className={cn(
-                  "relative w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm",
+                  "relative w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm shadow-inner",
                   rankData.borderColor
                 )}>
                   <span className="text-[8px] font-black uppercase tracking-[0.25em] text-muted-foreground mb-0.5">Rank</span>
@@ -199,10 +240,10 @@ const Profile = () => {
               {/* Avatar with Aura Ring */}
               <div className="relative flex-shrink-0">
                 <div className={cn(
-                  "absolute -inset-1 rounded-full bg-gradient-to-br opacity-60 blur-sm animate-glow-pulse",
+                  "absolute -inset-1.5 rounded-full bg-gradient-to-br opacity-60 blur-sm animate-glow-pulse",
                   rankData.gradient
                 )} />
-                <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-card bg-card">
+                <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-card bg-card shadow-2xl">
                   <img src={profile?.avatar_url || "/setvoid.png"} className="w-full h-full object-cover" alt="avatar" />
                 </div>
                 <button 
@@ -217,14 +258,14 @@ const Profile = () => {
               {/* Name + Title + Level */}
               <div className="flex-1 min-w-0 space-y-1">
                 <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Hunter Name</p>
-                <h2 className="text-xl font-black text-foreground uppercase tracking-tight truncate">
+                <h2 className="text-xl font-black text-foreground uppercase tracking-tight truncate drop-shadow-sm">
                   {gameState.playerName}
                 </h2>
-                <p className={cn("text-xs font-bold italic", rankData.textColor)}>
+                <p className={cn("text-xs font-bold italic drop-shadow-[0_0_5px_currentColor]", rankData.textColor)}>
                   {rankData.title}
                 </p>
                 {gameState.equippedTitle && (
-                  <div className="flex items-center gap-1 mt-1">
+                  <div className="flex items-center gap-1 mt-1 bg-amber-500/10 w-fit px-2 py-0.5 rounded-full border border-amber-500/20">
                     <Crown className="w-3 h-3 text-amber-400" />
                     <span className="text-[10px] font-bold text-amber-400/80">{gameState.equippedTitle}</span>
                   </div>
@@ -239,7 +280,7 @@ const Profile = () => {
                 <div className="flex items-baseline gap-1">
                   <span className="text-[10px] font-black text-muted-foreground uppercase">LV.</span>
                   <span className={cn(
-                    "text-5xl font-black tabular-nums leading-none bg-gradient-to-b bg-clip-text text-transparent",
+                    "text-5xl font-black tabular-nums leading-none bg-gradient-to-b bg-clip-text text-transparent filter drop-shadow-md",
                     rankData.gradient
                   )}>
                     {gameState.totalLevel}
@@ -249,39 +290,43 @@ const Profile = () => {
 
               {/* System ID */}
               <div 
-                className="flex items-center gap-2 px-3 py-1.5 bg-card/60 rounded-xl border border-border/50 cursor-pointer hover:border-primary/30 transition-all group"
+                className="flex flex-col items-end gap-1.5"
                 onClick={() => { navigator.clipboard.writeText(profile?.player_id || ''); toast({ title: "Copied!" }); }}
               >
-                <Fingerprint className="w-3.5 h-3.5 text-primary/50" />
-                <span className="text-[10px] font-mono font-bold text-muted-foreground">{profile?.player_id}</span>
-                <Copy className="w-3 h-3 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-card/60 rounded-xl border border-border/50 cursor-pointer hover:border-primary/30 transition-all group">
+                  <Fingerprint className="w-3.5 h-3.5 text-primary/50" />
+                  <span className="text-[10px] font-mono font-bold text-muted-foreground">{profile?.player_id}</span>
+                  <Copy className="w-3 h-3 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                </div>
               </div>
             </div>
 
             {/* HP & Energy Bars */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-card/60 border border-border/30 rounded-2xl p-3">
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="bg-card/60 border border-border/30 rounded-2xl p-3 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-red-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                <div className="flex items-center justify-between mb-1.5 relative z-10">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-red-400" />
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">HP</span>
                   </div>
                   <span className="text-[10px] font-bold text-foreground tabular-nums">{Math.round(gameState.hp)}/{gameState.maxHp}</span>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden relative z-10">
                   <div className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(239,68,68,0.4)]" style={{ width: `${(gameState.hp / gameState.maxHp) * 100}%` }} />
                 </div>
               </div>
 
-              <div className="bg-card/60 border border-border/30 rounded-2xl p-3">
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="bg-card/60 border border-border/30 rounded-2xl p-3 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-amber-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                <div className="flex items-center justify-between mb-1.5 relative z-10">
                   <div className="flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Energy</span>
                   </div>
                   <span className="text-[10px] font-bold text-foreground tabular-nums">{Math.round(gameState.energy)}/{gameState.maxEnergy}</span>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden relative z-10">
                   <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(245,158,11,0.4)]" style={{ width: `${(gameState.energy / gameState.maxEnergy) * 100}%` }} />
                 </div>
               </div>
@@ -304,11 +349,14 @@ const Profile = () => {
               <div 
                 key={stat.key}
                 className={cn(
-                  "relative bg-card/60 border border-border/30 rounded-2xl p-4 transition-all duration-500 hover:border-primary/30 group",
+                  "relative bg-card/60 border border-border/30 rounded-2xl p-4 transition-all duration-500 hover:border-primary/30 group overflow-hidden",
                 )}
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="absolute -right-2 -top-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <stat.icon className="w-12 h-12" />
+                </div>
+                <div className="flex items-center justify-between mb-3 relative z-10">
                   <div className={cn("p-2 rounded-xl bg-card border border-border/50 transition-all group-hover:scale-110", )}>
                     <stat.icon className={cn("w-4 h-4", stat.textColor)} />
                   </div>
@@ -316,8 +364,8 @@ const Profile = () => {
                     <span className="text-2xl font-black text-foreground tabular-nums">{stat.value}</span>
                   </div>
                 </div>
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.15em]">{stat.label}</span>
-                <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.15em] relative z-10">{stat.label}</span>
+                <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden relative z-10">
                   <div 
                     className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-1000", stat.color)}
                     style={{ width: `${Math.min(stat.value, 100)}%` }}
@@ -333,9 +381,12 @@ const Profile = () => {
           "transition-all duration-700 delay-300",
           animateIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         )}>
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <Activity className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/70">Battle Records</h3>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" />
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/70">Battle Records</h3>
+            </div>
+            <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">Live Sync</span>
           </div>
 
           <div className="grid grid-cols-4 gap-2">
@@ -345,8 +396,8 @@ const Profile = () => {
               { icon: Award, label: 'Quests', value: completedQuests, suffix: '', color: 'text-blue-400' },
               { icon: Crown, label: 'Gold', value: gameState.gold, suffix: '', color: 'text-amber-400' },
             ].map((item, i) => (
-              <div key={item.label} className="bg-card/60 border border-border/30 rounded-2xl p-3 text-center transition-all hover:border-primary/20">
-                <item.icon className={cn("w-4 h-4 mx-auto mb-1.5", item.color)} />
+              <div key={item.label} className="bg-card/60 border border-border/30 rounded-2xl p-3 text-center transition-all hover:border-primary/20 hover:-translate-y-1">
+                <item.icon className={cn("w-4 h-4 mx-auto mb-1.5 drop-shadow-[0_0_5px_currentColor]", item.color)} />
                 <p className="text-lg font-black text-foreground tabular-nums leading-none">{item.value}{item.suffix}</p>
                 <p className="text-[8px] font-bold text-muted-foreground uppercase mt-1 tracking-wider">{item.label}</p>
               </div>
@@ -361,9 +412,10 @@ const Profile = () => {
         )}>
           <Dialog onOpenChange={(open) => !open && (setSearchMode('main'), setShowResult(false))}>
             <DialogTrigger asChild>
-              <Button className="h-16 bg-primary hover:bg-primary/90 rounded-2xl border-none shadow-[0_8px_30px_hsl(var(--primary)/0.3)] transition-all active:scale-95 flex items-center gap-3">
-                <div className="p-2 bg-primary-foreground/20 rounded-xl"><Scan className="w-5 h-5 text-primary-foreground" /></div>
-                <span className="text-xs font-black uppercase tracking-[0.15em] text-primary-foreground">Scan</span>
+              <Button className="h-16 bg-primary hover:bg-primary/90 rounded-2xl border-none shadow-[0_8px_30px_hsl(var(--primary)/0.3)] transition-all active:scale-95 flex items-center gap-3 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-white/10 translate-x-full group-hover:translate-x-0 transition-transform duration-500 -skew-x-12" />
+                <div className="p-2 bg-primary-foreground/20 rounded-xl relative z-10"><Scan className="w-5 h-5 text-primary-foreground" /></div>
+                <span className="text-xs font-black uppercase tracking-[0.15em] text-primary-foreground relative z-10">Scan</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] bg-card border-border rounded-3xl p-0 overflow-hidden text-foreground shadow-2xl">
@@ -371,12 +423,12 @@ const Profile = () => {
                 <div className="p-8 space-y-6">
                   <h2 className="text-center font-black text-primary italic text-2xl tracking-tighter">SEARCH HUB</h2>
                   <div className="grid grid-cols-1 gap-4">
-                    <button onClick={() => setSearchMode('id')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all">
-                      <Fingerprint className="w-8 h-8 text-primary" />
+                    <button onClick={() => setSearchMode('id')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all group">
+                      <Fingerprint className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-black tracking-widest uppercase text-foreground/80">ID Entry</span>
                     </button>
-                    <button onClick={() => setSearchMode('qr')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all">
-                      <QrCode className="w-8 h-8 text-primary" />
+                    <button onClick={() => setSearchMode('qr')} className="h-24 bg-card border border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-all group">
+                      <QrCode className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-black tracking-widest uppercase text-foreground/80">QR Scanner</span>
                     </button>
                   </div>
@@ -424,9 +476,9 @@ const Profile = () => {
         )}>
           <div className="flex items-center gap-1.5">
             <Eye className="w-3 h-3" />
-            <span className="text-[8px] font-black uppercase tracking-widest">Encryption Active</span>
+            <span className="text-[8px] font-black uppercase tracking-widest">Encryption: {isDiscordLinked ? 'SECURE' : 'VULNERABLE'}</span>
           </div>
-          <span className="text-[8px] font-mono font-bold uppercase">Protocol 0.1-DARK</span>
+          <span className="text-[8px] font-mono font-bold uppercase">v0.1-DARK_SYSTEM</span>
         </div>
       </main>
 
