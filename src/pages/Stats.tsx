@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
-import { HolographicProfile } from '@/components/HolographicProfile';
 import { cn } from '@/lib/utils';
 // استيراد المودالات الجديدة
 import { ItemAnalysisModal } from '@/components/ItemAnalysisModal'; 
@@ -16,18 +15,12 @@ import {
   Target,
   Coins,
   Package,
-  X,
-  ShieldAlert,
-  Info,
-  MapPin,
-  ImageIcon,
-  BarChart3,
-  User
+  BarChart3
 } from 'lucide-react';
 
 const Stats = () => {
   const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
-  const [activeTab, setActiveTab] = useState<'stats' | 'equipment' | 'profile'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
   // حالات التحكم في المودالات الجديدة
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -113,7 +106,6 @@ const Stats = () => {
           {[
             { key: 'stats', label: 'Abilities', icon: Target },
             { key: 'equipment', label: 'Inventory', icon: Package },
-            { key: 'profile', label: 'Profile', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -185,7 +177,6 @@ const Stats = () => {
                     </div>
                     <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
                     
-                    {/* الأزرار الجديدة المطلوبة */}
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       <button
                         onClick={() => { setSelectedItem(item); setShowAnalysis(true); }}
@@ -205,10 +196,6 @@ const Stats = () => {
               ))
             )}
           </div>
-        )}
-
-        {activeTab === 'profile' && (
-          <HolographicProfile gameState={gameState} />
         )}
       </main>
       <BottomNav />
