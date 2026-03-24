@@ -22,12 +22,13 @@ import {
   MapPin,
   ImageIcon,
   BarChart3,
-  User
+  User,
+  Lock
 } from 'lucide-react';
 
 const Stats = () => {
   const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
-  const [activeTab, setActiveTab] = useState<'stats' | 'equipment' | 'profile'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'equipment' | 'body'>('stats');
 
   // حالات التحكم في المودالات الجديدة
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -113,7 +114,7 @@ const Stats = () => {
           {[
             { key: 'stats', label: 'Abilities', icon: Target },
             { key: 'equipment', label: 'Inventory', icon: Package },
-            { key: 'profile', label: 'Profile', icon: User },
+            { key: 'body', label: 'Body', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -185,7 +186,6 @@ const Stats = () => {
                     </div>
                     <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
                     
-                    {/* الأزرار الجديدة المطلوبة */}
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       <button
                         onClick={() => { setSelectedItem(item); setShowAnalysis(true); }}
@@ -207,8 +207,12 @@ const Stats = () => {
           </div>
         )}
 
-        {activeTab === 'profile' && (
-          <HolographicProfile gameState={gameState} />
+        {activeTab === 'body' && (
+          <div className="flex flex-col items-center justify-center py-20 border border-blue-500/20 bg-black/40 animate-in fade-in duration-500">
+             <Lock className="w-12 h-12 text-blue-500/40 mb-4" />
+             <h2 className="text-sm font-bold tracking-[0.3em] uppercase text-blue-100">مقفول في نسخة ألفا</h2>
+             <p className="text-[10px] text-slate-500 mt-2 uppercase tracking-widest">Alpha Version Restricted</p>
+          </div>
         )}
       </main>
       <BottomNav />
