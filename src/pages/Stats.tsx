@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
+import { HolographicProfile } from '@/components/HolographicProfile';
 import { cn } from '@/lib/utils';
-// استيراد المودالات المطلوبة
+// استيراد المودالات الجديدة
 import { ItemAnalysisModal } from '@/components/ItemAnalysisModal'; 
 import { ItemUseModal } from '@/components/ItemUseModal';
 import { XPResetModal } from '@/components/XPResetModal';
@@ -15,17 +16,20 @@ import {
   Target,
   Coins,
   Package,
+  X,
+  ShieldAlert,
+  Info,
+  MapPin,
+  ImageIcon,
   BarChart3,
-  Lock
+  User
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, equipTitle, resetAndReallocateXP } = useGameState();
-  
-  // تحديث الأنواع لتشمل التبويبات المطلوبة (stats و body)
-  const [activeTab, setActiveTab] = useState<'stats' | 'body'>('stats');
+  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
+  const [activeTab, setActiveTab] = useState<'stats' | 'equipment' | 'profile'>('stats');
 
-  // حالات التحكم في المودالات
+  // حالات التحكم في المودالات الجديدة
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -91,7 +95,6 @@ const Stats = () => {
         />
       )}
 
-      {/* Background FX */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
@@ -106,11 +109,11 @@ const Stats = () => {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
-        {/* Tab Selection */}
         <div className="flex gap-2 mb-6">
           {[
             { key: 'stats', label: 'Abilities', icon: Target },
-            { key: 'body', label: 'Body', icon: Package },
+            { key: 'equipment', label: 'Inventory', icon: Package },
+            { key: 'profile', label: 'Profile', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -139,41 +142,73 @@ const Stats = () => {
               <div className="text-4xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">LV. {totalLevel}</div>
               <div className="text-[10px] font-bold tracking-[0.4em] uppercase py-1 px-4 border-y border-white/20 mt-2 inline-block" style={{ color: levelConfig.color }}>{levelConfig.tier}</div>
             </div>
-            
-            <div className="bg-black/40 border border-blue-500/30 p-4">
-              <div className="flex justify-center py-2">
-                <RadarChart stats={radarStats} size={240} />
-              </div>
-            </div>
-
+            <div className="bg-black/40 border border-blue-500/30 p-4"><div className="flex justify-center py-2"><RadarChart stats={radarStats} size={240} /></div></div>
             <div className="space-y-3">
               {stats.map((stat) => (
                 <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3">
                   <div className="flex justify-between items-end mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="text-blue-400 opacity-80">{stat.icon}</div>
-                      <span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span>
-                    </div>
+                    <div className="flex items-center gap-3"><div className="text-blue-400 opacity-80">{stat.icon}</div><span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span></div>
                     <span className="text-lg font-black italic text-white">{stat.level}</span>
                   </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${stat.xpProgress}%` }} />
-                  </div>
+                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${stat.xpProgress}%` }} /></div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {activeTab === 'body' && (
+        {activeTab === 'equipment' && (
           <div className="space-y-12 animate-in fade-in duration-500">
-            <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50 flex flex-col items-center justify-center">
-              <Lock className="w-12 h-12 mb-4 text-slate-600" />
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400">
-                مقفل في نسخة الـ Alpha
-              </p>
-            </div>
+            {gameState.inventory.filter(i => i.quantity > 0).length === 0 ? (
+              <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50"><Package className="w-12 h-12 mx-auto mb-4 text-slate-600" /><p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p></div>
+            ) : (
+              gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
+                <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all">
+                  <div className="flex justify-center mb-4 mt-[-1.5rem]">
+                    <div className="border border-slate-400/50 px-4 py-0.5 bg-slate-900/90 shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                      <h2 className="text-xs font-bold tracking-widest text-white uppercase italic">ITEM: <span className="text-blue-400">{item.name}</span></h2>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 border border-slate-500/50 flex items-center justify-center bg-black/40 relative flex-shrink-0">
+                        {item.id === 'mana_meter' || item.name === 'Mana Gauge' ? (
+                          <img src="/ManaDeviceIcon.png" alt="Mana Gauge" className="w-[150%] h-[150%] scale-125 object-contain filter brightness-110 drop-shadow-[0_0_10px_#3b82f6]" />
+                        ) : (
+                          <span className="text-4xl filter grayscale brightness-200 opacity-90 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">{item.icon || '📦'}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p><p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p></div>
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
+                      </div>
+                    </div>
+                    <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
+                    
+                    {/* الأزرار الجديدة المطلوبة */}
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <button
+                        onClick={() => { setSelectedItem(item); setShowAnalysis(true); }}
+                        className="flex items-center justify-center gap-2 py-3 bg-cyan-900/30 border border-cyan-500/40 text-cyan-400 text-[10px] font-bold uppercase tracking-[0.1em] hover:bg-cyan-900/50 transition-all active:scale-95"
+                      >
+                        <BarChart3 className="w-3 h-3" /> Analysis
+                      </button>
+                      <button
+                        onClick={() => { setSelectedItem(item); setShowUseModal(true); }}
+                        className="flex items-center justify-center gap-2 py-3 bg-blue-600/20 border border-blue-400/50 text-blue-100 text-[10px] font-bold uppercase tracking-[0.1em] hover:bg-blue-600/40 transition-all active:scale-95 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+                      >
+                        <Zap className="w-3 h-3 text-yellow-400" /> Use Item
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <HolographicProfile gameState={gameState} />
         )}
       </main>
       <BottomNav />
