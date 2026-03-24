@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # الحل هنا: تفعيل Node 24 لكل الخطوات
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
@@ -21,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24' # تم التحديث إلى 24 لتجنب التحذير
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
