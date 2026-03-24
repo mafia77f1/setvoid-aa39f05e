@@ -15,10 +15,11 @@ import {
   Target,
   Coins,
   Package,
-  BarChart3
+  BarChart3,
+  Lock
 } from 'lucide-react';
 
-const Stats = () => {
+const Body = () => {
   const { gameState, getXpProgress, useItem, equipTitle, resetAndReallocateXP } = useGameState();
   
   // تحديث الأنواع لتشمل فقط التبويبات المتبقية
@@ -31,6 +32,7 @@ const Stats = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const MAX_LEVEL = 100;
+  const IS_ALPHA = true; // وضع النسخة التجريبية
 
   const stats = [
     { category: 'strength' as const, level: gameState.levels.strength, xp: gameState.stats.strength, xpProgress: getXpProgress(gameState.stats.strength), name: 'STRENGTH', icon: <Dumbbell className="w-5 h-5" />, color: '#60a5fa' },
@@ -48,6 +50,29 @@ const Stats = () => {
 
   const totalLevel = gameState.totalLevel;
   const levelConfig = totalLevel >= 40 ? { color: '#c084fc', tier: 'S-RANK' } : totalLevel >= 20 ? { color: '#60a5fa', tier: 'B-RANK' } : { color: '#ffffff', tier: 'E-RANK' };
+
+  // واجهة القفل لنسخة الـ Alpha
+  if (IS_ALPHA) {
+    return (
+      <div className="min-h-screen bg-[#020817] text-white flex flex-col items-center justify-center p-6 font-sans">
+        <div className="relative p-8 border-2 border-blue-500/30 bg-black/60 backdrop-blur-md text-center">
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-600 p-3 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.5)]">
+            <Lock className="w-6 h-6 text-white" />
+          </div>
+          <h2 className="text-2xl font-black italic tracking-widest text-blue-400 mb-2 mt-4">BODY SYSTEM</h2>
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent mb-4" />
+          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400 mb-6">Access Restricted</p>
+          <p className="text-sm text-slate-300 italic leading-relaxed">
+            "The physical manifestation of the Monarch is currently stabilizing. Body status and Inventory are locked in the Alpha phase."
+          </p>
+          <div className="mt-8 py-2 px-4 border border-blue-500/20 inline-block">
+             <span className="text-[10px] font-mono text-blue-500 animate-pulse">VERSION: ALPHA_V.1.0</span>
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020817] text-white p-3 font-sans selection:bg-blue-500/30 pb-24">
@@ -229,4 +254,4 @@ const Stats = () => {
   );
 };
 
-export default Stats;
+export default Body;
