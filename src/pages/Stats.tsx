@@ -3,7 +3,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { BottomNav } from '@/components/BottomNav';
 import { RadarChart } from '@/components/RadarChart';
 import { cn } from '@/lib/utils';
-// استيراد المودالات الجديدة
+// استيراد المودالات المطلوبة
 import { ItemAnalysisModal } from '@/components/ItemAnalysisModal'; 
 import { ItemUseModal } from '@/components/ItemUseModal';
 import { XPResetModal } from '@/components/XPResetModal';
@@ -19,10 +19,12 @@ import {
 } from 'lucide-react';
 
 const Stats = () => {
-  const { gameState, getXpProgress, useItem, equipTitle, unequipTitle, resetAndReallocateXP } = useGameState();
+  const { gameState, getXpProgress, useItem, equipTitle, resetAndReallocateXP } = useGameState();
+  
+  // تحديث الأنواع لتشمل فقط التبويبات المتبقية
   const [activeTab, setActiveTab] = useState<'stats' | 'equipment'>('stats');
 
-  // حالات التحكم في المودالات الجديدة
+  // حالات التحكم في المودالات
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -88,6 +90,7 @@ const Stats = () => {
         />
       )}
 
+      {/* Background FX */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(29,78,216,0.15),transparent_70%)]" />
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
@@ -102,6 +105,7 @@ const Stats = () => {
       </header>
 
       <main className="relative z-10 max-w-md mx-auto space-y-6">
+        {/* Tab Selection */}
         <div className="flex gap-2 mb-6">
           {[
             { key: 'stats', label: 'Abilities', icon: Target },
@@ -134,15 +138,26 @@ const Stats = () => {
               <div className="text-4xl font-black italic text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">LV. {totalLevel}</div>
               <div className="text-[10px] font-bold tracking-[0.4em] uppercase py-1 px-4 border-y border-white/20 mt-2 inline-block" style={{ color: levelConfig.color }}>{levelConfig.tier}</div>
             </div>
-            <div className="bg-black/40 border border-blue-500/30 p-4"><div className="flex justify-center py-2"><RadarChart stats={radarStats} size={240} /></div></div>
+            
+            <div className="bg-black/40 border border-blue-500/30 p-4">
+              <div className="flex justify-center py-2">
+                <RadarChart stats={radarStats} size={240} />
+              </div>
+            </div>
+
             <div className="space-y-3">
               {stats.map((stat) => (
                 <div key={stat.category} className="bg-black/60 border border-slate-700/50 p-3">
                   <div className="flex justify-between items-end mb-2">
-                    <div className="flex items-center gap-3"><div className="text-blue-400 opacity-80">{stat.icon}</div><span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span></div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-blue-400 opacity-80">{stat.icon}</div>
+                      <span className="text-xs font-bold tracking-tighter text-slate-300 uppercase">{stat.name}</span>
+                    </div>
                     <span className="text-lg font-black italic text-white">{stat.level}</span>
                   </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${stat.xpProgress}%` }} /></div>
+                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 transition-all duration-1000" style={{ width: `${stat.xpProgress}%` }} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -152,7 +167,10 @@ const Stats = () => {
         {activeTab === 'equipment' && (
           <div className="space-y-12 animate-in fade-in duration-500">
             {gameState.inventory.filter(i => i.quantity > 0).length === 0 ? (
-              <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50"><Package className="w-12 h-12 mx-auto mb-4 text-slate-600" /><p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p></div>
+              <div className="text-center py-20 border-2 border-dashed border-slate-800 opacity-50">
+                <Package className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase">Inventory Empty</p>
+              </div>
             ) : (
               gameState.inventory.filter(i => i.quantity > 0).map((item, index) => (
                 <div key={`${item.id}-${index}`} className="relative bg-black/60 border-2 border-slate-200/90 p-4 shadow-[0_0_20px_rgba(30,58,138,0.3)] transition-all">
@@ -171,11 +189,19 @@ const Stats = () => {
                         )}
                       </div>
                       <div className="flex-1 space-y-2">
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p><p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p></div>
-                        <div className="flex justify-between items-center border-b border-white/10 pb-1"><p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p><p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p></div>
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                          <p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Category:</p>
+                          <p className="text-xs font-bold text-white italic uppercase">{item.category || item.type}</p>
+                        </div>
+                        <div className="flex justify-between items-center border-b border-white/10 pb-1">
+                          <p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">Quantity:</p>
+                          <p className="text-xs font-bold text-blue-400 italic">x{item.quantity}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]"><p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p></div>
+                    <div className="bg-blue-950/20 border border-blue-500/20 p-2 min-h-[40px]">
+                      <p className="text-[10px] text-slate-300 italic text-center leading-tight">{item.description}</p>
+                    </div>
                     
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       <button
