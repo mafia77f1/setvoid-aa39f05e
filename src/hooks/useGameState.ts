@@ -349,8 +349,9 @@ export const useGameState = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
-    const channel = supabase.channel(`game-state-changes-${user.id}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, (payload) => {
+    if (!user?.id) return;
+    const channelName = `game-state-${user.id}-${Date.now()}`;
+    const channel = supabase.channel(channelName).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, (payload) => {
           if (payload.new && !isSyncingRef.current) {
             const newData = payload.new as any;
             setGameState(prev => ({
@@ -367,7 +368,7 @@ export const useGameState = () => {
           }
         }).subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     const checkAndUpdateGates = () => {
