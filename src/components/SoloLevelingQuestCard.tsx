@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   Dumbbell, 
@@ -68,8 +68,7 @@ interface QuestModalProps {
 }
 
 const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: QuestModalProps) => {
-  const [timeProgress, setTimeProgress] = useState<number>(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const [isVisible, setIsVisible] = useState(false);
   const config = categoryConfig[quest.category];
   const diffConfig = difficultyConfig[quest.difficulty];
@@ -77,44 +76,34 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
 
   const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
 
-  // Calculate real elapsed time from startedAt
-  const calcElapsed = useCallback(() => {
+  // Calculate real elapsed time from startedAt - always derived from clock
+  const timeProgress = (() => {
     if (!quest.startedAt) return quest.timeProgress || 0;
     const started = new Date(quest.startedAt).getTime();
-    const now = Date.now();
     const elapsedSinceStart = Math.floor((now - started) / 1000);
     return Math.min(elapsedSinceStart, requiredTimeInSeconds);
-  }, [quest.startedAt, quest.timeProgress, requiredTimeInSeconds]);
+  })();
 
+  const isRunning = !!quest.startedAt && !quest.completed && timeProgress < requiredTimeInSeconds;
   const isCompleted = timeProgress >= requiredTimeInSeconds && requiredTimeInSeconds > 0;
 
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 50);
   }, []);
 
-  // On mount & when quest changes, calculate real elapsed
+  // Tick every second when running
   useEffect(() => {
-    const elapsed = calcElapsed();
-    setTimeProgress(elapsed);
-    if (onUpdateProgress) onUpdateProgress(elapsed);
-    if (quest.startedAt && !quest.completed && elapsed < requiredTimeInSeconds) {
-      setIsRunning(true);
-    }
-  }, [quest.startedAt, quest.completed]);
-
-  // Live timer - increment every second
-  useEffect(() => {
-    if (!isRunning || isCompleted) return;
-    const timer = setInterval(() => {
-      setTimeProgress(prev => {
-        const newProgress = prev + 1;
-        if (onUpdateProgress) onUpdateProgress(newProgress);
-        if (newProgress >= requiredTimeInSeconds) setIsRunning(false);
-        return newProgress;
-      });
-    }, 1000);
+    if (!isRunning) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [isRunning, requiredTimeInSeconds, onUpdateProgress, isCompleted]);
+  }, [isRunning]);
+
+  // Sync progress back to parent
+  useEffect(() => {
+    if (onUpdateProgress && quest.startedAt) {
+      onUpdateProgress(timeProgress);
+    }
+  }, [timeProgress]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -124,7 +113,6 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
 
   const handleStart = () => {
     onStart();
-    setIsRunning(true);
   };
 
   const progressPercentage = requiredTimeInSeconds > 0 
