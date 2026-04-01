@@ -551,7 +551,7 @@ export const SoloLevelingQuestCard = ({
                   return (
                     <button
                       key={quest.id}
-                      onClick={() => handleQuestClick(quest)}
+                      onClick={(e) => { e.stopPropagation(); handleQuestClick(quest); }}
                       className={cn(
                         "w-full flex items-center justify-between px-4 py-3.5 transition-all duration-300 group",
                         "hover:bg-cyan-500/5",
