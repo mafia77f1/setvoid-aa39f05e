@@ -113,7 +113,6 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
 
   const handleStart = () => {
     onStart();
-    setIsRunning(true);
   };
 
   const progressPercentage = requiredTimeInSeconds > 0 
