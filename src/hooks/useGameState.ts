@@ -389,11 +389,11 @@ export const useGameState = () => {
 
   useEffect(() => {
     const checkAndUpdateGates = () => {
-      const lastGateUpdate = localStorage.getItem('lastGateUpdateHour');
-      const currentHour = new Date().getHours().toString();
-      if (lastGateUpdate !== currentHour) {
+      const lastGateUpdate = localStorage.getItem('lastGateUpdateDate');
+      const today = new Date().toISOString().split('T')[0];
+      if (lastGateUpdate !== today) {
         setGameState(prev => ({ ...prev, gates: getScheduledGates(prev.totalLevel || 1) }));
-        localStorage.setItem('lastGateUpdateHour', currentHour);
+        localStorage.setItem('lastGateUpdateDate', today);
         window.dispatchEvent(new CustomEvent('newGateAppeared'));
       }
     };
