@@ -19,6 +19,13 @@ const getRankColor = (totalLevel: number) => {
   return { border: rank.border, bg: rank.bg, glow: `shadow-${rank.text.replace('text-', '')}/50`, text: rank.text, rankName: rank.name };
 };
 
+const stats = [
+  { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
+  { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
+  { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
+  { key: 'agility', label: 'AGI', icon: Zap, color: 'text-agility' },
+] as const;
+
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTestGateNotif, setShowTestGateNotif] = useState(false);
