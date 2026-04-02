@@ -134,12 +134,12 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
         onClick={handleClose}
       />
       
-      <div className={cn(
-        "relative w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.2,1,0.2,1)]",
+        <div className={cn(
+          "relative z-10 w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.2,1,0.2,1)]",
         isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
       )}>
         {/* Outer glow - Solo Leveling cyan/blue */}
-        <div className="absolute -inset-2 bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-cyan-500/20 blur-xl opacity-60" />
+          <div className="pointer-events-none absolute -inset-2 bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-cyan-500/20 blur-xl opacity-60" />
         
         {/* Main Panel */}
         <div className="relative overflow-hidden" style={{
@@ -148,7 +148,7 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
           boxShadow: '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
         }}>
           {/* Grid background pattern */}
-          <div className="absolute inset-0 opacity-[0.07]" style={{
+          <div className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{
             backgroundImage: `
               linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
               linear-gradient(90deg, rgba(56,189,248,0.5) 1px, transparent 1px)
@@ -157,19 +157,20 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
           }} />
 
           {/* Top glow line */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
           
           {/* Bottom glow line */}
-          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
 
           {/* Corner accents - metallic style */}
-          <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-cyan-400/70" />
-          <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-cyan-400/70" />
-          <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-cyan-400/70" />
-          <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-cyan-400/70" />
 
           {/* Close button */}
           <button
+            type="button"
             onClick={handleClose}
             className="absolute top-4 right-4 z-20 p-1.5 text-slate-500 hover:text-red-400 transition-colors"
           >
@@ -302,13 +303,15 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
               </div>
             ) : !quest.startedAt ? (
               <div className="grid grid-cols-2 gap-3">
-                <button
+                 <button
+                   type="button"
                   onClick={handleClose}
                   className="py-3.5 border border-slate-700/50 text-slate-500 font-bold text-xs tracking-[0.2em] uppercase hover:text-slate-300 hover:border-slate-500/50 transition-all"
                 >
                   CLOSE
                 </button>
-                <button
+                 <button
+                   type="button"
                   onClick={handleStart}
                   className="py-3.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-xs tracking-[0.2em] uppercase shadow-[0_0_30px_rgba(56,189,248,0.3)] hover:shadow-[0_0_40px_rgba(56,189,248,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
@@ -317,7 +320,8 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
                 </button>
               </div>
             ) : (
-              <button
+               <button
+                 type="button"
                 onClick={onComplete}
                 disabled={!isCompleted}
                 className={cn(
@@ -456,7 +460,7 @@ export const SoloLevelingQuestCard = ({
       <div className="relative">
         {/* Outer cyan glow */}
         <div className={cn(
-          "absolute -inset-1 blur-md opacity-40",
+          "pointer-events-none absolute -inset-1 blur-md opacity-40",
           allCompleted 
             ? "bg-emerald-500/30" 
             : "bg-cyan-500/20"
@@ -470,7 +474,7 @@ export const SoloLevelingQuestCard = ({
             : '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
         }}>
           {/* Grid background pattern */}
-          <div className="absolute inset-0 opacity-[0.06]" style={{
+          <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{
             backgroundImage: `
               linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
               linear-gradient(90deg, rgba(56,189,248,0.5) 1px, transparent 1px)
@@ -484,18 +488,18 @@ export const SoloLevelingQuestCard = ({
           </div>
 
           {/* Top & Bottom glow lines */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
-          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
 
           {/* Corner accents - metallic */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/70" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/70" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/70" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/70" />
+          <div className="pointer-events-none absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/70" />
 
           {/* ═══ HEADER: (!) QUEST INFO ═══ */}
           <div 
-            className="relative px-5 pt-6 pb-4 cursor-pointer"
+            className="relative z-10 px-5 pt-6 pb-4 cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <div className="flex items-center justify-between mb-4">
@@ -538,7 +542,7 @@ export const SoloLevelingQuestCard = ({
 
           {/* ═══ GOALS SECTION ═══ */}
           {isExpanded && (
-            <div className="px-5 py-5 animate-fade-in">
+            <div className="relative z-10 px-5 py-5 animate-fade-in">
               <h3 className="text-center text-base font-black tracking-[0.25em] text-white mb-5 underline underline-offset-8 decoration-slate-600/60">
                 GOALS
               </h3>
@@ -550,6 +554,7 @@ export const SoloLevelingQuestCard = ({
 
                   return (
                     <button
+                      type="button"
                       key={quest.id}
                       onClick={(e) => { e.stopPropagation(); handleQuestClick(quest); }}
                       className={cn(
@@ -638,6 +643,7 @@ export const SoloLevelingQuestCard = ({
               {/* ═══ TOTAL REWARD ═══ */}
               <div className="mt-4 flex items-center justify-center">
                 <button
+                  type="button"
                   onClick={() => navigate('/battle')}
                   className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all"
                 >
