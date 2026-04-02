@@ -477,11 +477,10 @@ export const useGameState = () => {
   }, []);
 
   const getRank = (totalLevel: number): string => {
-    if (totalLevel >= 96) return 'S';
-    if (totalLevel >= 71) return 'A';
-    if (totalLevel >= 46) return 'B';
-    if (totalLevel >= 26) return 'C';
-    if (totalLevel >= 11) return 'D';
+    if (totalLevel >= 50) return 'A';
+    if (totalLevel >= 35) return 'B';
+    if (totalLevel >= 20) return 'C';
+    if (totalLevel >= 10) return 'D';
     return 'E';
   };
 
