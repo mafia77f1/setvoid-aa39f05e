@@ -6,6 +6,7 @@ import { EditProfileModal } from './EditProfileModal';
 import { NewGateNotification } from './NewGateNotification';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { getRankFromLevel } from '@/lib/ranks';
 
 interface ProfileCardProps {
   gameState: GameState;
@@ -13,20 +14,17 @@ interface ProfileCardProps {
   onUpdateProfile?: (name: string, title: string) => void;
 }
 
+const getRankColor = (totalLevel: number) => {
+  const rank = getRankFromLevel(totalLevel);
+  return { border: rank.border, bg: rank.bg, glow: `shadow-${rank.text.replace('text-', '')}/50`, text: rank.text, rankName: rank.name };
+};
+
 const stats = [
   { key: 'strength', label: 'STR', icon: Dumbbell, color: 'text-strength' },
   { key: 'mind', label: 'INT', icon: Brain, color: 'text-mind' },
   { key: 'spirit', label: 'SPR', icon: Heart, color: 'text-spirit' },
   { key: 'agility', label: 'AGI', icon: Zap, color: 'text-agility' },
 ] as const;
-
-const getRankColor = (totalLevel: number) => {
-  if (totalLevel >= 50) return { border: 'border-orange-400', bg: 'bg-orange-400/10', glow: 'shadow-orange-400/50', text: 'text-orange-400', rankName: 'A' };
-  if (totalLevel >= 35) return { border: 'border-purple-400', bg: 'bg-purple-400/10', glow: 'shadow-purple-400/50', text: 'text-purple-400', rankName: 'B' };
-  if (totalLevel >= 20) return { border: 'border-blue-400', bg: 'bg-blue-400/10', glow: 'shadow-blue-400/50', text: 'text-blue-400', rankName: 'C' };
-  if (totalLevel >= 10) return { border: 'border-green-400', bg: 'bg-green-400/10', glow: 'shadow-green-400/50', text: 'text-green-400', rankName: 'D' };
-  return { border: 'border-gray-400', bg: 'bg-gray-400/10', glow: 'shadow-gray-400/50', text: 'text-gray-400', rankName: 'E' };
-};
 
 export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: ProfileCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
