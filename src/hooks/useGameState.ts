@@ -125,55 +125,61 @@ const getInitialAchievements = (): Achievement[] => [
 
 const getScheduledGates = (playerLevel: number): Gate[] => {
   const allGates: Gate[] = [
-    { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: Math.floor(Math.random() * 41) + 10, shadowPoints: 2 } },
-    { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: Math.floor(Math.random() * 91) + 50, shadowPoints: 5 } },
-    { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: Math.floor(Math.random() * 151) + 100, shadowPoints: 10 } },
-    { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: Math.floor(Math.random() * 251) + 250, shadowPoints: 20 } },
+    { id: 'gate_e', name: 'بوابة E', rank: 'E', requiredPower: 5, energyDensity: '1,200', danger: 'MINIMAL THREAT', color: 'gray', discovered: true, completed: false, rewards: { xp: 100, gold: 50, shadowPoints: 2 } },
+    { id: 'gate_d', name: 'بوابة D', rank: 'D', requiredPower: 10, energyDensity: '5,400', danger: 'LOW THREAT', color: 'green', discovered: false, completed: false, rewards: { xp: 250, gold: 100, shadowPoints: 5 } },
+    { id: 'gate_c', name: 'بوابة C', rank: 'C', requiredPower: 20, energyDensity: '12,000', danger: 'MODERATE DANGER', color: 'blue', discovered: false, completed: false, rewards: { xp: 500, gold: 200, shadowPoints: 10 } },
+    { id: 'gate_b', name: 'بوابة B', rank: 'B', requiredPower: 35, energyDensity: '28,000', danger: 'HIGH DANGER', color: 'purple', discovered: false, completed: false, rewards: { xp: 1000, gold: 400, shadowPoints: 20 } },
     { id: 'gate_a', name: 'بوابة A', rank: 'A', requiredPower: 60, energyDensity: '65,000', danger: 'EXTREME PERIL', color: 'orange', discovered: false, completed: false, rewards: { xp: 2500, gold: 0, shadowPoints: 50 } },
     { id: 'gate_s', name: 'بوابة S', rank: 'S', requiredPower: 100, energyDensity: 'UNMEASURABLE', danger: 'CATACLYSMIC', color: 'red', discovered: false, completed: false, rewards: { xp: 10000, gold: 0, shadowPoints: 200 } },
   ];
-  const currentHour = new Date().getHours();
-  let availableRanks: string[] = [];
-  let numGates = 1;
-  let periodEndHour = 12;
-  if (currentHour >= 6 && currentHour < 12) { availableRanks = ['E', 'D']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 12; }
-  else if (currentHour >= 12 && currentHour < 16) { availableRanks = ['D', 'C']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 16; }
-  else if (currentHour >= 16 && currentHour < 19) { availableRanks = ['C', 'B']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 19; }
-  else if (currentHour >= 19 && currentHour < 24) { availableRanks = ['E', 'D', 'C', 'B']; numGates = Math.floor(Math.random() * 3) + 1; periodEndHour = 24; }
-  else { availableRanks = ['B', 'A']; numGates = Math.floor(Math.random() * 2) + 1; periodEndHour = 6; }
+
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
   
-  // حساب وقت إغلاق البوابة
-  const now = new Date();
-  const closingDate = new Date(now);
-  if (periodEndHour === 24) {
-    closingDate.setHours(23, 59, 59, 999);
-  } else if (periodEndHour < currentHour) {
-    // next day (e.g. 0-6 period ends at 6 AM next day)
-    closingDate.setDate(closingDate.getDate() + 1);
-    closingDate.setHours(periodEndHour, 0, 0, 0);
-  } else {
-    closingDate.setHours(periodEndHour, 0, 0, 0);
+  // 4 بوابات في الأسبوع: السبت(6)، الأحد(0)، الثلاثاء(2)، الخميس(4)
+  const gateDays = [0, 2, 4, 6]; // Sun, Tue, Thu, Sat
+  
+  if (!gateDays.includes(dayOfWeek)) {
+    return []; // لا بوابات اليوم
   }
+  
+  // Seeded random based on date for consistent gates
+  const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const seededRandom = (seed: number): number => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+  
+  // اختيار رتبة البوابة بناءً على مستوى اللاعب
+  let availableRanks: string[] = [];
+  if (playerLevel >= 35) availableRanks = ['C', 'B'];
+  else if (playerLevel >= 20) availableRanks = ['D', 'C'];
+  else if (playerLevel >= 10) availableRanks = ['E', 'D'];
+  else availableRanks = ['E'];
+  
+  // بوابة واحدة لكل يوم من أيام البوابات
+  const rankIndex = Math.floor(seededRandom(dateSeed + 42) * availableRanks.length);
+  const selectedRank = availableRanks[rankIndex];
+  const gateTemplate = allGates.find(g => g.rank === selectedRank) || allGates[0];
+  
+  // البوابة تغلق في نهاية اليوم
+  const closingDate = new Date(today);
+  closingDate.setHours(23, 59, 59, 999);
   const closingTime = closingDate.toISOString();
   
-  const availableGates = allGates.filter(gate => availableRanks.includes(gate.rank));
-  const shuffled = [...availableGates].sort(() => Math.random() - 0.5);
+  const isHigherLevel = playerLevel >= gateTemplate.requiredPower;
   
-  return shuffled.slice(0, numGates).map((gate, index) => {
-    const isHigherLevel = playerLevel >= gate.requiredPower;
-    
-    return {
-      ...gate,
-      id: `${gate.id}_${Date.now()}_${Math.random()}`,
-      discovered: true,
-      gateNumber: index + 1,
-      closingTime,
-      name: isHigherLevel ? gate.name : `بوابة ${gate.rank}`,
-      energyDensity: isHigherLevel ? getRandomEnergyDensity(gate.rank) : '???',
-      danger: isHigherLevel ? gate.danger : '???',
-      isFullyRevealed: isHigherLevel,
-    };
-  });
+  return [{
+    ...gateTemplate,
+    id: `${gateTemplate.id}_${dateSeed}`,
+    discovered: true,
+    gateNumber: 1,
+    closingTime,
+    name: isHigherLevel ? gateTemplate.name : `بوابة ${gateTemplate.rank}`,
+    energyDensity: isHigherLevel ? getRandomEnergyDensity(gateTemplate.rank) : '???',
+    danger: isHigherLevel ? gateTemplate.danger : '???',
+    isFullyRevealed: isHigherLevel,
+  }];
 };
 
 const getRandomEnergyDensity = (rank: string): string => {
