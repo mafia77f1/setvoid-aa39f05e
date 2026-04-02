@@ -56,33 +56,44 @@ const getRotatingQuests = (): Quest[] => {
 
 const getSideQuests = (): Quest[] => {
   const day = getDayOfWeek();
-  const getGoldReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary'): number => {
+  
+  // Seeded random based on date for deterministic rewards
+  const today = new Date();
+  const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const seededRandom = (seed: number): number => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const getGoldReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary', seed: number): number => {
+    const r = seededRandom(seed);
     switch (difficulty) {
-      case 'easy': return Math.floor(Math.random() * 26) + 25;
-      case 'medium': return Math.floor(Math.random() * 51) + 50;
-      case 'hard': return Math.floor(Math.random() * 76) + 100;
-      case 'legendary': return Math.floor(Math.random() * 76) + 175;
+      case 'easy': return Math.floor(r * 26) + 25;
+      case 'medium': return Math.floor(r * 51) + 50;
+      case 'hard': return Math.floor(r * 76) + 100;
+      case 'legendary': return Math.floor(r * 76) + 175;
     }
   };
 
-  const getXpReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary'): number => {
+  const getXpReward = (difficulty: 'easy' | 'medium' | 'hard' | 'legendary', seed: number): number => {
+    const r = seededRandom(seed);
     switch (difficulty) {
-      case 'easy': return Math.floor(Math.random() * 11) + 20;
-      case 'medium': return Math.floor(Math.random() * 21) + 35;
-      case 'hard': return Math.floor(Math.random() * 26) + 55;
-      case 'legendary': return Math.floor(Math.random() * 31) + 80;
+      case 'easy': return Math.floor(r * 11) + 20;
+      case 'medium': return Math.floor(r * 21) + 35;
+      case 'hard': return Math.floor(r * 26) + 55;
+      case 'legendary': return Math.floor(r * 31) + 80;
     }
   };
   
   const sideQuests: Quest[] = [
-    { id: 'side_read', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً لمدة 30 دقيقة متواصلة', category: 'mind', xpReward: getXpReward('medium'), completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('medium'), active: false, claimed: false },
-    { id: 'side_walk', title: 'المشي 20 دقيقة', description: 'امش لمدة 20 دقيقة', category: 'agility', xpReward: getXpReward('easy'), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 20, goldReward: getGoldReward('easy'), active: false, claimed: false },
-    { id: 'side_meditate', title: 'التأمل 15 دقيقة', description: 'تأمل واسترخ لمدة 15 دقيقة', category: 'spirit', xpReward: getXpReward('medium'), completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('medium'), active: false, claimed: false },
-    { id: 'side_stretch', title: 'تمارين إطالة', description: 'قم بتمارين إطالة لمدة 10 دقائق', category: 'strength', xpReward: getXpReward('easy'), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 10, goldReward: getGoldReward('easy'), active: false, claimed: false },
-    { id: 'side_water', title: 'شرب 8 أكواب ماء', description: 'اشرب 8 أكواب ماء على مدار اليوم', category: 'spirit', xpReward: getXpReward('easy'), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 60, goldReward: getGoldReward('easy'), active: false, claimed: false },
-    { id: 'side_pushups', title: '50 ضغطة', description: 'قم بـ 50 ضغطة على مجموعات', category: 'strength', xpReward: getXpReward('hard'), completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('hard'), active: false, claimed: false },
-    { id: 'side_study', title: 'دراسة 45 دقيقة', description: 'ادرس أو تعلم شيء جديد', category: 'mind', xpReward: getXpReward('hard'), completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 45, goldReward: getGoldReward('hard'), active: false, claimed: false },
-    { id: 'side_quran', title: 'قراءة 5 صفحات قرآن', description: 'اقرأ 5 صفحات من القرآن بتدبر', category: 'spirit', xpReward: getXpReward('legendary'), completed: false, dailyReset: true, difficulty: 'legendary', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('legendary'), active: false, claimed: false },
+    { id: 'side_read', title: 'قراءة 30 دقيقة', description: 'اقرأ كتاباً لمدة 30 دقيقة متواصلة', category: 'mind', xpReward: getXpReward('medium', dateSeed + 1), completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('medium', dateSeed + 1), active: false, claimed: false },
+    { id: 'side_walk', title: 'المشي 20 دقيقة', description: 'امش لمدة 20 دقيقة', category: 'agility', xpReward: getXpReward('easy', dateSeed + 2), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 20, goldReward: getGoldReward('easy', dateSeed + 2), active: false, claimed: false },
+    { id: 'side_meditate', title: 'التأمل 15 دقيقة', description: 'تأمل واسترخ لمدة 15 دقيقة', category: 'spirit', xpReward: getXpReward('medium', dateSeed + 3), completed: false, dailyReset: true, difficulty: 'medium', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('medium', dateSeed + 3), active: false, claimed: false },
+    { id: 'side_stretch', title: 'تمارين إطالة', description: 'قم بتمارين إطالة لمدة 10 دقائق', category: 'strength', xpReward: getXpReward('easy', dateSeed + 4), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 10, goldReward: getGoldReward('easy', dateSeed + 4), active: false, claimed: false },
+    { id: 'side_water', title: 'شرب 8 أكواب ماء', description: 'اشرب 8 أكواب ماء على مدار اليوم', category: 'spirit', xpReward: getXpReward('easy', dateSeed + 5), completed: false, dailyReset: true, difficulty: 'easy', isMainQuest: false, requiredTime: 60, goldReward: getGoldReward('easy', dateSeed + 5), active: false, claimed: false },
+    { id: 'side_pushups', title: '50 ضغطة', description: 'قم بـ 50 ضغطة على مجموعات', category: 'strength', xpReward: getXpReward('hard', dateSeed + 6), completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 15, goldReward: getGoldReward('hard', dateSeed + 6), active: false, claimed: false },
+    { id: 'side_study', title: 'دراسة 45 دقيقة', description: 'ادرس أو تعلم شيء جديد', category: 'mind', xpReward: getXpReward('hard', dateSeed + 7), completed: false, dailyReset: true, difficulty: 'hard', isMainQuest: false, requiredTime: 45, goldReward: getGoldReward('hard', dateSeed + 7), active: false, claimed: false },
+    { id: 'side_quran', title: 'قراءة 5 صفحات قرآن', description: 'اقرأ 5 صفحات من القرآن بتدبر', category: 'spirit', xpReward: getXpReward('legendary', dateSeed + 8), completed: false, dailyReset: true, difficulty: 'legendary', isMainQuest: false, requiredTime: 30, goldReward: getGoldReward('legendary', dateSeed + 8), active: false, claimed: false },
   ];
 
   const startIndex = day % sideQuests.length;
