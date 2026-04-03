@@ -1,207 +1,111 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Footprints, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Compass } from 'lucide-react';
-import { DungeonRoom, Position, SystemMessage } from '@/components/dungeon/DungeonTypes';
-import { generateDungeon } from '@/components/dungeon/dungeonGenerator';
-import { DungeonHUD } from '@/components/dungeon/DungeonHUD';
-import { DungeonSystemMessage } from '@/components/dungeon/DungeonSystemMessage';
-import { DungeonEncounter, StaminaModal } from '@/components/dungeon/DungeonEncounter';
+import { Skull, TreasureChest, Coffee, Eye, ChevronRight } from 'lucide-react';
 
-const GRID_SIZE = 8;
+const DungeonAdventure = () => {
+  const [depth, setDepth] = useState(1); // العمق داخل المغارة
+  const [hp, setHp] = useState(100);
+  const [mana, setMana] = useState(50);
+  const [isPathing, setIsPathing] = useState(false);
 
-const Dungeon = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const rank = (searchParams.get('rank') || 'E').toUpperCase();
-  const [isShaking, setIsShaking] = useState(false);
+  // توليد خيارات الأنفاق عشوائياً
+  const generatePaths = () => [
+    { id: 1, type: 'monster', label: 'نفق الدماء', icon: <Skull />, risk: 'عالي' },
+    { id: 2, type: 'treasure', label: 'ممر الذهب', icon: <TreasureChest />, risk: 'متوسط' },
+    { id: 3, type: 'rest', label: 'ملاذ آمن', icon: <Coffee />, risk: 'منخفض' },
+  ];
 
-  // --- States ---
-  const [entering, setEntering] = useState(true);
-  const [grid, setGrid] = useState<DungeonRoom[][]>([]);
-  const [playerPos, setPlayerPos] = useState<Position>({ x: 0, y: GRID_SIZE - 1 });
-  const [stats, setStats] = useState({ stamina: 20, hp: 100 });
-  const [encounter, setEncounter] = useState<DungeonRoom | null>(null);
-  const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
+  const [currentPaths, setCurrentPaths] = useState(generatePaths());
 
-  // --- Initialize Dungeon ---
-  useEffect(() => {
-    const newGrid = generateDungeon(rank);
-    // كشف نقطة البداية فقط
-    newGrid[GRID_SIZE - 1][0].revealed = true;
-    newGrid[GRID_SIZE - 1][0].visited = true;
-    setGrid(newGrid);
-    setTimeout(() => setEntering(false), 2000);
-  }, [rank]);
-
-  const triggerShake = () => {
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 300);
+  const handleChoice = (path) => {
+    setIsPathing(true);
+    
+    // محاكاة الركض داخل النفق
+    setTimeout(() => {
+      setDepth(prev => prev + 1);
+      setCurrentPaths(generatePaths());
+      setIsPathing(false);
+      // هنا تضع منطق الأحداث (قتال، كنز، إلخ)
+    }, 1500);
   };
 
-  const addSystemMessage = useCallback((text: string, type: any) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setSystemMessages(prev => [{ id, text, type, timestamp: Date.now() }, ...prev].slice(0, 3));
-  }, []);
-
-  // --- Optimized Movement ---
-  const movePlayer = useCallback((dx: number, dy: number) => {
-    if (encounter || entering) return;
-
-    setPlayerPos(prev => {
-      const nx = prev.x + dx;
-      const ny = prev.y + dy;
-
-      if (nx < 0 || nx >= GRID_SIZE || ny < 0 || ny >= GRID_SIZE) {
-        triggerShake(); // اهتزاز عند الاصطدام بالجدار
-        return prev;
-      }
-
-      if (stats.stamina <= 0) {
-        addSystemMessage("طاقتك نفدت.. استرح قليلاً", "warning");
-        return prev;
-      }
-
-      // تحديث الخريطة والمنطق داخلياً
-      const updatedGrid = [...grid];
-      const targetRoom = updatedGrid[ny][nx];
-
-      // كشف الغرف المجاورة (Fog of War)
-      targetRoom.revealed = true;
-      targetRoom.visited = true;
-      
-      if (!targetRoom.cleared && (targetRoom.type !== 'empty')) {
-        setTimeout(() => setEncounter(targetRoom), 150);
-      }
-
-      setStats(s => ({ ...s, stamina: s.stamina - 1 }));
-      setGrid(updatedGrid);
-      return { x: nx, y: ny };
-    });
-  }, [grid, encounter, entering, stats.stamina]);
-
-  // --- Render Room (Memoized for Performance) ---
-  const renderGrid = useMemo(() => {
-    return grid.map((row, y) => row.map((room, x) => {
-      const isPlayer = playerPos.x === x && playerPos.y === y;
-      const isNear = Math.abs(x - playerPos.x) <= 1 && Math.abs(y - playerPos.y) <= 1;
-
-      return (
-        <div 
-          key={`${x}-${y}`}
-          className="relative transition-all duration-500 border-[0.5px] border-white/5"
-          style={{ 
-            width: '42px', height: '42px',
-            backgroundColor: isPlayer ? '#1a1a2e' : room.revealed ? '#05050a' : '#000',
-            boxShadow: isPlayer ? 'inset 0 0 15px rgba(59, 130, 246, 0.5)' : 'none'
-          }}
-        >
-          {room.revealed && (
-            <div className={`w-full h-full flex items-center justify-center transition-opacity duration-1000 ${isNear ? 'opacity-100' : 'opacity-20'}`}>
-              {isPlayer ? (
-                 <motion.div className="w-5 h-5 bg-blue-500 rounded-full shadow-[0_0_15px_#3b82f6]" 
-                  animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}
-                 />
-              ) : (
-                <>
-                  {room.type === 'monster' && !room.cleared && <span className="text-sm">👹</span>}
-                  {room.type === 'boss' && !room.cleared && <span className="text-xl animate-pulse">💀</span>}
-                  {room.type === 'treasure' && !room.cleared && <span className="text-sm text-yellow-500">💰</span>}
-                </>
-              )}
-            </div>
-          )}
-          {/* تأثير الظلام المتدرج */}
-          {!isNear && room.revealed && <div className="absolute inset-0 bg-black/60" />}
-        </div>
-      );
-    }));
-  }, [grid, playerPos]);
-
   return (
-    <motion.div 
-      animate={isShaking ? { x: [-5, 5, -5, 0] } : {}}
-      className="fixed inset-0 bg-[#020205] text-white flex flex-col items-center justify-center overflow-hidden"
-    >
-      {/* Background FX */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent opacity-50" />
-
-      {/* Top Info */}
-      <div className="absolute top-6 w-full px-6 flex justify-between items-start z-50">
-        <DungeonHUD stamina={stats.stamina} rank={rank} hp={stats.hp} />
-        <DungeonSystemMessage messages={systemMessages} />
-      </div>
-
-      {/* Game Board */}
-      {!entering && (
-        <div className="relative border-4 border-white/10 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
-           <div 
-            className="grid" 
-            style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 42px)` }}
-           >
-            {renderGrid}
-           </div>
-           
-           {/* Scan Overlay (يتحرك مع اللاعب) */}
-           <div 
-             className="absolute pointer-events-none transition-all duration-300 rounded-full"
-             style={{
-               width: '126px', height: '126px',
-               left: playerPos.x * 42 - 42, top: playerPos.y * 42 - 42,
-               background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',
-               border: '1px solid rgba(59,130,246,0.1)'
-             }}
-           />
-        </div>
-      )}
-
-      {/* Mini Joystick (تصغير وحل مشكلة اللاق) */}
-      {!entering && (
-        <div className="absolute bottom-8 right-8 z-50">
-          <div className="relative w-28 h-28 bg-white/5 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center shadow-2xl">
-            <button onClick={() => movePlayer(0, -1)} className="absolute top-1 p-2 active:scale-75 transition-all text-blue-400/50"><ChevronUp /></button>
-            <button onClick={() => movePlayer(0, 1)} className="absolute bottom-1 p-2 active:scale-75 transition-all text-blue-400/50"><ChevronDown /></button>
-            <button onClick={() => movePlayer(-1, 0)} className="absolute left-1 p-2 active:scale-75 transition-all text-blue-400/50"><ChevronRight /></button>
-            <button onClick={() => movePlayer(1, 0)} className="absolute right-1 p-2 active:scale-75 transition-all text-blue-400/50"><ChevronLeft /></button>
-            <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
-              <Compass size={16} className="text-blue-400 animate-spin-slow" />
-            </div>
+    <div className="fixed inset-0 bg-[#050508] text-white flex flex-col font-sans overflow-hidden">
+      
+      {/* HUD العلوي - يشبه نظام سولو ليفلينج */}
+      <div className="p-6 flex justify-between items-center bg-gradient-to-b from-black to-transparent">
+        <div>
+          <h2 className="text-blue-500 text-xs font-mono tracking-widest">FLOOR: {depth}</h2>
+          <div className="flex gap-2 mt-1">
+             <div className="h-1 w-20 bg-red-900/30 rounded-full overflow-hidden border border-red-500/20">
+                <div className="h-full bg-red-500" style={{ width: `${hp}%` }} />
+             </div>
+             <div className="h-1 w-20 bg-blue-900/30 rounded-full overflow-hidden border border-blue-500/20">
+                <div className="h-full bg-blue-500" style={{ width: `${mana}%` }} />
+             </div>
           </div>
         </div>
-      )}
+        <button className="p-2 border border-blue-500/30 rounded-full bg-blue-500/5 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+          <Eye size={18} className="text-blue-400" />
+        </button>
+      </div>
 
-      {/* Cinematic Start */}
-      <AnimatePresence>
-        {entering && (
-          <motion.div 
-            exit={{ opacity: 0 }} 
-            className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center"
-          >
-            <motion.h1 
-              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="text-4xl font-black tracking-[0.3em] text-blue-500 shadow-blue-500/50"
+      {/* ساحة المغارة */}
+      <div className="flex-1 relative flex items-center justify-center p-4">
+        <AnimatePresence mode="wait">
+          {!isPathing ? (
+            <motion.div 
+              key="paths"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              className="grid grid-cols-1 gap-4 w-full max-w-md"
             >
-              GATE RANK {rank}
-            </motion.h1>
-            <p className="text-white/40 mt-2 font-mono text-xs animate-pulse">يتم الآن فحص مستويات المانا...</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <p className="text-center text-gray-500 text-sm mb-4 italic">"اختر مسارك بحذر.. الظلال لا ترحم"</p>
+              
+              {currentPaths.map((path) => (
+                <motion.button
+                  key={path.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleChoice(path)}
+                  className="group relative h-28 rounded-2xl border border-white/10 overflow-hidden bg-gradient-to-r from-white/5 to-transparent p-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-black/50 border border-white/10 group-hover:border-blue-500/50 transition-colors">
+                      {path.icon}
+                    </div>
+                    <div className="text-right">
+                      <h3 className="font-bold text-lg">{path.label}</h3>
+                      <span className="text-[10px] text-gray-400 uppercase tracking-tighter">الخطر: {path.risk}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="opacity-20 group-hover:opacity-100 group-hover:translate-x-[-5px] transition-all" />
+                  
+                  {/* تأثير التوهج عند الوقوف عليه */}
+                  <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.button>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="pathing"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center"
+            >
+              <div className="w-1 h-32 bg-gradient-to-b from-blue-500 to-transparent animate-pulse rounded-full" />
+              <p className="mt-4 text-xs font-mono text-blue-400 animate-pulse tracking-[0.5em]">تقدم نحو العمق...</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* Encounter Modal */}
-      {encounter && (
-        <DungeonEncounter 
-          room={encounter} 
-          onDismiss={() => setEncounter(null)}
-          onDefeat={() => {
-            encounter.cleared = true;
-            addSystemMessage("تمت تصفية التهديد!", "success");
-            setEncounter(null);
-          }}
-        />
-      )}
-    </motion.div>
+      {/* خلفية جمالية (أجواء المغارة) */}
+      <div className="absolute inset-0 pointer-events-none z-[-1] opacity-30">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('/cave-texture.png')] mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-transparent to-[#050508]" />
+      </div>
+    </div>
   );
 };
 
-export default Dungeon;
+export default DungeonAdventure;
