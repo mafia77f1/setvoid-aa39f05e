@@ -28,7 +28,7 @@ const Dungeon = () => {
   const theme = RANK_THEMES[rank] || RANK_THEMES['E'];
 
   // State
-  const [showEntrance, setShowEntrance] = useState(true); // الشاشة المطلوبة
+  const [showEntrance, setShowEntrance] = useState(true); 
   const [entering, setEntering] = useState(false);
   const [grid, setGrid] = useState<DungeonRoom[][]>([]);
   const [playerPos, setPlayerPos] = useState<Position>({ x: 0, y: GRID_SIZE - 1 });
@@ -151,7 +151,6 @@ const Dungeon = () => {
 
   const currentRoom = grid[playerPos.y]?.[playerPos.x];
 
-  // وظيفة لجلب بيانات الغرف المجاورة لعرض الخيارات
   const getNearbyPath = (dx: number, dy: number) => {
     const ny = playerPos.y + dy;
     const nx = playerPos.x + dx;
@@ -162,19 +161,21 @@ const Dungeon = () => {
   return (
     <div className="fixed inset-0 bg-[#020205] text-white overflow-hidden select-none flex flex-col font-sans" dir="rtl">
       
-      {/* ═══ 1. شاشة البداية المطلوبة ═══ */}
+      {/* ═══ 1. شاشة البداية ═══ */}
       <AnimatePresence>
         {showEntrance && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-[200] flex items-center justify-center"
           >
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/خلفية النفق.png')" }}>
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            {/* الخلفية بدون ضبابية وباسم الملف الجديد */}
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/tunnel.png')" }}>
+                <div className="absolute inset-0 bg-black/40" />
             </div>
             
+            {/* تم إنزال مربع الإشعار ليكون تحت شوي عبر إضافة mt-20 أو ضبط y */}
             <motion.div 
-              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+              initial={{ scale: 0.9, y: 60 }} animate={{ scale: 1, y: 40 }}
               className="relative z-10 w-[85%] max-w-sm bg-[#0a0a0f]/90 border-2 border-blue-500/40 rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(59,130,246,0.3)]"
             >
               <div className="bg-blue-600 w-fit mx-auto px-4 py-1 rounded-full text-[10px] font-black mb-4 border border-blue-400">إشعار النظام</div>
@@ -217,13 +218,12 @@ const Dungeon = () => {
         </div>
       )}
 
-      {/* ═══ 4. عرض المسارات الثلاثة (The Immersive Choice) ═══ */}
+      {/* ═══ 4. عرض المسارات الثلاثة ═══ */}
       {!showEntrance && !entering && (
         <div className="flex-1 relative flex items-center justify-center p-4">
            <div className="grid grid-cols-1 gap-4 w-full max-w-sm">
               <p className="text-center text-[10px] text-gray-500 tracking-[0.4em] mb-4">اختر طريقك التالي</p>
               
-              {/* عرض الخيارات المتاحة بناءً على الغرف المجاورة */}
               {[
                 { label: 'النفق الأمامي', dx: 0, dy: -1, icon: <ChevronUp /> },
                 { label: 'النفق الأيمن', dx: 1, dy: 0, icon: <ChevronRight /> },
