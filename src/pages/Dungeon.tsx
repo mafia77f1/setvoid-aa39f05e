@@ -136,4 +136,4 @@ const DungeonAdventure = () => {
   );
 };
 
-export default DungeonAdventure;
+export default Dungeon;
