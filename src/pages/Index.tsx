@@ -304,6 +304,7 @@ const Index = () => {
             onTaskComplete={handleTaskComplete}
             onStartQuest={handleStartQuest}
             onUpdateQuestProgress={handleUpdateQuestProgress}
+            onPenalty={() => navigate('/penalty')}
           />
         </section>
 
