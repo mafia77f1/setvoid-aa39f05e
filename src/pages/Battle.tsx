@@ -58,6 +58,14 @@ const getBaseDamage = (strengthLevel: number): number => {
   return Math.floor(1000 + Math.pow(strengthLevel - 10, 0.7) * 100);
 };
 
+// Stat-based combat bonuses
+const getAgilityDodge = (agiLevel: number): number => Math.min(0.5, 0.02 * agiLevel); // max 50% dodge
+const getAgilitySpeedBonus = (agiLevel: number): number => Math.min(0.5, 0.01 * agiLevel); // attack speed bonus
+const getIntCounterChance = (intLevel: number): number => Math.min(0.4, 0.015 * intLevel); // counter-attack chance
+const getSpiritHitBonus = (spiLevel: number): number => Math.min(0.3, 0.01 * spiLevel); // hit rate bonus
+const getSpiritDmgBonus = (spiLevel: number): number => 1 + Math.min(0.5, 0.01 * spiLevel); // dmg multiplier
+const getSpiritReveal = (spiLevel: number): boolean => spiLevel >= 5; // reveal boss HP exact
+
 const SKILL_LEVEL_MULTIPLIERS = [1, 1.3, 1.6, 2.0, 2.5, 3.0];
 const DARK_VOID_CHARGE_REQUIRED = 15;
 
@@ -78,18 +86,30 @@ const SoloLevelingBattle = () => {
   const bossConfig = BOSSES_BY_RANK[gateRank] || BOSSES_BY_RANK['E'];
 
   const strengthLevel = gameState.levels.strength || 1;
+  const agilityLevel = gameState.levels.agility || 1;
+  const intLevel = gameState.levels.mind || 1;
+  const spiritLevel = gameState.levels.spirit || 1;
   const playerLevel = gameState.totalLevel || 1;
   const playerName = gameState.playerName || 'Hunter';
   const hasDagger = (gameState.inventory || []).some(i => i.id === 'dagger' && i.quantity > 0);
   const skillLevels = getSkillLevels();
   const canUseDarkVoid = playerLevel >= 25;
 
+  // STR → base damage
   const baseDmg = getBaseDamage(strengthLevel);
-  const basicDmg = Math.floor(baseDmg * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.basicAttack || 1) - 1, 5)]);
-  const swordDmg = Math.floor(baseDmg * 1.8 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.swordStrike || 1) - 1, 5)]);
-  const thunderDmg = Math.floor(baseDmg * 3 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.thunderDash || 1) - 1, 5)]);
-  const daggerDmg = Math.floor(baseDmg * 2 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.daggerStrike || 1) - 1, 5)]);
-  const darkVoidDmg = Math.floor(baseDmg * 8 * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.darkVoid || 1) - 1, 5)]);
+  // SPI → damage multiplier
+  const spiDmgMult = getSpiritDmgBonus(spiritLevel);
+  const basicDmg = Math.floor(baseDmg * spiDmgMult * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.basicAttack || 1) - 1, 5)]);
+  const swordDmg = Math.floor(baseDmg * 1.8 * spiDmgMult * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.swordStrike || 1) - 1, 5)]);
+  const thunderDmg = Math.floor(baseDmg * 3 * spiDmgMult * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.thunderDash || 1) - 1, 5)]);
+  const daggerDmg = Math.floor(baseDmg * 2 * spiDmgMult * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.daggerStrike || 1) - 1, 5)]);
+  const darkVoidDmg = Math.floor(baseDmg * 8 * spiDmgMult * SKILL_LEVEL_MULTIPLIERS[Math.min((skillLevels.darkVoid || 1) - 1, 5)]);
+
+  // AGI → dodge & speed, INT → counter, SPI → hit rate & reveal
+  const playerDodgeChance = getAgilityDodge(agilityLevel);
+  const counterChance = getIntCounterChance(intLevel);
+  const spiHitBonus = getSpiritHitBonus(spiritLevel);
+  const canRevealBossHP = getSpiritReveal(spiritLevel);
 
   const maxBossHP = Math.max(100, baseDmg * bossConfig.hpMultiplier);
   const [bossHP, setBossHP] = useState(maxBossHP);
