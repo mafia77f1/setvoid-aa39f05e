@@ -10,7 +10,7 @@ import { MaxLevelModal } from '@/components/MaxLevelModal';
 import { GateDiscoveryNotification } from '@/components/GateDiscoveryNotification';
 import { NewGateNotification } from '@/components/NewGateNotification';
 import { BottomNav } from '@/components/BottomNav';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Menu, User, ShoppingBag, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatType, Gate } from '@/types/game';
@@ -20,7 +20,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const Index = () => {
-  const { 
+  const navigate = useNavigate();
+  const {
     gameState, 
     levelUpInfo,
     dismissLevelUp,
@@ -62,6 +63,38 @@ const Index = () => {
       setShowMaxLevelModal(true);
     }
   }, [maxLevel]);
+
+  // Timer-based penalty: when all main quests have timers that expired and none completed, go to penalty
+  useEffect(() => {
+    const mainQuests = gameState.quests.filter(q => q.dailyReset && q.isMainQuest !== false);
+    const allStarted = mainQuests.every(q => q.startedAt);
+    const noneCompleted = mainQuests.every(q => !q.completed);
+    
+    if (!allStarted || !noneCompleted || mainQuests.length === 0) return;
+    
+    const checkExpired = () => {
+      const now = Date.now();
+      const allExpired = mainQuests.every(q => {
+        if (!q.startedAt || !q.requiredTime) return false;
+        const started = new Date(q.startedAt).getTime();
+        const elapsed = (now - started) / 1000;
+        const required = q.requiredTime * 60;
+        return elapsed >= required;
+      });
+      
+      // If any quest timer finished but quest not completed, redirect to penalty
+      const anyTimerDone = mainQuests.some(q => {
+        if (!q.startedAt || !q.requiredTime || q.completed) return false;
+        const started = new Date(q.startedAt).getTime();
+        const elapsed = (now - started) / 1000;
+        return elapsed >= q.requiredTime * 60;
+      });
+      // We don't auto-redirect here since individual quest completion handles it
+    };
+    
+    const interval = setInterval(checkExpired, 5000);
+    return () => clearInterval(interval);
+  }, [gameState.quests]);
 
   // Get only main daily quests (not side quests)
   const dailyQuests = gameState.quests.filter(q => q.dailyReset && q.isMainQuest !== false);
@@ -272,6 +305,7 @@ const Index = () => {
             onTaskComplete={handleTaskComplete}
             onStartQuest={handleStartQuest}
             onUpdateQuestProgress={handleUpdateQuestProgress}
+            onPenalty={() => navigate('/penalty')}
           />
         </section>
 

@@ -27,6 +27,7 @@ interface SoloLevelingQuestCardProps {
   onStartQuest: (questId: string) => void;
   onUpdateQuestProgress?: (questId: string, timeProgress: number) => void;
   timeRemaining?: string;
+  onPenalty?: () => void;
 }
 
 const categoryConfig = {
@@ -356,7 +357,8 @@ export const SoloLevelingQuestCard = ({
   onTaskComplete,
   onStartQuest,
   onUpdateQuestProgress,
-  timeRemaining 
+  timeRemaining,
+  onPenalty
 }: SoloLevelingQuestCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);

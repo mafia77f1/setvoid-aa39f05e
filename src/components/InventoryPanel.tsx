@@ -3,6 +3,7 @@ import { X, Package, Zap, Eye, Key, FlaskConical, Crown, Star, Lock, BarChart3 }
 import { cn } from '@/lib/utils';
 import { ItemUseModal } from './ItemUseModal';
 import { ItemAnalysisModal } from './ItemAnalysisModal';
+import { StoneUseModal } from './StoneUseModal';
 import { GameState, StatType, InventoryItem } from '@/types/game';
 
 // نظام ألوان الندرة
@@ -169,13 +170,17 @@ interface InventoryPanelProps {
   onUseItem?: (itemId: string, quantity: number, statAllocation?: Partial<Record<StatType, number>>) => void;
   onEquipTitle?: (itemId: string) => void;
   onResetXP?: () => void;
+  onRename?: (newName: string) => void;
+  onConsumeItem?: (itemId: string, quantity: number) => void;
 }
 
-export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, onResetXP }: InventoryPanelProps) => {
+export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, onResetXP, onRename, onConsumeItem }: InventoryPanelProps) => {
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
+  const [showStoneModal, setShowStoneModal] = useState(false);
+  const [stoneItem, setStoneItem] = useState<InventoryItem | null>(null);
 
   // الحصول على كمية العنصر في المخزون
   const getItemQuantity = (itemId: string): number => {
@@ -403,12 +408,19 @@ export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, 
                   {!selectedItem.isTitle && onUseItem && (
                     <button
                       onClick={() => {
-                        // تحويل العنصر لنوع InventoryItem
                         const invItem = inventory.find(i => i.id === selectedItem.id);
                         if (invItem) {
-                          setSelectedInventoryItem(invItem);
-                          setShowUseModal(true);
-                          setSelectedItem(null);
+                          // Special stones get their own modal
+                          const specialStoneIds = ['rename_stone', 'gate_exit_stone', 'grand_quest_stone', 'central_activation_stone'];
+                          if (specialStoneIds.includes(selectedItem.id)) {
+                            setStoneItem(invItem);
+                            setShowStoneModal(true);
+                            setSelectedItem(null);
+                          } else {
+                            setSelectedInventoryItem(invItem);
+                            setShowUseModal(true);
+                            setSelectedItem(null);
+                          }
                         }
                       }}
                       className={cn(
@@ -486,6 +498,28 @@ export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, 
           onClose={() => {
             setShowAnalysisModal(false);
             setSelectedInventoryItem(null);
+          }}
+        />
+      )}
+
+      {/* Stone Use Modal */}
+      {showStoneModal && stoneItem && (
+        <StoneUseModal
+          item={stoneItem}
+          onClose={() => {
+            setShowStoneModal(false);
+            setStoneItem(null);
+          }}
+          onUse={(data) => {
+            if (stoneItem.id === 'rename_stone' && data?.newName) {
+              onRename?.(data.newName);
+              onConsumeItem?.('rename_stone', 1);
+            } else {
+              // Other stones - just consume
+              onConsumeItem?.(stoneItem.id, 1);
+            }
+            setShowStoneModal(false);
+            setStoneItem(null);
           }}
         />
       )}
