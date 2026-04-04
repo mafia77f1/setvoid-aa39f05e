@@ -27,6 +27,7 @@ interface SoloLevelingQuestCardProps {
   onStartQuest: (questId: string) => void;
   onUpdateQuestProgress?: (questId: string, timeProgress: number) => void;
   timeRemaining?: string;
+  onPenalty?: () => void;
 }
 
 const categoryConfig = {
