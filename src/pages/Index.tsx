@@ -20,7 +20,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const Index = () => {
-  const { 
+  const navigate = useNavigate();
+  const {
     gameState, 
     levelUpInfo,
     dismissLevelUp,
