@@ -170,13 +170,17 @@ interface InventoryPanelProps {
   onUseItem?: (itemId: string, quantity: number, statAllocation?: Partial<Record<StatType, number>>) => void;
   onEquipTitle?: (itemId: string) => void;
   onResetXP?: () => void;
+  onRename?: (newName: string) => void;
+  onConsumeItem?: (itemId: string, quantity: number) => void;
 }
 
-export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, onResetXP }: InventoryPanelProps) => {
+export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, onResetXP, onRename, onConsumeItem }: InventoryPanelProps) => {
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
+  const [showStoneModal, setShowStoneModal] = useState(false);
+  const [stoneItem, setStoneItem] = useState<InventoryItem | null>(null);
 
   // الحصول على كمية العنصر في المخزون
   const getItemQuantity = (itemId: string): number => {
