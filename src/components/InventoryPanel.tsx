@@ -501,6 +501,28 @@ export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, 
           }}
         />
       )}
+
+      {/* Stone Use Modal */}
+      {showStoneModal && stoneItem && (
+        <StoneUseModal
+          item={stoneItem}
+          onClose={() => {
+            setShowStoneModal(false);
+            setStoneItem(null);
+          }}
+          onUse={(data) => {
+            if (stoneItem.id === 'rename_stone' && data?.newName) {
+              onRename?.(data.newName);
+              onConsumeItem?.('rename_stone', 1);
+            } else {
+              // Other stones - just consume
+              onConsumeItem?.(stoneItem.id, 1);
+            }
+            setShowStoneModal(false);
+            setStoneItem(null);
+          }}
+        />
+      )}
     </div>
   );
 };
