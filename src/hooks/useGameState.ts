@@ -537,7 +537,8 @@ export const useGameState = () => {
       const newGates = prev.gates.map(gate => (!gate.discovered && newTotalLevel >= gate.requiredPower * 0.5) ? { ...gate, discovered: true } : gate);
       const goldGain = quest.difficulty === 'legendary' ? 50 : quest.difficulty === 'hard' ? 30 : quest.difficulty === 'medium' ? 15 : 10;
       const shadowGain = quest.difficulty === 'legendary' ? 5 : quest.difficulty === 'hard' ? 3 : quest.difficulty === 'medium' ? 2 : 1;
-      return { ...prev, stats: newStats, levels: newLevels, totalLevel: newTotalLevel, quests: newQuests, abilities: newAbilities, achievements: newAchievements, dailyStats: newDailyStats.slice(-30), totalQuestsCompleted: prev.totalQuestsCompleted + 1, gold: prev.gold + goldGain, shadowPoints: (prev.shadowPoints || 0) + shadowGain, energy: Math.max(0, prev.energy - 5), gates: newGates };
+      const energyCost = quest.difficulty === 'legendary' ? 15 : quest.difficulty === 'hard' ? 10 : quest.difficulty === 'medium' ? 7 : 5;
+      return { ...prev, stats: newStats, levels: newLevels, totalLevel: newTotalLevel, quests: newQuests, abilities: newAbilities, achievements: newAchievements, dailyStats: newDailyStats.slice(-30), totalQuestsCompleted: prev.totalQuestsCompleted + 1, gold: prev.gold + goldGain, shadowPoints: (prev.shadowPoints || 0) + shadowGain, energy: Math.max(0, prev.energy - energyCost), gates: newGates };
     });
   }, [calculateLevel, getTotalLevel]);
 

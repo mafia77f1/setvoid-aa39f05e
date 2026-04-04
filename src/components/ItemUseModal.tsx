@@ -289,6 +289,7 @@ export const ItemUseModal = ({
 
   const canUse = item.type === 'health' || item.type === 'energy' || item.type === 'xp';
   const isResetItem = item.type === 'reset';
+  const isSpecialStone = ['rename_stone', 'gate_exit_stone', 'grand_quest_stone', 'central_activation_stone'].includes(item.id);
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-md bg-black/90">
@@ -305,6 +306,14 @@ export const ItemUseModal = ({
           </button>
         </div>
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {/* Stone image for special stones */}
+          {isSpecialStone && (
+            <div className="flex justify-center mb-4">
+              <div className="w-20 h-20 border border-cyan-500/30 bg-black/40 flex items-center justify-center rounded-lg overflow-hidden">
+                <img src="/ManaStoneElement.png" alt="Mana Stone" className="w-16 h-16 object-contain" />
+              </div>
+            </div>
+          )}
           {isResetItem ? getResetContent() : getItemTypeContent()}
         </div>
         <div className="p-6 pt-0 space-y-3">
@@ -334,6 +343,13 @@ export const ItemUseModal = ({
               )}
             >
               {item.equipped ? 'Title Equipped' : 'Equip Title'}
+            </button>
+          ) : isSpecialStone ? (
+            <button
+              onClick={() => { onUseItem(item.id, 1); onClose(); }}
+              className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black text-[11px] tracking-[0.5em] uppercase shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              USE
             </button>
           ) : (
             <button
