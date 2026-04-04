@@ -198,23 +198,32 @@ const SoloLevelingBattle = () => {
     }
   }, [bossFury, ultimateFuryActive, battleOver]);
 
-  // Boss auto-attack with advance
+  // Boss auto-attack with advance + AGI dodge + INT counter
   useEffect(() => {
     if (battleOver) return;
+    const speedReduction = getAgilitySpeedBonus(agilityLevel);
+    const adjustedSpeed = Math.max(1500, bossConfig.attackSpeed * (1 - speedReduction));
     const interval = setInterval(() => {
       if (bossHP <= 0 || playerHP <= 0) return;
       setIsBossAdvancing(true);
       setTimeout(() => {
         setIsBossAdvancing(false);
-        if (ragingSpeedActive) {
-          const dodgeChance = bossConfig.rank === 'E' || bossConfig.rank === 'D' ? 0.85 : 0.80;
-          if (Math.random() < dodgeChance) {
-            setDodgedAttack(true);
-            addDamagePopup(0, false, true, true);
-            setBattleLog(p => ['💨 تفادي!', ...p.slice(0, 4)]);
-            setTimeout(() => setDodgedAttack(false), 600);
-            return;
+        // AGI dodge check (passive + raging speed)
+        const totalDodge = ragingSpeedActive ? Math.min(0.9, playerDodgeChance + 0.5) : playerDodgeChance;
+        if (Math.random() < totalDodge) {
+          setDodgedAttack(true);
+          addDamagePopup(0, false, true, true);
+          setBattleLog(p => ['💨 تفادي!', ...p.slice(0, 4)]);
+          setTimeout(() => setDodgedAttack(false), 600);
+          // INT counter-attack chance
+          if (Math.random() < counterChance) {
+            const counterDmg = Math.floor(basicDmg * 1.5);
+            setTimeout(() => {
+              attemptDamage(counterDmg, true, `🔄💥 ضربة مضادة → ${counterDmg.toLocaleString()}`);
+            }, 300);
+            setBattleLog(p => ['🧠 توقع الهجوم! ضربة مضادة!', ...p.slice(0, 4)]);
           }
+          return;
         }
         const furyMult = ultimateFuryActive ? 3 : 1;
         const bossDmg = Math.floor((bossConfig.attackPower + Math.floor(Math.random() * bossConfig.attackPower * 0.5)) * furyMult);
@@ -225,12 +234,14 @@ const SoloLevelingBattle = () => {
         setBattleLog(p => [`${ultimateFuryActive ? '🔥' : '🕷️'} ${bossConfig.name} → ${bossDmg}`, ...p.slice(0, 4)]);
         setTimeout(() => { setIsPlayerHit(false); setScreenShake(false); }, 400);
       }, 600);
-    }, bossConfig.attackSpeed);
+    }, adjustedSpeed);
     return () => clearInterval(interval);
-  }, [battleOver, bossHP, playerHP, ragingSpeedActive, ultimateFuryActive, bossConfig, addDamagePopup]);
+  }, [battleOver, bossHP, playerHP, ragingSpeedActive, ultimateFuryActive, bossConfig, addDamagePopup, playerDodgeChance, counterChance, agilityLevel, basicDmg]);
 
   const attemptDamage = (dmg: number, isCrit: boolean, label: string) => {
-    if (Math.random() < bossConfig.dodgeChance) {
+    // SPI increases hit rate, reducing boss dodge
+    const effectiveDodge = Math.max(0, bossConfig.dodgeChance - spiHitBonus);
+    if (Math.random() < effectiveDodge) {
       addDamagePopup(0, false, false, true);
       setBattleLog(p => [`🛡️ ${bossConfig.name} تفادى!`, ...p.slice(0, 4)]);
       return;
