@@ -357,7 +357,8 @@ export const SoloLevelingQuestCard = ({
   onTaskComplete,
   onStartQuest,
   onUpdateQuestProgress,
-  timeRemaining 
+  timeRemaining,
+  onPenalty
 }: SoloLevelingQuestCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
