@@ -10,7 +10,7 @@ import { MaxLevelModal } from '@/components/MaxLevelModal';
 import { GateDiscoveryNotification } from '@/components/GateDiscoveryNotification';
 import { NewGateNotification } from '@/components/NewGateNotification';
 import { BottomNav } from '@/components/BottomNav';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Menu, User, ShoppingBag, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatType, Gate } from '@/types/game';
