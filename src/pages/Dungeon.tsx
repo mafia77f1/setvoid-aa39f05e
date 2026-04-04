@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Map, ChevronUp, ChevronLeft, ChevronRight, ShieldAlert, LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, Map, Skull, Gem, Footprints, Heart, Sparkles, DoorOpen } from 'lucide-react';
 import { DungeonRoom, Position, SystemMessage, StaminaTask } from '@/components/dungeon/DungeonTypes';
 import { generateDungeon, countRoomTypes, STAMINA_TASKS } from '@/components/dungeon/dungeonGenerator';
 import { DungeonMinimap } from '@/components/dungeon/DungeonMinimap';
@@ -9,6 +9,8 @@ import { DungeonHUD } from '@/components/dungeon/DungeonHUD';
 import { DungeonSystemMessage } from '@/components/dungeon/DungeonSystemMessage';
 import { DungeonEncounter, StaminaModal } from '@/components/dungeon/DungeonEncounter';
 import { DungeonClearedScreen } from '@/components/dungeon/DungeonClearedScreen';
+import { useGameState } from '@/hooks/useGameState';
+import { ManaStoneAnimation } from '@/components/dungeon/ManaStoneAnimation';
 
 const GRID_SIZE = 8;
 
@@ -21,14 +23,18 @@ const RANK_THEMES: Record<string, { primary: string; secondary: string; shadow: 
   S: { primary: '#ef4444', secondary: '#dc2626', shadow: 'rgba(239,68,68,0.2)' },
 };
 
+const PATH_IMAGES = ['/dungeon_path1.jpg', '/dungeon_path2.jpg', '/dungeon_path3.jpg'];
+const PATH_NAMES = ['نفق الكريستال', 'نفق الحمم', 'نفق الأرواح'];
+const PATH_DESCS = ['توهج أزرق غامض ينبعث من الأعماق...', 'حرارة شديدة وتوهج أحمر مرعب...', 'ضباب بنفسجي يلف المسار الغامض...'];
+
 const Dungeon = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { gameState, consumeItem } = useGameState();
   const rank = (searchParams.get('rank') || 'E').toUpperCase();
   const theme = RANK_THEMES[rank] || RANK_THEMES['E'];
 
-  // State
-  const [showEntrance, setShowEntrance] = useState(true); 
+  const [showEntrance, setShowEntrance] = useState(true);
   const [entering, setEntering] = useState(false);
   const [grid, setGrid] = useState<DungeonRoom[][]>([]);
   const [playerPos, setPlayerPos] = useState<Position>({ x: 0, y: GRID_SIZE - 1 });
@@ -50,9 +56,12 @@ const Dungeon = () => {
   const [treasuresFound, setTreasuresFound] = useState(0);
   const [roomsExplored, setRoomsExplored] = useState(1);
   const [isMoving, setIsMoving] = useState(false);
+  const [showExitAnimation, setShowExitAnimation] = useState(false);
   const msgCounter = useRef(0);
 
-  // Initialize dungeon
+  // Check if player has exit stone
+  const hasExitStone = (gameState.inventory || []).some(i => i.id === 'gate_exit_stone' && i.quantity > 0);
+
   useEffect(() => {
     const newGrid = generateDungeon(rank);
     setGrid(newGrid);
@@ -110,9 +119,20 @@ const Dungeon = () => {
     setShowEntrance(false);
     setEntering(true);
     setTimeout(() => {
-        setEntering(false);
-        addSystemMessage('تم دخول البوابة بنجاح', 'success');
+      setEntering(false);
+      addSystemMessage('تم دخول البوابة بنجاح', 'success');
     }, 2500);
+  };
+
+  const handleExitWithStone = () => {
+    if (!hasExitStone) return;
+    consumeItem('gate_exit_stone', 1);
+    setShowExitAnimation(true);
+  };
+
+  const handleExitAnimationComplete = () => {
+    setShowExitAnimation(false);
+    navigate(-1);
   };
 
   const handleDefeatMonster = useCallback(() => {
@@ -149,8 +169,6 @@ const Dungeon = () => {
     }
   };
 
-  const currentRoom = grid[playerPos.y]?.[playerPos.x];
-
   const getNearbyPath = (dx: number, dy: number) => {
     const ny = playerPos.y + dy;
     const nx = playerPos.x + dx;
@@ -158,9 +176,28 @@ const Dungeon = () => {
     return grid[ny][nx];
   };
 
+  // Get 3 available paths 
+  const getAvailablePaths = () => {
+    const directions = [
+      { dx: 0, dy: -1, label: 'أمام' },
+      { dx: 1, dy: 0, label: 'يمين' },
+      { dx: -1, dy: 0, label: 'يسار' },
+      { dx: 0, dy: 1, label: 'خلف' },
+    ];
+    return directions
+      .map((d, i) => ({ ...d, room: getNearbyPath(d.dx, d.dy), pathIdx: i % 3 }))
+      .filter(d => d.room !== null)
+      .slice(0, 3);
+  };
+
+  const availablePaths = !showEntrance && !entering ? getAvailablePaths() : [];
+
   return (
     <div className="fixed inset-0 bg-[#020205] text-white overflow-hidden select-none flex flex-col font-sans" dir="rtl">
       
+      {/* Mana Stone Exit Animation */}
+      <ManaStoneAnimation show={showExitAnimation} onComplete={handleExitAnimationComplete} />
+
       {/* ═══ 1. شاشة البداية ═══ */}
       <AnimatePresence>
         {showEntrance && (
@@ -168,12 +205,10 @@ const Dungeon = () => {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-[200] flex items-center justify-center"
           >
-            {/* الخلفية بدون ضبابية وباسم الملف الجديد */}
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/tunnel.png')" }}>
-                <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 bg-black/40" />
             </div>
             
-            {/* تم إنزال مربع الإشعار ليكون تحت شوي عبر إضافة mt-20 أو ضبط y */}
             <motion.div 
               initial={{ scale: 0.9, y: 60 }} animate={{ scale: 1, y: 40 }}
               className="relative z-10 w-[85%] max-w-sm bg-[#0a0a0f]/90 border-2 border-blue-500/40 rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(59,130,246,0.3)]"
@@ -195,71 +230,119 @@ const Dungeon = () => {
       <AnimatePresence>
         {entering && (
           <motion.div className="absolute inset-0 z-[100] bg-black flex items-center justify-center flex-col" exit={{ opacity: 0 }}>
-             <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="w-24 h-24 rounded-full border-b-2 border-t-2 mb-8" style={{ borderColor: theme.primary }} />
-             <h1 className="text-2xl font-black tracking-widest" style={{ color: theme.primary }}>جاري فتح البوابة...</h1>
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="w-24 h-24 rounded-full border-b-2 border-t-2 mb-8" style={{ borderColor: theme.primary }} />
+            <h1 className="text-2xl font-black tracking-widest" style={{ color: theme.primary }}>جاري فتح البوابة...</h1>
           </motion.div>
         )}
       </AnimatePresence>
 
       <DungeonSystemMessage messages={systemMessages} />
 
-      {/* ═══ 3. HUD ═══ */}
+      {/* ═══ 3. HUD + Exit Stone Button ═══ */}
       {!showEntrance && !entering && (
         <div className="absolute top-0 left-0 right-0 z-50 p-4 flex justify-between items-start pointer-events-none">
-           <div className="pointer-events-auto">
-             <DungeonHUD 
-                hp={hp} maxHp={maxHp} stamina={stamina} maxStamina={maxStamina} 
-                mana={mana} maxMana={maxMana} gold={gold} 
-                monstersDefeated={monstersDefeated} totalMonsters={totalMonsters}
-                roomsExplored={roomsExplored} totalRooms={totalRooms} themeColor={theme.primary} rank={rank}
-             />
-           </div>
-           <button onClick={() => setShowMap(!showMap)} className="p-3 bg-black/60 rounded-full border border-white/10 pointer-events-auto"><Map className="w-5 h-5 text-blue-400" /></button>
+          <div className="pointer-events-auto">
+            <DungeonHUD 
+              hp={hp} maxHp={maxHp} stamina={stamina} maxStamina={maxStamina} 
+              mana={mana} maxMana={maxMana} gold={gold} 
+              monstersDefeated={monstersDefeated} totalMonsters={totalMonsters}
+              roomsExplored={roomsExplored} totalRooms={totalRooms} themeColor={theme.primary} rank={rank}
+            />
+          </div>
+          <div className="flex flex-col gap-2 pointer-events-auto">
+            <button onClick={() => setShowMap(!showMap)} className="p-3 bg-black/60 rounded-full border border-white/10">
+              <Map className="w-5 h-5 text-blue-400" />
+            </button>
+            {hasExitStone && (
+              <button onClick={handleExitWithStone} className="p-3 bg-black/60 rounded-full border border-emerald-500/30 hover:border-emerald-400/50 transition-colors">
+                <DoorOpen className="w-5 h-5 text-emerald-400" />
+              </button>
+            )}
+          </div>
         </div>
       )}
 
-      {/* ═══ 4. عرض المسارات الثلاثة ═══ */}
-      {!showEntrance && !entering && (
-        <div className="flex-1 relative flex items-center justify-center p-4">
-           <div className="grid grid-cols-1 gap-4 w-full max-w-sm">
-              <p className="text-center text-[10px] text-gray-500 tracking-[0.4em] mb-4">اختر طريقك التالي</p>
-              
-              {[
-                { label: 'النفق الأمامي', dx: 0, dy: -1, icon: <ChevronUp /> },
-                { label: 'النفق الأيمن', dx: 1, dy: 0, icon: <ChevronRight /> },
-                { label: 'النفق الأيسر', dx: -1, dy: 0, icon: <ChevronLeft /> }
-              ].map((path, idx) => {
-                const targetRoom = getNearbyPath(path.dx, path.dy);
+      {/* ═══ 4. عرض المسارات الثلاثة بصور المغارة ═══ */}
+      {!showEntrance && !entering && !cleared && (
+        <div className="flex-1 relative flex items-center justify-center p-4 pt-40">
+          <div className="w-full max-w-sm space-y-3">
+            <p className="text-center text-[10px] text-gray-500 tracking-[0.4em] mb-2 font-mono uppercase">اختر طريقك</p>
+            
+            {availablePaths.length === 0 ? (
+              <div className="text-center text-slate-500 text-sm py-8">
+                <Skull className="w-8 h-8 mx-auto mb-2 text-red-500/50" />
+                <p>لا توجد مسارات متاحة</p>
+              </div>
+            ) : (
+              availablePaths.map((path, idx) => {
+                const room = path.room;
+                const imgIdx = idx % 3;
                 return (
                   <motion.button
-                    key={idx}
-                    disabled={!targetRoom || isMoving}
+                    key={`${path.dx}-${path.dy}`}
+                    disabled={isMoving}
                     onClick={() => movePlayer(path.dx, path.dy)}
-                    whileTap={{ scale: 0.95 }}
-                    className={`relative p-5 rounded-2xl border flex items-center justify-between transition-all ${
-                      !targetRoom ? 'opacity-20 grayscale' : 'bg-white/[0.03] border-white/10 hover:border-blue-500/40'
-                    }`}
+                    whileTap={{ scale: 0.97 }}
+                    className="relative w-full h-28 rounded-xl overflow-hidden border border-white/10 hover:border-cyan-500/40 transition-all group"
                   >
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-black/40 rounded-lg">{path.icon}</div>
-                        <div className="text-right">
-                            <span className="block font-bold text-sm">{path.label}</span>
-                            <span className="text-[9px] text-gray-500 uppercase italic">
-                                {targetRoom?.visited ? 'مستكشف سابقاً' : 'منطقة مجهولة'}
-                            </span>
+                    {/* Background Image */}
+                    <img 
+                      src={PATH_IMAGES[imgIdx]} 
+                      alt={PATH_NAMES[imgIdx]}
+                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                    
+                    {/* Content */}
+                    <div className="relative z-10 h-full flex items-center justify-between px-5">
+                      <div className="text-right">
+                        <h3 className="font-bold text-sm text-white mb-1">{PATH_NAMES[imgIdx]}</h3>
+                        <p className="text-[10px] text-gray-400 italic">
+                          {room?.visited ? 'تم الاستكشاف' : PATH_DESCS[imgIdx]}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-[8px] text-cyan-400/70 font-mono uppercase px-1.5 py-0.5 border border-cyan-500/20 bg-cyan-500/5">
+                            {path.label}
+                          </span>
+                          {room?.visited && room.type !== 'empty' && !room.cleared && (
+                            <span className="text-[8px] text-red-400 font-bold animate-pulse">⚠ خطر</span>
+                          )}
                         </div>
+                      </div>
+                      
+                      {room?.visited && (
+                        <div className="text-2xl opacity-80">
+                          {room.type === 'monster' && !room.cleared && '👹'}
+                          {room.type === 'boss' && !room.cleared && '💀'}
+                          {room.type === 'treasure' && !room.cleared && '🎁'}
+                          {room.type === 'trap' && '⚡'}
+                          {room.type === 'empty' && '🕯️'}
+                          {room.cleared && '✅'}
+                        </div>
+                      )}
+                      {!room?.visited && (
+                        <div className="text-2xl opacity-40">❓</div>
+                      )}
                     </div>
-                    {targetRoom?.visited && (
-                        <div className="text-xl">
-                            {targetRoom.type === 'monster' && '👹'}
-                            {targetRoom.type === 'treasure' && '🎁'}
-                            {targetRoom.type === 'empty' && '🕯️'}
-                        </div>
-                    )}
+
+                    {/* Stamina cost indicator */}
+                    <div className="absolute bottom-2 left-3 flex items-center gap-1 text-[8px] text-green-400/60">
+                      <Footprints className="w-3 h-3" />
+                      <span>-1</span>
+                    </div>
                   </motion.button>
                 );
-              })}
-           </div>
+              })
+            )}
+
+            {/* Stamina warning */}
+            {stamina <= 3 && stamina > 0 && (
+              <p className="text-center text-[10px] text-yellow-500 animate-pulse font-mono">
+                ⚠ الطاقة منخفضة ({stamina}/{maxStamina})
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -267,7 +350,7 @@ const Dungeon = () => {
       <AnimatePresence>
         {showMap && (
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute top-20 right-4 z-[60] bg-black/90 p-2 rounded-2xl border border-white/10">
-             <DungeonMinimap grid={grid} playerPos={playerPos} themeColor={theme.primary} />
+            <DungeonMinimap grid={grid} playerPos={playerPos} themeColor={theme.primary} />
           </motion.div>
         )}
       </AnimatePresence>
