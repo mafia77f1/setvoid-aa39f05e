@@ -3,6 +3,7 @@ import { X, Package, Zap, Eye, Key, FlaskConical, Crown, Star, Lock, BarChart3 }
 import { cn } from '@/lib/utils';
 import { ItemUseModal } from './ItemUseModal';
 import { ItemAnalysisModal } from './ItemAnalysisModal';
+import { StoneUseModal } from './StoneUseModal';
 import { GameState, StatType, InventoryItem } from '@/types/game';
 
 // نظام ألوان الندرة
