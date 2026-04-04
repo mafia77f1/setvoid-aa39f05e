@@ -408,12 +408,19 @@ export const InventoryPanel = ({ inventory, gameState, onUseItem, onEquipTitle, 
                   {!selectedItem.isTitle && onUseItem && (
                     <button
                       onClick={() => {
-                        // تحويل العنصر لنوع InventoryItem
                         const invItem = inventory.find(i => i.id === selectedItem.id);
                         if (invItem) {
-                          setSelectedInventoryItem(invItem);
-                          setShowUseModal(true);
-                          setSelectedItem(null);
+                          // Special stones get their own modal
+                          const specialStoneIds = ['rename_stone', 'gate_exit_stone', 'grand_quest_stone', 'central_activation_stone'];
+                          if (specialStoneIds.includes(selectedItem.id)) {
+                            setStoneItem(invItem);
+                            setShowStoneModal(true);
+                            setSelectedItem(null);
+                          } else {
+                            setSelectedInventoryItem(invItem);
+                            setShowUseModal(true);
+                            setSelectedItem(null);
+                          }
                         }
                       }}
                       className={cn(
