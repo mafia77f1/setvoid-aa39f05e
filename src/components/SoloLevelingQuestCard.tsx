@@ -565,10 +565,10 @@ export const SoloLevelingQuestCard = ({
               </div>
               
               <div className="flex items-center gap-3">
-                {timeRemaining && (
+                {dailyTimeLeft && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 bg-cyan-500/5">
                     <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-xs text-cyan-300 font-mono font-bold">{timeRemaining}</span>
+                    <span className="text-xs text-cyan-300 font-mono font-bold">{dailyTimeLeft}</span>
                   </div>
                 )}
                 {isExpanded ? (
