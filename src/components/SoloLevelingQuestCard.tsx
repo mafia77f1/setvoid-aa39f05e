@@ -283,7 +283,7 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
             </div>
           </div>
 
-          {/* Separator line */}
+          {/* Separator */}
           <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
           {/* ═══ WARNING SECTION ═══ */}
@@ -688,14 +688,18 @@ export const SoloLevelingQuestCard = ({
                 </p>
               </div>
 
-              {/* ═══ TIME REMAINING (Replacement for TOTAL REWARD) ═══ */}
+              {/* ═══ TOTAL REWARD ═══ */}
               <div className="mt-4 flex items-center justify-center">
-                <div className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5">
-                  <Clock className="w-4 h-4 text-cyan-400" />
+                <button
+                  type="button"
+                  onClick={() => navigate('/battle')}
+                  className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
                   <span className="text-xs font-black text-cyan-300 tracking-[0.2em]">
-                    TIME REMAINING: {dailyTimeLeft}
+                    TOTAL: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
                   </span>
-                </div>
+                </button>
               </div>
             </div>
           )}
