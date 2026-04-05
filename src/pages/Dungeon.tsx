@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogIn, LogOut, DoorOpen, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
+import { LogIn, LogOut, DoorOpen, ChevronLeft, ChevronRight, ArrowUp, Skull, TreasureChest } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
 import { ManaStoneAnimation } from '@/components/dungeon/ManaStoneAnimation';
 import { DungeonEncounter } from '@/components/dungeon/DungeonEncounter';
 import { DungeonClearedScreen } from '@/components/dungeon/DungeonClearedScreen';
-import { DungeonHUD } from '@/components/dungeon/DungeonHUD';
 import { DungeonSystemMessage } from '@/components/dungeon/DungeonSystemMessage';
-import { generateDungeon, countRoomTypes, STAMINA_TASKS } from '@/components/dungeon/dungeonGenerator';
-import { DungeonRoom, Position, SystemMessage, StaminaTask } from '@/components/dungeon/DungeonTypes';
+import { generateDungeon, countRoomTypes } from '@/components/dungeon/dungeonGenerator';
+import { DungeonRoom, Position, SystemMessage } from '@/components/dungeon/DungeonTypes';
 
 const GRID_SIZE = 8;
 
@@ -26,10 +25,10 @@ type DungeonPhase = 'entrance' | 'entering' | 'grotto' | 'event' | 'cleared';
 type EventType = 'treasure' | 'monster' | 'boss' | null;
 
 const TYPEWRITER_MESSAGES = [
-  'هالة مرعبة تنبعث من العمق...',
-  'الظلام يبتلع الضوء... الوحوش تقترب.',
-  'الدمار هو الخيار الوحيد للنجاة...',
-  'لقد وطأت قدماك منطقة الموت...',
+  'بعد السير، لاحظنا شيئاً مميزاً داخل المغارة، لنكتشف بعدها...',
+  'الظلام يزداد... أصوات غريبة تنبعث من الأعماق...',
+  'الأرض تهتز قليلاً... شيء ما ينتظرنا في نهاية الممر...',
+  'رائحة قديمة تملأ المكان... كأن أحداً مرّ من هنا مؤخراً...',
 ];
 
 const Dungeon = () => {
@@ -45,18 +44,12 @@ const Dungeon = () => {
 
   const [grid, setGrid] = useState<DungeonRoom[][]>([]);
   const [playerPos, setPlayerPos] = useState<Position>({ x: 0, y: GRID_SIZE - 1 });
-  const [hp, setHp] = useState(100);
-  const [maxHp] = useState(100);
   const [stamina, setStamina] = useState(15);
-  const [maxStamina] = useState(20);
-  const [mana, setMana] = useState(50);
-  const [maxMana] = useState(50);
   const [gold, setGold] = useState(0);
   const [xp, setXp] = useState(0);
   const [monstersDefeated, setMonstersDefeated] = useState(0);
   const [treasuresFound, setTreasuresFound] = useState(0);
   const [roomsExplored, setRoomsExplored] = useState(1);
-  const [staminaTasks] = useState<StaminaTask[]>([...STAMINA_TASKS]);
   const [cleared, setCleared] = useState(false);
   const [showExitAnimation, setShowExitAnimation] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -73,7 +66,7 @@ const Dungeon = () => {
     setGrid(generateDungeon(rank));
   }, [rank]);
 
-  const { monsters: totalMonsters, treasures: totalTreasures, totalRooms } = grid.length > 0 ? countRoomTypes(grid) : { monsters: 0, treasures: 0, totalRooms: 0 };
+  const { monsters: totalMonsters, treasures: totalTreasures } = grid.length > 0 ? countRoomTypes(grid) : { monsters: 0, treasures: 0 };
 
   const addSystemMessage = useCallback((text: string, type: SystemMessage['type']) => {
     msgCounter.current++;
@@ -94,7 +87,7 @@ const Dungeon = () => {
         setIsTyping(false);
         onDone?.();
       }
-    }, 30);
+    }, 40);
     return () => clearInterval(interval);
   }, []);
 
@@ -102,13 +95,8 @@ const Dungeon = () => {
     setPhase('entering');
     setTimeout(() => {
       setPhase('grotto');
-      addSystemMessage('تم دخول البوابة. استعد للقتال.', 'success');
+      addSystemMessage('تم دخول البوابة بنجاح', 'success');
     }, 2500);
-  };
-
-  const handleExitWithStone = () => {
-    if (!hasExitStone) return;
-    setShowExitConfirm(true);
   };
 
   const confirmExit = () => {
@@ -137,7 +125,7 @@ const Dungeon = () => {
         else if (roll < 0.65) triggerMonster();
         else if (roll < 0.80 && totalSteps >= 3) triggerBoss();
         else triggerMonster();
-      }, 1000);
+      }, 800);
     });
   };
 
@@ -149,7 +137,7 @@ const Dungeon = () => {
       const goldAmount = Math.floor(Math.random() * 30) + 10;
       setGold(prev => prev + goldAmount);
       setTreasuresFound(prev => prev + 1);
-      addSystemMessage(`عثرت على كنز! +${goldAmount} ذهب`, 'success');
+      addSystemMessage(`+${goldAmount} ذهب`, 'success');
       setTimeout(() => { setPhase('grotto'); setCurrentEvent(null); }, 1500);
     }
   };
@@ -159,7 +147,7 @@ const Dungeon = () => {
     const monsterRooms = grid.flat().filter(r => r.type === 'monster' && !r.cleared);
     if (monsterRooms.length > 0) setEncounter(monsterRooms[0]);
     else {
-      addSystemMessage('الممر هادئ بشكل مريب...', 'info');
+      addSystemMessage('الممر آمن', 'info');
       setTimeout(() => { setPhase('grotto'); setCurrentEvent(null); }, 1200);
     }
   };
@@ -194,7 +182,8 @@ const Dungeon = () => {
     setEncounter(null);
     setCurrentEvent(null);
     setPhase('grotto');
-  }, [encounter, navigate]);
+    addSystemMessage('تمت تصفية العدو', 'success');
+  }, [encounter, navigate, addSystemMessage]);
 
   const handleCollectTreasure = useCallback(() => {
     if (!encounter || !encounter.treasure) return;
@@ -209,13 +198,8 @@ const Dungeon = () => {
     setEncounter(null);
     setCurrentEvent(null);
     setPhase('grotto');
-  }, [encounter]);
-
-  const handleDismissEncounter = () => {
-    setEncounter(null);
-    setCurrentEvent(null);
-    setPhase('grotto');
-  };
+    addSystemMessage(`تم الحصول على الكنز`, 'success');
+  }, [encounter, addSystemMessage]);
 
   return (
     <div className="fixed inset-0 bg-[#020205] text-white overflow-hidden select-none flex flex-col font-sans" dir="rtl">
@@ -226,26 +210,15 @@ const Dungeon = () => {
       {/* ═══ ENTRANCE SCREEN ═══ */}
       <AnimatePresence>
         {phase === 'entrance' && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[200] flex items-center justify-center"
-          >
-            <div className="absolute inset-0 bg-cover bg-center grayscale-[30%]" style={{ backgroundImage: "url('/tunnel.png')" }}>
-              <div className="absolute inset-0 bg-black/20" />
-            </div>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="relative z-10 w-[80%] max-w-xs bg-black/80 border-t-2 border-b-2 border-blue-500/60 p-6 text-center shadow-[0_0_60px_rgba(0,0,0,1)]"
-            >
-              <h2 className="text-lg font-black mb-1 tracking-tighter">بوابة الرتبة [{rank}]</h2>
-              <p className="text-[10px] text-blue-400 uppercase tracking-widest mb-6">مستوى الخطر: مرتفع</p>
-              <div className="flex flex-col gap-3">
-                <button onClick={handleStartDungeon} className="py-2 bg-blue-900/40 border border-blue-500/50 text-blue-100 text-xs font-bold active:scale-95 transition-all">
-                  دخول الزنزانة
-                </button>
-                <button onClick={() => navigate(-1)} className="py-2 bg-red-900/20 border border-red-900/50 text-red-500/70 text-[10px] font-bold active:scale-95 transition-all">
-                  انسحاب
-                </button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[200] flex items-center justify-center">
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/tunnel.png')" }} />
+            <motion.div initial={{ scale: 0.9, y: 60 }} animate={{ scale: 1, y: 40 }} className="relative z-10 w-[85%] max-w-sm bg-[#0a0a0f]/80 border border-blue-500/40 rounded-2xl p-6 text-center shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+              <div className="bg-blue-600 w-fit mx-auto px-3 py-0.5 rounded text-[8px] font-black mb-3 border border-blue-400 uppercase">System Notification</div>
+              <h2 className="text-lg font-bold mb-1 tracking-tight">رصد بوابة: رتبة {rank}</h2>
+              <p className="text-gray-400 text-[10px] mb-6">هل أنت مستعد لمواجهة ما يقبع في الداخل؟</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={handleStartDungeon} className="flex items-center justify-center gap-2 py-2.5 bg-blue-600 rounded-lg text-xs font-bold active:scale-95 transition-transform"><LogIn size={14} /> دخول</button>
+                <button onClick={() => navigate(-1)} className="flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold active:scale-95 transition-transform"><LogOut size={14} /> انسحاب</button>
               </div>
             </motion.div>
           </motion.div>
@@ -256,7 +229,8 @@ const Dungeon = () => {
       <AnimatePresence>
         {phase === 'entering' && (
           <motion.div className="absolute inset-0 z-[100] bg-black flex items-center justify-center flex-col" exit={{ opacity: 0 }}>
-            <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="text-3xl font-black italic tracking-tighter" style={{ color: theme.primary }}>LOADING...</motion.div>
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 rounded-full border-b-2 border-t-2 mb-4" style={{ borderColor: theme.primary }} />
+            <h1 className="text-lg font-black tracking-widest uppercase" style={{ color: theme.primary }}>Initializing Gate...</h1>
           </motion.div>
         )}
       </AnimatePresence>
@@ -265,58 +239,52 @@ const Dungeon = () => {
       {(phase === 'grotto' || phase === 'event') && (
         <>
           <div className="absolute inset-0">
-            <img src="/InnerGrotto.png" alt="المغارة" className="w-full h-full object-cover brightness-110 contrast-125" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
+            <img src="/InnerGrotto.png" alt="المغارة" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/10" /> {/* تقليل التعتيم لزيادة الوضوح */}
           </div>
 
-          {/* HUD - Minimally showing only vital HP/Mana */}
-          <div className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
-            <DungeonHUD
-              hp={hp} maxHp={maxHp} stamina={stamina} maxStamina={maxStamina}
-              mana={mana} maxMana={maxMana} gold={gold}
-              monstersDefeated={monstersDefeated} totalMonsters={totalMonsters}
-              roomsExplored={roomsExplored} totalRooms={totalRooms} themeColor={theme.primary} rank={rank}
-            />
-          </div>
-
-          {/* EXIT BUTTON ONLY */}
-          <div className="absolute top-6 left-6 z-50">
+          {/* MINIMAL HUD: Only Stats */}
+          <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-start pointer-events-none">
+            <div className="flex gap-4 pointer-events-auto">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/5">
+                    <Skull size={14} className="text-red-500" />
+                    <span className="text-[10px] font-bold">{monstersDefeated}/{totalMonsters}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/5">
+                    <TreasureChest size={14} className="text-yellow-500" />
+                    <span className="text-[10px] font-bold">{treasuresFound}/{totalTreasures}</span>
+                </div>
+            </div>
+            
             {hasExitStone && (
-              <button onClick={handleExitWithStone} className="p-2 bg-black/40 border border-emerald-500/40 rounded-lg backdrop-blur-md">
+              <button onClick={() => setShowExitConfirm(true)} className="p-2.5 bg-black/40 rounded-lg border border-emerald-500/30 backdrop-blur-md pointer-events-auto">
                 <DoorOpen className="w-4 h-4 text-emerald-400" />
               </button>
             )}
           </div>
 
-          {/* ═══ THREE GATES ═══ */}
+          {/* ═══ GATES ═══ */}
           {phase === 'grotto' && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-end pb-10 px-6">
-              <div className="flex items-end justify-center gap-4 w-full max-w-sm">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => handleChoosePath('left')}
-                  className="flex-1 relative h-24 bg-black/40 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 group overflow-hidden"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Left</span>
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-end pb-10 px-4">
+              <p className="text-[9px] text-cyan-400/80 tracking-[0.3em] mb-4 font-black uppercase">حدد المسار التالي</p>
+              <div className="flex items-end justify-center gap-2 w-full max-w-xs">
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleChoosePath('left')} className="flex-1 relative h-24 rounded-lg overflow-hidden border border-purple-500/30 bg-purple-900/20">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <ChevronLeft className="w-5 h-5 text-purple-400" />
+                    <span className="text-[8px] font-bold">يسار</span>
+                  </div>
                 </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => handleChoosePath('center')}
-                  className="flex-[1.5] relative h-32 bg-blue-900/20 border border-blue-500/30 rounded-lg flex flex-col items-center justify-center gap-1 group overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.1)]"
-                >
-                  <ArrowUp className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-black text-blue-200 uppercase tracking-[0.2em]">Advance</span>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleChoosePath('center')} className="flex-1 relative h-32 rounded-lg overflow-hidden border border-cyan-500/50 bg-cyan-900/20 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <ArrowUp className="w-6 h-6 text-cyan-400" />
+                    <span className="text-[9px] font-black">منتصف</span>
+                  </div>
                 </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => handleChoosePath('right')}
-                  className="flex-1 relative h-24 bg-black/40 border border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 group overflow-hidden"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
-                  <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Right</span>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleChoosePath('right')} className="flex-1 relative h-24 rounded-lg overflow-hidden border border-amber-500/30 bg-amber-900/20">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <ChevronRight className="w-5 h-5 text-amber-400" />
+                    <span className="text-[8px] font-bold">يمين</span>
+                  </div>
                 </motion.button>
               </div>
             </div>
@@ -324,15 +292,10 @@ const Dungeon = () => {
 
           {/* ═══ TYPEWRITER EVENT ═══ */}
           {phase === 'event' && !encounter && (
-            <div className="absolute inset-x-0 bottom-32 z-40 flex items-center justify-center px-8">
-              <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="w-full max-w-xs text-center"
-              >
-                <p className="text-xs font-medium text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-tight leading-relaxed">
-                  {typewriterText}
-                  {isTyping && <span className="inline-block w-1 h-3 bg-blue-500 ml-1 animate-pulse" />}
-                </p>
+            <div className="absolute inset-0 z-40 flex items-center justify-center p-6 bg-black/20">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xs bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-2xl">
+                <div className="text-[7px] font-mono tracking-widest uppercase text-cyan-500/60 mb-2 text-center">System Log</div>
+                <p className="text-[11px] text-slate-200 text-center leading-relaxed" dir="rtl">{typewriterText}</p>
               </motion.div>
             </div>
           )}
@@ -342,29 +305,26 @@ const Dungeon = () => {
       {/* ═══ EXIT CONFIRMATION ═══ */}
       <AnimatePresence>
         {showExitConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md"
-          >
-            <motion.div className="w-full max-w-xs bg-black border border-emerald-500/30 p-6 text-center">
-              <h3 className="text-sm font-black text-emerald-400 mb-4 tracking-tighter">استخدام حجر العودة؟</h3>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="w-full max-w-xs bg-[#0a0a15] border border-emerald-500/40 rounded-xl p-5 text-center">
+              <h3 className="text-sm font-bold text-emerald-400 mb-4 uppercase tracking-tighter">استخدام حجر العودة؟</h3>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={confirmExit} className="py-2 bg-emerald-900/40 border border-emerald-500/50 text-[10px] font-bold uppercase">Confirm</button>
-                <button onClick={() => setShowExitConfirm(false)} className="py-2 bg-white/5 text-[10px] font-bold uppercase">Cancel</button>
+                <button onClick={confirmExit} className="py-2 bg-emerald-600 rounded-lg font-bold text-[10px]">تأكيد</button>
+                <button onClick={() => setShowExitConfirm(false)} className="py-2 bg-white/5 rounded-lg font-bold text-[10px]">تراجع</button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ═══ ENCOUNTER MODALS ═══ */}
+      {/* ═══ ENCOUNTER ═══ */}
       <AnimatePresence>
         {encounter && (
           <DungeonEncounter
             room={encounter}
             onDefeatMonster={handleDefeatMonster}
             onCollectTreasure={handleCollectTreasure}
-            onDismiss={handleDismissEncounter}
+            onDismiss={() => { setEncounter(null); setCurrentEvent(null); setPhase('grotto'); }}
             themeColor={theme.primary}
           />
         )}
