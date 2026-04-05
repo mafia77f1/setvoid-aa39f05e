@@ -565,12 +565,6 @@ export const SoloLevelingQuestCard = ({
               </div>
               
               <div className="flex items-center gap-3">
-                {dailyTimeLeft && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 bg-cyan-500/5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-xs text-cyan-300 font-mono font-bold">{dailyTimeLeft}</span>
-                  </div>
-                )}
                 {isExpanded ? (
                   <ChevronUp className="w-5 h-5 text-cyan-500/60" />
                 ) : (
@@ -688,18 +682,16 @@ export const SoloLevelingQuestCard = ({
                 </p>
               </div>
 
-              {/* ═══ TOTAL REWARD ═══ */}
+              {/* ═══ TIMER DISPLAY (REPLACED TOTAL REWARD) ═══ */}
               <div className="mt-4 flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/battle')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all"
-                >
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-black text-cyan-300 tracking-[0.2em]">
-                    TOTAL: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
-                  </span>
-                </button>
+                {dailyTimeLeft && (
+                  <div className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5">
+                    <Clock className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-black text-cyan-300 tracking-[0.2em] font-mono">
+                      TIME LEFT: {dailyTimeLeft}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
