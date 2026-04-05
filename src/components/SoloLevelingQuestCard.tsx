@@ -364,6 +364,52 @@ export const SoloLevelingQuestCard = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [dailyTimeLeft, setDailyTimeLeft] = useState('');
+
+  // 24h daily countdown timer
+  useEffect(() => {
+    const getDailyDeadline = () => {
+      const key = 'daily_quest_start';
+      let startTime = localStorage.getItem(key);
+      const today = new Date().toDateString();
+      const storedDate = localStorage.getItem('daily_quest_date');
+      
+      if (!startTime || storedDate !== today) {
+        const now = Date.now().toString();
+        localStorage.setItem(key, now);
+        localStorage.setItem('daily_quest_date', today);
+        return parseInt(now);
+      }
+      return parseInt(startTime);
+    };
+
+    const startTime = getDailyDeadline();
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const remaining = TWENTY_FOUR_HOURS - elapsed;
+
+      if (remaining <= 0) {
+        // Check if all quests completed
+        const allDone = quests.filter(q => q.dailyReset && q.isMainQuest !== false).every(q => q.completed);
+        if (!allDone && onPenalty) {
+          onPenalty();
+        }
+        setDailyTimeLeft('00:00:00');
+        return;
+      }
+
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+      setDailyTimeLeft(`${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [quests, onPenalty]);
 
   // تحديث المهمة المختارة عند تغير قائمة المهمات
   useEffect(() => {
