@@ -682,7 +682,7 @@ export const SoloLevelingQuestCard = ({
                 </p>
               </div>
 
-              {/* ═══ TIMER DISPLAY (REPLACED TOTAL REWARD) ═══ */}
+              {/* ═══ DAILY TIMER DISPLAY ═══ */}
               <div className="mt-4 flex items-center justify-center">
                 {dailyTimeLeft && (
                   <div className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5">
