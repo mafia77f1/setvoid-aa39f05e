@@ -364,52 +364,6 @@ export const SoloLevelingQuestCard = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
-  const [dailyTimeLeft, setDailyTimeLeft] = useState('');
-
-  // 24h daily countdown timer
-  useEffect(() => {
-    const getDailyDeadline = () => {
-      const key = 'daily_quest_start';
-      let startTime = localStorage.getItem(key);
-      const today = new Date().toDateString();
-      const storedDate = localStorage.getItem('daily_quest_date');
-      
-      if (!startTime || storedDate !== today) {
-        const now = Date.now().toString();
-        localStorage.setItem(key, now);
-        localStorage.setItem('daily_quest_date', today);
-        return parseInt(now);
-      }
-      return parseInt(startTime);
-    };
-
-    const startTime = getDailyDeadline();
-    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-
-    const tick = () => {
-      const elapsed = Date.now() - startTime;
-      const remaining = TWENTY_FOUR_HOURS - elapsed;
-
-      if (remaining <= 0) {
-        // Check if all quests completed
-        const allDone = quests.filter(q => q.dailyReset && q.isMainQuest !== false).every(q => q.completed);
-        if (!allDone && onPenalty) {
-          onPenalty();
-        }
-        setDailyTimeLeft('00:00:00');
-        return;
-      }
-
-      const hours = Math.floor(remaining / (1000 * 60 * 60));
-      const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((remaining % (1000 * 60)) / 1000);
-      setDailyTimeLeft(`${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-    };
-
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [quests, onPenalty]);
 
   // تحديث المهمة المختارة عند تغير قائمة المهمات
   useEffect(() => {
@@ -565,10 +519,10 @@ export const SoloLevelingQuestCard = ({
               </div>
               
               <div className="flex items-center gap-3">
-                {dailyTimeLeft && (
+                {timeRemaining && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 bg-cyan-500/5">
                     <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-xs text-cyan-300 font-mono font-bold">{dailyTimeLeft}</span>
+                    <span className="text-xs text-cyan-300 font-mono font-bold">{timeRemaining}</span>
                   </div>
                 )}
                 {isExpanded ? (
