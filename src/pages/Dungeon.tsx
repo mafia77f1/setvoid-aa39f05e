@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogIn, LogOut, Map, DoorOpen, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
+import { LogIn, LogOut, DoorOpen, ChevronLeft, ChevronRight, ArrowUp, Layers } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { ManaStoneAnimation } from '@/components/dungeon/ManaStoneAnimation';
 import { DungeonEncounter } from '@/components/dungeon/DungeonEncounter';
 import { DungeonClearedScreen } from '@/components/dungeon/DungeonClearedScreen';
-import { DungeonMinimap } from '@/components/dungeon/DungeonMinimap';
 import { DungeonHUD } from '@/components/dungeon/DungeonHUD';
 import { DungeonSystemMessage } from '@/components/dungeon/DungeonSystemMessage';
 import { StaminaModal } from '@/components/dungeon/DungeonEncounter';
@@ -34,10 +34,14 @@ const TYPEWRITER_MESSAGES = [
   'رائحة قديمة تملأ المكان... كأن أحداً مرّ من هنا مؤخراً...',
 ];
 
+// Floor multipliers for difficulty scaling
+const FLOOR_MULTIPLIERS = [1, 1.5, 2, 2.8, 3.5, 5];
+
 const Dungeon = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { gameState, consumeItem } = useGameState();
+  const { playPathSelect, playMonsterEncounter, playTreasureFound, playDungeonEnter, playBossEncounter } = useSoundEffects();
   const rank = (searchParams.get('rank') || 'E').toUpperCase();
   const theme = RANK_THEMES[rank] || RANK_THEMES['E'];
 
@@ -45,7 +49,12 @@ const Dungeon = () => {
   const [currentEvent, setCurrentEvent] = useState<EventType>(null);
   const [encounter, setEncounter] = useState<DungeonRoom | null>(null);
 
-  // Dungeon grid state (kept for minimap & tracking)
+  // Floor system
+  const [currentFloor, setCurrentFloor] = useState(1);
+  const maxFloors = rank === 'E' ? 3 : rank === 'D' ? 4 : rank === 'C' ? 5 : 6;
+  const floorMultiplier = FLOOR_MULTIPLIERS[Math.min(currentFloor - 1, FLOOR_MULTIPLIERS.length - 1)];
+
+  // Dungeon grid state
   const [grid, setGrid] = useState<DungeonRoom[][]>([]);
   const [playerPos, setPlayerPos] = useState<Position>({ x: 0, y: GRID_SIZE - 1 });
   const [hp, setHp] = useState(100);
@@ -62,7 +71,6 @@ const Dungeon = () => {
   const [staminaTasks, setStaminaTasks] = useState<StaminaTask[]>([...STAMINA_TASKS]);
   const [showStaminaModal, setShowStaminaModal] = useState(false);
   const [cleared, setCleared] = useState(false);
-  const [showMap, setShowMap] = useState(false);
   const [showExitAnimation, setShowExitAnimation] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
@@ -73,14 +81,13 @@ const Dungeon = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [typewriterDone, setTypewriterDone] = useState(false);
 
-  // Steps tracking
   const [totalSteps, setTotalSteps] = useState(0);
 
   const hasExitStone = (gameState.inventory || []).some(i => i.id === 'gate_exit_stone' && i.quantity > 0);
 
   useEffect(() => {
     setGrid(generateDungeon(rank));
-  }, [rank]);
+  }, [rank, currentFloor]);
 
   const { monsters: totalMonsters, treasures: totalTreasures, totalRooms } = grid.length > 0 ? countRoomTypes(grid) : { monsters: 0, treasures: 0, totalRooms: 0 };
 
@@ -91,7 +98,6 @@ const Dungeon = () => {
     setTimeout(() => setSystemMessages(prev => prev.filter(m => m.id !== msg.id)), 4000);
   }, []);
 
-  // Typewriter effect
   const startTypewriter = useCallback((text: string, onDone?: () => void) => {
     setTypewriterText('');
     setIsTyping(true);
@@ -111,10 +117,11 @@ const Dungeon = () => {
   }, []);
 
   const handleStartDungeon = () => {
+    playDungeonEnter();
     setPhase('entering');
     setTimeout(() => {
       setPhase('grotto');
-      addSystemMessage('تم دخول البوابة بنجاح', 'success');
+      addSystemMessage(`دخلت الطابق ${currentFloor} من المغارة`, 'success');
     }, 2500);
   };
 
@@ -134,22 +141,19 @@ const Dungeon = () => {
     navigate(-1);
   };
 
-  // Pick a random event when choosing a path
   const handleChoosePath = (pathLabel: string) => {
     if (stamina <= 0) {
       setShowStaminaModal(true);
       return;
     }
+    playPathSelect();
     setStamina(prev => Math.max(0, prev - 1));
     setTotalSteps(prev => prev + 1);
 
-    // Pick a random message
     const msg = TYPEWRITER_MESSAGES[Math.floor(Math.random() * TYPEWRITER_MESSAGES.length)];
     
-    // Show typewriter, then show event
     setPhase('event');
     startTypewriter(msg, () => {
-      // After typewriter, decide event
       setTimeout(() => {
         const roll = Math.random();
         if (roll < 0.25) {
@@ -166,14 +170,13 @@ const Dungeon = () => {
   };
 
   const triggerTreasure = () => {
+    playTreasureFound();
     setCurrentEvent('treasure');
-    // Find an uncollected treasure room
     const treasureRooms = grid.flat().filter(r => r.type === 'treasure' && !r.cleared);
     if (treasureRooms.length > 0) {
       setEncounter(treasureRooms[0]);
     } else {
-      // Fallback: give gold directly
-      const goldAmount = Math.floor(Math.random() * 30) + 10;
+      const goldAmount = Math.floor((Math.random() * 30 + 10) * floorMultiplier);
       setGold(prev => prev + goldAmount);
       setTreasuresFound(prev => prev + 1);
       addSystemMessage(`لقد عثرت على كنز مفقود! +${goldAmount} ذهب`, 'success');
@@ -182,10 +185,23 @@ const Dungeon = () => {
   };
 
   const triggerMonster = () => {
+    playMonsterEncounter();
     setCurrentEvent('monster');
     const monsterRooms = grid.flat().filter(r => r.type === 'monster' && !r.cleared);
     if (monsterRooms.length > 0) {
-      setEncounter(monsterRooms[0]);
+      // Scale monster stats by floor
+      const room = { ...monsterRooms[0] };
+      if (room.monster) {
+        room.monster = {
+          ...room.monster,
+          hp: Math.floor(room.monster.hp * floorMultiplier),
+          maxHp: Math.floor(room.monster.maxHp * floorMultiplier),
+          damage: Math.floor(room.monster.damage * floorMultiplier),
+          xpReward: Math.floor(room.monster.xpReward * floorMultiplier),
+          goldReward: Math.floor(room.monster.goldReward * floorMultiplier),
+        };
+      }
+      setEncounter(room);
     } else {
       addSystemMessage('الممر آمن... لا وحوش هنا', 'info');
       setTimeout(() => { setPhase('grotto'); setCurrentEvent(null); }, 1500);
@@ -193,10 +209,26 @@ const Dungeon = () => {
   };
 
   const triggerBoss = () => {
+    playBossEncounter();
     setCurrentEvent('boss');
     const bossRoom = grid.flat().find(r => r.type === 'boss' && !r.cleared);
     if (bossRoom) {
       setEncounter(bossRoom);
+    } else {
+      // Floor cleared - advance or finish
+      handleFloorCleared();
+    }
+  };
+
+  const handleFloorCleared = () => {
+    if (currentFloor < maxFloors) {
+      addSystemMessage(`تم تطهير الطابق ${currentFloor}! الانتقال للطابق التالي...`, 'levelup');
+      setTimeout(() => {
+        setCurrentFloor(prev => prev + 1);
+        setTotalSteps(0);
+        setStamina(prev => Math.min(maxStamina, prev + 5));
+        setGrid(generateDungeon(rank));
+      }, 2000);
     } else {
       setCleared(true);
       setPhase('cleared');
@@ -216,16 +248,14 @@ const Dungeon = () => {
     setRoomsExplored(prev => prev + 1);
     
     if (encounter.type === 'boss') {
-      // Navigate to battle page for boss
-      navigate('/battle');
+      // Navigate to battle page for boss fight
+      navigate(`/battle?rank=${rank}`);
       return;
     }
     
-    setEncounter(null);
-    setCurrentEvent(null);
-    setPhase('grotto');
-    addSystemMessage('تم هزيمة الوحش!', 'success');
-  }, [encounter, navigate, addSystemMessage]);
+    // For regular monsters - go directly to battle
+    navigate(`/battle?rank=${rank}`);
+  }, [encounter, navigate, rank]);
 
   const handleCollectTreasure = useCallback(() => {
     if (!encounter || !encounter.treasure) return;
@@ -234,14 +264,15 @@ const Dungeon = () => {
       ng[encounter.y][encounter.x].cleared = true;
       return ng;
     });
-    setGold(prev => prev + (encounter.treasure?.amount || 0));
+    const goldAmount = Math.floor((encounter.treasure?.amount || 0) * floorMultiplier);
+    setGold(prev => prev + goldAmount);
     setTreasuresFound(prev => prev + 1);
     setRoomsExplored(prev => prev + 1);
     setEncounter(null);
     setCurrentEvent(null);
     setPhase('grotto');
-    addSystemMessage(`تم جمع الكنز! +${encounter.treasure?.amount} ذهب`, 'success');
-  }, [encounter, addSystemMessage]);
+    addSystemMessage(`تم جمع الكنز! +${goldAmount} ذهب`, 'success');
+  }, [encounter, addSystemMessage, floorMultiplier]);
 
   const handleDismissEncounter = () => {
     setEncounter(null);
@@ -279,7 +310,14 @@ const Dungeon = () => {
             >
               <div className="bg-blue-600 w-fit mx-auto px-4 py-1 rounded-full text-[10px] font-black mb-4 border border-blue-400">إشعار النظام</div>
               <h2 className="text-xl font-bold mb-2">لقد رصدت بوابة [رتبة {rank}]</h2>
-              <p className="text-gray-400 text-xs mb-8">هل ترغب في استكشاف هذا النفق؟ الأخطار مجهولة بالداخل.</p>
+              <p className="text-gray-400 text-xs mb-4">هل ترغب في استكشاف هذا النفق؟ الأخطار مجهولة بالداخل.</p>
+              
+              {/* Floor info */}
+              <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
+                <Layers className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs text-cyan-300 font-mono">{maxFloors} طوابق • صعوبة متدرجة</span>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <button onClick={handleStartDungeon} className="flex items-center justify-center gap-2 py-3 bg-blue-600 rounded-xl font-bold active:scale-95 transition-transform">
                   <LogIn size={18} /> دخول
@@ -306,11 +344,10 @@ const Dungeon = () => {
       {/* ═══ GROTTO MAIN VIEW ═══ */}
       {(phase === 'grotto' || phase === 'event') && (
         <>
-          {/* Background: InnerGrotto.png */}
+          {/* Background */}
           <div className="absolute inset-0">
             <img src="/InnerGrotto.png" alt="المغارة" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/60" />
-            {/* Atmospheric particles */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
               {Array.from({ length: 15 }).map((_, i) => (
                 <motion.div
@@ -335,9 +372,11 @@ const Dungeon = () => {
               />
             </div>
             <div className="flex flex-col gap-2 pointer-events-auto">
-              <button onClick={() => setShowMap(!showMap)} className="p-3 bg-black/60 rounded-full border border-white/10 backdrop-blur-sm">
-                <Map className="w-5 h-5 text-blue-400" />
-              </button>
+              {/* Floor indicator */}
+              <div className="px-3 py-2 bg-black/70 rounded-full border border-cyan-500/30 backdrop-blur-sm flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-cyan-400" />
+                <span className="text-[10px] text-cyan-300 font-mono font-bold">{currentFloor}F/{maxFloors}F</span>
+              </div>
               {hasExitStone && (
                 <button onClick={handleExitWithStone} className="p-3 bg-black/60 rounded-full border border-emerald-500/30 hover:border-emerald-400/50 transition-colors backdrop-blur-sm">
                   <DoorOpen className="w-5 h-5 text-emerald-400" />
@@ -349,7 +388,6 @@ const Dungeon = () => {
           {/* ═══ THREE GATES ═══ */}
           {phase === 'grotto' && (
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-end pb-12 px-4">
-              {/* Stamina warning */}
               {stamina <= 3 && stamina > 0 && (
                 <p className="text-[10px] text-yellow-500 animate-pulse font-mono mb-3">
                   ⚠ الطاقة منخفضة ({stamina}/{maxStamina})
@@ -385,7 +423,6 @@ const Dungeon = () => {
                     <span className="text-sm font-bold text-cyan-300">بوابة المنتصف</span>
                     <span className="text-[8px] text-cyan-400/60 font-mono">-1 طاقة</span>
                   </div>
-                  {/* Glow effect */}
                   <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
                 </motion.button>
 
@@ -437,15 +474,6 @@ const Dungeon = () => {
           )}
         </>
       )}
-
-      {/* ═══ MINIMAP ═══ */}
-      <AnimatePresence>
-        {showMap && (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute top-20 right-4 z-[60] bg-black/90 p-2 rounded-2xl border border-white/10">
-            <DungeonMinimap grid={grid} playerPos={playerPos} themeColor={theme.primary} />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ═══ EXIT CONFIRMATION ═══ */}
       <AnimatePresence>
