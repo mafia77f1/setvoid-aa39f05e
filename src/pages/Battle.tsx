@@ -77,7 +77,7 @@ const getSkillLevels = () => {
   return { basicAttack: 1, thunderDash: 1, daggerStrike: 1, swordStrike: 1, darkVoid: 1 };
 };
 
-const SoloLevelingBattle = () => {
+const HunterBattle = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { gameState } = useGameState();
@@ -111,7 +111,9 @@ const SoloLevelingBattle = () => {
   const spiHitBonus = getSpiritHitBonus(spiritLevel);
   const canRevealBossHP = getSpiritReveal(spiritLevel);
 
-  const maxBossHP = Math.max(100, baseDmg * bossConfig.hpMultiplier);
+  // Variable boss HP with ±20% randomness
+  const hpVariance = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+  const maxBossHP = Math.max(100, Math.floor(baseDmg * bossConfig.hpMultiplier * hpVariance));
   const [bossHP, setBossHP] = useState(maxBossHP);
   const maxPlayerHP = gameState.maxHp || (2000 + playerLevel * 50);
   const maxPlayerMana = gameState.maxEnergy || (150 + playerLevel * 5);
@@ -143,6 +145,7 @@ const SoloLevelingBattle = () => {
   const [dodgedAttack, setDodgedAttack] = useState(false);
 
   const [darkVoidCharge, setDarkVoidCharge] = useState(0);
+  // Boss fury - starts at 0, only activates below 25%
   const [bossFury, setBossFury] = useState(0);
   const [ultimateFuryActive, setUltimateFuryActive] = useState(false);
 
@@ -1067,4 +1070,4 @@ const SkillBtn = ({ onClick, disabled, icon, name, dmg, mpCost, cooldown, color 
   );
 };
 
-export default SoloLevelingBattle;
+export default HunterBattle;
