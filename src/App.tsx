@@ -22,6 +22,7 @@ import Market from "./pages/Market";
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import AuthCallback from "./pages/AuthCallback";
+import Penalty from "./pages/Penalty";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const AppContent = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/onboarding" element={<Navigate to="/" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/penalty" element={<Penalty />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
