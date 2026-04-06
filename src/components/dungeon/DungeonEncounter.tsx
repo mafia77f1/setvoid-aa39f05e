@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, Gift, AlertTriangle, Skull, Check, X, Footprints, Eye, EyeOff, Info, Shield } from 'lucide-react';
 import { DungeonRoom, StaminaTask } from './DungeonTypes';
+import { useNavigate } from 'react-router-dom';
 
 interface EncounterProps {
   room: DungeonRoom | null;
@@ -13,6 +14,7 @@ interface EncounterProps {
 
 export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onDismiss, themeColor }: EncounterProps) => {
   const [showMonsterInfo, setShowMonsterInfo] = useState(false);
+  const navigate = useNavigate();
   
   if (!room) return null;
 
@@ -21,7 +23,6 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
   const isTreasure = room.type === 'treasure';
   const isTrap = room.type === 'trap';
 
-  // Get the appropriate image
   const getEventImage = () => {
     if (isBoss) return '/GrottoBoss.png';
     if (isMonster) return '/GrottoMonsters.png';
@@ -40,7 +41,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
         className="fixed inset-0 z-[70] flex items-end justify-center"
         style={{ background: 'rgba(0,0,0,0.85)' }}
       >
-        {/* Event Image - Top half */}
+        {/* Event Image */}
         {eventImage && (
           <motion.div
             initial={{ opacity: 0, scale: 1.1 }}
@@ -50,7 +51,6 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
             <img src={eventImage} alt="Event" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a15] via-[#0a0a15]/60 to-transparent" />
             
-            {/* Boss glitch effect */}
             {isBoss && (
               <motion.div
                 className="absolute inset-0 pointer-events-none"
@@ -126,16 +126,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
                   )}
                 </AnimatePresence>
 
-                {/* Task to defeat */}
-                <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5">
-                  <p className="text-[9px] font-mono text-red-400/70 tracking-wider mb-2 uppercase">DEFEAT CONDITION</p>
-                  <p className="text-sm font-bold text-slate-200">{room.monster.task}</p>
-                  {room.monster.taskDuration && (
-                    <p className="text-[10px] text-slate-400 mt-1">⏱ {room.monster.taskDuration} دقيقة</p>
-                  )}
-                </div>
-
-                {/* Action buttons */}
+                {/* Action buttons - NO mandatory tasks, direct combat */}
                 <div className="grid grid-cols-3 gap-2">
                   {/* Hide */}
                   <motion.button
@@ -147,7 +138,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
                     <span className="text-[10px] text-slate-400 font-bold">الاختباء</span>
                   </motion.button>
 
-                  {/* Fight */}
+                  {/* Fight - goes directly to battle */}
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={onDefeatMonster}
@@ -171,7 +162,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
               </>
             )}
 
-            {/* ═══ TREASURE ═══ */}
+            {/* ═══ TREASURE - direct collection, no task ═══ */}
             {isTreasure && room.treasure && (
               <>
                 <div className="text-center">
@@ -180,21 +171,17 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
                     {room.treasure.type === 'gold' ? `💰 +${room.treasure.amount} ذهب` : `📊 +${room.treasure.amount} ${room.treasure.statType}`}
                   </p>
                 </div>
-                <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-                  <p className="text-[9px] font-mono text-amber-400/70 tracking-wider mb-2 uppercase">COLLECT CONDITION</p>
-                  <p className="text-sm font-bold text-slate-200">{room.treasure.task}</p>
-                </div>
                 <div className="flex gap-3">
                   <motion.button whileTap={{ scale: 0.95 }} onClick={onCollectTreasure}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-bold text-sm border border-amber-500/40 bg-amber-500/10 text-amber-300"
                     style={{ boxShadow: '0 0 20px rgba(245,158,11,0.15)' }}
                   >
-                    <Check className="w-4 h-4" /> أنجزت!
+                    <Check className="w-4 h-4" /> جمع الكنز
                   </motion.button>
                   <motion.button whileTap={{ scale: 0.95 }} onClick={onDismiss}
                     className="px-4 py-3.5 rounded-xl border border-white/10 text-sm text-slate-500"
                   >
-                    لاحقاً
+                    تجاهل
                   </motion.button>
                 </div>
               </>
