@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
 
-// Sound URLs (using free sound effects)
 const SOUNDS = {
   questComplete: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
   attack: 'https://assets.mixkit.co/active_storage/sfx/2803/2803-preview.mp3',
@@ -12,6 +11,12 @@ const SOUNDS = {
   useAbility: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3',
   gameOver: 'https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3',
   purchase: 'https://assets.mixkit.co/active_storage/sfx/2580/2580-preview.mp3',
+  // Dungeon SFX
+  pathSelect: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+  monsterEncounter: 'https://assets.mixkit.co/active_storage/sfx/2803/2803-preview.mp3',
+  treasureFound: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+  dungeonEnter: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
+  bossEncounter: 'https://assets.mixkit.co/active_storage/sfx/2801/2801-preview.mp3',
 };
 
 type SoundType = keyof typeof SOUNDS;
@@ -34,9 +39,7 @@ export const useSoundEffects = () => {
       const audio = audioRefs.current[soundType];
       audio.volume = volume;
       audio.currentTime = 0;
-      audio.play().catch(() => {
-        // Ignore autoplay errors
-      });
+      audio.play().catch(() => {});
     } catch (error) {
       console.log('Sound playback error:', error);
     }
@@ -52,6 +55,11 @@ export const useSoundEffects = () => {
   const playUseAbility = useCallback(() => playSound('useAbility', 0.4), [playSound]);
   const playGameOver = useCallback(() => playSound('gameOver', 0.5), [playSound]);
   const playPurchase = useCallback(() => playSound('purchase', 0.4), [playSound]);
+  const playPathSelect = useCallback(() => playSound('pathSelect', 0.3), [playSound]);
+  const playMonsterEncounter = useCallback(() => playSound('monsterEncounter', 0.4), [playSound]);
+  const playTreasureFound = useCallback(() => playSound('treasureFound', 0.4), [playSound]);
+  const playDungeonEnter = useCallback(() => playSound('dungeonEnter', 0.3), [playSound]);
+  const playBossEncounter = useCallback(() => playSound('bossEncounter', 0.5), [playSound]);
 
   return {
     playQuestComplete,
@@ -64,5 +72,10 @@ export const useSoundEffects = () => {
     playUseAbility,
     playGameOver,
     playPurchase,
+    playPathSelect,
+    playMonsterEncounter,
+    playTreasureFound,
+    playDungeonEnter,
+    playBossEncounter,
   };
 };
