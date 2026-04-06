@@ -77,7 +77,6 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
 
   const requiredTimeInSeconds = (quest.requiredTime || 0) * 60;
 
-  // Calculate real elapsed time from startedAt - always derived from clock
   const timeProgress = (() => {
     if (!quest.startedAt) return quest.timeProgress || 0;
     const started = new Date(quest.startedAt).getTime();
@@ -92,14 +91,12 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
     setTimeout(() => setIsVisible(true), 50);
   }, []);
 
-  // Tick every second when running
   useEffect(() => {
     if (!isRunning) return;
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [isRunning]);
 
-  // Sync progress back to parent
   useEffect(() => {
     if (onUpdateProgress && quest.startedAt) {
       onUpdateProgress(timeProgress);
@@ -139,16 +136,13 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
           "relative z-10 w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.2,1,0.2,1)]",
         isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
       )}>
-        {/* Outer glow - cyan/blue */}
           <div className="pointer-events-none absolute -inset-2 bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-cyan-500/20 blur-xl opacity-60" />
         
-        {/* Main Panel */}
         <div className="relative overflow-hidden" style={{
           background: 'linear-gradient(180deg, rgba(8,20,40,0.98) 0%, rgba(4,12,28,0.99) 50%, rgba(8,20,40,0.98) 100%)',
           border: '2px solid rgba(56,189,248,0.4)',
           boxShadow: '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
         }}>
-          {/* Grid background pattern */}
           <div className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{
             backgroundImage: `
               linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
@@ -157,19 +151,14 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
             backgroundSize: '24px 24px'
           }} />
 
-          {/* Top glow line */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
-          
-          {/* Bottom glow line */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
 
-          {/* Corner accents - metallic style */}
           <div className="pointer-events-none absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-cyan-400/70" />
 
-          {/* Close button */}
           <button
             type="button"
             onClick={handleClose}
@@ -178,14 +167,11 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
             <X className="w-5 h-5" />
           </button>
 
-          {/* ═══ HEADER: (!) QUEST INFO ═══ */}
           <div className="relative px-6 pt-7 pb-5 text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
-              {/* Alert icon */}
               <div className="w-9 h-9 border-2 border-slate-400/60 flex items-center justify-center bg-transparent">
                 <span className="text-slate-300 font-black text-lg">!</span>
               </div>
-              {/* QUEST INFO badge */}
               <div className="border-2 border-slate-400/60 px-5 py-1.5 bg-transparent">
                 <span className="text-sm font-black tracking-[0.3em] text-white uppercase">
                   QUEST INFO
@@ -198,18 +184,14 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
             </p>
           </div>
 
-          {/* Separator line */}
           <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
 
-          {/* ═══ GOAL SECTION ═══ */}
           <div className="px-6 py-5">
             <h3 className="text-center text-lg font-black tracking-[0.2em] text-white mb-5 underline underline-offset-8 decoration-slate-600">
               GOAL
             </h3>
             
-            {/* Quest task details */}
             <div className="space-y-4 mb-5">
-              {/* Main task */}
               <div className="flex items-center justify-between px-4">
                 <div className="flex items-center gap-3">
                   <Icon className="w-5 h-5 text-slate-400" />
@@ -240,7 +222,6 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
                 </div>
               </div>
 
-              {/* Time progress bar */}
               {quest.requiredTime && (
                 <div className="px-4">
                   <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/30">
@@ -262,7 +243,6 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
                 </div>
               )}
 
-              {/* Reward info */}
               <div className="flex items-center justify-between px-4 pt-2 border-t border-slate-700/30">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -283,17 +263,14 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
             </div>
           </div>
 
-          {/* Separator */}
           <div className="mx-6 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
-          {/* ═══ WARNING SECTION ═══ */}
           <div className="px-6 py-4">
             <p className="text-xs text-slate-500 text-center leading-relaxed">
               <span className="text-red-400 font-bold">WARNING:</span> Failure to complete the daily quest will result in an appropriate <span className="text-red-400 font-bold">penalty</span>.
             </p>
           </div>
 
-          {/* ═══ ACTION BUTTON ═══ */}
           <div className="px-6 pb-6 pt-2">
             {quest.completed ? (
               <div className="flex items-center justify-center gap-3 py-4 border border-emerald-500/30 bg-emerald-500/5">
@@ -366,7 +343,6 @@ export const SoloLevelingQuestCard = ({
   const [showCompletion, setShowCompletion] = useState(false);
   const [dailyTimeLeft, setDailyTimeLeft] = useState('');
 
-  // 24h daily countdown timer
   useEffect(() => {
     const getDailyDeadline = () => {
       const key = 'daily_quest_start';
@@ -391,7 +367,6 @@ export const SoloLevelingQuestCard = ({
       const remaining = TWENTY_FOUR_HOURS - elapsed;
 
       if (remaining <= 0) {
-        // Check if all quests completed
         const allDone = quests.filter(q => q.dailyReset && q.isMainQuest !== false).every(q => q.completed);
         if (!allDone && onPenalty) {
           onPenalty();
@@ -411,7 +386,6 @@ export const SoloLevelingQuestCard = ({
     return () => clearInterval(interval);
   }, [quests, onPenalty]);
 
-  // تحديث المهمة المختارة عند تغير قائمة المهمات
   useEffect(() => {
     if (selectedQuest) {
       const updatedQuest = quests.find(q => q.id === selectedQuest.id);
@@ -472,7 +446,6 @@ export const SoloLevelingQuestCard = ({
 
   return (
     <>
-      {/* Completion Modal */}
       {showCompletion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm animate-fade-in">
           <div className="max-w-sm w-full text-center relative">
@@ -504,9 +477,7 @@ export const SoloLevelingQuestCard = ({
         </div>
       )}
 
-      {/* Main Quest Card - System Window */}
       <div className="relative">
-        {/* Outer cyan glow */}
         <div className={cn(
           "pointer-events-none absolute -inset-1 blur-md opacity-40",
           allCompleted 
@@ -521,7 +492,6 @@ export const SoloLevelingQuestCard = ({
             ? '0 0 60px rgba(16,185,129,0.2), inset 0 0 60px rgba(16,185,129,0.05)'
             : '0 0 60px rgba(56,189,248,0.15), inset 0 0 60px rgba(56,189,248,0.05)',
         }}>
-          {/* Grid background pattern */}
           <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{
             backgroundImage: `
               linear-gradient(rgba(56,189,248,0.5) 1px, transparent 1px),
@@ -530,33 +500,27 @@ export const SoloLevelingQuestCard = ({
             backgroundSize: '20px 20px'
           }} />
 
-          {/* Scan line effect */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent animate-scan-line" />
           </div>
 
-          {/* Top & Bottom glow lines */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
 
-          {/* Corner accents - metallic */}
           <div className="pointer-events-none absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/70" />
           <div className="pointer-events-none absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/70" />
 
-          {/* ═══ HEADER: (!) QUEST INFO ═══ */}
           <div 
             className="relative z-10 px-5 pt-6 pb-4 cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                {/* Alert icon box */}
                 <div className="w-10 h-10 border-2 border-slate-400/60 flex items-center justify-center bg-transparent shadow-[0_0_15px_rgba(56,189,248,0.1)]">
                   <span className="text-slate-200 font-black text-xl">!</span>
                 </div>
-                {/* QUEST INFO badge */}
                 <div className="border-2 border-slate-400/60 px-5 py-1.5 bg-transparent">
                   <span className="text-sm font-black tracking-[0.3em] text-white uppercase">
                     QUEST INFO
@@ -565,12 +529,6 @@ export const SoloLevelingQuestCard = ({
               </div>
               
               <div className="flex items-center gap-3">
-                {dailyTimeLeft && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/30 bg-cyan-500/5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-xs text-cyan-300 font-mono font-bold">{dailyTimeLeft}</span>
-                  </div>
-                )}
                 {isExpanded ? (
                   <ChevronUp className="w-5 h-5 text-cyan-500/60" />
                 ) : (
@@ -579,16 +537,13 @@ export const SoloLevelingQuestCard = ({
               </div>
             </div>
 
-            {/* System arrival message */}
             <p className="text-sm text-slate-400 font-mono text-center">
               [Daily Quest: <span className="text-cyan-300 font-bold">Strength Training</span> has arrived.]
             </p>
           </div>
 
-          {/* Separator line */}
           <div className="mx-5 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
 
-          {/* ═══ GOALS SECTION ═══ */}
           {isExpanded && (
             <div className="relative z-10 px-5 py-5 animate-fade-in">
               <h3 className="text-center text-base font-black tracking-[0.25em] text-white mb-5 underline underline-offset-8 decoration-slate-600/60">
@@ -611,7 +566,6 @@ export const SoloLevelingQuestCard = ({
                         quest.completed && "opacity-70"
                       )}
                     >
-                      {/* Quest name with icon */}
                       <div className="flex items-center gap-3">
                         <Icon className={cn(
                           "w-4.5 h-4.5 transition-all",
@@ -629,7 +583,6 @@ export const SoloLevelingQuestCard = ({
                         </span>
                       </div>
 
-                      {/* Progress & checkbox */}
                       <div className="flex items-center gap-3">
                         <span className={cn(
                           "text-sm font-mono",
@@ -650,7 +603,6 @@ export const SoloLevelingQuestCard = ({
                           )}
                         </span>
                         
-                        {/* Checkbox */}
                         <div className={cn(
                           "w-5 h-5 border flex items-center justify-center transition-all",
                           quest.completed
@@ -667,7 +619,6 @@ export const SoloLevelingQuestCard = ({
                 })}
               </div>
 
-              {/* Progress summary */}
               <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2">
                 <div className="flex items-center gap-2 px-4 py-1.5 border border-cyan-500/20 bg-cyan-500/5">
                   <Target className="w-4 h-4 text-cyan-400" />
@@ -677,10 +628,8 @@ export const SoloLevelingQuestCard = ({
                 </div>
               </div>
 
-              {/* Separator */}
               <div className="mx-0 my-4 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
-              {/* ═══ WARNING SECTION ═══ */}
               <div className="px-2 pb-1">
                 <p className="text-xs text-slate-500 text-center leading-relaxed">
                   <span className="text-red-400 font-bold">WARNING:</span> Failure to complete
@@ -688,21 +637,22 @@ export const SoloLevelingQuestCard = ({
                 </p>
               </div>
 
-              {/* Reward summary */}
+              {/* Countdown timer moved here (Replacing Total Reward) */}
               <div className="mt-4 flex items-center justify-center">
-                <div className="flex items-center gap-2 px-4 py-2 border border-cyan-500/20 bg-cyan-500/5">
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-black text-cyan-300 tracking-[0.15em]">
-                    TOTAL REWARD: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
-                  </span>
-                </div>
+                {dailyTimeLeft && (
+                  <div className="flex items-center gap-2 px-4 py-2 border border-cyan-500/20 bg-cyan-500/5">
+                    <Clock className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-black text-cyan-300 tracking-[0.15em] font-mono">
+                      TIME REMAINING: {dailyTimeLeft}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Quest Modal */}
       {selectedQuest && (
         <QuestModal
           quest={selectedQuest}
