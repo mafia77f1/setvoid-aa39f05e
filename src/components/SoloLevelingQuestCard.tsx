@@ -688,18 +688,14 @@ export const SoloLevelingQuestCard = ({
                 </p>
               </div>
 
-              {/* ═══ TOTAL REWARD ═══ */}
+              {/* Reward summary */}
               <div className="mt-4 flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/battle')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 transition-all"
-                >
+                <div className="flex items-center gap-2 px-4 py-2 border border-cyan-500/20 bg-cyan-500/5">
                   <Sparkles className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-black text-cyan-300 tracking-[0.2em]">
-                    TOTAL: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
+                  <span className="text-xs font-black text-cyan-300 tracking-[0.15em]">
+                    TOTAL REWARD: +{displayQuests.reduce((sum, q) => sum + q.xpReward, 0)} XP
                   </span>
-                </button>
+                </div>
               </div>
             </div>
           )}
