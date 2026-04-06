@@ -21,7 +21,7 @@ import {
 import { StatType, Quest } from '@/types/game';
 import { useNavigate } from 'react-router-dom';
 
-interface SoloLevelingQuestCardProps {
+interface QuestCardProps {
   quests: Quest[];
   onTaskComplete: (taskId: string) => void;
   onStartQuest: (questId: string) => void;
@@ -139,7 +139,7 @@ const QuestModal = ({ quest, onClose, onStart, onComplete, onUpdateProgress }: Q
           "relative z-10 w-full max-w-sm transition-all duration-700 ease-[cubic-bezier(0.2,1,0.2,1)]",
         isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-8"
       )}>
-        {/* Outer glow - Solo Leveling cyan/blue */}
+        {/* Outer glow - cyan/blue */}
           <div className="pointer-events-none absolute -inset-2 bg-gradient-to-b from-cyan-500/20 via-blue-500/10 to-cyan-500/20 blur-xl opacity-60" />
         
         {/* Main Panel */}
@@ -359,7 +359,7 @@ export const SoloLevelingQuestCard = ({
   onUpdateQuestProgress,
   timeRemaining,
   onPenalty
-}: SoloLevelingQuestCardProps) => {
+}: QuestCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
@@ -504,7 +504,7 @@ export const SoloLevelingQuestCard = ({
         </div>
       )}
 
-      {/* Main Quest Card - Solo Leveling System Window */}
+      {/* Main Quest Card - System Window */}
       <div className="relative">
         {/* Outer cyan glow */}
         <div className={cn(
