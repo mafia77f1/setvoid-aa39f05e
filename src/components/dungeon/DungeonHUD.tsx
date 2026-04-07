@@ -17,18 +17,17 @@ interface HUDProps {
   rank: string;
 }
 
-const Bar = ({ value, max, color, glowColor }: { value: number; max: number; color: string; glowColor: string }) => (
-  <div className="w-full h-2.5 bg-black/60 overflow-hidden border border-white/5 skew-x-[-15deg]">
+const Bar = ({ value, max, color }: { value: number; max: number; color: string }) => (
+  <div className="relative w-full h-3 bg-black/40 border border-white/10 overflow-hidden group">
     <motion.div
       className="h-full relative"
+      initial={{ width: 0 }}
       animate={{ width: `${Math.max(0, (value / max) * 100)}%` }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      style={{ 
-        background: `linear-gradient(90deg, ${color}, ${glowColor})`, 
-        boxShadow: `0 0 12px ${glowColor}80` 
-      }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      style={{ backgroundColor: color }}
     >
-      <div className="absolute inset-0 bg-white/20 h-[1px]" />
+      {/* تأثير اللمعان المتحرك (Glow Effect) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg] animate-pulse" />
     </motion.div>
   </div>
 );
@@ -39,88 +38,97 @@ export const DungeonHUD = ({
   themeColor, rank,
 }: HUDProps) => {
   return (
-    <div
-      className="relative overflow-hidden border-l-4 p-4 backdrop-blur-2xl space-y-4"
-      style={{
-        background: 'linear-gradient(135deg, rgba(5,5,10,0.95) 0%, rgba(15,15,25,0.9) 100%)',
-        borderColor: `${themeColor}CC`,
-        boxShadow: `inset 0 0 20px ${themeColor}15, 0 10px 40px rgba(0,0,0,0.7)`,
-      }}
-    >
-      {/* Rank badge area */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black tracking-[0.3em] uppercase italic" style={{ color: themeColor }}>
-            SYSTEM STATUS
-          </span>
-          <div className="h-[1px] w-full mt-0.5" style={{ background: `linear-gradient(90deg, ${themeColor}, transparent)` }} />
+    <div className="relative border-2 overflow-hidden shadow-2xl" 
+      style={{ 
+        background: 'rgba(10, 10, 15, 0.95)',
+        borderColor: `${themeColor}60`,
+        boxShadow: `0 0 20px ${themeColor}20`
+      }}>
+      
+      {/* عناصر التزيين (Solo Leveling Decorations) */}
+      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: themeColor }} />
+      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2" style={{ borderColor: themeColor }} />
+      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2" style={{ borderColor: themeColor }} />
+      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: themeColor }} />
+      
+      {/* خط المسح (Scan Line) */}
+      <div className="absolute inset-0 pointer-events-none opacity-10" 
+        style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(255,255,255,0.1) 50%)', backgroundSize: '100% 4px' }} 
+      />
+
+      {/* Header - الحالة */}
+      <div className="relative py-2 px-4 border-b flex justify-between items-center bg-white/5" style={{ borderColor: `${themeColor}30` }}>
+        <h2 className="text-[10px] font-black tracking-[0.4em] italic uppercase" style={{ color: themeColor }}>
+          STATUS WINDOW
+        </h2>
+        <div className="flex items-center gap-2">
+           <span className="text-[8px] text-white/40 font-mono tracking-tighter">RANK</span>
+           <span className="text-sm font-black italic underline decoration-2" style={{ color: themeColor }}>
+            {rank}
+           </span>
         </div>
+      </div>
+
+      <div className="p-5 space-y-5">
+        {/* HP Section */}
         <div className="relative">
-          <div className="absolute -inset-1 blur-[4px] opacity-30" style={{ background: themeColor }} />
-          <span
-            className="relative text-[10px] font-black px-3 py-0.5 skew-x-[-15deg] border"
-            style={{ background: 'black', color: themeColor, borderColor: themeColor }}
-          >
-            {rank}-RANK
-          </span>
-        </div>
-      </div>
-
-      {/* HP Section */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500/10" />
-            <span className="text-[10px] font-black italic text-red-500 tracking-wider">HP</span>
+          <div className="flex justify-between items-end mb-1">
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-red-500 fill-red-500/20" />
+              <span className="text-[11px] font-bold tracking-widest text-white/80">HP</span>
+            </div>
+            <span className="text-xs font-mono font-bold text-red-400">
+              {hp} <span className="text-white/20">/</span> {maxHp}
+            </span>
           </div>
-          <span className="text-[10px] font-mono text-red-400/90 font-bold tracking-tighter">
-            {hp} <span className="opacity-30">/</span> {maxHp}
-          </span>
+          <Bar value={hp} max={maxHp} color="#ef4444" />
         </div>
-        <Bar value={hp} max={maxHp} color="#991b1b" glowColor="#ff1a1a" />
-      </div>
 
-      {/* Stamina Section */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-1.5">
-            <Footprints className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500/10" />
-            <span className="text-[10px] font-black italic text-emerald-500 tracking-wider">STAMINA</span>
+        {/* Stamina Section */}
+        <div className="relative">
+          <div className="flex justify-between items-end mb-1">
+            <div className="flex items-center gap-2">
+              <Footprints className="w-4 h-4 text-emerald-500 fill-emerald-500/20" />
+              <span className="text-[11px] font-bold tracking-widest text-white/80">STAMINA</span>
+            </div>
+            <span className="text-xs font-mono font-bold text-emerald-400">
+              {stamina} <span className="text-white/20">/</span> {maxStamina}
+            </span>
           </div>
-          <span className="text-[10px] font-mono text-emerald-400/90 font-bold tracking-tighter">
-            {stamina} <span className="opacity-30">/</span> {maxStamina}
-          </span>
+          <Bar value={stamina} max={maxStamina} color="#10b981" />
         </div>
-        <Bar value={stamina} max={maxStamina} color="#065f46" glowColor="#10b981" />
-      </div>
 
-      {/* Mana Section */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/10" />
-            <span className="text-[10px] font-black italic text-cyan-400 tracking-wider">MANA</span>
+        {/* Mana Section */}
+        <div className="relative">
+          <div className="flex justify-between items-end mb-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-400 fill-blue-400/20" />
+              <span className="text-[11px] font-bold tracking-widest text-white/80">MANA</span>
+            </div>
+            <span className="text-xs font-mono font-bold text-blue-400">
+              {mana} <span className="text-white/20">/</span> {maxMana}
+            </span>
           </div>
-          <span className="text-[10px] font-mono text-cyan-400/90 font-bold tracking-tighter">
-            {mana} <span className="opacity-30">/</span> {maxMana}
-          </span>
+          <Bar value={mana} max={maxMana} color="#3b82f6" />
         </div>
-        <Bar value={mana} max={maxMana} color="#075985" glowColor="#0ea5e9" />
-      </div>
 
-      {/* Footer Stats */}
-      <div className="flex items-center justify-between pt-3 border-t border-white/[0.08]">
-        <div className="flex flex-col items-center gap-0.5">
-          <Gem className="w-3 h-3 text-amber-400 drop-shadow-[0_0_5px_#fbbf2460]" />
-          <span className="text-[10px] text-amber-200 font-black tracking-tight">{gold}</span>
-        </div>
-        <div className="flex flex-col items-center gap-0.5 px-4 border-x border-white/[0.05]">
-          <Skull className="w-3 h-3 text-red-500 drop-shadow-[0_0_5px_#ef444460]" />
-          <span className="text-[10px] text-red-200 font-black tracking-tight">{monstersDefeated}/{totalMonsters}</span>
-        </div>
-        <div className="flex flex-col items-center gap-0.5">
-          <Zap className="w-3 h-3 drop-shadow-[0_0_5px_currentColor]" style={{ color: themeColor }} />
-          <span className="text-[10px] font-black tracking-tight" style={{ color: themeColor }}>{roomsExplored}/{totalRooms}</span>
+        {/* Stats Grid - الاحصائيات السفلى */}
+        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/10">
+          <div className="flex flex-col items-center p-2 rounded bg-white/[0.03] border border-white/[0.05]">
+            <Gem className="w-4 h-4 text-amber-400 mb-1" />
+            <span className="text-[12px] font-black text-amber-200 tracking-tighter">{gold}</span>
+            <span className="text-[7px] text-white/30 uppercase font-bold">GOLD</span>
+          </div>
+          <div className="flex flex-col items-center p-2 rounded bg-white/[0.03] border border-white/[0.05]">
+            <Skull className="w-4 h-4 text-red-500 mb-1" />
+            <span className="text-[12px] font-black text-red-200 tracking-tighter">{monstersDefeated}/{totalMonsters}</span>
+            <span className="text-[7px] text-white/30 uppercase font-bold">KILLS</span>
+          </div>
+          <div className="flex flex-col items-center p-2 rounded bg-white/[0.03] border border-white/[0.05]">
+            <Zap className="w-4 h-4 mb-1" style={{ color: themeColor }} />
+            <span className="text-[12px] font-black tracking-tighter" style={{ color: themeColor }}>{roomsExplored}/{totalRooms}</span>
+            <span className="text-[7px] text-white/30 uppercase font-bold">ROOMS</span>
+          </div>
         </div>
       </div>
     </div>
