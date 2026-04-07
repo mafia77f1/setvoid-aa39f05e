@@ -5,7 +5,18 @@ import { useEffect } from 'react';
 
 const Penalty = () => {
   const navigate = useNavigate();
-  const { gameState, clearPunishment } = useGameState();
+  const { gameState, clearPunishment, setGameState } = useGameState();
+
+  // تأمين خصم نقاط الصحة عند دخول المكون لأول مرة
+  useEffect(() => {
+    const damage = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
+    if (setGameState) {
+      setGameState(prev => ({
+        ...prev,
+        hp: Math.max(0, (prev.hp || 100) - damage)
+      }));
+    }
+  }, []);
 
   // Set punishment end time to 4 hours from now if not already set
   useEffect(() => {
@@ -22,10 +33,17 @@ const Penalty = () => {
   };
 
   return (
-    <PenaltyZoneScreen 
-      endTime={endTime} 
-      onTimeComplete={handleTimeComplete} 
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
+      {/* عرض الصورة 3 مرات في أماكن مختلفة حول اللاعب */}
+      <img src="/MonsterPenalty.png" style={{ position: 'absolute', top: '10%', left: '5%', zIndex: 10, width: '150px' }} alt="penalty-1" />
+      <img src="/MonsterPenalty.png" style={{ position: 'absolute', bottom: '15%', right: '10%', zIndex: 10, width: '150px' }} alt="penalty-2" />
+      <img src="/MonsterPenalty.png" style={{ position: 'absolute', top: '50%', left: '80%', zIndex: 10, width: '150px' }} alt="penalty-3" />
+
+      <PenaltyZoneScreen 
+        endTime={endTime} 
+        onTimeComplete={handleTimeComplete} 
+      />
+    </div>
   );
 };
 
