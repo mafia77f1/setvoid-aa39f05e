@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Gift, AlertTriangle, Skull, Check, X, Footprints, Eye, EyeOff, Info, Shield, Loader2 } from 'lucide-react';
+import { Swords, Gift, AlertTriangle, Skull, Check, X, Footprints, Eye, EyeOff, Info, Shield, Loader2, Zap, Heart, Activity, Swords as AttackIcon } from 'lucide-react';
 import { DungeonRoom, StaminaTask } from './DungeonTypes';
 import { useNavigate } from 'react-router-dom';
 
@@ -44,7 +44,8 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
           </div>
         )}
 
-        <div key={room.id} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2">
+        {/* تم رفع الـ translateY ليصبح الإشعار أعلى قليلاً */}
+        <div key={room.id} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2 -translate-y-12">
           {/* Glowing Lines */}
           <div className="absolute -top-6 left-0 right-0 h-[2px] z-20 animate-line-expand" 
                style={{ backgroundColor: accentColor, boxShadow: `0 0 25px ${accentColor}, 0 0 10px #fff` }} />
@@ -64,40 +65,65 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
               </div>
 
               <div className="p-6 sm:p-10 flex flex-col items-center animate-content-fade">
-                {/* ═══ MONSTER/BOSS ═══ */}
+                {/* ═══ MONSTER/BOSS SECTION ═══ */}
                 {isMonster && room.monster && (
                   <div className="w-full text-center">
-                    <div className="space-y-4 mb-8">
-                      <p className="text-white/90 text-xs sm:text-sm font-bold tracking-[0.3em] uppercase drop-shadow-[0_0_6px_white]">Warning: Enemy Detected</p>
-                      <p className="text-white text-2xl sm:text-4xl font-black italic uppercase drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]">{room.monster.name}</p>
-                      <div className="flex items-center justify-center gap-3 text-[10px] font-mono font-bold">
-                        <span className="px-2 py-1 bg-red-500/10 text-red-400 border border-red-500/20">HP {room.monster.hp}</span>
-                        <span className="px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20">XP +{room.monster.xpReward}</span>
-                      </div>
-                    </div>
-
-                    <AnimatePresence>
-                      {showMonsterInfo && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mb-6">
-                          <div className="p-3 bg-white/5 border border-white/10 text-[10px] font-mono space-y-1">
-                            <div className="flex justify-between"><span className="text-white/40">DAMAGE</span><span className="text-red-400">{room.monster.damage}</span></div>
-                            <div className="flex justify-between"><span className="text-white/40">VITALITY</span><span className="text-red-400">{room.monster.hp}/{room.monster.maxHp}</span></div>
+                    {!showMonsterInfo ? (
+                      <>
+                        <div className="space-y-4 mb-8">
+                          <p className="text-white/90 text-xs sm:text-sm font-bold tracking-[0.3em] uppercase drop-shadow-[0_0_6px_white]">Warning: Enemy Detected</p>
+                          <p className="text-white text-2xl sm:text-4xl font-black italic uppercase drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]">{room.monster.name}</p>
+                          <div className="flex items-center justify-center gap-3 text-[10px] font-mono font-bold">
+                            <span className="px-2 py-1 bg-red-500/10 text-red-400 border border-red-500/20">HP {room.monster.hp}</span>
+                            <span className="px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20">XP +{room.monster.xpReward}</span>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        </div>
 
-                    <div className="flex flex-col gap-3 w-full max-w-sm mx-auto">
-                      <button onClick={onDefeatMonster} className="py-3 bg-white text-black font-black text-sm sm:text-lg italic hover:bg-red-600 hover:text-white transition-all">ENTER COMBAT</button>
-                      <div className="flex gap-2">
-                        <button onClick={() => setShowMonsterInfo(!showMonsterInfo)} className="flex-1 py-2 bg-transparent border border-white/20 text-white/60 font-black text-xs italic hover:bg-white/10">DETAILS</button>
-                        <button onClick={onDismiss} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs italic hover:bg-white/10">EVADE</button>
+                        <div className="flex flex-col gap-3 w-full max-w-sm mx-auto">
+                          <button onClick={onDefeatMonster} className="py-3 bg-white text-black font-black text-sm sm:text-lg italic hover:bg-red-600 hover:text-white transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)]">ENTER COMBAT</button>
+                          <div className="flex gap-2">
+                            <button onClick={() => setShowMonsterInfo(true)} className="flex-1 py-2 bg-transparent border border-white/20 text-white/60 font-black text-xs italic hover:bg-white/10 transition-all">DETAILS</button>
+                            <button onClick={onDismiss} className="flex-1 py-2 bg-transparent border border-white/10 text-white/30 font-black text-xs italic hover:bg-white/10">EVADE</button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* ═══ DETAILED MONSTER INFO (The "جببار" Part) ═══ */
+                      <div className="w-full animate-content-fade">
+                        <div className="flex flex-col sm:flex-row gap-6 items-center mb-6">
+                           <div className="w-32 h-32 border-2 border-red-500/50 relative p-1 bg-red-500/5">
+                              <img src={eventImage || ''} alt="Monster" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 border border-white/20 m-1" />
+                           </div>
+                           <div className="flex-1 text-left space-y-1 w-full">
+                              <h3 className="text-white text-2xl font-black italic uppercase tracking-tighter">{room.monster.name}</h3>
+                              <p className="text-red-500 text-[10px] font-bold tracking-[0.2em] mb-2 uppercase italic">Rank: {isBoss ? 'S-RANK' : 'A-RANK'}</p>
+                              <div className="grid grid-cols-2 gap-2 w-full font-mono text-[9px]">
+                                 <div className="flex items-center gap-2 bg-white/5 p-1 border border-white/5"><Heart className="w-3 h-3 text-red-500"/> <span className="text-white/60">HP:</span> <span className="text-white">{room.monster.hp}/{room.monster.maxHp}</span></div>
+                                 <div className="flex items-center gap-2 bg-white/5 p-1 border border-white/5"><Zap className="w-3 h-3 text-yellow-500"/> <span className="text-white/60">MP:</span> <span className="text-white">---</span></div>
+                                 <div className="flex items-center gap-2 bg-white/5 p-1 border border-white/5"><AttackIcon className="w-3 h-3 text-orange-500"/> <span className="text-white/60">ATK:</span> <span className="text-white">{room.monster.damage}</span></div>
+                                 <div className="flex items-center gap-2 bg-white/5 p-1 border border-white/5"><Activity className="w-3 h-3 text-blue-500"/> <span className="text-white/60">XP:</span> <span className="text-white">+{room.monster.xpReward}</span></div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="w-full border-t border-white/10 pt-4 mb-6">
+                           <h4 className="text-white/40 text-[9px] font-black uppercase tracking-widest text-left mb-2 italic">Entity Abilities</h4>
+                           <div className="space-y-1">
+                              <div className="text-left bg-red-900/10 border-l-2 border-red-500 p-2">
+                                 <p className="text-white text-[11px] font-bold italic uppercase">Physical Destruction</p>
+                                 <p className="text-white/40 text-[9px]">Causes massive physical damage to any target within range.</p>
+                              </div>
+                           </div>
+                        </div>
+
+                        <button onClick={() => setShowMonsterInfo(false)} className="w-full py-2 bg-white text-black font-black text-xs italic hover:bg-red-500 hover:text-white transition-all">BACK TO ANALYSIS</button>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
-                {/* ═══ TREASURE ═══ */}
+                {/* ═══ TREASURE SECTION ═══ */}
                 {isTreasure && room.treasure && (
                   <div className="w-full text-center">
                     <div className="space-y-4 mb-8">
@@ -109,7 +135,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
                   </div>
                 )}
 
-                {/* ═══ TRAP ═══ */}
+                {/* ═══ TRAP SECTION ═══ */}
                 {isTrap && room.trap && (
                   <div className="w-full text-center">
                     <div className="mb-8 space-y-4">
@@ -122,7 +148,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
                   </div>
                 )}
 
-                {/* ═══ EMPTY ═══ */}
+                {/* ═══ EMPTY SECTION ═══ */}
                 {room.type === 'empty' && (
                   <div className="w-full text-center py-4 space-y-6">
                     <p className="text-white/40 text-xs uppercase tracking-[0.2em] italic px-4">{room.description}</p>
@@ -136,9 +162,9 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
 
         <style>{`
           @keyframes super-smooth-entry {
-            0% { transform: scaleY(0.005) scaleX(0.1); opacity: 0; filter: brightness(5); }
-            40% { transform: scaleY(0.005) scaleX(1); opacity: 1; filter: brightness(2); }
-            100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+            0% { transform: scaleY(0.005) scaleX(0.1) translateY(-20px); opacity: 0; filter: brightness(5); }
+            40% { transform: scaleY(0.005) scaleX(1) translateY(-20px); opacity: 1; filter: brightness(2); }
+            100% { transform: scaleY(1) scaleX(1) translateY(-48px); opacity: 1; filter: brightness(1); }
           }
           @keyframes line-expand {
             0% { width: 0%; left: 50%; opacity: 0; }
@@ -158,7 +184,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
   );
 };
 
-// Stamina Recovery Modal (Design match)
+// Stamina Recovery Modal
 export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: any) => {
   if (!open) return null;
   const availableTasks = tasks.filter((t: any) => !t.completed);
