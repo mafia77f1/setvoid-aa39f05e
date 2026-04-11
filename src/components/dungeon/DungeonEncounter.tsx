@@ -38,187 +38,133 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[70] flex items-end justify-center"
-        style={{ background: 'rgba(0,0,0,0.85)' }}
+        className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+        style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)' }}
       >
-        {/* Event Image */}
+        {/* Background Event Image - Full Screen Low Opacity */}
         {eventImage && (
           <motion.div
             initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="absolute inset-0"
+            animate={{ opacity: 0.4, scale: 1 }}
+            className="absolute inset-0 pointer-events-none"
           >
-            <img src={eventImage} alt="Event" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a15] via-[#0a0a15]/60 to-transparent" />
-            
-            {isBoss && (
-              <motion.div
-                className="absolute inset-0 pointer-events-none"
-                animate={{ opacity: [0, 0.15, 0, 0.1, 0] }}
-                transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 2.5 }}
-                style={{
-                  backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(239,68,68,0.15) 2px, rgba(239,68,68,0.15) 4px)',
-                }}
-              />
-            )}
+            <img src={eventImage} alt="Event" className="w-full h-full object-cover opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
           </motion.div>
         )}
 
-        {/* Content Panel */}
+        {/* System Notification Panel */}
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25 }}
-          className="relative z-10 w-full max-w-md rounded-t-3xl border-t-2 overflow-hidden"
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          className="relative z-10 w-full max-w-[340px] border-2 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]"
           style={{
-            background: 'linear-gradient(180deg, rgba(10,10,20,0.97), rgba(5,5,15,0.99))',
-            borderColor: isMonster ? 'rgba(239,68,68,0.4)' : isTreasure ? 'rgba(245,158,11,0.4)' : isTrap ? 'rgba(168,85,247,0.4)' : `${themeColor}30`,
+            background: 'linear-gradient(135deg, rgba(15,15,25,0.98), rgba(5,5,15,1))',
+            borderColor: isMonster ? 'rgba(239,68,68,0.6)' : isTreasure ? 'rgba(245,158,11,0.6)' : isTrap ? 'rgba(168,85,247,0.6)' : `${themeColor}60`,
+            boxShadow: `0 0 30px ${isMonster ? 'rgba(239,68,68,0.2)' : isTreasure ? 'rgba(245,158,11,0.2)' : 'rgba(0,0,0,0.5)'}`
           }}
         >
-          {/* Header badge */}
-          <div className="px-5 py-3 flex items-center justify-center gap-2">
-            {isMonster ? <Skull className="w-4 h-4 text-red-400" /> : isTreasure ? <Gift className="w-4 h-4 text-amber-400" /> : <AlertTriangle className="w-4 h-4 text-purple-400" />}
-            <span className="text-[10px] font-mono tracking-[0.3em] uppercase font-bold" style={{
-              color: isMonster ? '#ef4444' : isTreasure ? '#f59e0b' : '#a855f7'
-            }}>
-              {isBoss ? '⚠ BOSS ENCOUNTER' : isMonster ? 'MONSTER ENCOUNTER' : isTreasure ? 'TREASURE FOUND' : isTrap ? 'TRAP!' : 'EMPTY ROOM'}
-            </span>
+          {/* Decorative Corners */}
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: isMonster ? '#ef4444' : themeColor }} />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: isMonster ? '#ef4444' : themeColor }} />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: isMonster ? '#ef4444' : themeColor }} />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: isMonster ? '#ef4444' : themeColor }} />
+
+          {/* Glitch Scan Line */}
+          <div className="absolute inset-0 pointer-events-none opacity-5 animate-pulse" 
+            style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 1px, #fff 1px, #fff 2px)', backgroundSize: '100% 4px' }} 
+          />
+
+          {/* Header - System Style */}
+          <div className="px-4 py-2 border-b flex items-center justify-between bg-white/5" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center gap-2">
+              {isMonster ? <Skull className="w-3.5 h-3.5 text-red-500" /> : isTreasure ? <Gift className="w-3.5 h-3.5 text-amber-500" /> : <AlertTriangle className="w-3.5 h-3.5 text-purple-500" />}
+              <span className="text-[9px] font-black tracking-[0.2em] text-white/80 uppercase">System Alert</span>
+            </div>
+            <X onClick={onDismiss} className="w-3.5 h-3.5 text-white/20 cursor-pointer hover:text-white" />
           </div>
 
-          <div className="px-6 pb-6 space-y-4">
+          <div className="p-5 space-y-4">
             {/* ═══ MONSTER/BOSS ═══ */}
             {isMonster && room.monster && (
               <>
-                <div className="text-center">
-                  <h3 className="text-xl font-black text-red-400 mb-1">{room.monster.name}</h3>
-                  <div className="flex items-center justify-center gap-4 text-[10px] font-mono">
-                    <span className="text-red-300">HP: {room.monster.hp}</span>
-                    <span className="text-amber-300">XP: +{room.monster.xpReward}</span>
-                    <span className="text-yellow-300">💰 +{room.monster.goldReward}</span>
+                <div className="text-center space-y-1">
+                  <span className="text-[8px] font-bold text-red-500/80 tracking-widest block uppercase">Warning: Enemy Detected</span>
+                  <h3 className="text-2xl font-black text-white tracking-tight italic uppercase" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)' }}>{room.monster.name}</h3>
+                  <div className="flex items-center justify-center gap-3 text-[9px] font-mono font-bold pt-1">
+                    <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20">HP {room.monster.hp}</span>
+                    <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20">XP +{room.monster.xpReward}</span>
                   </div>
                 </div>
 
                 {/* Monster Info Panel */}
                 <AnimatePresence>
                   {showMonsterInfo && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">القوة</span>
-                          <span className="text-red-300 font-bold">{room.monster.damage}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">الصحة</span>
-                          <span className="text-red-300 font-bold">{room.monster.hp}/{room.monster.maxHp}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">المستوى</span>
-                          <span className="text-red-300 font-bold">{Math.ceil(room.monster.hp / 30)}</span>
-                        </div>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+                      <div className="p-3 bg-black/40 border border-white/5 space-y-2 text-[10px] font-mono">
+                        <div className="flex justify-between"><span className="text-white/40">DAMAGE</span><span className="text-red-400">{room.monster.damage}</span></div>
+                        <div className="flex justify-between"><span className="text-white/40">VITALITY</span><span className="text-red-400">{room.monster.hp}/{room.monster.maxHp}</span></div>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {/* Action buttons - NO mandatory tasks, direct combat */}
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Hide */}
+                <div className="grid grid-cols-1 gap-2 pt-2">
                   <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onDismiss}
-                    className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border border-slate-600/40 bg-slate-800/30"
-                  >
-                    <EyeOff className="w-5 h-5 text-slate-400" />
-                    <span className="text-[10px] text-slate-400 font-bold">الاختباء</span>
-                  </motion.button>
-
-                  {/* Fight - goes directly to battle */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={onDefeatMonster}
-                    className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border border-red-500/40 bg-red-500/10 col-span-1"
-                    style={{ boxShadow: '0 0 15px rgba(239,68,68,0.15)' }}
+                    className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black text-xs uppercase tracking-widest italic skew-x-[-10deg]"
                   >
-                    <Swords className="w-5 h-5 text-red-400" />
-                    <span className="text-[10px] text-red-300 font-bold">المواجهة</span>
+                    Enter Combat
                   </motion.button>
-
-                  {/* Info */}
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowMonsterInfo(!showMonsterInfo)}
-                    className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border border-cyan-500/30 bg-cyan-500/5"
-                  >
-                    <Info className="w-5 h-5 text-cyan-400" />
-                    <span className="text-[10px] text-cyan-300 font-bold">المعلومات</span>
-                  </motion.button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => setShowMonsterInfo(!showMonsterInfo)} className="py-2 bg-white/5 border border-white/10 text-[9px] font-bold text-white/60 uppercase">Details</button>
+                    <button onClick={onDismiss} className="py-2 bg-white/5 border border-white/10 text-[9px] font-bold text-white/60 uppercase">Evade</button>
+                  </div>
                 </div>
               </>
             )}
 
-            {/* ═══ TREASURE - direct collection, no task ═══ */}
+            {/* ═══ TREASURE ═══ */}
             {isTreasure && room.treasure && (
-              <>
-                <div className="text-center">
-                  <h3 className="text-xl font-black text-amber-400 mb-1">{room.treasure.name}</h3>
-                  <p className="text-sm text-amber-300/80">
-                    {room.treasure.type === 'gold' ? `💰 +${room.treasure.amount} ذهب` : `📊 +${room.treasure.amount} ${room.treasure.statType}`}
+              <div className="text-center space-y-4">
+                <div>
+                  <span className="text-[8px] font-bold text-amber-500 tracking-widest block uppercase">Reward Located</span>
+                  <h3 className="text-xl font-black text-white italic uppercase">{room.treasure.name}</h3>
+                  <p className="text-xs text-amber-400 font-mono mt-1">
+                    {room.treasure.type === 'gold' ? `VALUE: ${room.treasure.amount} GOLD` : `BOOST: +${room.treasure.amount} ${room.treasure.statType}`}
                   </p>
                 </div>
-                <div className="flex gap-3">
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={onCollectTreasure}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-bold text-sm border border-amber-500/40 bg-amber-500/10 text-amber-300"
-                    style={{ boxShadow: '0 0 20px rgba(245,158,11,0.15)' }}
-                  >
-                    <Check className="w-4 h-4" /> جمع الكنز
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={onDismiss}
-                    className="px-4 py-3.5 rounded-xl border border-white/10 text-sm text-slate-500"
-                  >
-                    تجاهل
-                  </motion.button>
-                </div>
-              </>
+                <motion.button whileTap={{ scale: 0.98 }} onClick={onCollectTreasure}
+                  className="w-full py-3 bg-amber-500 text-black font-black text-xs uppercase tracking-widest skew-x-[-10deg]"
+                >
+                  Claim Reward
+                </motion.button>
+              </div>
             )}
 
             {/* ═══ TRAP ═══ */}
             {isTrap && room.trap && (
-              <>
-                <div className="text-center">
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 0.5, repeat: 3 }}>
-                    <span className="text-5xl block mb-3">⚡</span>
-                  </motion.div>
-                  <h3 className="text-xl font-black text-purple-400">{room.trap.name}</h3>
-                  <p className="text-sm text-purple-300/80 mt-1">{room.trap.description}</p>
-                  <p className="text-red-400 text-sm font-bold mt-2">-{room.trap.damage} HP</p>
+              <div className="text-center space-y-4">
+                <div className="relative inline-block">
+                   <AlertTriangle className="w-12 h-12 text-purple-500 mx-auto animate-bounce" />
                 </div>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={onDismiss}
-                  className="w-full py-3 rounded-xl border text-sm font-bold" style={{ borderColor: `${themeColor}40`, color: themeColor }}
-                >
-                  متابعة
-                </motion.button>
-              </>
+                <div>
+                  <h3 className="text-lg font-black text-purple-400 uppercase tracking-tighter">{room.trap.name}</h3>
+                  <p className="text-[10px] text-white/60 mt-1 uppercase leading-relaxed px-4">{room.trap.description}</p>
+                  <p className="text-red-500 text-xs font-black mt-2 font-mono">DAMAGE RECEIVED: -{room.trap.damage} HP</p>
+                </div>
+                <button onClick={onDismiss} className="w-full py-2 bg-purple-900/40 border border-purple-500/50 text-purple-200 text-[10px] font-black uppercase">Acknowledge</button>
+              </div>
             )}
 
             {/* ═══ EMPTY ═══ */}
             {room.type === 'empty' && (
-              <>
-                <div className="text-center">
-                  <span className="text-4xl block mb-3">🌑</span>
-                  <p className="text-sm text-slate-400 italic">{room.description}</p>
-                </div>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={onDismiss}
-                  className="w-full py-3 rounded-xl border text-sm font-bold" style={{ borderColor: `${themeColor}40`, color: themeColor }}
-                >
-                  متابعة
-                </motion.button>
-              </>
+              <div className="text-center py-4 space-y-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] italic px-4">{room.description}</p>
+                <button onClick={onDismiss} className="w-full py-2 bg-white/5 border border-white/10 text-[10px] font-black text-white/60 uppercase">Continue Exploration</button>
+              </div>
             )}
           </div>
         </motion.div>
@@ -227,53 +173,38 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
   );
 };
 
-// Stamina Recovery Modal
-interface StaminaModalProps {
-  open: boolean;
-  tasks: StaminaTask[];
-  onComplete: (taskId: string) => void;
-  onClose: () => void;
-  themeColor: string;
-}
-
+// Stamina Recovery Modal (Kept clean and system-like)
 export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: StaminaModalProps) => {
   if (!open) return null;
   const availableTasks = tasks.filter(t => !t.completed);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[70] flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.88)' }}
+      className="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm"
     >
-      <motion.div initial={{ scale: 0.8, y: 30 }} animate={{ scale: 1, y: 0 }}
-        className="w-full max-w-sm rounded-2xl border-2 overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, rgba(10,10,20,0.98), rgba(5,5,15,0.99))', borderColor: 'rgba(34,197,94,0.3)', boxShadow: '0 0 40px rgba(34,197,94,0.15)' }}
+      <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+        className="w-full max-w-[320px] border-2 bg-[#05050a]"
+        style={{ borderColor: 'rgba(34,197,94,0.5)', boxShadow: '0 0 30px rgba(34,197,94,0.1)' }}
       >
-        <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: 'rgba(255,255,255,0.05)', background: 'linear-gradient(90deg, rgba(34,197,94,0.1), transparent)' }}>
-          <Footprints className="w-5 h-5 text-green-400" />
-          <span className="text-[10px] font-mono tracking-[0.3em] uppercase font-bold text-green-400">STAMINA RECOVERY</span>
+        <div className="px-4 py-2 border-b border-white/10 bg-green-500/5 flex items-center gap-2">
+          <Footprints className="w-3 h-3 text-green-400" />
+          <span className="text-[9px] font-black tracking-widest text-green-400 uppercase">Recovery Quest</span>
         </div>
-        <div className="p-5 space-y-3">
-          <p className="text-xs text-slate-400 text-center mb-4">أكمل مهمة سريعة لاستعادة الطاقة!</p>
+        <div className="p-4 space-y-3">
           {availableTasks.length > 0 ? availableTasks.map(task => (
-            <motion.button key={task.id} whileTap={{ scale: 0.97 }} onClick={() => onComplete(task.id)}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-right transition-colors"
-              style={{ background: 'rgba(34,197,94,0.05)', borderColor: 'rgba(34,197,94,0.2)' }}
+            <motion.button key={task.id} whileTap={{ scale: 0.98 }} onClick={() => onComplete(task.id)}
+              className="w-full flex items-center gap-3 p-3 bg-white/5 border border-white/5 hover:border-green-500/30 transition-all text-right"
             >
-              <span className="text-2xl">{task.icon}</span>
+              <span className="text-xl">{task.icon}</span>
               <div className="flex-1">
-                <p className="text-sm font-bold text-slate-200">{task.text}</p>
-                <p className="text-[10px] text-green-400">+{task.staminaReward} طاقة</p>
+                <p className="text-[11px] font-bold text-white uppercase">{task.text}</p>
+                <p className="text-[9px] text-green-400 font-mono">+{task.staminaReward} STAMINA</p>
               </div>
-              <Check className="w-4 h-4 text-green-400" />
             </motion.button>
           )) : (
-            <p className="text-center text-slate-400 text-sm py-4">لا توجد مهام متاحة حالياً</p>
+            <p className="text-center text-white/40 text-[10px] py-4 uppercase tracking-widest">No Quests Available</p>
           )}
-          <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
-            className="w-full mt-2 px-4 py-3 rounded-xl border text-sm text-slate-400" style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-          >
-            إغلاق
-          </motion.button>
+          <button onClick={onClose} className="w-full py-2 text-[9px] font-bold text-white/20 hover:text-white uppercase tracking-tighter">Close Window</button>
         </div>
       </motion.div>
     </motion.div>
