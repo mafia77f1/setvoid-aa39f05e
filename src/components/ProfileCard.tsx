@@ -70,15 +70,15 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             {/* القسم الأيسر: المعلومات بالعربي */}
             <div className="flex-1 flex flex-col gap-1 text-right" dir="rtl">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">الاسم:</span>
+                <span className="text-[10px] text-primary/70 font-bold">name:</span>
                 <span className="font-semibold text-sm">{gameState.playerName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">الرتبة:</span>
+                <span className="text-[10px] text-primary/70 font-bold">rank:</span>
                 <span className={cn("font-bold text-sm", rankColor.text)}>{rankColor.rankName}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary/70 font-bold">اللقب:</span>
+                <span className="text-[10px] text-primary/70 font-bold">Title:</span>
                 <span className="text-sm text-primary">
                   {gameState.equippedTitle || '-'}
                 </span>
@@ -91,7 +91,7 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             {/* القسم الأيمن: اللفل */}
             <div className="text-center">
               <div className={cn("text-5xl font-bold glow-text", rankColor.text)}>{totalLevel}</div>
-              <div className="text-[10px] text-muted-foreground tracking-widest font-bold">المستوى</div>
+              <div className="text-[10px] text-muted-foreground tracking-widest font-bold">level</div>
             </div>
           </div>
 
