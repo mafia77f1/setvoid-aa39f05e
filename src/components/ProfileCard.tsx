@@ -128,17 +128,17 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
             <div className="text-center">
               <Flame className="w-5 h-5 mx-auto mb-1 text-orange-500" />
               <div className="text-lg font-bold">{gameState.streakDays}</div>
-              <div className="text-[10px] text-muted-foreground">أيام متتالية</div>
+              <div className="text-[10px] text-muted-foreground">Streak Day</div>
             </div>
             <div className="w-px h-10 bg-primary/30" />
             <div className="text-center">
               <div className="text-lg font-bold">{todayQuests}/{totalQuests}</div>
-              <div className="text-[10px] text-muted-foreground">مهمات اليوم</div>
+              <div className="text-[10px] text-muted-foreground">Quest day</div>
             </div>
             <div className="w-px h-10 bg-primary/30" />
             <div className="text-center">
               <div className="text-lg font-bold text-secondary">{gameState.gold || 0}</div>
-              <div className="text-[10px] text-muted-foreground">ذهب</div>
+              <div className="text-[10px] text-muted-foreground">gold</div>
             </div>
           </div>
 
