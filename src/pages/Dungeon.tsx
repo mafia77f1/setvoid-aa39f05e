@@ -12,7 +12,7 @@ import { DungeonSystemMessage } from '@/components/dungeon/DungeonSystemMessage'
 import { StaminaModal } from '@/components/dungeon/DungeonEncounter';
 import { generateDungeon, countRoomTypes, STAMINA_TASKS } from '@/components/dungeon/dungeonGenerator';
 import { DungeonRoom, Position, SystemMessage, StaminaTask } from '@/components/dungeon/DungeonTypes';
-
+let username: string = "ALXMUS";
 const GRID_SIZE = 8;
 
 const RANK_THEMES: Record<string, { primary: string; secondary: string; shadow: string }> = {
