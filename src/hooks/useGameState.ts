@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
  * of the hook can stay strictly typed.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const profilesTable = () => supabase.from('profiles') as unknown as any;
+const profilesTable = () => profilesTable() as unknown as any;
 
 const MAX_LEVEL = 100; 
 const BASE_XP_PER_LEVEL = 100;
@@ -294,7 +294,7 @@ export const useGameState = () => {
 
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await supabase.from('profiles').select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
+        const { data, error } = await profilesTable().select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
         
         if (error) { 
           isInitializedRef.current = true; 
@@ -430,7 +430,7 @@ export const useGameState = () => {
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
-        const { data: existing } = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
+        const { data: existing } = await profilesTable().select('id').eq('user_id', user.id).maybeSingle();
         const updateData = { 
           player_name: gameState.playerName, 
           equipped_title: gameState.equippedTitle || null, 
@@ -465,8 +465,8 @@ export const useGameState = () => {
           sound_enabled: gameState.soundEnabled,
           is_onboarded: gameState.isOnboarded,
         };
-        if (existing) await supabase.from('profiles').update(updateData).eq('user_id', user.id);
-        else await supabase.from('profiles').insert([{ user_id: user.id, ...updateData }]);
+        if (existing) await profilesTable().update(updateData).eq('user_id', user.id);
+        else await profilesTable().insert([{ user_id: user.id, ...updateData }]);
       } catch (err) {} finally { isSyncingRef.current = false; }
     }, 1000);
     return () => clearTimeout(timeout);
