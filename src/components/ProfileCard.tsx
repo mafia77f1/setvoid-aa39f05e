@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Dumbbell, Brain, Heart, Flame, Shield, Zap, Bell, Target, Scroll, Crown, Trophy, Smartphone } from 'lucide-react';
 import { GameState, Gate } from '@/types/game';
 import { cn } from '@/lib/utils';
-import { EditProfileModal } from './EditProfileModal';
+
 import { NewGateNotification } from './NewGateNotification';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { usePushNotifications } from '@/hooks/usePushNotifications';

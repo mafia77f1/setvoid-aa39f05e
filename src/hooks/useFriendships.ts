@@ -21,6 +21,20 @@ export interface FriendProfile {
   is_sender: boolean;
 }
 
+interface ProfileRow {
+  user_id: string;
+  player_name: string | null;
+  player_id: string | null;
+  avatar_url: string | null;
+}
+
+interface FriendshipRow {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  status: string;
+}
+
 export const useFriendships = () => {
   const { user } = useAuth();
   const [friends, setFriends] = useState<FriendProfile[]>([]);
@@ -32,8 +46,8 @@ export const useFriendships = () => {
     if (!user) return;
     setLoading(true);
 
-    const { data: friendships, error } = await (supabase.from as any)('friendships')
-      .select('*')
+    const { data: friendships, error } = await supabase
+      .from('friendships')
       .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
 
@@ -43,7 +57,9 @@ export const useFriendships = () => {
       return;
     }
 
-    if (!friendships || friendships.length === 0) {
+    const rows = (friendships ?? []) as FriendshipRow[];
+
+    if (rows.length === 0) {
       setFriends([]);
       setPendingReceived([]);
       setPendingSent([]);
@@ -51,21 +67,21 @@ export const useFriendships = () => {
       return;
     }
 
-    // Get all unique user IDs that aren't the current user
-    const otherUserIds = friendships.map(f => 
+    const otherUserIds = rows.map(f =>
       f.sender_id === user.id ? f.receiver_id : f.sender_id
     );
 
-    const { data: profiles } = await (supabase.from as any)('profiles')
+    const { data: profiles } = await supabase
+      .from('profiles')
       .select('user_id, player_name, player_id, avatar_url')
-      .select('*')
       .in('user_id', otherUserIds);
 
-    const profileMap = new Map((profiles as any[] || []).map((p: any) => [p.user_id, p]));
+    const profileRows = (profiles ?? []) as ProfileRow[];
+    const profileMap = new Map<string, ProfileRow>(profileRows.map(p => [p.user_id, p]));
 
-    const mapped: FriendProfile[] = friendships.map((f: any) => {
+    const mapped: FriendProfile[] = rows.map(f => {
       const otherId = f.sender_id === user.id ? f.receiver_id : f.sender_id;
-      const profile: any = profileMap.get(otherId);
+      const profile = profileMap.get(otherId);
       return {
         friendship_id: f.id,
         user_id: otherId,
@@ -91,7 +107,7 @@ export const useFriendships = () => {
     if (!user) return { error: new Error('Not authenticated') };
     if (receiverUserId === user.id) return { error: new Error('Cannot add yourself') };
 
-    const { error } = await (supabase.from as any)('friendships').insert({
+    const { error } = await supabase.from('friendships').insert({
       sender_id: user.id,
       receiver_id: receiverUserId,
     });
@@ -101,8 +117,8 @@ export const useFriendships = () => {
   };
 
   const acceptRequest = async (friendshipId: string) => {
-    const { error } = await (supabase.from as any)('friendships')
-      .update({ status: 'accepted' })
+    const { error } = await supabase
+      .from('friendships')
       .update({ status: 'accepted' })
       .eq('id', friendshipId);
 
@@ -111,8 +127,8 @@ export const useFriendships = () => {
   };
 
   const rejectRequest = async (friendshipId: string) => {
-    const { error } = await (supabase.from as any)('friendships')
-      .delete()
+    const { error } = await supabase
+      .from('friendships')
       .delete()
       .eq('id', friendshipId);
 
@@ -121,8 +137,8 @@ export const useFriendships = () => {
   };
 
   const removeFriend = async (friendshipId: string) => {
-    const { error } = await (supabase.from as any)('friendships')
-      .delete()
+    const { error } = await supabase
+      .from('friendships')
       .delete()
       .eq('id', friendshipId);
 

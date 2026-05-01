@@ -45,7 +45,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
         )}
 
         {/* تم رفع الـ translateY ليصبح الإشعار أعلى قليلاً */}
-        <div key={room.id} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2 -translate-y-12">
+        <div key={`${room.x}-${room.y}`} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2 -translate-y-12">
           {/* Glowing Lines */}
           <div className="absolute -top-6 left-0 right-0 h-[2px] z-20 animate-line-expand" 
                style={{ backgroundColor: accentColor, boxShadow: `0 0 25px ${accentColor}, 0 0 10px #fff` }} />
@@ -185,9 +185,17 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
 };
 
 // Stamina Recovery Modal
-export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: any) => {
+interface StaminaModalProps {
+  open: boolean;
+  tasks: StaminaTask[];
+  onComplete: (taskId: string) => void;
+  onClose: () => void;
+  themeColor?: string;
+}
+
+export const StaminaModal = ({ open, tasks, onComplete, onClose }: StaminaModalProps) => {
   if (!open) return null;
-  const availableTasks = tasks.filter((t: any) => !t.completed);
+  const availableTasks = tasks.filter(t => !t.completed);
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
@@ -199,7 +207,7 @@ export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: a
             <span className="text-[10px] font-black tracking-widest text-white uppercase italic">Recovery Quest</span>
           </div>
           <div className="space-y-3">
-            {availableTasks.length > 0 ? availableTasks.map((task: any) => (
+            {availableTasks.length > 0 ? availableTasks.map(task => (
               <button key={task.id} onClick={() => onComplete(task.id)} className="w-full flex items-center gap-3 p-3 bg-white/5 border border-white/5 hover:border-green-500/50 transition-all text-right group">
                 <span className="text-2xl group-hover:scale-110 transition-transform">{task.icon}</span>
                 <div className="flex-1">

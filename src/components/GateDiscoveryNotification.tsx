@@ -171,7 +171,7 @@ export const GateDiscoveryNotification = ({
                 <span className="text-[9px] text-slate-500 uppercase font-black">نوع البوابه</span>
               </div>
               <span className="text-xs font-bold text-white uppercase tracking-tighter">
-                 {showManaDetails ? ((gate as any).type || 'Standard') : 'Locked'}
+                 {showManaDetails ? (gate.type || 'Standard') : 'Locked'}
               </span>
             </div>
           </div>

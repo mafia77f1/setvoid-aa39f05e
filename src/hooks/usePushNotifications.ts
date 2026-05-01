@@ -8,7 +8,7 @@ interface NotificationPayload {
   data?: {
     url?: string;
     type?: 'gate' | 'quest' | 'achievement' | 'system';
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

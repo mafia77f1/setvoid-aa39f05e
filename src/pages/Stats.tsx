@@ -34,7 +34,7 @@ const Stats = () => {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showUseModal, setShowUseModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<import('@/types').InventoryItem | null>(null);
 
   const MAX_LEVEL = 100;
 
@@ -120,7 +120,7 @@ const Stats = () => {
             return (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
+                onClick={() => setActiveTab(tab.key as 'stats' | 'equipment' | 'body')}
                 className={cn(
                   "flex-1 py-2 border text-[10px] font-bold tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2",
                   activeTab === tab.key ? "bg-blue-500/20 border-blue-400 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : "bg-black/40 border-slate-700 text-slate-500"
