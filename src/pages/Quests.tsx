@@ -4,20 +4,23 @@ import { useState, useEffect } from 'react';
 import { Dumbbell, Brain, Heart, Zap, Target, CheckCircle2, Clock, Scroll, X, ShieldAlert, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { Quest, StatType } from '@/types';
+
+type QuestTab = 'all' | StatType;
 
 const Quests = () => {
   const { gameState, startSideQuest, claimSideQuest, closeSideQuest } = useGameState();
-  const [activeTab, setActiveTab] = useState<'all' | 'strength' | 'mind' | 'spirit' | 'agility'>('all');
-  
+  const [activeTab, setActiveTab] = useState<QuestTab>('all');
+
   // --- Modal Logic with New Animation ---
-  const [selectedQuest, setSelectedQuest] = useState<any>(null);
+  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  
+
   // Track quests being claimed with animation
   const [claimingQuests, setClaimingQuests] = useState<Set<string>>(new Set());
 
-  const handleOpenDetails = (quest: any) => {
+  const handleOpenDetails = (quest: Quest) => {
     setSelectedQuest(quest);
     setTimeout(() => setIsVisible(true), 50);
   };
@@ -167,7 +170,7 @@ const Quests = () => {
       <main className="relative z-10 max-w-md mx-auto space-y-8">
         <div className="flex gap-1 p-1 bg-black/40 border border-slate-800 rounded-lg overflow-x-auto">
           {tabs.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={cn("flex items-center gap-1.5 px-3 py-2 rounded-md transition-all whitespace-nowrap", activeTab === tab.id ? "bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)]" : "text-slate-500")}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id as QuestTab)} className={cn("flex items-center gap-1.5 px-3 py-2 rounded-md transition-all whitespace-nowrap", activeTab === tab.id ? "bg-white/10 text-white border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.1)]" : "text-slate-500")}>
               <tab.icon className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold uppercase">{tab.label}</span>
             </button>

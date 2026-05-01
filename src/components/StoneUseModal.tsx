@@ -4,10 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryItem } from '@/types/game';
 import { ManaStoneAnimation } from './dungeon/ManaStoneAnimation';
 
+export interface StoneUsePayload {
+  newName?: string;
+  [key: string]: unknown;
+}
+
 interface StoneUseModalProps {
   item: InventoryItem;
   onClose: () => void;
-  onUse: (data?: any) => void;
+  onUse: (data?: StoneUsePayload) => void;
 }
 
 export const StoneUseModal = ({ item, onClose, onUse }: StoneUseModalProps) => {

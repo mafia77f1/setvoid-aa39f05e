@@ -98,7 +98,10 @@ const Abilities = () => {
     toast({ title: 'SYSTEM UPGRADE', description: 'تم تحسين مصفوفة المهارة بنجاح' });
   };
 
-  const colors: any = {
+  type AbilityColorTheme = {
+    border: string; text: string; bg: string; glow: string; bar: string; btn: string;
+  };
+  const colors: Record<'silver' | 'blue' | 'violet', AbilityColorTheme> = {
     silver: { border: 'border-zinc-400', text: 'text-zinc-100', bg: 'bg-zinc-800/20', glow: 'shadow-zinc-700/50', bar: 'bg-zinc-300', btn: 'from-zinc-700 to-zinc-900 border-zinc-500' },
     blue: { border: 'border-blue-500', text: 'text-blue-300', bg: 'bg-blue-900/30', glow: 'shadow-blue-800/60', bar: 'bg-blue-400', btn: 'from-blue-600 to-blue-900 border-blue-500' },
     violet: { border: 'border-fuchsia-600', text: 'text-fuchsia-200', bg: 'bg-fuchsia-900/40', glow: 'shadow-fuchsia-800/70', bar: 'bg-fuchsia-500', btn: 'from-fuchsia-600 to-fuchsia-950 border-fuchsia-600' },

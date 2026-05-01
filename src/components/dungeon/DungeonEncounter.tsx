@@ -185,9 +185,17 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
 };
 
 // Stamina Recovery Modal
-export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: any) => {
+interface StaminaModalProps {
+  open: boolean;
+  tasks: StaminaTask[];
+  onComplete: (taskId: string) => void;
+  onClose: () => void;
+  themeColor?: string;
+}
+
+export const StaminaModal = ({ open, tasks, onComplete, onClose }: StaminaModalProps) => {
   if (!open) return null;
-  const availableTasks = tasks.filter((t: any) => !t.completed);
+  const availableTasks = tasks.filter(t => !t.completed);
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
@@ -199,7 +207,7 @@ export const StaminaModal = ({ open, tasks, onComplete, onClose, themeColor }: a
             <span className="text-[10px] font-black tracking-widest text-white uppercase italic">Recovery Quest</span>
           </div>
           <div className="space-y-3">
-            {availableTasks.length > 0 ? availableTasks.map((task: any) => (
+            {availableTasks.length > 0 ? availableTasks.map(task => (
               <button key={task.id} onClick={() => onComplete(task.id)} className="w-full flex items-center gap-3 p-3 bg-white/5 border border-white/5 hover:border-green-500/50 transition-all text-right group">
                 <span className="text-2xl group-hover:scale-110 transition-transform">{task.icon}</span>
                 <div className="flex-1">

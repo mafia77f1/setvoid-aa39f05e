@@ -70,8 +70,8 @@ const Profile = () => {
   }, []);
 
   const rankData = getRankData(gameState.totalLevel);
-  const completedGates = gameState.gates?.filter((g: any) => g.completed).length || 0;
-  const completedQuests = gameState.quests?.filter((q: any) => q.completed).length || 0;
+  const completedGates = gameState.gates?.filter(g => g.completed).length || 0;
+  const completedQuests = gameState.quests?.filter(q => q.completed).length || 0;
   
   // Check if discord is linked (checking if discord_id exists in profile)
   const isDiscordLinked = !!profile?.discord_id;
