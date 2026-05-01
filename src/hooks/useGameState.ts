@@ -285,7 +285,7 @@ export const useGameState = () => {
 
     const loadFromSupabase = async () => {
       try {
-        const { data, error } = await (supabase.from as any)('profiles').select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
+        const { data, error } = await supabase.from('profiles').select('quests, current_boss, abilities, achievements, inventory, equipment, prayer_quests, shadow_soldiers, gates, grand_quest, claimed_rewards, daily_stats, total_quests_completed, streak_days, last_active_date, punishment, punishment_end_time, missed_quests_count, selected_reciter, sound_enabled, is_onboarded, last_boss_attack_time, player_name, gold, hp, max_hp, energy, max_energy, shadow_points, equipped_title, stats, levels, total_level, player_title, player_job').eq('user_id', user.id).maybeSingle();
         
         if (error) { 
           isInitializedRef.current = true; 
@@ -303,7 +303,12 @@ export const useGameState = () => {
         }
         
         if (data) {
-          const savedState = data as any;
+          // Persisted profile row holds JSONB columns; treat as loose record for mapping
+          const savedState = data as unknown as Record<string, unknown> & {
+            player_name?: string; gold?: number; hp?: number; max_hp?: number;
+            energy?: number; max_energy?: number; shadow_points?: number;
+            equipped_title?: string; stats?: GameState['stats']; levels?: GameState['levels'];
+          };
           const defaultState = getDefaultState();
           const mergedState = { 
             ...defaultState, 
@@ -370,7 +375,11 @@ export const useGameState = () => {
     const channelName = `game-state-${user.id}-${Date.now()}`;
     const channel = supabase.channel(channelName).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` }, (payload) => {
           if (payload.new && !isSyncingRef.current) {
-            const newData = payload.new as any;
+            const newData = payload.new as Record<string, unknown> & {
+              player_name?: string; equipped_title?: string;
+              gold?: number; hp?: number; max_hp?: number;
+              energy?: number; max_energy?: number; shadow_points?: number;
+            };
             setGameState(prev => ({
               ...prev,
               playerName: newData.player_name || prev.playerName,
@@ -412,7 +421,7 @@ export const useGameState = () => {
     const timeout = setTimeout(async () => {
       isSyncingRef.current = true;
       try {
-        const { data: existing } = await (supabase.from as any)('profiles').select('id').eq('user_id', user.id).maybeSingle();
+        const { data: existing } = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
         const updateData = { 
           player_name: gameState.playerName, 
           equipped_title: gameState.equippedTitle || null, 
@@ -447,8 +456,8 @@ export const useGameState = () => {
           sound_enabled: gameState.soundEnabled,
           is_onboarded: gameState.isOnboarded,
         };
-        if (existing) await (supabase.from as any)('profiles').update(updateData).eq('user_id', user.id);
-        else await (supabase.from as any)('profiles').insert([{ user_id: user.id, ...updateData }]);
+        if (existing) await supabase.from('profiles').update(updateData).eq('user_id', user.id);
+        else await supabase.from('profiles').insert([{ user_id: user.id, ...updateData }]);
       } catch (err) {} finally { isSyncingRef.current = false; }
     }, 1000);
     return () => clearTimeout(timeout);
