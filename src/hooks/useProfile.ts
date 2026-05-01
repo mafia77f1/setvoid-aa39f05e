@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-interface Profile {
+export interface Profile {
   id: string;
   user_id: string;
   player_name: string;
@@ -27,7 +27,8 @@ export const useProfile = () => {
 
     const fetchProfile = async () => {
       setLoading(true);
-      const { data, error } = await (supabase.from as any)('profiles')
+      const { data, error } = await supabase
+        .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -38,25 +39,24 @@ export const useProfile = () => {
         return;
       }
 
-      // إذا لم يوجد ملف شخصي، ننشئ واحد (للمستخدمين القدامى)
+      // For legacy users without a profile row, create one
       if (!data) {
-        const playerName = user.user_metadata?.player_name || 'Hunter';
-        
-        const { data: newProfile, error: insertError } = await (supabase.from as any)('profiles')
-          .insert({
-            user_id: user.id,
-            player_name: playerName,
-          })
+        const playerName =
+          (user.user_metadata?.player_name as string | undefined) ?? 'Hunter';
+
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ user_id: user.id, player_name: playerName })
           .select()
           .single();
 
         if (!insertError && newProfile) {
-          setProfile(newProfile);
+          setProfile(newProfile as unknown as Profile);
         }
       } else {
-        setProfile(data);
+        setProfile(data as unknown as Profile);
       }
-      
+
       setLoading(false);
     };
 
@@ -66,14 +66,15 @@ export const useProfile = () => {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    const { data, error } = await (supabase.from as any)('profiles')
+    const { data, error } = await supabase
+      .from('profiles')
       .update(updates)
       .eq('user_id', user.id)
       .select()
       .single();
 
     if (!error && data) {
-      setProfile(data);
+      setProfile(data as unknown as Profile);
     }
 
     return { data, error };
