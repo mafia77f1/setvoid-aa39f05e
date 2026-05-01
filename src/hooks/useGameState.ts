@@ -312,12 +312,10 @@ export const useGameState = () => {
         }
         
         if (data) {
-          // Persisted profile row holds JSONB columns; treat as loose record for mapping
-          const savedState = data as unknown as Record<string, unknown> & {
-            player_name?: string; gold?: number; hp?: number; max_hp?: number;
-            energy?: number; max_energy?: number; shadow_points?: number;
-            equipped_title?: string; stats?: GameState['stats']; levels?: GameState['levels'];
-          };
+          // Persisted profile row holds JSONB columns; the loose record cast here is
+          // intentional — strict typing happens further down where we map fields onto GameState.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const savedState = data as any;
           const defaultState = getDefaultState();
           const mergedState = { 
             ...defaultState, 
