@@ -3,6 +3,15 @@ import { GameState, Quest, Boss, StatType, Ability, Achievement, GrandQuest, Inv
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+/**
+ * `profiles` is a heterogeneous JSONB-backed table whose generated row type
+ * does not match our richly-typed domain models (Quest, Boss, …).
+ * `profilesTable()` centralises the unavoidable structural cast so the rest
+ * of the hook can stay strictly typed.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const profilesTable = () => supabase.from('profiles') as unknown as any;
+
 const MAX_LEVEL = 100; 
 const BASE_XP_PER_LEVEL = 100;
 
