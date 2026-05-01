@@ -5,17 +5,13 @@ import { useEffect } from 'react';
 
 const Penalty = () => {
   const navigate = useNavigate();
-  const { gameState, clearPunishment, setGameState } = useGameState();
+  const { gameState, clearPunishment, takeDamage } = useGameState();
 
-  // تأمين خصم نقاط الصحة عند دخول المكون لأول مرة
+  // Deduct HP once when entering the penalty zone
   useEffect(() => {
     const damage = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
-    if (setGameState) {
-      setGameState(prev => ({
-        ...prev,
-        hp: Math.max(0, (prev.hp || 100) - damage)
-      }));
-    }
+    takeDamage(damage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Set punishment end time to 4 hours from now if not already set
