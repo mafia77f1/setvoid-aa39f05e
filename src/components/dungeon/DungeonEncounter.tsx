@@ -45,7 +45,7 @@ export const DungeonEncounter = ({ room, onDefeatMonster, onCollectTreasure, onD
         )}
 
         {/* تم رفع الـ translateY ليصبح الإشعار أعلى قليلاً */}
-        <div key={room.id} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2 -translate-y-12">
+        <div key={`${room.x}-${room.y}`} className="relative w-full max-w-[550px] animate-super-smooth-entry px-2 -translate-y-12">
           {/* Glowing Lines */}
           <div className="absolute -top-6 left-0 right-0 h-[2px] z-20 animate-line-expand" 
                style={{ backgroundColor: accentColor, boxShadow: `0 0 25px ${accentColor}, 0 0 10px #fff` }} />
