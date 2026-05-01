@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
  * of the hook can stay strictly typed.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const profilesTable = () => profilesTable() as unknown as any;
+const profilesTable = () => supabase.from('profiles') as unknown as any;
 
 const MAX_LEVEL = 100; 
 const BASE_XP_PER_LEVEL = 100;
