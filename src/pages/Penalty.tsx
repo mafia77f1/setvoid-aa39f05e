@@ -1,4 +1,4 @@
-import { PenaltyZoneScreen } from '@/components/PenaltyZoneScreen';
+import { PenaltyZoneScreen } from '@/features/penalty/PenaltyZoneScreen';
 import { useGameState } from '@/hooks/useGameState';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
