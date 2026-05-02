@@ -31,7 +31,8 @@ const Index = () => {
     completePrayerQuest,
     useAbility,
     startSideQuest,
-    updateSideQuestProgress
+    updateSideQuestProgress,
+    failQuest,
   } = useGameState();
   const { playQuestComplete, playUseAbility } = useSoundEffects();
   const [activePrayerQuest, setActivePrayerQuest] = useState<string | null>(null);
@@ -74,27 +75,20 @@ const Index = () => {
     
     const checkExpired = () => {
       const now = Date.now();
-      const allExpired = mainQuests.every(q => {
-        if (!q.startedAt || !q.requiredTime) return false;
+      // Apply Mission Failed: any started, uncompleted main quest whose timer ran out → fail it (HP penalty)
+      mainQuests.forEach(q => {
+        if (!q.startedAt || !q.requiredTime || q.completed) return;
         const started = new Date(q.startedAt).getTime();
         const elapsed = (now - started) / 1000;
-        const required = q.requiredTime * 60;
-        return elapsed >= required;
+        if (elapsed >= q.requiredTime * 60) {
+          failQuest(q.id);
+        }
       });
-      
-      // If any quest timer finished but quest not completed, redirect to penalty
-      const anyTimerDone = mainQuests.some(q => {
-        if (!q.startedAt || !q.requiredTime || q.completed) return false;
-        const started = new Date(q.startedAt).getTime();
-        const elapsed = (now - started) / 1000;
-        return elapsed >= q.requiredTime * 60;
-      });
-      // We don't auto-redirect here since individual quest completion handles it
     };
     
     const interval = setInterval(checkExpired, 5000);
     return () => clearInterval(interval);
-  }, [gameState.quests]);
+  }, [gameState.quests, failQuest]);
 
   // Get only main daily quests (not side quests)
   const dailyQuests = gameState.quests.filter(q => q.dailyReset && q.isMainQuest !== false);
