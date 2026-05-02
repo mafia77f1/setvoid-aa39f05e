@@ -948,6 +948,7 @@ export const useGameState = () => {
     equipTitle,
     unequipTitle,
     takeDamage,
+    failQuest,
     applyPunishment,
     clearPunishment,
     toggleSound,
