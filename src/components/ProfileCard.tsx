@@ -41,10 +41,8 @@ export const ProfileCard = ({ gameState, getXpProgress, onUpdateProfile }: Profi
     notifyAchievement 
   } = usePushNotifications();
   
-  // حساب المستوى الكلي = مجموع المستويات الأربعة / 4
-  const totalLevel = Math.floor(
-    (gameState.levels.strength + gameState.levels.mind + gameState.levels.spirit + gameState.levels.agility) / 4
-  );
+  // Single source of truth: use computed totalLevel from gameState
+  const totalLevel = gameState.totalLevel;
   const todayQuests = gameState.quests.filter(q => q.completed && q.isMainQuest !== false).length;
   const totalQuests = gameState.quests.filter(q => q.isMainQuest !== false).length;
   const rankColor = getRankColor(totalLevel);
