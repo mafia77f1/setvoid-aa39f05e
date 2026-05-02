@@ -755,6 +755,32 @@ export const useGameState = () => {
     setGameState(prev => ({ ...prev, hp: Math.max(0, prev.hp - damage) }));
   }, []);
 
+  // Mission Failure penalty (HP deduction by difficulty)
+  const QUEST_FAIL_HP: Record<string, number> = {
+    easy: 10,
+    medium: 20,
+    hard: 35,
+    legendary: 50,
+  };
+
+  const failQuest = useCallback((questId: string) => {
+    setGameState(prev => {
+      const quest = prev.quests.find(q => q.id === questId);
+      if (!quest || quest.completed) return prev;
+      const dmg = QUEST_FAIL_HP[quest.difficulty] ?? 15;
+      // Mark quest as failed: reset startedAt, increment missedQuestsCount, deduct HP
+      const newQuests = prev.quests.map(q =>
+        q.id === questId ? { ...q, startedAt: undefined, timerDuration: undefined, active: false } : q
+      );
+      return {
+        ...prev,
+        quests: newQuests,
+        hp: Math.max(0, prev.hp - dmg),
+        missedQuestsCount: (prev.missedQuestsCount ?? 0) + 1,
+      };
+    });
+  }, []);
+
   const applyPunishment = useCallback(() => {
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + 4);
@@ -922,6 +948,7 @@ export const useGameState = () => {
     equipTitle,
     unequipTitle,
     takeDamage,
+    failQuest,
     applyPunishment,
     clearPunishment,
     toggleSound,

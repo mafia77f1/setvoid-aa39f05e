@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryItem } from '@/types/game';
-import { ManaStoneAnimation } from './dungeon/ManaStoneAnimation';
+import { ManaStoneAnimation } from '@/features/dungeon/ManaStoneAnimation';
 
 export interface StoneUsePayload {
   newName?: string;
