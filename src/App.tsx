@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import Quests from "./pages/Quests";
 import Gates from "./pages/Gates";
 import Battle from "./pages/Battle";
+import MonsterBattle from "./pages/MonsterBattle";
 import Dungeon from "./pages/Dungeon";
 import Abilities from "./pages/Abilities";
 import Stats from "./pages/Stats";
@@ -53,6 +54,7 @@ const AppContent = () => {
         <Route path="/quests" element={<Quests />} />
         <Route path="/gates" element={<Gates />} />
         <Route path="/battle" element={<Battle />} />
+        <Route path="/battle/monster" element={<MonsterBattle />} />
         <Route path="/dungeon" element={<Dungeon />} />
         <Route path="/abilities" element={<Abilities />} />
         <Route path="/stats" element={<Stats />} />

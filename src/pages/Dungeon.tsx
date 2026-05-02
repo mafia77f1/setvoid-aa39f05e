@@ -248,13 +248,13 @@ const Dungeon = () => {
     setRoomsExplored(prev => prev + 1);
     
     if (encounter.type === 'boss') {
-      // Navigate to battle page for boss fight
+      // Boss → cinematic Battle page
       navigate(`/battle?rank=${rank}`);
       return;
     }
     
-    // For regular monsters - go directly to battle
-    navigate(`/battle?rank=${rank}`);
+    // Regular monster → lightweight Monster Battle page
+    navigate(`/battle/monster?rank=${rank}`);
   }, [encounter, navigate, rank]);
 
   const handleCollectTreasure = useCallback(() => {
