@@ -1,1 +1,5 @@
+[retrieval]
+enabled = true
+
+[integrations.supabase]
 project_id = "jwlgkqdipcfvtzemhjku"
