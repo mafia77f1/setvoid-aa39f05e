@@ -221,7 +221,7 @@ const Onboarding = () => {
   if (isInitialLoading || authLoading) {
     return (
       <div className="min-h-screen bg-[#010205] flex items-center justify-center transition-opacity duration-1000">
-        {authLoading && <Loader2 className="w-8 h-8 animate-spin text-blue-500" />}
+        <img src="/Loadingsetvoid.gif" alt="Loading" className="w-32 h-32" />
       </div>
     );
   }
